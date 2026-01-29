@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 
 export default function Navigation() {
   const [showAboutDropdown, setShowAboutDropdown] = useState(false);
   const [showResourcesDropdown, setShowResourcesDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const aboutDropdownRef = useRef<HTMLDivElement>(null);
   const resourcesDropdownRef = useRef<HTMLDivElement>(null);
@@ -50,7 +52,12 @@ export default function Navigation() {
           transition: width 0.3s ease;
         }
         
-        .nav-link:hover::after {
+        .nav-link:hover::after,
+        .nav-link.active::after {
+          width: 100%;
+        }
+        
+        .nav-link.active::after {
           width: 100%;
         }
         
@@ -128,7 +135,10 @@ export default function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex text-white font-bold text-base xl:text-lg justify-center items-center gap-6 xl:gap-10 py-5 px-4">
-            <Link href="/Landing_page/Home" className="nav-link">
+            <Link
+              href="/Landing_page/Home"
+              className={`nav-link ${pathname === "/Landing_page/Home" ? "active" : ""}`}
+            >
               Home
             </Link>
 
@@ -136,7 +146,9 @@ export default function Navigation() {
             <div className="relative group" ref={aboutDropdownRef}>
               <button
                 onClick={() => setShowAboutDropdown(!showAboutDropdown)}
-                className="nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300"
+                className={`nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300 ${
+                  pathname?.includes("/Landing_page/About_us") ? "active" : ""
+                }`}
               >
                 About Us
                 <svg
@@ -269,7 +281,9 @@ export default function Navigation() {
             <div className="relative group" ref={resourcesDropdownRef}>
               <button
                 onClick={() => setShowResourcesDropdown(!showResourcesDropdown)}
-                className="nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300"
+                className={`nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300 ${
+                  pathname?.includes("/Landing_page/resources") ? "active" : ""
+                }`}
               >
                 Resources
                 <svg
@@ -398,10 +412,16 @@ export default function Navigation() {
               )}
             </div>
 
-            <Link href="/Landing_page/news" className="nav-link">
+            <Link
+              href="/Landing_page/news"
+              className={`nav-link ${pathname === "/Landing_page/news" ? "active" : ""}`}
+            >
               News & Announment
             </Link>
-            <Link href="/Landing_page/contact" className="nav-link">
+            <Link
+              href="/Landing_page/Contact"
+              className={`nav-link ${pathname === "/Landing_page/Contact" ? "active" : ""}`}
+            >
               Contact Us
             </Link>
           </div>

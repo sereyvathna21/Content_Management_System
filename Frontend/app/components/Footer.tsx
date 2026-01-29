@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-
+import { Facebook } from "lucide-react";
 export default function Footer() {
   const [isVisible, setIsVisible] = useState(false);
   const footerRef = useRef<HTMLElement>(null);
@@ -35,7 +35,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
           <div>
             <div className="transition-transform hover:scale-105 duration-300">
-              <img src="/favicon.svg" alt="NSPC logo" className="h-20 mb-8" />
+              <img
+                src="/favicon.svg"
+                alt="NSPC logo"
+                className="mb-8"
+                style={{ height: "clamp(4rem, 12vw, 10rem)" }}
+              />
             </div>
             <p className="text-lg text-white/90 leading-relaxed">
               National Social Protection Council — ensuring social protection
@@ -72,7 +77,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/Landing_page/contact"
+                  href="/Landing_page/Contact"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
                   Contact
@@ -93,25 +98,11 @@ export default function Footer() {
 
             <div className="flex items-center gap-4">
               <a
-                href="#"
+                href="https://www.facebook.com/CAMNSPC/"
                 aria-label="Facebook"
                 className="text-3xl hover:scale-125 transition-transform duration-300"
               >
-                🔵
-              </a>
-              <a
-                href="#"
-                aria-label="Twitter"
-                className="text-3xl hover:scale-125 transition-transform duration-300"
-              >
-                🐦
-              </a>
-              <a
-                href="#"
-                aria-label="YouTube"
-                className="text-3xl hover:scale-125 transition-transform duration-300"
-              >
-                ▶️
+                <Facebook />
               </a>
             </div>
           </div>
