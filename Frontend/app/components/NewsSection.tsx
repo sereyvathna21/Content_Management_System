@@ -30,45 +30,45 @@ export default function NewsSection() {
       date: "Jan 15, 2026",
       excerpt:
         "A new initiative to expand social protection services across provinces.",
-      image: "/news1.jpg",
+      image: "/hero3.svg",
     },
     {
       title: "Publication: Social Protection Report 2025",
       date: "Dec 22, 2025",
       excerpt:
         "Comprehensive findings and recommendations from the 2025 study.",
-      image: "/news2.jpg",
+      image: "/hero2.svg",
     },
     {
       title: "Public Consultation Schedule Announced",
       date: "Nov 30, 2025",
       excerpt:
         "Join us for regional consultations to gather feedback on the draft policy.",
-      image: "/news3.jpg",
+      image: "/hero1.svg",
     },
   ];
 
   return (
     <section
       ref={sectionRef}
-      className={`max-w-7xl mx-auto py-24 px-6 transition-all duration-1000 ${
+      className={`max-w-7xl mx-auto py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
       }`}
     >
-      <div className="text-center mb-12">
-        <h2 className="text-4xl md:text-5xl font-bold text-primary mb-4">
+      <div className="text-center mb-6 sm:mb-8">
+        <h2 className="text-fluid-5xl font-bold text-primary mb-3 sm:mb-4">
           News & Announcements
         </h2>
-        <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+        <p className="text-gray-600 text-fluid-base max-w-2xl mx-auto px-4">
           Stay updated with our latest initiatives, publications, and community
           engagements
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
         {newsItems.map((item, idx) => (
           <article
             key={idx}
-            className={`bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 group overflow-hidden ${
+            className={`bg-white rounded-xl sm:rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 group overflow-hidden ${
               isVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-10"
@@ -76,7 +76,7 @@ export default function NewsSection() {
             style={{ transitionDelay: isVisible ? `${idx * 150}ms` : "0ms" }}
           >
             {/* Image Section */}
-            <div className="relative h-48 overflow-hidden">
+            <div className="relative h-36 sm:h-40 md:h-44 overflow-hidden">
               <img
                 src={item.image}
                 alt={item.title}
@@ -90,11 +90,11 @@ export default function NewsSection() {
             </div>
 
             {/* Content Section */}
-            <div className="p-8">
-              <h3 className="font-bold text-xl mb-4 group-hover:text-primary transition-colors duration-300">
+            <div className="p-4 sm:p-5 md:p-6">
+              <h3 className="font-bold text-fluid-xl mb-3 sm:mb-4 group-hover:text-primary transition-colors duration-300">
                 {item.title}
               </h3>
-              <p className="text-base text-gray-600 mb-6 leading-relaxed">
+              <p className="text-fluid-sm text-gray-600 mb-4 sm:mb-5 md:mb-6 leading-relaxed">
                 {item.excerpt}
               </p>
               <div className="flex justify-end">
@@ -123,10 +123,10 @@ export default function NewsSection() {
         ))}
       </div>
 
-      <div className="mt-12 flex justify-center">
+      <div className="mt-6 sm:mt-8 flex justify-center">
         <Link
           href="/Landing_page/news"
-          className="bg-primary text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-2"
+          className="bg-primary text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold text-fluid-lg hover:shadow-xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-2"
         >
           View All News
           <svg

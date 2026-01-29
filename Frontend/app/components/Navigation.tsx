@@ -1,11 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Navigation() {
   const [showAboutDropdown, setShowAboutDropdown] = useState(false);
   const [showResourcesDropdown, setShowResourcesDropdown] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const aboutDropdownRef = useRef<HTMLDivElement>(null);
+  const resourcesDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        aboutDropdownRef.current &&
+        !aboutDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowAboutDropdown(false);
+      }
+      if (
+        resourcesDropdownRef.current &&
+        !resourcesDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowResourcesDropdown(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <>
@@ -67,18 +91,51 @@ export default function Navigation() {
         }
       `}</style>
 
-      <nav className="fixed top-28 left-0 right-0 z-40 bg-primary shadow-lg">
+      <nav className="fixed top-[4rem] sm:top-[5.5rem] md:top-28 left-0 right-0 z-40 bg-primary shadow-lg">
         <div className="max-w-7xl mx-auto">
-          <div className="text-white font-bold text-lg flex justify-center items-center gap-10 py-5 px-4">
-            <Link href="/Landing_page/home" className="nav-link">
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden flex justify-between items-center py-4 px-4">
+            <span className="text-white font-bold text-lg">Menu</span>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="text-white p-2 hover:bg-white/10 rounded-lg transition-all"
+              aria-label="Toggle menu"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {mobileMenuOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex text-white font-bold text-base xl:text-lg justify-center items-center gap-6 xl:gap-10 py-5 px-4">
+            <Link href="/Landing_page/Home" className="nav-link">
               Home
             </Link>
 
             {/* About Us Dropdown */}
-            <div className="relative group">
+            <div className="relative group" ref={aboutDropdownRef}>
               <button
-                onMouseEnter={() => setShowAboutDropdown(true)}
-                onMouseLeave={() => setShowAboutDropdown(false)}
+                onClick={() => setShowAboutDropdown(!showAboutDropdown)}
                 className="nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300"
               >
                 About Us
@@ -100,9 +157,7 @@ export default function Navigation() {
               </button>
               {showAboutDropdown && (
                 <div
-                  onMouseEnter={() => setShowAboutDropdown(true)}
-                  onMouseLeave={() => setShowAboutDropdown(false)}
-                  className="absolute left-0 mt-6 w-96 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden dropdown-enter border border-gray-100"
+                  className="absolute left-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden dropdown-enter border border-gray-100"
                   style={{
                     boxShadow:
                       "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)",
@@ -117,7 +172,7 @@ export default function Navigation() {
 
                   <div className="py-2">
                     <Link
-                      href="/Landing_page/about/national"
+                      href="/Landing_page/About_us/National"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -128,7 +183,7 @@ export default function Navigation() {
                           National
                         </p>
                         <p className="text-sm text-gray-500 group-hover:text-gray-700">
-                          National overview & structure
+                          National Social Protection Council
                         </p>
                       </div>
                       <svg
@@ -147,7 +202,7 @@ export default function Navigation() {
                     </Link>
 
                     <Link
-                      href="/Landing_page/about/executive"
+                      href="/Landing_page/About_us/Executive"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -155,10 +210,10 @@ export default function Navigation() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-base text-gray-900 group-hover:text-primary transition-colors">
-                          Executive
+                          Executives
                         </p>
                         <p className="text-sm text-gray-500 group-hover:text-gray-700">
-                          Leadership team & board
+                          Executive Committee & Secretariat Office
                         </p>
                       </div>
                       <svg
@@ -177,7 +232,7 @@ export default function Navigation() {
                     </Link>
 
                     <Link
-                      href="/Landing_page/about/general"
+                      href="/Landing_page/About_us/General"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -188,7 +243,7 @@ export default function Navigation() {
                           General
                         </p>
                         <p className="text-sm text-gray-500 group-hover:text-gray-700">
-                          General information & FAQs
+                          General Secretariat Office
                         </p>
                       </div>
                       <svg
@@ -211,10 +266,9 @@ export default function Navigation() {
             </div>
 
             {/* Resources Dropdown */}
-            <div className="relative group">
+            <div className="relative group" ref={resourcesDropdownRef}>
               <button
-                onMouseEnter={() => setShowResourcesDropdown(true)}
-                onMouseLeave={() => setShowResourcesDropdown(false)}
+                onClick={() => setShowResourcesDropdown(!showResourcesDropdown)}
                 className="nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300"
               >
                 Resources
@@ -236,9 +290,7 @@ export default function Navigation() {
               </button>
               {showResourcesDropdown && (
                 <div
-                  onMouseEnter={() => setShowResourcesDropdown(true)}
-                  onMouseLeave={() => setShowResourcesDropdown(false)}
-                  className="absolute left-0 mt-6 w-96 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden dropdown-enter border border-gray-100"
+                  className="absolute left-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl z-50 overflow-hidden dropdown-enter border border-gray-100"
                   style={{
                     boxShadow:
                       "0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)",
@@ -353,6 +405,134 @@ export default function Navigation() {
               Contact Us
             </Link>
           </div>
+
+          {/* Mobile Navigation Menu */}
+          {mobileMenuOpen && (
+            <div className="lg:hidden bg-primary border-t border-white/10">
+              <div className="flex flex-col text-white font-bold text-base py-2">
+                <Link
+                  href="/Landing_page/home"
+                  className="px-6 py-3 hover:bg-white/10 transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Home
+                </Link>
+
+                {/* Mobile About Dropdown */}
+                <div>
+                  <button
+                    onClick={() => setShowAboutDropdown(!showAboutDropdown)}
+                    className="w-full px-6 py-3 hover:bg-white/10 transition-all flex justify-between items-center"
+                  >
+                    About Us
+                    <svg
+                      className={`w-4 h-4 transition-transform ${showAboutDropdown ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  {showAboutDropdown && (
+                    <div className="bg-white/5 py-2">
+                      <Link
+                        href="/Landing_page/About_us/National"
+                        className="block px-10 py-2 text-sm hover:bg-white/10"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        National Social Protection Council
+                      </Link>
+                      <Link
+                        href="/Landing_page/About_us/Executive"
+                        className="block px-10 py-2 text-sm hover:bg-white/10"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Executive Secretariat Office
+                      </Link>
+                      <Link
+                        href="/Landing_page/About_us/General"
+                        className="block px-10 py-2 text-sm hover:bg-white/10"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        General Secretariat Office
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile Resources Dropdown */}
+                <div>
+                  <button
+                    onClick={() =>
+                      setShowResourcesDropdown(!showResourcesDropdown)
+                    }
+                    className="w-full px-6 py-3 hover:bg-white/10 transition-all flex justify-between items-center"
+                  >
+                    Resources
+                    <svg
+                      className={`w-4 h-4 transition-transform ${showResourcesDropdown ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  {showResourcesDropdown && (
+                    <div className="bg-white/5 py-2">
+                      <Link
+                        href="/Landing_page/resources/law"
+                        className="block px-10 py-2 text-sm hover:bg-white/10"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Law & Regulation
+                      </Link>
+                      <Link
+                        href="/Landing_page/resources/publication"
+                        className="block px-10 py-2 text-sm hover:bg-white/10"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Publication & Report
+                      </Link>
+                      <Link
+                        href="/Landing_page/resources/social"
+                        className="block px-10 py-2 text-sm hover:bg-white/10"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Social Protection Program
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                <Link
+                  href="/Landing_page/news"
+                  className="px-6 py-3 hover:bg-white/10 transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  News & Announment
+                </Link>
+                <Link
+                  href="/Landing_page/contact"
+                  className="px-6 py-3 hover:bg-white/10 transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Contact Us
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
     </>
