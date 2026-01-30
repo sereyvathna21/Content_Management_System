@@ -145,11 +145,11 @@ export default function Contact() {
     <>
       <Header />
       <Navigation />
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-32 md:pt-40">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-20 sm:pt-24 md:pt-28 lg:pt-32">
         {/* Header Section */}
-        <div className="bg-primary text-white py-16 animate-fade-in">
-          <div className="container mx-auto px-4">
-            <h1 className="text-fluid-4xl md:text-fluid-5xl font-bold text-center mb-4 animate-slide-down">
+        <div className="bg-primary text-white py-6 sm:py-8 md:py-10 lg:py-12 animate-fade-in">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-fluid-4xl md:text-fluid-5xl font-bold text-center mb-2 sm:mb-2 md:mb-3 animate-slide-down">
               Get in Touch
             </h1>
             <p className="text-fluid-xl text-center text-white/80 max-w-2xl mx-auto animate-slide-up">
@@ -159,40 +159,44 @@ export default function Contact() {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-12">
-          <div className="grid lg:grid-cols-3 gap-8 mb-12">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-7 lg:py-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 mb-4 sm:mb-6 md:mb-7 lg:mb-8">
             {/* Contact Information Cards */}
             <div
-              className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 animate-fade-in-up"
+              className="bg-white p-3 sm:p-4 md:p-5 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 animate-fade-in-up"
               style={{ animationDelay: "0.1s" }}
             >
-              <div className="flex items-center mb-4">
-                <div className="bg-primary/10 p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
-                  <Phone className="w-6 h-6 text-primary" />
+              <div className="flex items-center mb-2 sm:mb-3">
+                <div className="bg-primary/10 p-2 sm:p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
+                  <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
-                <h3 className="ml-4 text-fluid-xl font-semibold">Phone</h3>
+                <h3 className="ml-3 sm:ml-4 text-fluid-lg sm:text-fluid-xl font-semibold">
+                  Phone
+                </h3>
               </div>
               <p className="text-gray-600">+855 23 xxx xxx</p>
               <p className="text-gray-600">+855 12 xxx xxx</p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <div className="flex items-center mb-4">
-                <div className="bg-primary/10 p-3 rounded-full">
-                  <Mail className="w-6 h-6 text-primary" />
+            <div className="bg-white p-3 sm:p-4 md:p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+              <div className="flex items-center mb-2 sm:mb-3">
+                <div className="bg-primary/10 p-2 sm:p-3 rounded-full">
+                  <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
-                <h3 className="ml-4 text-fluid-xl font-semibold">Email</h3>
+                <h3 className="ml-3 sm:ml-4 text-fluid-lg sm:text-fluid-xl font-semibold">
+                  Email
+                </h3>
               </div>
               <p className="text-gray-600">info@nspc.gov.kh</p>
               <p className="text-gray-600">contact@nspc.gov.kh</p>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <div className="flex items-center mb-4">
-                <div className="bg-primary/10 p-3 rounded-full">
-                  <Facebook className="w-6 h-6 text-primary" />
+            <div className="bg-white p-3 sm:p-4 md:p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+              <div className="flex items-center mb-2 sm:mb-3">
+                <div className="bg-primary/10 p-2 sm:p-3 rounded-full">
+                  <Facebook className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
-                <h3 className="ml-4 text-fluid-xl font-semibold">
+                <h3 className="ml-3 sm:ml-4 text-fluid-lg sm:text-fluid-xl font-semibold">
                   Social Media
                 </h3>
               </div>
@@ -207,16 +211,19 @@ export default function Contact() {
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
+          <div className="grid lg:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
             {/* Feedback Form */}
             <div
-              className="bg-white p-8 rounded-lg shadow-md animate-fade-in-up"
+              className="bg-white p-3 sm:p-5 md:p-6 rounded-lg shadow-md animate-fade-in-up"
               style={{ animationDelay: "0.4s" }}
             >
-              <h2 className="text-fluid-3xl font-bold mb-6 text-gray-800">
-                Send a Messages
+              <h2 className="text-fluid-2xl sm:text-fluid-3xl font-bold mb-3 sm:mb-4 md:mb-5 text-gray-800">
+                Send a Feedback
               </h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-3 sm:space-y-3.5 md:space-y-4"
+              >
                 <div>
                   <label
                     htmlFor="name"
@@ -421,19 +428,19 @@ export default function Contact() {
 
             {/* Map and Address Section */}
             <div
-              className="space-y-6 animate-fade-in-up"
+              className="space-y-3 sm:space-y-4 md:space-y-5 animate-fade-in-up"
               style={{ animationDelay: "0.5s" }}
             >
-              <div className="bg-white p-8 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center mb-4">
-                  <div className="bg-primary/10 p-3 rounded-full">
-                    <MapPin className="w-6 h-6 text-primary" />
+              <div className="bg-white p-3 sm:p-5 md:p-6 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
+                <div className="flex items-center mb-2 sm:mb-3">
+                  <div className="bg-primary/10 p-2 sm:p-3 rounded-full">
+                    <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                   </div>
-                  <h2 className="ml-4 text-fluid-2xl font-bold text-gray-800">
+                  <h2 className="ml-3 sm:ml-4 text-fluid-xl sm:text-fluid-2xl font-bold text-gray-800">
                     Our Location
                   </h2>
                 </div>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 mb-2 sm:mb-3">
                   National Social Protection Council (NSPC)
                   <br />
                   Phnom Penh, Cambodia
@@ -442,13 +449,11 @@ export default function Contact() {
                   Office Hours: Monday - Friday, 8:00 AM - 5:00 PM
                 </p>
               </div>
-
               {/* Embedded Map */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden h-96">
+              <div className="bg-white rounded-lg shadow-md overflow-hidden h-64 sm:h-80 md:h-96">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.653950427408!2d104.91803867607724!3d11.57664658862509!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310951434d493e03%3A0xb1a605e9a569ec8b!2sMinistry%20of%20Economy%20and%20Finance%20of%20Cambodia!5e0!3m2!1sen!2skh!4v1769659057617!5m2!1sen!2skh"
-                  width="100%"
-                  height="100%"
+                  className="w-full h-full object-cover"
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"

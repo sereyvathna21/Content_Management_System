@@ -7,6 +7,9 @@ import { usePathname } from "next/navigation";
 export default function Navigation() {
   const [showAboutDropdown, setShowAboutDropdown] = useState(false);
   const [showResourcesDropdown, setShowResourcesDropdown] = useState(false);
+  const [showMobileAboutDropdown, setShowMobileAboutDropdown] = useState(false);
+  const [showMobileResourcesDropdown, setShowMobileResourcesDropdown] =
+    useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -32,6 +35,15 @@ export default function Navigation() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Close mobile menu and dropdowns when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setShowAboutDropdown(false);
+    setShowResourcesDropdown(false);
+    setShowMobileAboutDropdown(false);
+    setShowMobileResourcesDropdown(false);
+  }, [pathname]);
 
   return (
     <>
@@ -72,6 +84,23 @@ export default function Navigation() {
           }
         }
         
+        @keyframes slideInFromTop {
+          0% {
+            opacity: 0;
+            max-height: 0;
+            transform: translateY(-20px);
+          }
+          100% {
+            opacity: 1;
+            max-height: 100vh;
+            transform: translateY(0);
+          }
+        }
+        
+        .mobile-menu-enter {
+          animation: slideInFromTop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
         .dropdown-enter {
           animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -98,21 +127,34 @@ export default function Navigation() {
         }
       `}</style>
 
-      <nav className="fixed top-[4rem] sm:top-[5.5rem] md:top-28 left-0 right-0 z-40 bg-primary shadow-lg">
+      <nav
+        className="fixed left-0 right-0 z-40 bg-primary shadow-lg"
+        style={{ top: "calc(clamp(3rem, 8vw, 5rem) + clamp(1rem, 4vw, 2rem))" }}
+      >
         <div className="max-w-7xl mx-auto">
           {/* Mobile Menu Button */}
-          <div className="lg:hidden flex justify-between items-center py-4 px-4">
-            <span className="text-white font-bold text-lg">Menu</span>
+          <div
+            className="lg:hidden flex justify-between items-center"
+            style={{
+              padding: "clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 2rem)",
+            }}
+          >
+            <span className="text-white font-bold text-base sm:text-lg">
+              Menu
+            </span>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-white p-2 hover:bg-white/10 rounded-lg transition-all"
+              className="text-white p-2 hover:bg-white/10 rounded-lg transition-all duration-300 active:scale-95"
               aria-label="Toggle menu"
             >
               <svg
-                className="w-6 h-6"
+                className="w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-300"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                style={{
+                  transform: mobileMenuOpen ? "rotate(90deg)" : "rotate(0deg)",
+                }}
               >
                 {mobileMenuOpen ? (
                   <path
@@ -134,7 +176,7 @@ export default function Navigation() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex text-white font-bold text-base xl:text-lg justify-center items-center gap-6 xl:gap-10 py-5 px-4">
+          <div className="hidden lg:flex text-white font-bold text-sm lg:text-base xl:text-lg justify-center items-center gap-4 lg:gap-6 xl:gap-10 py-4 lg:py-5 px-4">
             <Link
               href="/Landing_page/Home"
               className={`nav-link ${pathname === "/Landing_page/Home" ? "active" : ""}`}
@@ -145,7 +187,10 @@ export default function Navigation() {
             {/* About Us Dropdown */}
             <div className="relative group" ref={aboutDropdownRef}>
               <button
-                onClick={() => setShowAboutDropdown(!showAboutDropdown)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowAboutDropdown(!showAboutDropdown);
+                }}
                 className={`nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300 ${
                   pathname?.includes("/Landing_page/About_us") ? "active" : ""
                 }`}
@@ -280,7 +325,10 @@ export default function Navigation() {
             {/* Resources Dropdown */}
             <div className="relative group" ref={resourcesDropdownRef}>
               <button
-                onClick={() => setShowResourcesDropdown(!showResourcesDropdown)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowResourcesDropdown(!showResourcesDropdown);
+                }}
                 className={`nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300 ${
                   pathname?.includes("/Landing_page/resources") ? "active" : ""
                 }`}
@@ -428,11 +476,11 @@ export default function Navigation() {
 
           {/* Mobile Navigation Menu */}
           {mobileMenuOpen && (
-            <div className="lg:hidden bg-primary border-t border-white/10">
-              <div className="flex flex-col text-white font-bold text-base py-2">
+            <div className="lg:hidden bg-primary border-t border-white/10 mobile-menu-enter">
+              <div className="flex flex-col text-white font-bold text-sm sm:text-base py-2 max-h-[calc(100vh-200px)] overflow-y-auto">
                 <Link
-                  href="/Landing_page/home"
-                  className="px-6 py-3 hover:bg-white/10 transition-all"
+                  href="/Landing_page/Home"
+                  className="px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Home
@@ -441,12 +489,14 @@ export default function Navigation() {
                 {/* Mobile About Dropdown */}
                 <div>
                   <button
-                    onClick={() => setShowAboutDropdown(!showAboutDropdown)}
-                    className="w-full px-6 py-3 hover:bg-white/10 transition-all flex justify-between items-center"
+                    onClick={() => {
+                      setShowMobileAboutDropdown(!showMobileAboutDropdown);
+                    }}
+                    className="w-full px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 flex justify-between items-center active:bg-white/20"
                   >
                     About Us
                     <svg
-                      className={`w-4 h-4 transition-transform ${showAboutDropdown ? "rotate-180" : ""}`}
+                      className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ${showMobileAboutDropdown ? "rotate-180" : ""}`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -459,26 +509,35 @@ export default function Navigation() {
                       />
                     </svg>
                   </button>
-                  {showAboutDropdown && (
-                    <div className="bg-white/5 py-2">
+                  {showMobileAboutDropdown && (
+                    <div className="bg-white/5 py-2 overflow-hidden">
                       <Link
                         href="/Landing_page/About_us/National"
-                        className="block px-10 py-2 text-sm hover:bg-white/10"
-                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setShowAboutDropdown(false);
+                        }}
                       >
                         National Social Protection Council
                       </Link>
                       <Link
                         href="/Landing_page/About_us/Executive"
-                        className="block px-10 py-2 text-sm hover:bg-white/10"
-                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setShowMobileAboutDropdown(false);
+                        }}
                       >
                         Executive Secretariat Office
                       </Link>
                       <Link
                         href="/Landing_page/About_us/General"
-                        className="block px-10 py-2 text-sm hover:bg-white/10"
-                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setShowMobileAboutDropdown(false);
+                        }}
                       >
                         General Secretariat Office
                       </Link>
@@ -489,14 +548,16 @@ export default function Navigation() {
                 {/* Mobile Resources Dropdown */}
                 <div>
                   <button
-                    onClick={() =>
-                      setShowResourcesDropdown(!showResourcesDropdown)
-                    }
-                    className="w-full px-6 py-3 hover:bg-white/10 transition-all flex justify-between items-center"
+                    onClick={() => {
+                      setShowMobileResourcesDropdown(
+                        !showMobileResourcesDropdown,
+                      );
+                    }}
+                    className="w-full px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 flex justify-between items-center active:bg-white/20"
                   >
                     Resources
                     <svg
-                      className={`w-4 h-4 transition-transform ${showResourcesDropdown ? "rotate-180" : ""}`}
+                      className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ${showMobileResourcesDropdown ? "rotate-180" : ""}`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -509,26 +570,35 @@ export default function Navigation() {
                       />
                     </svg>
                   </button>
-                  {showResourcesDropdown && (
-                    <div className="bg-white/5 py-2">
+                  {showMobileResourcesDropdown && (
+                    <div className="bg-white/5 py-2 overflow-hidden">
                       <Link
                         href="/Landing_page/resources/law"
-                        className="block px-10 py-2 text-sm hover:bg-white/10"
-                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setShowMobileResourcesDropdown(false);
+                        }}
                       >
                         Law & Regulation
                       </Link>
                       <Link
                         href="/Landing_page/resources/publication"
-                        className="block px-10 py-2 text-sm hover:bg-white/10"
-                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setShowMobileResourcesDropdown(false);
+                        }}
                       >
                         Publication & Report
                       </Link>
                       <Link
                         href="/Landing_page/resources/social"
-                        className="block px-10 py-2 text-sm hover:bg-white/10"
-                        onClick={() => setMobileMenuOpen(false)}
+                        className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setShowMobileResourcesDropdown(false);
+                        }}
                       >
                         Social Protection Program
                       </Link>
@@ -538,14 +608,14 @@ export default function Navigation() {
 
                 <Link
                   href="/Landing_page/news"
-                  className="px-6 py-3 hover:bg-white/10 transition-all"
+                  className="px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   News & Announment
                 </Link>
                 <Link
-                  href="/Landing_page/contact"
-                  className="px-6 py-3 hover:bg-white/10 transition-all"
+                  href="/Landing_page/Contact"
+                  className="px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Contact Us

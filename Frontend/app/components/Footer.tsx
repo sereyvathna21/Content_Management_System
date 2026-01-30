@@ -69,10 +69,10 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/Landing_page/news"
+                  href="/Landing_page/News"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
-                  News
+                  News & Announcement
                 </Link>
               </li>
               <li>

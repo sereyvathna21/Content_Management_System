@@ -17,12 +17,22 @@ export default function Header() {
       }
     }
 
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setDropdownOpen(false);
+      }
+    }
+
     document.addEventListener("mousedown", handleDocClick);
-    return () => document.removeEventListener("mousedown", handleDocClick);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleDocClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-sm transition-all duration-300">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg shadow-md transition-all duration-500 border-b border-gray-100">
       <div
         className="max-w-7xl mx-auto flex justify-between items-center px-3 sm:px-6 md:px-8"
         style={{ padding: "clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 2rem)" }}
@@ -41,11 +51,19 @@ export default function Header() {
           style={{ gap: "clamp(0.5rem, 2vw, 1rem)" }}
           ref={dropdownRef}
         >
-          <div className="relative ">
+          <div className="relative">
             <button
               onClick={() => setDropdownOpen((s) => !s)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setDropdownOpen((s) => !s);
+                }
+              }}
               aria-expanded={dropdownOpen}
-              className="flex items-center rounded-full text-primary ring-1 ring-primary font-semibold text-fluid-sm"
+              aria-haspopup="true"
+              aria-label="Select language"
+              className="flex items-center rounded-full text-primary ring-1 ring-primary font-semibold text-fluid-sm hover:ring-2 hover:bg-primary/5 focus:ring-2 focus:outline-none focus:ring-primary/50 transition-all duration-300"
               style={{
                 gap: "clamp(0.25rem, 1vw, 0.5rem)",
                 padding:
@@ -79,23 +97,45 @@ export default function Header() {
 
             {dropdownOpen && (
               <div
-                className="absolute right-0 bg-white rounded-md shadow-lg z-50"
+                className="absolute right-0 bg-white rounded-xl shadow-2xl z-50 border border-gray-100 animate-slideDown overflow-hidden"
+                role="menu"
                 style={{
                   marginTop: "clamp(0.375rem, 1vw, 0.5rem)",
                   width: "clamp(8rem, 20vw, 9rem)",
+                  animation: "slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
                 }}
               >
+                <style jsx>{`
+                  @keyframes slideDown {
+                    from {
+                      opacity: 0;
+                      transform: translateY(-8px) scale(0.95);
+                    }
+                    to {
+                      opacity: 1;
+                      transform: translateY(0) scale(1);
+                    }
+                  }
+                `}</style>
                 <button
                   onClick={() => {
                     setLang("en");
                     setDropdownOpen(false);
                   }}
-                  className={`w-full text-left hover:bg-gray-50 flex items-center ${
-                    lang === "en" ? " text-primary font-bold" : ""
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setLang("en");
+                      setDropdownOpen(false);
+                    }
+                  }}
+                  role="menuitem"
+                  className={`w-full text-left hover:bg-primary/10 focus:bg-primary/10 focus:outline-none flex items-center transition-all duration-200 ${
+                    lang === "en" ? "bg-primary/5 text-primary font-bold" : ""
                   }`}
                   style={{
                     padding:
-                      "clamp(0.375rem, 1.5vw, 0.5rem) clamp(0.5rem, 2vw, 0.75rem)",
+                      "clamp(0.5rem, 1.5vw, 0.625rem) clamp(0.75rem, 2vw, 1rem)",
                     gap: "clamp(0.375rem, 1vw, 0.5rem)",
                   }}
                 >
@@ -109,12 +149,20 @@ export default function Header() {
                     setLang("kh");
                     setDropdownOpen(false);
                   }}
-                  className={`w-full text-left hover:bg-gray-50 flex items-center ${
-                    lang === "kh" ? " text-primary font-bold" : ""
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setLang("kh");
+                      setDropdownOpen(false);
+                    }
+                  }}
+                  role="menuitem"
+                  className={`w-full text-left hover:bg-primary/10 focus:bg-primary/10 focus:outline-none flex items-center transition-all duration-200 ${
+                    lang === "kh" ? "bg-primary/5 text-primary font-bold" : ""
                   }`}
                   style={{
                     padding:
-                      "clamp(0.375rem, 1.5vw, 0.5rem) clamp(0.5rem, 2vw, 0.75rem)",
+                      "clamp(0.5rem, 1.5vw, 0.625rem) clamp(0.75rem, 2vw, 1rem)",
                     gap: "clamp(0.375rem, 1vw, 0.5rem)",
                   }}
                 >
@@ -130,9 +178,11 @@ export default function Header() {
           <div>
             <Link
               href="/Landing_page/Login"
-              className="bg-primary text-white font-semibold rounded-full hover:shadow-lg hover:scale-105 transition-all duration-300 hover:bg-primary/90 text-fluid-sm border border-transparent inline-block"
+              className="bg-primary text-white font-semibold rounded-full hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 hover:bg-primary/90 focus:ring-2 focus:ring-primary/50 focus:outline-none border border-transparent inline-block"
               style={{
-                padding: "clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 2rem)",
+                padding:
+                  "clamp(0.5rem, 1.5vw, 0.875rem) clamp(1rem, 2.5vw, 2rem)",
+                fontSize: "clamp(0.875rem, 2vw, 1rem)",
               }}
             >
               Log in

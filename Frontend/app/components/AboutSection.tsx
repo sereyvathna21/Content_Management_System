@@ -30,10 +30,10 @@ export default function AboutSection() {
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
       }`}
     >
-      <h1 className="text-fluid-6xl text-center font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent leading-tight mt-10 sm:mt-12 md:mt-16 lg:mt-20 mb-4 sm:mb-6 px-2">
+      <h1 className="text-fluid-6xl text-center font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent leading-tight mt-6 sm:mt-10 md:mt-14 lg:mt-20 mb-4 sm:mb-6 px-2">
         What is National Social Protection Council?
       </h1>
-      <div className="flex flex-col lg:flex-row items-start gap-6 sm:gap-8 md:gap-10 lg:gap-12 py-8 sm:py-12 md:py-16 lg:py-20">
+      <div className="flex flex-col lg:flex-row items-start gap-6 sm:gap-8 md:gap-10 lg:gap-12 py-4 sm:py-8 md:py-12 lg:py-16">
         <div className="flex-shrink-0 transition-transform duration-700 hover:scale-105 w-full lg:w-auto">
           <img
             src="/minister.svg"
