@@ -178,9 +178,12 @@ export default function Contact() {
               <p className="text-gray-600">+855 12 xxx xxx</p>
             </div>
 
-            <div className="bg-white p-3 sm:p-4 md:p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <div
+              className="bg-white p-3 sm:p-4 md:p-5 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 animate-fade-in-up"
+              style={{ animationDelay: "0.2s" }}
+            >
               <div className="flex items-center mb-2 sm:mb-3">
-                <div className="bg-primary/10 p-2 sm:p-3 rounded-full">
+                <div className="bg-primary/10 p-2 sm:p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
                   <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
                 <h3 className="ml-3 sm:ml-4 text-fluid-lg sm:text-fluid-xl font-semibold">
@@ -191,9 +194,12 @@ export default function Contact() {
               <p className="text-gray-600">contact@nspc.gov.kh</p>
             </div>
 
-            <div className="bg-white p-3 sm:p-4 md:p-5 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <div
+              className="bg-white p-3 sm:p-4 md:p-5 rounded-lg shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 animate-fade-in-up"
+              style={{ animationDelay: "0.3s" }}
+            >
               <div className="flex items-center mb-2 sm:mb-3">
-                <div className="bg-primary/10 p-2 sm:p-3 rounded-full">
+                <div className="bg-primary/10 p-2 sm:p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
                   <Facebook className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
                 <h3 className="ml-3 sm:ml-4 text-fluid-lg sm:text-fluid-xl font-semibold">
@@ -204,7 +210,7 @@ export default function Contact() {
                 href="https://www.facebook.com/CAMNSPC/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline"
+                className="text-primary hover:underline hover:text-primary/80 transition-colors duration-200"
               >
                 facebook.com/NSPC
               </a>
@@ -268,16 +274,18 @@ export default function Contact() {
                     value={formData.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 focus:scale-[1.02] ${
                       errors.email && touched.email
-                        ? "border-red-500 focus:ring-red-500"
+                        ? "border-red-500 focus:ring-red-500 animate-shake"
                         : "border-gray-300"
                     }`}
                     placeholder="john@example.com"
                   />
                   <div className="h-6 mt-1">
                     {errors.email && touched.email && (
-                      <p className="text-sm text-red-600">{errors.email}</p>
+                      <p className="text-sm text-red-600 animate-fade-in">
+                        {errors.email}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -296,16 +304,18 @@ export default function Contact() {
                     value={formData.subject}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 focus:scale-[1.02] ${
                       errors.subject && touched.subject
-                        ? "border-red-500 focus:ring-red-500"
+                        ? "border-red-500 focus:ring-red-500 animate-shake"
                         : "border-gray-300"
                     }`}
                     placeholder="How can we help you?"
                   />
                   <div className="h-6 mt-1">
                     {errors.subject && touched.subject && (
-                      <p className="text-sm text-red-600">{errors.subject}</p>
+                      <p className="text-sm text-red-600 animate-fade-in">
+                        {errors.subject}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -325,9 +335,9 @@ export default function Contact() {
                     onBlur={handleBlur}
                     rows={5}
                     maxLength={1000}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none ${
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 resize-none focus:scale-[1.02] ${
                       errors.message && touched.message
-                        ? "border-red-500 focus:ring-red-500"
+                        ? "border-red-500 focus:ring-red-500 animate-shake"
                         : "border-gray-300"
                     }`}
                     placeholder="Tell us more about your inquiry..."
@@ -335,7 +345,9 @@ export default function Contact() {
                   <div className="flex justify-between items-start mt-1 min-h-[1.5rem]">
                     <div className="flex-1">
                       {errors.message && touched.message && (
-                        <p className="text-sm text-red-600">{errors.message}</p>
+                        <p className="text-sm text-red-600 animate-fade-in">
+                          {errors.message}
+                        </p>
                       )}
                     </div>
                     <p
@@ -431,9 +443,9 @@ export default function Contact() {
               className="space-y-3 sm:space-y-4 md:space-y-5 animate-fade-in-up"
               style={{ animationDelay: "0.5s" }}
             >
-              <div className="bg-white p-3 sm:p-5 md:p-6 rounded-lg shadow-md hover:shadow-xl transition-all duration-300">
+              <div className="bg-white p-3 sm:p-5 md:p-6 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 group">
                 <div className="flex items-center mb-2 sm:mb-3">
-                  <div className="bg-primary/10 p-2 sm:p-3 rounded-full">
+                  <div className="bg-primary/10 p-2 sm:p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
                     <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                   </div>
                   <h2 className="ml-3 sm:ml-4 text-fluid-xl sm:text-fluid-2xl font-bold text-gray-800">
@@ -450,7 +462,7 @@ export default function Contact() {
                 </p>
               </div>
               {/* Embedded Map */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden h-64 sm:h-80 md:h-96">
+              <div className="bg-white rounded-lg shadow-md overflow-hidden h-64 sm:h-80 md:h-96 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.653950427408!2d104.91803867607724!3d11.57664658862509!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310951434d493e03%3A0xb1a605e9a569ec8b!2sMinistry%20of%20Economy%20and%20Finance%20of%20Cambodia!5e0!3m2!1sen!2skh!4v1769659057617!5m2!1sen!2skh"
                   className="w-full h-full object-cover"
