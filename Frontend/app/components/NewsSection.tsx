@@ -125,7 +125,7 @@ export default function NewsSection() {
 
       <div className="mt-6 sm:mt-8 flex justify-center">
         <Link
-          href="/Landing_page/news"
+          href="/Landing_page/News"
           className="bg-primary text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold text-fluid-lg hover:shadow-xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-2"
         >
           View All News

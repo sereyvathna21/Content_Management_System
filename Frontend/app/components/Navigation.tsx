@@ -11,10 +11,12 @@ export default function Navigation() {
   const [showMobileResourcesDropdown, setShowMobileResourcesDropdown] =
     useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isNavVisible, setIsNavVisible] = useState(true);
   const pathname = usePathname();
 
   const aboutDropdownRef = useRef<HTMLDivElement>(null);
   const resourcesDropdownRef = useRef<HTMLDivElement>(null);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -34,6 +36,32 @@ export default function Navigation() {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle scroll behavior to hide/show navigation
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Don't hide nav if we're at the top of the page
+      if (currentScrollY < 10) {
+        setIsNavVisible(true);
+      } else if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        // Scrolling down & past threshold
+        setIsNavVisible(false);
+        // Close dropdowns when hiding
+        setShowAboutDropdown(false);
+        setShowResourcesDropdown(false);
+      } else if (currentScrollY < lastScrollY.current) {
+        // Scrolling up
+        setIsNavVisible(true);
+      }
+
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Close mobile menu and dropdowns when route changes
@@ -128,27 +156,50 @@ export default function Navigation() {
       `}</style>
 
       <nav
-        className="fixed left-0 right-0 z-40 bg-primary shadow-lg"
-        style={{ top: "calc(clamp(3rem, 8vw, 5rem) + clamp(1rem, 4vw, 2rem))" }}
+        className="fixed left-0 right-0 z-40 bg-primary shadow-lg transition-transform duration-300 ease-in-out"
+        style={{
+          top: "calc(clamp(3rem, 8vw, 5rem) + clamp(1rem, 4vw, 2rem))",
+          transform: isNavVisible ? "translateY(0)" : "translateY(-100%)",
+        }}
       >
         <div className="max-w-7xl mx-auto">
           {/* Mobile Menu Button */}
           <div
-            className="lg:hidden flex justify-between items-center"
+            className="lg:hidden flex justify-between items-center group"
             style={{
               padding: "clamp(0.5rem, 2vw, 1rem) clamp(1rem, 4vw, 2rem)",
             }}
           >
-            <span className="text-white font-bold text-base sm:text-lg">
-              Menu
-            </span>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <div className="absolute inset-0 bg-white/20 rounded-lg blur-sm group-hover:bg-white/30 transition-all duration-300"></div>
+                <svg
+                  className="w-5 h-5 sm:w-6 sm:h-6 text-white relative z-10"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                  />
+                </svg>
+              </div>
+              <span className="text-white font-semibold text-base sm:text-lg tracking-wide">
+                Menu
+              </span>
+            </div>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-white p-2 hover:bg-white/10 rounded-lg transition-all duration-300 active:scale-95"
+              className="relative text-white p-2.5 rounded-xl transition-all duration-300 active:scale-95 overflow-hidden group/btn"
               aria-label="Toggle menu"
             >
+              <div className="absolute inset-0 bg-white/0 group-hover/btn:bg-white/15 transition-all duration-300 rounded-xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 rounded-xl"></div>
               <svg
-                className="w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-300"
+                className="w-6 h-6 sm:w-7 sm:h-7 transition-all duration-300 relative z-10"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -160,14 +211,14 @@ export default function Navigation() {
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth={2.5}
                     d="M6 18L18 6M6 6l12 12"
                   />
                 ) : (
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth={2.5}
                     d="M4 6h16M4 12h16M4 18h16"
                   />
                 )}
@@ -461,8 +512,8 @@ export default function Navigation() {
             </div>
 
             <Link
-              href="/Landing_page/news"
-              className={`nav-link ${pathname === "/Landing_page/news" ? "active" : ""}`}
+              href="/Landing_page/News"
+              className={`nav-link ${pathname === "/Landing_page/News" ? "active" : ""}`}
             >
               News & Announment
             </Link>
@@ -607,7 +658,7 @@ export default function Navigation() {
                 </div>
 
                 <Link
-                  href="/Landing_page/news"
+                  href="/Landing_page/News"
                   className="px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >
