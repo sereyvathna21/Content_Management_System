@@ -2,6 +2,7 @@ import React from "react";
 import VideoCard from "./VideoCard";
 
 interface Video {
+  id?: string;
   embedUrl: string;
   title: string;
   description: string;
@@ -27,7 +28,8 @@ const VideoSection: React.FC<VideoSectionProps> = ({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {paginatedVideos.map((video, index) => (
         <VideoCard
-          key={index}
+          key={video.id || index}
+          id={video.id}
           embedUrl={video.embedUrl}
           title={video.title}
           description={video.description}

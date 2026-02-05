@@ -56,10 +56,10 @@ export default function NewsSection() {
       }`}
     >
       <div className="text-center mb-6 sm:mb-8">
-        <h2 className="text-fluid-5xl font-bold text-primary mb-3 sm:mb-4">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-3 sm:mb-4">
           News & Announcements
         </h2>
-        <p className="text-gray-600 text-fluid-base max-w-2xl mx-auto px-4">
+        <p className="text-gray-600 text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-4">
           Stay updated with our latest initiatives, publications, and community
           engagements
         </p>
@@ -76,14 +76,14 @@ export default function NewsSection() {
             style={{ transitionDelay: isVisible ? `${idx * 150}ms` : "0ms" }}
           >
             {/* Image Section */}
-            <div className="relative h-36 sm:h-40 md:h-44 overflow-hidden">
+            <div className="relative h-36 sm:h-40 md:h-44 lg:h-48 overflow-hidden">
               <img
                 src={item.image}
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
-              <div className="absolute top-4 left-4">
-                <time className="text-sm font-semibold text-white bg-primary/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-lg">
+              <div className="absolute top-3 sm:top-4 left-3 sm:left-4">
+                <time className="text-xs sm:text-sm font-semibold text-white bg-primary/90 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
                   {item.date}
                 </time>
               </div>
@@ -91,20 +91,20 @@ export default function NewsSection() {
 
             {/* Content Section */}
             <div className="p-4 sm:p-5 md:p-6">
-              <h3 className="font-bold text-fluid-xl mb-3 sm:mb-4 group-hover:text-primary transition-colors duration-300">
+              <h3 className="font-bold text-base sm:text-lg md:text-xl mb-3 sm:mb-4 group-hover:text-primary transition-colors duration-300">
                 {item.title}
               </h3>
-              <p className="text-fluid-sm text-gray-600 mb-4 sm:mb-5 md:mb-6 leading-relaxed">
+              <p className="text-xs sm:text-sm md:text-base text-gray-600 mb-4 sm:mb-5 md:mb-6 leading-relaxed">
                 {item.excerpt}
               </p>
               <div className="flex justify-end">
                 <Link
                   href="/Landing_page/news"
-                  className="text-primary font-semibold hover:gap-3 flex items-center gap-2 transition-all duration-300 group-hover:translate-x-1"
+                  className="text-primary font-semibold hover:gap-3 flex items-center gap-2 text-sm sm:text-base transition-all duration-300 group-hover:translate-x-1"
                 >
                   Read more
                   <svg
-                    className="w-5 h-5"
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -126,11 +126,11 @@ export default function NewsSection() {
       <div className="mt-6 sm:mt-8 flex justify-center">
         <Link
           href="/Landing_page/News"
-          className="bg-primary text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold text-fluid-lg hover:shadow-xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-2"
+          className="bg-primary text-white px-5 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 rounded-full font-bold text-sm sm:text-base md:text-lg hover:shadow-xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-2"
         >
           View All News
           <svg
-            className="w-5 h-5"
+            className="w-4 h-4 sm:w-5 sm:h-5"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

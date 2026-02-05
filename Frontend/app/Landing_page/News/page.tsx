@@ -18,159 +18,10 @@ interface NewsArticle {
   image: string;
 }
 import { newsArticles } from "./articles";
-
-const videos = [
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl:
-      "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F892059626531538%2F&show_text=false&width=560&t=0",
-    title: "Example Facebook Video",
-    description: "This is an example of a Facebook video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl:
-      "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F892059626531538%2F&show_text=false&width=560&t=0",
-    title: "Example Facebook Video",
-    description: "This is an example of a Facebook video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl:
-      "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F892059626531538%2F&show_text=false&width=560&t=0",
-    title: "Example Facebook Video",
-    description: "This is an example of a Facebook video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl:
-      "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F892059626531538%2F&show_text=false&width=560&t=0",
-    title: "Example Facebook Video",
-    description: "This is an example of a Facebook video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl:
-      "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F892059626531538%2F&show_text=false&width=560&t=0",
-    title: "Example Facebook Video",
-    description: "This is an example of a Facebook video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl:
-      "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F892059626531538%2F&show_text=false&width=560&t=0",
-    title: "Example Facebook Video",
-    description: "This is an example of a Facebook video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl:
-      "https://www.facebook.com/plugins/video.php?height=314&href=https%3A%2F%2Fwww.facebook.com%2Freel%2F892059626531538%2F&show_text=false&width=560&t=0",
-    title: "Example Facebook Video",
-    description: "This is an example of a Facebook video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-  {
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
-    title: "Example YouTube Video",
-    description: "This is an example of a YouTube video embedded in the page.",
-  },
-];
+import { videos } from "./videos";
 
 const newsPerPage = 12; // Limit for news articles
-const videosPerPage = 6; // Limit for videos
+const videosPerPage = 3; // Limit for videos
 
 export default function News() {
   const searchParams = useSearchParams();
@@ -251,21 +102,15 @@ export default function News() {
       <Header />
       <Navigation />
       {/* spacer to offset fixed Navigation height so page header is visible */}
-      <div
-        aria-hidden="true"
-        style={{
-          height:
-            "calc(clamp(3rem, 8vw, 5rem) + clamp(1rem, 4vw, 2rem) + 0.75rem)",
-        }}
-      />
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30">
-        <div className="container mx-auto px-10 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
+      <div aria-hidden="true" className="h-28 sm:h-24 md:h-24 lg:h-28" />
+      <div className="min-h-screen bg-white to-blue-50/30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10 py-6 sm:py-8 md:py-12 lg:py-16">
           {/* Page Header */}
-          <div className="text-center sm:mb-12 sm:mt-8">
-            <h1 className="font-extrabold text-primary text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight">
+          <div className="text-center mb-8 sm:mb-10 md:mb-12 mt-4 sm:mt-6 md:mt-8">
+            <h1 className="font-extrabold text-primary text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight">
               Latest News & Announcements
             </h1>
-            <p className="text-gray-600 max-w-2xl mx-auto mt-3 sm:mt-4 text-sm sm:text-base lg:text-lg">
+            <p className="text-gray-600 max-w-2xl mx-auto mt-2 sm:mt-3 md:mt-4 text-sm sm:text-base md:text-lg">
               Stay informed about NSPC events, programs, and achievements
             </p>
           </div>
@@ -275,18 +120,18 @@ export default function News() {
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <SortControl value={sortOption} onChange={handleSortChange} />
             </div>
-            <div className="flex items-center gap-3 mt-2 sm:mt-0 w-full sm:w-auto justify-end">
+            <div className="gap-3 mt-2 sm:mt-0 w-full sm:w-auto justify-end">
               <SearchBar
                 value={searchTerm}
                 onChange={setSearchTerm}
-                placeholder="Search news, category..."
+                placeholder="Search News, Categories..."
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             <main className="lg:col-span-8">
-              <h2 className="font-bold text-primary text-xl sm:text-2xl mb-5 sm:mb-6">
+              <h2 className="font-bold text-primary text-lg sm:text-xl md:text-2xl mb-4 sm:mb-5 md:mb-6">
                 Latest News
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">

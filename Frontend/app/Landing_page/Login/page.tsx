@@ -82,18 +82,12 @@ export default function Login() {
     <div>
       <section className="min-h-screen flex items-stretch">
         <div
-          className="hidden lg:flex lg:w-1/2 bg-cover relative items-center justify-center"
+          className="hidden lg:flex lg:w-1/2 bg-cover relative items-center justify-center p-8 md:p-12"
           style={{
             backgroundImage: "url(/login.svg)",
-            padding: "clamp(2rem, 5vw, 3rem)",
           }}
         ></div>
-        <div
-          className="bg-white lg:w-1/2 w-full flex items-center justify-center z-0 relative border-t border-primary lg:border-l"
-          style={{
-            padding: "clamp(1.5rem, 5vw, 4rem) clamp(1.5rem, 5vw, 4rem)",
-          }}
-        >
+        <div className="bg-white lg:w-1/2 w-full flex items-center justify-center z-0 relative border-t border-primary lg:border-l px-6 py-8 sm:px-8 sm:py-10 md:px-12 md:py-14 lg:px-16 lg:py-16">
           <div
             className="absolute lg:hidden inset-0 z-0 bg-cover bg-center"
             style={{ backgroundImage: "url(/login.svg)" }}
@@ -108,41 +102,26 @@ export default function Login() {
                   alt="Logo"
                   width={96}
                   height={96}
-                  style={{
-                    width: "clamp(5rem, 10vw, 6rem)",
-                    height: "clamp(5rem, 10vw, 6rem)",
-                  }}
+                  className="w-20 h-20 sm:w-24 sm:h-24"
                 />
               </div>
             </div>
 
-            <h1
-              className="font-bold lg:text-gray-900 text-white text-center text-fluid-3xl animate-[fadeIn_0.8s_ease-out_0.2s_both]"
-              style={{ marginBottom: "clamp(0.5rem, 2vw, 0.5rem)" }}
-            >
+            <h1 className="font-bold lg:text-gray-900 text-white text-center text-xl sm:text-2xl md:text-3xl mb-2 animate-[fadeIn_0.8s_ease-out_0.2s_both]">
               Sign In
             </h1>
-            <p
-              className="lg:text-gray-600 text-white/90 text-center text-fluid-base animate-[fadeIn_0.8s_ease-out_0.4s_both]"
-              style={{ marginBottom: "clamp(1.5rem, 4vw, 2rem)" }}
-            >
+            <p className="lg:text-gray-600 text-white/90 text-center text-sm sm:text-base mb-6 sm:mb-8 animate-[fadeIn_0.8s_ease-out_0.4s_both]">
               Enter your credentials to access your account
             </p>
 
             <form
               onSubmit={handleSubmit}
-              className="animate-[fadeInUp_0.8s_ease-out_0.5s_both]"
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "clamp(1rem, 3vw, 1.25rem)",
-              }}
+              className="space-y-4 sm:space-y-5 animate-[fadeInUp_0.8s_ease-out_0.5s_both]"
             >
               <div className="animate-[slideInLeft_0.6s_ease-out_0.6s_both]">
                 <label
                   htmlFor="email"
-                  className="block font-medium lg:text-gray-700 text-white text-fluid-sm"
-                  style={{ marginBottom: "clamp(0.375rem, 1.5vw, 0.5rem)" }}
+                  className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
                 >
                   Email Address
                 </label>
@@ -158,17 +137,13 @@ export default function Login() {
                   aria-describedby={errors.email ? "email-error" : undefined}
                   className={`block w-full text-gray-900 bg-white border-2 ${
                     errors.email ? "border-red-500" : "border-gray-300"
-                  } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-fluid-base outline-none`}
-                  style={{
-                    padding:
-                      "clamp(0.75rem, 2vw, 0.875rem) clamp(0.875rem, 2.5vw, 1rem)",
-                  }}
+                  } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-sm sm:text-base outline-none px-3 py-2.5 sm:px-4 sm:py-3`}
                 />
                 {errors.email && (
                   <p
                     id="email-error"
                     role="alert"
-                    className="mt-1 text-red-500 text-fluid-sm"
+                    className="mt-1 text-red-500 text-xs sm:text-sm"
                   >
                     {errors.email}
                   </p>
@@ -178,8 +153,7 @@ export default function Login() {
               <div className="animate-[slideInLeft_0.6s_ease-out_0.7s_both]">
                 <label
                   htmlFor="password"
-                  className="block font-medium lg:text-gray-700 text-white text-fluid-sm"
-                  style={{ marginBottom: "clamp(0.375rem, 1.5vw, 0.5rem)" }}
+                  className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
                 >
                   Password
                 </label>
@@ -187,12 +161,7 @@ export default function Login() {
                   <input
                     className={`block w-full text-gray-900 bg-white border-2 ${
                       errors.password ? "border-red-500" : "border-gray-300"
-                    } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-fluid-base outline-none`}
-                    style={{
-                      padding:
-                        "clamp(0.75rem, 2vw, 0.875rem) clamp(0.875rem, 2.5vw, 1rem)",
-                      paddingRight: "clamp(2.5rem, 6vw, 3rem)",
-                    }}
+                    } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-sm sm:text-base outline-none px-3 py-2.5 sm:px-4 sm:py-3 pr-10 sm:pr-12`}
                     type={showPassword ? "text" : "password"}
                     name="password"
                     id="password"
@@ -254,14 +223,14 @@ export default function Login() {
                   <p
                     id="password-error"
                     role="alert"
-                    className="mt-1 text-red-500 text-fluid-sm"
+                    className="mt-1 text-red-500 text-xs sm:text-sm"
                   >
                     {errors.password}
                   </p>
                 )}
               </div>
 
-              <div className="flex items-center justify-between text-fluid-sm animate-[fadeIn_0.6s_ease-out_0.8s_both]">
+              <div className="flex items-center justify-between text-xs sm:text-sm animate-[fadeIn_0.6s_ease-out_0.8s_both]">
                 <div className="flex items-center">
                   <input
                     id="remember-me"
@@ -278,7 +247,7 @@ export default function Login() {
                 </div>
                 <Link
                   href="/Landing_page/Login/Forgetpassword"
-                  className="font-medium text-primary hover:text-primary/80 transition-colors"
+                  className="font-medium text-white lg:text-primary hover:text-primary/80 transition-colors"
                 >
                   Forgot password?
                 </Link>
@@ -287,8 +256,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-fluid-base animate-[slideInUp_0.6s_ease-out_0.9s_both]"
-                style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
+                className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3 animate-[slideInUp_0.6s_ease-out_0.9s_both]"
               >
                 {isSubmitting ? "Signing In..." : "Sign In"}
               </button>

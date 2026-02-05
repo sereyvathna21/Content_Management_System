@@ -12,16 +12,13 @@ export default function SearchBar({
   placeholder,
 }: SearchBarProps) {
   return (
-    <div className="inline-flex items-center gap-3 bg-white border border-gray-100 rounded-xl shadow-sm px-3 py-2">
-      <label htmlFor="search" className="sr-only">
-        Search
-      </label>
+    <div className="w-full sm:w-80 md:w-[320px] inline-flex items-center gap-2 sm:gap-3 bg-white border border-gray-300 rounded-xl shadow-sm px-2.5 py-2 sm:px-3 sm:py-3">
       <svg
-        className="w-4 h-4 text-gray-400"
+        className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        aria-hidden
+        aria-hidden="true"
       >
         <path
           d="M21 21l-4.35-4.35"
@@ -45,33 +42,8 @@ export default function SearchBar({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder || "Search..."}
-        className="text-sm text-gray-700 placeholder-gray-400 bg-transparent outline-none w-full max-w-[220px] sm:max-w-[320px]"
+        className="text-xs sm:text-sm text-gray-500 w-full max-w-[180px] sm:max-w-[220px] md:max-w-[280px]"
       />
-
-      {value && (
-        <button
-          type="button"
-          onClick={() => onChange("")}
-          aria-label="Clear search"
-          className="ml-1 text-gray-400 hover:text-gray-600 focus:outline-none"
-        >
-          <svg
-            className="w-4 h-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden
-          >
-            <path
-              d="M6 6l12 12M18 6L6 18"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      )}
     </div>
   );
 }

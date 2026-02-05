@@ -81,12 +81,7 @@ export default function HeroSection() {
         }
       `}</style>
 
-      <div
-        style={{
-          paddingTop:
-            "calc(clamp(3rem, 8vw, 5rem) + clamp(1rem, 4vw, 2rem) + clamp(2.5rem, 2vw + 1rem, 2.5rem))",
-        }}
-      >
+      <div className="pt-24 sm:pt-28 md:pt-32 lg:pt-36 xl:pt-40">
         <section className="w-full flex items-center justify-center relative hero-container">
           <img
             src={heroImages[currentHero]}
@@ -94,7 +89,7 @@ export default function HeroSection() {
             className="w-full h-auto"
           />
           {/* Carousel Dots */}
-          <div className="absolute bottom-3 sm:bottom-4 md:bottom-6 lg:bottom-8 xl:bottom-10 left-1/2 transform -translate-x-1/2 flex gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-3 bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 lg:px-5 lg:py-3 z-10">
+          <div className="absolute bottom-2 sm:bottom-4 md:bottom-6 lg:bottom-8 xl:bottom-10 left-1/2 transform -translate-x-1/2 flex gap-1.5 sm:gap-2 md:gap-2.5 lg:gap-3 bg-white/20 backdrop-blur-sm rounded-full px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-2.5 lg:px-5 lg:py-3 z-10">
             {heroImages.map((_, index) => (
               <button
                 key={index}

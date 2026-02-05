@@ -42,24 +42,26 @@ export default function NewsCard({
           <img src={image} alt={title} className="w-full h-full object-cover" />
 
           <div className="absolute top-2 left-2">
-            <time className="text-xs font-semibold text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md">
+            <time className="text-xs sm:text-sm font-semibold text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md">
               {date}
             </time>
           </div>
 
           <div
-            className={`absolute top-2 right-2 rounded-md font-semibold text-white text-xs px-2 py-1 ${getCategoryColor(category)}`}
+            className={`absolute top-2 right-2 rounded-md font-semibold text-white text-xs sm:text-sm px-2 py-1 ${getCategoryColor(category)}`}
           >
             {category}
           </div>
         </div>
 
         {/* Content Section */}
-        <div className="p-3 space-y-1.5 flex-1 flex flex-col">
-          <h3 className="font-semibold text-sm text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+        <div className="p-3 sm:p-4 space-y-1.5 sm:space-y-2 flex-1 flex flex-col">
+          <h3 className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 line-clamp-2 group-hover:text-primary transition-colors">
             {title}
           </h3>
-          <p className="text-xs text-gray-600 line-clamp-2 flex-1">{excerpt}</p>
+          <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 flex-1">
+            {excerpt}
+          </p>
         </div>
       </article>
     </Link>

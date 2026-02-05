@@ -150,6 +150,15 @@ export default function ObjectivesSection() {
     },
   ];
 
+  const delayClasses = [
+    "delay-150",
+    "delay-300",
+    "delay-[450ms]",
+    "delay-[600ms]",
+    "delay-[750ms]",
+    "delay-[900ms]",
+  ];
+
   return (
     <div
       ref={sectionRef}
@@ -157,7 +166,7 @@ export default function ObjectivesSection() {
     >
       <div className="max-w-[1400px] mx-auto">
         <h1
-          className={`text-center text-white text-fluid-5xl font-bold mb-6 sm:mb-8 transition-all duration-1000 ${
+          className={`text-center text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 sm:mb-6 md:mb-8 transition-all duration-1000 ${
             isVisible
               ? "opacity-100 translate-y-0"
               : "opacity-0 -translate-y-10"
@@ -167,7 +176,7 @@ export default function ObjectivesSection() {
         </h1>
 
         <p
-          className={`text-center text-white text-fluid-base leading-relaxed mb-12 sm:mb-16 max-w-[1200px] mx-auto px-4 transition-all duration-1000 delay-150 ${
+          className={`text-center text-white text-sm sm:text-base md:text-lg leading-relaxed mb-8 sm:mb-12 md:mb-16 max-w-[1200px] mx-auto px-4 transition-all duration-1000 delay-150 ${
             isVisible
               ? "opacity-100 translate-y-0"
               : "opacity-0 -translate-y-10"
@@ -183,60 +192,63 @@ export default function ObjectivesSection() {
           ensures sustainable, inclusive coverage for citizens.
         </p>
 
-        {/* Top 3 cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
-          {objectives.slice(0, 3).map((objective, index) => (
+        {/* Top 3 cards: show as 3 columns on large screens */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          {objectives.slice(0, 3).map((objective, i) => (
             <div
-              key={index}
+              key={i}
               className={`rounded-2xl p-6 sm:p-8 md:p-10 text-center transition-all duration-500 hover:-translate-y-2 hover:shadow-xl group ${objective.color.bg} ${
                 isVisible
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-10"
-              } ${index === 0 ? "delay-150" : index === 1 ? "delay-300" : "delay-[450ms]"}`}
+              } ${delayClasses[i] || ""}`}
             >
               <div
-                className={`w-20 h-20 sm:w-24 sm:h-24 md:w-[100px] md:h-[100px] mx-auto mb-5 sm:mb-6 border-3 sm:border-4 ${objective.color.border} rounded-full flex items-center justify-center bg-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6`}
+                className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-[100px] lg:h-[100px] mx-auto mb-4 sm:mb-5 md:mb-6 border-2 sm:border-3 md:border-4 ${objective.color.border} rounded-full flex items-center justify-center bg-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6`}
               >
                 {objective.icon}
               </div>
               <h2
-                className={`${objective.color.title} text-fluid-xl font-bold mb-4 sm:mb-5 tracking-wide`}
+                className={`${objective.color.title} text-base sm:text-lg md:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 md:mb-5 tracking-wide`}
               >
                 {objective.title}
               </h2>
-              <p className="text-gray-600 text-fluid-sm leading-relaxed">
+              <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed">
                 {objective.description}
               </p>
             </div>
           ))}
         </div>
 
-        {/* Bottom 2 cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-[900px] mx-auto">
-          {objectives.slice(3, 5).map((objective, index) => (
-            <div
-              key={index}
-              className={`rounded-2xl p-6 sm:p-8 md:p-10 text-center transition-all duration-500 hover:-translate-y-2 hover:shadow-xl group ${objective.color.bg} ${
-                isVisible
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-10"
-              } ${index === 0 ? "delay-[600ms]" : "delay-[750ms]"}`}
-            >
+        {/* Bottom 2 cards: centered under the top row on large screens */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6 max-w-[900px] mx-auto lg:mt-4">
+          {objectives.slice(3).map((objective, j) => {
+            const idx = 3 + j;
+            return (
               <div
-                className={`w-20 h-20 sm:w-24 sm:h-24 md:w-[100px] md:h-[100px] mx-auto mb-5 sm:mb-6 border-3 sm:border-4 ${objective.color.border} rounded-full flex items-center justify-center bg-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6`}
+                key={idx}
+                className={`rounded-2xl p-6 sm:p-8 md:p-10 text-center transition-all duration-500 hover:-translate-y-2 hover:shadow-xl group ${objective.color.bg} ${
+                  isVisible
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-10"
+                } ${delayClasses[idx] || ""}`}
               >
-                {objective.icon}
+                <div
+                  className={`w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-[100px] lg:h-[100px] mx-auto mb-4 sm:mb-5 md:mb-6 border-2 sm:border-3 md:border-4 ${objective.color.border} rounded-full flex items-center justify-center bg-white transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6`}
+                >
+                  {objective.icon}
+                </div>
+                <h2
+                  className={`${objective.color.title} text-base sm:text-lg md:text-xl lg:text-2xl font-bold mb-3 sm:mb-4 md:mb-5 tracking-wide`}
+                >
+                  {objective.title}
+                </h2>
+                <p className="text-gray-600 text-xs sm:text-sm md:text-base leading-relaxed">
+                  {objective.description}
+                </p>
               </div>
-              <h2
-                className={`${objective.color.title} text-fluid-xl font-bold mb-4 sm:mb-5 tracking-wide`}
-              >
-                {objective.title}
-              </h2>
-              <p className="text-gray-600 text-fluid-sm leading-relaxed">
-                {objective.description}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

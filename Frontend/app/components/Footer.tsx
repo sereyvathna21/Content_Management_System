@@ -27,30 +27,31 @@ export default function Footer() {
   return (
     <footer
       ref={footerRef}
-      className={`bg-gradient-to-br from-primary via-primary to-primary/90 text-white  transition-all duration-1000 ${
+      className={`mt-5 bg-gradient-to-br from-primary via-primary to-primary/90 text-white  transition-all duration-1000 ${
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8 sm:py-10 md:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 md:gap-14 lg:gap-16">
           <div>
             <div className="transition-transform hover:scale-105 duration-300">
               <img
                 src="/favicon.svg"
                 alt="NSPC logo"
-                className="mb-8"
-                style={{ height: "clamp(4rem, 12vw, 10rem)" }}
+                className="mb-6 sm:mb-8 h-16 sm:h-20 md:h-24 lg:h-32 xl:h-40"
               />
             </div>
-            <p className="text-lg text-white/90 leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed">
               National Social Protection Council — ensuring social protection
               for all.
             </p>
           </div>
 
           <div>
-            <h4 className="font-bold text-3xl mb-6">Quick Links</h4>
-            <ul className="text-lg text-white/90 space-y-3">
+            <h4 className="font-bold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-5 md:mb-6">
+              Quick Links
+            </h4>
+            <ul className="text-base sm:text-lg md:text-xl text-white/90 space-y-2 sm:space-y-3">
               <li>
                 <Link
                   href="/Landing_page/about/national"
@@ -87,20 +88,24 @@ export default function Footer() {
           </div>
 
           <div>
-            <h4 className="font-bold text-3xl mb-6">Contact</h4>
-            <p className="text-lg text-white/90 mb-2">
+            <h4 className="font-bold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-5 md:mb-6">
+              Contact
+            </h4>
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-2">
               Ministry address, Phnom Penh
             </p>
-            <p className="text-lg text-white/90 mb-2">
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-2">
               Email: info@nspc.gov.kh
             </p>
-            <p className="text-lg text-white/90 mb-6">Phone: +855 23 000 000</p>
+            <p className="text-base sm:text-lg md:text-xl text-white/90 mb-4 sm:mb-5 md:mb-6">
+              Phone: +855 23 000 000
+            </p>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <a
                 href="https://www.facebook.com/CAMNSPC/"
                 aria-label="Facebook"
-                className="text-3xl hover:scale-125 transition-transform duration-300"
+                className="text-2xl sm:text-3xl md:text-4xl hover:scale-125 transition-transform duration-300"
               >
                 <Facebook />
               </a>
@@ -108,7 +113,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 pt-10 border-t border-white/20 text-center text-lg text-white/90">
+        <div className="mt-12 sm:mt-14 md:mt-16 pt-8 sm:pt-9 md:pt-10 border-t border-white/20 text-center text-sm sm:text-base md:text-lg text-white/90">
           © {new Date().getFullYear()} National Social Protection Council. All
           rights reserved.
         </div>

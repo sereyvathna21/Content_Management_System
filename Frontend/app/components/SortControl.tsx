@@ -10,7 +10,7 @@ const SortControl: React.FC<SortControlProps> = ({ value, onChange }) => {
     <div className="inline-flex items-center gap-3 bg-white border border-gray-100 rounded-xl shadow-sm px-3 py-2">
       <label
         htmlFor="sort"
-        className="text-xs font-semibold uppercase text-gray-500 tracking-wider"
+        className="text-fluid-xs font-semibold uppercase text-gray-500 tracking-wider"
       >
         Sort by:
       </label>
@@ -100,7 +100,7 @@ function Dropdown({
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((s) => !s)}
-        className="inline-flex items-center gap-2 bg-transparent text-sm font-medium text-primary px-2 py-1 focus:outline-none"
+        className="inline-flex items-center gap-2 bg-transparent text-fluid-sm font-medium text-primary px-2 py-1 focus:outline-none"
         onKeyDown={(e) => {
           // open with ArrowDown
           if (e.key === "ArrowDown") {
@@ -111,13 +111,13 @@ function Dropdown({
         }}
       >
         <span className="sr-only">Open sort menu</span>
-        <span className="text-sm">{current.label}</span>
+        <span className="text-fluid-sm">{current.label}</span>
         <svg
           className={`w-4 h-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
           viewBox="0 0 20 20"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          aria-hidden
+          aria-hidden="true"
         >
           <path
             d="M6 8l4 4 4-4"
@@ -154,7 +154,7 @@ function Dropdown({
                 setOpen(false);
               }}
               onMouseEnter={() => setFocusedIndex(idx)}
-              className={`px-3 py-2 text-sm cursor-pointer flex items-center justify-between hover:bg-gray-50 ${
+              className={`px-3 py-2 text-fluid-sm cursor-pointer flex items-center justify-between hover:bg-gray-50 ${
                 opt.value === value
                   ? "bg-gray-50 font-semibold"
                   : "text-gray-700"
@@ -167,7 +167,7 @@ function Dropdown({
                   viewBox="0 0 20 20"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden
+                  aria-hidden="true"
                 >
                   <path
                     d="M5 10l3 3 7-7"

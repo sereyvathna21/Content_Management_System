@@ -145,14 +145,14 @@ export default function Contact() {
     <>
       <Header />
       <Navigation />
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-20 sm:pt-24 md:pt-28 lg:pt-32">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-24 sm:pt-32 md:pt-36 lg:pt-44">
         {/* Header Section */}
         <div className="bg-primary text-white py-6 sm:py-8 md:py-10 lg:py-12 animate-fade-in">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-fluid-4xl md:text-fluid-5xl font-bold text-center mb-2 sm:mb-2 md:mb-3 animate-slide-down">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 sm:mb-2 md:mb-3 animate-slide-down">
               Get in Touch
             </h1>
-            <p className="text-fluid-xl text-center text-white/80 max-w-2xl mx-auto animate-slide-up">
+            <p className="text-base sm:text-lg md:text-xl text-center text-white/80 max-w-2xl mx-auto animate-slide-up">
               We'd love to hear from you. Send us a message and we'll respond as
               soon as possible.
             </p>
@@ -170,7 +170,7 @@ export default function Contact() {
                 <div className="bg-primary/10 p-2 sm:p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
                   <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
-                <h3 className="ml-3 sm:ml-4 text-fluid-lg sm:text-fluid-xl font-semibold">
+                <h3 className="ml-3 sm:ml-4 text-base sm:text-lg md:text-xl font-semibold">
                   Phone
                 </h3>
               </div>
@@ -186,7 +186,7 @@ export default function Contact() {
                 <div className="bg-primary/10 p-2 sm:p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
                   <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
-                <h3 className="ml-3 sm:ml-4 text-fluid-lg sm:text-fluid-xl font-semibold">
+                <h3 className="ml-3 sm:ml-4 text-base sm:text-lg md:text-xl font-semibold">
                   Email
                 </h3>
               </div>
@@ -202,7 +202,7 @@ export default function Contact() {
                 <div className="bg-primary/10 p-2 sm:p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
                   <Facebook className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
-                <h3 className="ml-3 sm:ml-4 text-fluid-lg sm:text-fluid-xl font-semibold">
+                <h3 className="ml-3 sm:ml-4 text-base sm:text-lg md:text-xl font-semibold">
                   Social Media
                 </h3>
               </div>
@@ -223,7 +223,7 @@ export default function Contact() {
               className="bg-white p-3 sm:p-5 md:p-6 rounded-lg shadow-md animate-fade-in-up"
               style={{ animationDelay: "0.4s" }}
             >
-              <h2 className="text-fluid-2xl sm:text-fluid-3xl font-bold mb-3 sm:mb-4 md:mb-5 text-gray-800">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 md:mb-5 text-gray-800">
                 Send a Feedback
               </h2>
               <form
@@ -233,7 +233,7 @@ export default function Contact() {
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-fluid-sm font-medium text-gray-700 mb-2"
+                    className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
                   >
                     Full Name <span className="text-red-600">*</span>
                   </label>
@@ -253,7 +253,7 @@ export default function Contact() {
                   />
                   <div className="h-6 mt-1">
                     {errors.name && touched.name && (
-                      <p className="text-fluid-sm text-red-600 animate-fade-in">
+                      <p className="text-xs sm:text-sm text-red-600 animate-fade-in">
                         {errors.name}
                       </p>
                     )}
@@ -263,7 +263,7 @@ export default function Contact() {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-fluid-sm font-medium text-gray-700 mb-2"
+                    className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
                   >
                     Email <span className="text-red-600">*</span>
                   </label>
@@ -293,7 +293,7 @@ export default function Contact() {
                 <div>
                   <label
                     htmlFor="subject"
-                    className="block text-fluid-sm font-medium text-gray-700 mb-2"
+                    className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
                   >
                     Subject <span className="text-red-600">*</span>
                   </label>
@@ -323,7 +323,7 @@ export default function Contact() {
                 <div>
                   <label
                     htmlFor="message"
-                    className="block text-fluid-sm font-medium text-gray-700 mb-2"
+                    className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
                   >
                     Message <span className="text-red-600">*</span>
                   </label>
@@ -448,7 +448,7 @@ export default function Contact() {
                   <div className="bg-primary/10 p-2 sm:p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
                     <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                   </div>
-                  <h2 className="ml-3 sm:ml-4 text-fluid-xl sm:text-fluid-2xl font-bold text-gray-800">
+                  <h2 className="ml-3 sm:ml-4 text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-800">
                     Our Location
                   </h2>
                 </div>
@@ -457,7 +457,7 @@ export default function Contact() {
                   <br />
                   Phnom Penh, Cambodia
                 </p>
-                <p className="text-fluid-sm text-gray-500">
+                <p className="text-xs sm:text-sm text-gray-500">
                   Office Hours: Monday - Friday, 8:00 AM - 5:00 PM
                 </p>
               </div>

@@ -12,7 +12,7 @@ const IconPrev = ({ className = "w-4 h-4" }: { className?: string }) => (
     viewBox="0 0 20 20"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    aria-hidden
+    aria-hidden="true"
   >
     <path
       d="M12 6L8 10l4 4"
@@ -30,7 +30,7 @@ const IconNext = ({ className = "w-4 h-4" }: { className?: string }) => (
     viewBox="0 0 20 20"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    aria-hidden
+    aria-hidden="true"
   >
     <path
       d="M8 6l4 4-4 4"
@@ -73,11 +73,11 @@ const Pagination: React.FC<PaginationProps> = ({
   const pageNumbers = getPageNumbers();
 
   return (
-    <div className="inline-flex items-center gap-2 bg-white border border-gray-100 rounded-xl shadow-sm px-3 py-2">
+    <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-white border border-gray-100 rounded-xl shadow-sm px-2 py-1.5 sm:px-3 sm:py-2">
       {currentPage > 1 && (
         <button
           onClick={() => onPageChange(currentPage - 1)}
-          className="flex items-center gap-2 px-2 py-1 rounded-md text-sm text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary transition transform-gpu duration-150 hover:scale-105 focus:scale-105"
+          className="flex items-center gap-1 sm:gap-2 px-1.5 py-1 sm:px-2 sm:py-1 rounded-md text-xs sm:text-sm text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary transition transform-gpu duration-150 hover:scale-105 focus:scale-105"
           aria-label="Previous page"
         >
           <IconPrev />
@@ -87,14 +87,17 @@ const Pagination: React.FC<PaginationProps> = ({
 
       {pageNumbers.map((pageNum, idx) =>
         pageNum === "..." ? (
-          <span key={`ell-${idx}`} className="px-2 text-gray-400">
+          <span
+            key={`ell-${idx}`}
+            className="px-1.5 sm:px-2 text-gray-400 text-xs sm:text-sm"
+          >
             …
           </span>
         ) : (
           <button
             key={pageNum}
             onClick={() => onPageChange(pageNum as number)}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition transform-gpu duration-150 focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 ${
+            className={`px-2 py-1 sm:px-3 sm:py-1 rounded-md text-xs sm:text-sm font-medium transition transform-gpu duration-150 focus:outline-none focus:ring-2 focus:ring-primary hover:scale-105 ${
               currentPage === pageNum
                 ? "bg-primary text-white shadow"
                 : "text-gray-700 hover:bg-gray-50"
@@ -109,7 +112,7 @@ const Pagination: React.FC<PaginationProps> = ({
       {currentPage < totalPages && (
         <button
           onClick={() => onPageChange(currentPage + 1)}
-          className="flex items-center gap-2 px-2 py-1 rounded-md text-sm text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary transition transform-gpu duration-150 hover:scale-105 focus:scale-105"
+          className="flex items-center gap-1 sm:gap-2 px-1.5 py-1 sm:px-2 sm:py-1 rounded-md text-xs sm:text-sm text-gray-600 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary transition transform-gpu duration-150 hover:scale-105 focus:scale-105"
           aria-label="Next page"
         >
           <span className="sr-only">Next</span>
