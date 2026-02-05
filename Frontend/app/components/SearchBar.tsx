@@ -42,7 +42,7 @@ export default function SearchBar({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder || "Search..."}
-        className="text-xs sm:text-sm text-gray-500 w-full max-w-[180px] sm:max-w-[220px] md:max-w-[280px]"
+        className="text-fluid-sm text-xs sm:text-sm text-gray-500 w-full max-w-[180px] sm:max-w-[220px] md:max-w-[280px]"
       />
     </div>
   );

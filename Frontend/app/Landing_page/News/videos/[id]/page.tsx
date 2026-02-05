@@ -5,9 +5,7 @@ import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import Navigation from "@/app/components/Navigation";
 import Breadcrumbs from "@/app/components/Breadcrumbs";
-import VideoPlayerCard from "@/app/components/VideoPlayerCard";
-import RelatedVideos from "@/app/components/RelatedVideos";
-import Link from "next/link";
+import AllVideosPlayer from "@/app/components/AllVideosPlayer";
 
 export default async function VideoPage({
   params,
@@ -40,32 +38,23 @@ export default async function VideoPage({
       <Header />
       <Navigation />
       {/* spacer to offset fixed Navigation height so page header is visible */}
-      <div
-        aria-hidden="true"
-        style={{
-          height:
-            "calc(clamp(3rem, 8vw, 5rem) + clamp(1rem, 4vw, 2rem) + 0.75rem)",
-        }}
-      />
+      <div aria-hidden="true" className="h-18 sm:h-18 md:h-18 lg:h-28" />
 
-      <main className="bg-white via-blue-50/20 to-indigo-50/30 min-h-screen mt-8">
+      <main className="bg-white via-blue-50/20 to-indigo-50/30 min-h-screen mt-4 sm:mt-8 md:mt-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <Breadcrumbs currentLabel="Video" />
 
-          <div className="grid lg:grid-cols-12 gap-6 lg:gap-8 max-w-7xl mx-auto">
-            <article className="lg:col-span-8 space-y-6">
-              <VideoPlayerCard video={video} />
-            </article>
-
-            <aside className="lg:col-span-4">
-              <div className="sticky top-24 space-y-6">
-                <RelatedVideos videos={videos} currentId={video.id} />
+          <div className="max-w-7xl mx-auto">
+            <article className="mx-auto w-full max-w-6xl space-y-6">
+              <div className="flex justify-center lg:justify-start px-0">
+                <div className="w-max max-w-max sm:max-w-max md:max-w-max lg:max-w-max px-0 sm:px-0">
+                  <AllVideosPlayer initialVideo={video} videos={videos} />
+                </div>
               </div>
-            </aside>
+            </article>
           </div>
-        </div>
+        </div>{" "}
       </main>
-
       <Footer />
     </>
   );

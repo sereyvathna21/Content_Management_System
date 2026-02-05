@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import ShareControls from "@/app/components/ShareControls";
 
@@ -45,7 +46,7 @@ export default function VideoPlayerCard({ video }: { video: Video }) {
       <div className="p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="flex items-center gap-2 text-fluid-sm text-gray-500">
+            <span className="flex items-center gap-2 text-fluid-sm text-sm sm:text-base text-gray-500">
               <svg
                 className="w-4 h-4"
                 fill="none"
@@ -66,7 +67,7 @@ export default function VideoPlayerCard({ video }: { video: Video }) {
               })}
             </span>
             <span
-              className={`inline-flex text-white items-center px-4 py-1.5 rounded-full text-fluid-xs font-bold tracking-wide ${getCategoryColor(
+              className={`inline-flex text-white items-center px-4 py-1.5 rounded-full text-fluid-xs text-xs sm:text-sm font-bold tracking-wide ${getCategoryColor(
                 video.category,
               )} shadow-sm`}
             >
@@ -76,16 +77,6 @@ export default function VideoPlayerCard({ video }: { video: Video }) {
           <span className="mb-3">
             <ShareControls />
           </span>
-        </div>
-
-        <h1 className="text-fluid-xl sm:text-fluid-2xl lg:text-fluid-3xl font-black text-gray-900 leading-tight mb-6 tracking-tight">
-          {video.title}
-        </h1>
-
-        <div className="flex items-center justify-between  py-4 mb-6">
-          <div className="prose prose-lg prose-neutral max-w-none">
-            <p className="text-gray-700 leading-relaxed">{video.description}</p>
-          </div>
         </div>
       </div>
     </div>

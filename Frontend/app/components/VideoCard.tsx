@@ -19,9 +19,9 @@ const VideoCard: React.FC<VideoCardProps> = ({
       <div className="relative w-full aspect-video overflow-hidden">
         <iframe
           src={embedUrl}
-          width="100%"
-          height="100%"
-          className="absolute inset-0 pointer-events-none"
+          title={title}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full"
           style={{ border: "none" }}
           scrolling="no"
           frameBorder="0"

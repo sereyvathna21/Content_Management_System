@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import Footer from "@/app/components/Footer";
 import Header from "@/app/components/Header";
 import Navigation from "@/app/components/Navigation";
@@ -198,11 +199,12 @@ export default function News() {
 
                   {totalVideoPages > 1 && (
                     <div className="flex justify-center mt-5">
-                      <Pagination
-                        currentPage={currentVideoPage}
-                        totalPages={totalVideoPages}
-                        onPageChange={handleVideoPageChange}
-                      />
+                      <Link
+                        href="/Landing_page/News/videos/1"
+                        className="text-sm font-semibold text-primary hover:underline"
+                      >
+                        See more
+                      </Link>
                     </div>
                   )}
                 </div>

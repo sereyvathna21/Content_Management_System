@@ -7,10 +7,10 @@ interface SortControlProps {
 
 const SortControl: React.FC<SortControlProps> = ({ value, onChange }) => {
   return (
-    <div className="inline-flex items-center gap-3 bg-white border border-gray-100 rounded-xl shadow-sm px-3 py-2">
+    <div className="inline-flex items-center gap-2 sm:gap-3 bg-white border border-gray-100 rounded-xl shadow-sm px-2 sm:px-3 py-1 sm:py-2">
       <label
         htmlFor="sort"
-        className="text-fluid-xs font-semibold uppercase text-gray-500 tracking-wider"
+        className="text-fluid-xs text-xs sm:text-sm font-semibold uppercase text-gray-500 tracking-wider"
       >
         Sort by:
       </label>
@@ -100,7 +100,7 @@ function Dropdown({
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((s) => !s)}
-        className="inline-flex items-center gap-2 bg-transparent text-fluid-sm font-medium text-primary px-2 py-1 focus:outline-none"
+        className="inline-flex items-center gap-2 bg-transparent text-fluid-sm text-sm sm:text-base font-medium text-primary px-2 sm:px-3 py-1 focus:outline-none w-full sm:w-auto"
         onKeyDown={(e) => {
           // open with ArrowDown
           if (e.key === "ArrowDown") {
@@ -111,7 +111,9 @@ function Dropdown({
         }}
       >
         <span className="sr-only">Open sort menu</span>
-        <span className="text-fluid-sm">{current.label}</span>
+        <span className="text-fluid-sm text-sm sm:text-base truncate">
+          {current.label}
+        </span>
         <svg
           className={`w-4 h-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
           viewBox="0 0 20 20"
@@ -154,7 +156,7 @@ function Dropdown({
                 setOpen(false);
               }}
               onMouseEnter={() => setFocusedIndex(idx)}
-              className={`px-3 py-2 text-fluid-sm cursor-pointer flex items-center justify-between hover:bg-gray-50 ${
+              className={`px-3 py-2 text-fluid-sm text-sm sm:text-base cursor-pointer flex items-center justify-between hover:bg-gray-50 ${
                 opt.value === value
                   ? "bg-gray-50 font-semibold"
                   : "text-gray-700"

@@ -52,7 +52,7 @@ export default async function ArticlePage({
     <>
       <Header />
       <Navigation />
-      <div aria-hidden="true" className="h-32 sm:h-40 md:h-44 lg:h-48" />
+      <div aria-hidden="true" className="h-16 sm:h-16 md:h-16 lg:h-24" />
 
       <main className="mt-8 sm:mt-12 md:mt-16 bg-white to-blue-50/30 min-h-screen">
         <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12">
