@@ -100,7 +100,7 @@ function Dropdown({
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((s) => !s)}
-        className="inline-flex items-center gap-2 bg-transparent text-fluid-sm text-sm sm:text-base font-medium text-primary px-2 sm:px-3 py-1 focus:outline-none w-full sm:w-auto"
+        className="inline-flex items-center gap-2 bg-transparent text-fluid-sm text-sm sm:text-base font-medium text-primary px-2 sm:px-3 py-1 focus:outline-none w-full sm:w-auto max-w-none whitespace-normal"
         onKeyDown={(e) => {
           // open with ArrowDown
           if (e.key === "ArrowDown") {
@@ -111,7 +111,7 @@ function Dropdown({
         }}
       >
         <span className="sr-only">Open sort menu</span>
-        <span className="text-fluid-sm text-sm sm:text-base truncate">
+        <span className="text-fluid-sm text-sm sm:text-base">
           {current.label}
         </span>
         <svg
@@ -142,7 +142,7 @@ function Dropdown({
               ? `sort-opt-${String(OPTIONS[focusedIndex].value)}`
               : undefined
           }
-          className="absolute z-50 mt-2 w-full max-w-xs sm:w-56 origin-top-right rounded-md bg-white border border-gray-100 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+          className="absolute z-50 mt-2 min-w-[220px] sm:min-w-[320px] origin-top-right rounded-md bg-white border border-gray-100 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
           style={{ right: 0 }}
         >
           {OPTIONS.map((opt, idx) => (

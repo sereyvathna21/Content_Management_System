@@ -50,6 +50,49 @@ const SAMPLE_LAWS: LawItem[] = [
     url: "/pdfs/safety-2022.pdf",
     uploadDate: "2022-11-02",
   },
+  {
+    id: "5",
+    title: "Public Safety Notice",
+    category: "Notification",
+    url: "/pdfs/safety-2022.pdf",
+    uploadDate: "2022-11-02",
+  },
+   {
+    id: "6",
+    title: "Public Safety Notice",
+    category: "Notification",
+    url: "/pdfs/safety-2022.pdf",
+    uploadDate: "2022-11-02",
+  },
+  {
+    id: "7",
+    title: "Public Safety Notice",
+    category: "Notification",
+    url: "/pdfs/safety-2022.pdf",
+    uploadDate: "2022-11-02",
+  },
+  {
+    id: "8",
+    title: "Public Safety Notice",
+    category: "Notification",
+    url: "/pdfs/safety-2022.pdf",
+    uploadDate: "2022-11-02",
+  },
+  {
+    id: "9",
+    title: "Public Safety Notice",
+    category: "Notification",
+    url: "/pdfs/safety-2022.pdf",
+    uploadDate: "2022-11-02",
+  },
+  {
+    id: "10",
+    title: "Public Safety Notice",
+    category: "Notification",
+    url: "/pdfs/safety-2022.pdf",
+    uploadDate: "2022-11-02",
+  },
+  
 ];
 
 export default function Laws() {
@@ -75,6 +118,8 @@ export default function Laws() {
       );
     });
   }, [selectedCategory, searchQuery]);
+
+  // (no pagination) -- list will be scrollable instead of paged
 
   const handleExportPDF = () => {
     const doc = new jsPDF();
@@ -187,7 +232,7 @@ export default function Laws() {
       </div>
 
       <div className="min-h-screen bg-gray-50/50 animate-fade-in-up [animation-delay:0.9s] opacity-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12">
+        <div className="max-w-7xl  mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12">
           <div className="animate-slide-down-fade [animation-delay:1.1s] opacity-0">
             <LawControlBar 
             categories={categories}
@@ -201,28 +246,30 @@ export default function Laws() {
           />
           </div>
         </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 animate-fade-in-up [animation-delay:1.3s] opacity-0">
+          <div className="px-10 grid grid-cols-1 sm:grid-cols-3 gap-6 animate-fade-in-up [animation-delay:1.3s] opacity-0">
             {/* List */}
             <div className="sm:col-span-1">
               <div className="space-y-3">
-                {filtered.map((law, index) => (
-                  <div
-                    key={law.id}
-                    className="animate-slide-right-fade opacity-0"
-                    style={{ animationDelay: `${1.5 + index * 0.1}s` }}
-                  >
-                    <LawCard
-                      id={law.id}
-                      title={law.title}
-                      category={law.category}
-                      uploadDate={law.uploadDate}
-                      isSelected={selectedPdf?.id === law.id}
-                      isChecked={selectedIds.includes(law.id)}
-                      onSelect={() => setSelectedPdf(law)}
-                      onToggleCheck={() => handleToggleSelect(law.id)}
-                    />
-                  </div>
-                ))}
+                <div className="max-h-[60vh] overflow-auto pr-2 space-y-3 custom-scrollbar">
+                  {filtered.map((law, index) => (
+                    <div
+                      key={law.id}
+                      className="animate-slide-right-fade opacity-0"
+                      style={{ animationDelay: `${1.5 + index * 0.1}s` }}
+                    >
+                      <LawCard
+                        id={law.id}
+                        title={law.title}
+                        category={law.category}
+                        uploadDate={law.uploadDate}
+                        isSelected={selectedPdf?.id === law.id}
+                        isChecked={selectedIds.includes(law.id)}
+                        onSelect={() => setSelectedPdf(law)}
+                        onToggleCheck={() => handleToggleSelect(law.id)}
+                      />
+                    </div>
+                  ))}
+                </div>
 
                 {filtered.length === 0 && (
                   <div className="py-12 text-center bg-white rounded-xl border border-dashed border-gray-300 animate-bounce-in opacity-0 [animation-delay:1.8s]">
@@ -236,6 +283,7 @@ export default function Laws() {
                     </div>
                   </div>
                 )}
+                
               </div>
             </div>
 

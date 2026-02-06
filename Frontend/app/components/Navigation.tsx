@@ -164,7 +164,6 @@ export default function Navigation() {
         <div className="max-w-7xl mx-auto">
           {/* Mobile Menu Button */}
           <div className="lg:hidden flex justify-start ">
-        
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-white p-2.5 rounded-xl transition-all duration-300 active:scale-95"
@@ -353,7 +352,7 @@ export default function Navigation() {
                   setShowResourcesDropdown(!showResourcesDropdown);
                 }}
                 className={`nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300 ${
-                  pathname?.includes("/Landing_page/resources") ? "active" : ""
+                  pathname?.includes("/Landing_page/Resources") ? "active" : ""
                 }`}
               >
                 Resources
@@ -390,7 +389,7 @@ export default function Navigation() {
 
                   <div className="py-2">
                     <Link
-                      href="/Landing_page/resources/law"
+                      href="/Landing_page/Resources/Laws"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -420,7 +419,7 @@ export default function Navigation() {
                     </Link>
 
                     <Link
-                      href="/Landing_page/resources/publication"
+                      href="/Landing_page/Resources/Publication"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -450,7 +449,7 @@ export default function Navigation() {
                     </Link>
 
                     <Link
-                      href="/Landing_page/resources/social"
+                      href="/Landing_page/Resources/Social"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -596,7 +595,7 @@ export default function Navigation() {
                   {showMobileResourcesDropdown && (
                     <div className="bg-white/5 py-2 overflow-hidden">
                       <Link
-                        href="/Landing_page/resources/law"
+                        href="/Landing_page/Resources/Laws"
                         className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                         onClick={() => {
                           setMobileMenuOpen(false);
@@ -606,7 +605,7 @@ export default function Navigation() {
                         Law & Regulation
                       </Link>
                       <Link
-                        href="/Landing_page/resources/publication"
+                        href="/Landing_page/Resources/Publication"
                         className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                         onClick={() => {
                           setMobileMenuOpen(false);
@@ -616,7 +615,7 @@ export default function Navigation() {
                         Publication & Report
                       </Link>
                       <Link
-                        href="/Landing_page/resources/social"
+                        href="/Landing_page/Resources/Social"
                         className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                         onClick={() => {
                           setMobileMenuOpen(false);

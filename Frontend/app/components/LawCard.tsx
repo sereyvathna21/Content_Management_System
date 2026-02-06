@@ -78,29 +78,29 @@ export default function LawCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="pr-6 sm:pr-8">
+          <div className="max-h-28 sm:max-h-32 overflow-auto pr-6 sm:pr-8 custom-scrollbar">
             <h3
-              className={`text-sm sm:text-base md:text-lg font-semibold leading-snug line-clamp-2 ${
+              className={`text-sm sm:text-base md:text-lg font-semibold leading-snug ${
                 isSelected ? "text-primary" : "text-gray-900"
               }`}
             >
               {title}
             </h3>
-          </div>
 
-          <div className="flex items-center gap-2 sm:gap-3 mt-1 sm:mt-1.5 flex-wrap">
-            <span
-              className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-medium border ${getCategoryColor(
-                category,
-              )}`}
-            >
-              {category}
-            </span>
-            <span className="text-[9px] sm:text-[10px] text-gray-500 truncate">
-              {uploadDate
-                ? new Date(uploadDate).toLocaleDateString()
-                : "No Date"}
-            </span>
+            <div className="flex items-center gap-2 sm:gap-3 mt-1 sm:mt-1.5 flex-wrap">
+              <span
+                className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-medium border ${getCategoryColor(
+                  category,
+                )}`}
+              >
+                {category}
+              </span>
+              <span className="text-[9px] sm:text-[10px] text-gray-500 truncate">
+                {uploadDate
+                  ? new Date(uploadDate).toLocaleDateString()
+                  : "No Date"}
+              </span>
+            </div>
           </div>
         </div>
       </div>
