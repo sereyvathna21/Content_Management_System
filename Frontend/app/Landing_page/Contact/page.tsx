@@ -145,7 +145,7 @@ export default function Contact() {
     <>
       <Header />
       <Navigation />
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-24 sm:pt-32 md:pt-36 lg:pt-44">
+      <div className="min-h-screen bg-white pt-24 sm:pt-32 md:pt-36 lg:pt-44">
         {/* Header Section */}
         <div className="bg-primary text-white py-6 sm:py-8 md:py-10 lg:py-12 animate-fade-in">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
