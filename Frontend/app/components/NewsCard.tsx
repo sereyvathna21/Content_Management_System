@@ -56,7 +56,10 @@ export default function NewsCard({
 
         {/* Content Section */}
         <div className="p-3 sm:p-4 space-y-1.5 sm:space-y-2 flex-1 flex flex-col">
-          <h3 className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 line-clamp-2 group-hover:text-primary transition-colors">
+          <h3
+            title={title}
+            className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 truncate whitespace-nowrap group-hover:text-primary transition-colors"
+          >
             {title}
           </h3>
           <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 flex-1">

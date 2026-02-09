@@ -9,6 +9,7 @@ type LawControlBarProps = {
   onSearchChange: (query: string) => void;
   onExportList: () => void;
   onExportSelected: () => void;
+  onClearSelected?: () => void;
 };
 
 export default function LawControlBar({
@@ -19,6 +20,7 @@ export default function LawControlBar({
   onCategoryChange,
   onSearchChange,
   onExportSelected,
+  onClearSelected,
 }: LawControlBarProps) {
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden sticky top-4 z-20 backdrop-blur-sm bg-white/95">
@@ -138,14 +140,13 @@ export default function LawControlBar({
 
             {/* Export Button */}
             {selectedCount > 0 && (
-              <div className="flex items-center">
+              <div className="flex items-center gap-3">
                 <button
                   onClick={onExportSelected}
-                  className="inline-flex items-center px-5 py-3 bg-gradient-to-r from-primary to-primary/90 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 overflow-hidden relative"
+                  className={`inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold border bg-primary text-white border-primary shadow-lg transition-all duration-200 transform`}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-200"></div>
                   <svg
-                    className="w-5 h-5 mr-2"
+                    className="w-4 h-4 mr-2"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -160,6 +161,13 @@ export default function LawControlBar({
                   <span className="relative z-10">
                     Export ({selectedCount})
                   </span>
+                </button>
+
+                <button
+                  onClick={() => onClearSelected?.()}
+                  className={`inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold border bg-gray-50 text-gray-700 border-gray-200 hover:bg-primary hover:text-white hover:border-primary hover:shadow-md transition-all duration-200`}
+                >
+                  Clear
                 </button>
               </div>
             )}

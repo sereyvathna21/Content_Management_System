@@ -10,6 +10,7 @@ import Pagination from "@/app/components/Pagination";
 import VideoSection from "@/app/components/VideoSection";
 import SortControl from "@/app/components/SortControl";
 import SearchBar from "@/app/components/SearchBar";
+import HeroCover from "@/app/components/HeroCover";
 interface NewsArticle {
   id: string;
   title: string;
@@ -103,19 +104,17 @@ export default function News() {
       <Header />
       <Navigation />
       {/* spacer to offset fixed Navigation height so page header is visible */}
-      <div aria-hidden="true" className="h-28 sm:h-24 md:h-24 lg:h-28" />
-      <div className="min-h-screen bg-white to-blue-50/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10 py-6 sm:py-8 md:py-12 lg:py-16">
-          {/* Page Header */}
-          <div className="text-center mb-8 sm:mb-10 md:mb-12 mt-4 sm:mt-6 md:mt-8">
-            <h1 className="font-extrabold text-primary text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight">
-              Latest News & Announcements
-            </h1>
-            <p className="text-gray-600 max-w-2xl mx-auto mt-2 sm:mt-3 md:mt-4 text-sm sm:text-base md:text-lg">
-              Stay informed about NSPC events, programs, and achievements
-            </p>
-          </div>
 
+      <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
+      <div className="min-h-screen bg-white to-blue-50/30">
+        <div className="relative w-full animate-fade-in overflow-hidden">
+          <HeroCover
+            image="/news.svg"
+            title="News and Announcements"
+            subtitle="Stay up to date with the latest news and updates from our organization."
+          />
+        </div>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10 ">
           {/* Toolbar: sort + info */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div className="flex items-center gap-3 w-full sm:w-auto">

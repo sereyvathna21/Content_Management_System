@@ -71,11 +71,11 @@ export default function PDFPreview({ title, url, onClose }: PDFPreviewProps) {
         </div>
       </div>
 
-      {/* Iframe */}
-      <div className="flex-1 bg-gray-100 relative">
+      {/* Iframe - full page display */}
+      <div className="flex-1 bg-gray-100 relative overflow-hidden">
         <iframe
-          src={`${url}#toolbar=0`}
-          className="w-full h-full absolute inset-0"
+          src={`${url}#zoom=page-width&toolbar=0&navpanes=0`}
+          className="absolute inset-0 w-full h-full border-0 bg-white"
           title={title}
         />
       </div>

@@ -36,10 +36,6 @@ function Dropdown({
     { value: "", label: "Default (Newest first)" },
     { value: "date_desc", label: "Date: Newest → Oldest" },
     { value: "date_asc", label: "Date: Oldest → Newest" },
-    { value: "title_asc", label: "Title: A–Z" },
-    { value: "title_desc", label: "Title: Z–A" },
-    { value: "category_asc", label: "Category: A–Z" },
-    { value: "category_desc", label: "Category: Z–A" },
   ];
 
   const [open, setOpen] = useState(false);

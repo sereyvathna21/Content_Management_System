@@ -38,8 +38,8 @@ export default function LawCard({
   return (
     <div
       onClick={onSelect}
-      className={`relative group border rounded-lg sm:rounded-xl p-2 sm:p-3 cursor-pointer transform transition-all duration-200 ease-out
-        ${isSelected ? "bg-blue-50 border-primary ring-1 ring-primary shadow-sm scale-105" : "bg-white border-gray-200 hover:border-primary/50 hover:shadow-sm hover:-translate-y-1"}
+      className={`relative group border rounded-lg sm:rounded-xl p-2 sm:p-3 cursor-pointer
+        ${isSelected ? "bg-blue-50 shadow-sm" : "bg-white border-gray-200 hover:border-primary/60"}
       `}
     >
       {/* Checkbox */}
@@ -59,8 +59,8 @@ export default function LawCard({
         {/* Icon */}
         <div
           className={`p-1.5 sm:p-2 md:p-2.5 rounded-md sm:rounded-lg shrink-0 ${
-            isSelected ? "bg-white" : "bg-gray-100 group-hover:bg-blue-50"
-          } transition-colors`}
+            isSelected ? "bg-white" : "bg-gray-100"
+          }`}
         >
           <svg
             className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-primary"
@@ -78,16 +78,17 @@ export default function LawCard({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="max-h-28 sm:max-h-32 overflow-auto pr-6 sm:pr-8 custom-scrollbar">
+          <div className="max-h-20 sm:max-h-28 md:max-h-32 overflow-hidden sm:overflow-auto pr-4 sm:pr-6 custom-scrollbar">
             <h3
+              title={title}
               className={`text-sm sm:text-base md:text-lg font-semibold leading-snug ${
                 isSelected ? "text-primary" : "text-gray-900"
-              }`}
+              } truncate whitespace-nowrap`}
             >
               {title}
             </h3>
 
-            <div className="flex items-center gap-2 sm:gap-3 mt-1 sm:mt-1.5 flex-wrap">
+            <div className="mt-1 sm:mt-1.5 flex sm:flex-row flex-col sm:items-center items-start gap-1 sm:gap-3">
               <span
                 className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-medium border ${getCategoryColor(
                   category,
@@ -95,7 +96,8 @@ export default function LawCard({
               >
                 {category}
               </span>
-              <span className="text-[9px] sm:text-[10px] text-gray-500 truncate">
+
+              <span className="text-[9px] sm:text-[10px] text-gray-500 mt-0.5 sm:mt-0 truncate">
                 {uploadDate
                   ? new Date(uploadDate).toLocaleDateString()
                   : "No Date"}

@@ -30,7 +30,10 @@ const VideoCard: React.FC<VideoCardProps> = ({
         ></iframe>
       </div>
       <div className="p-3 sm:p-4 space-y-1.5 sm:space-y-2">
-        <h3 className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors">
+        <h3
+          title={title}
+          className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 truncate whitespace-nowrap group-hover:text-blue-600 transition-colors"
+        >
           {title}
         </h3>
         <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
