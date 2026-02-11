@@ -99,7 +99,7 @@ export default function NewsSection() {
               </p>
               <div className="flex justify-end">
                 <Link
-                  href="/Landing_page/news"
+                  href="/Landing-page/news"
                   className="text-primary font-semibold hover:gap-3 flex items-center gap-2 text-sm sm:text-base transition-all duration-300 group-hover:translate-x-1"
                 >
                   Read more
@@ -125,7 +125,7 @@ export default function NewsSection() {
 
       <div className="mt-6 sm:mt-8 flex justify-center">
         <Link
-          href="/Landing_page/News"
+          href="/Landing-page/News"
           className="bg-primary text-white px-5 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 rounded-full font-bold text-sm sm:text-base md:text-lg hover:shadow-xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-2"
         >
           View All News

@@ -46,7 +46,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
   if (id) {
     return (
       <Link
-        href={`/Landing_page/News/videos/${encodeURIComponent(id)}`}
+        href={`/Landing-page/News/videos/${encodeURIComponent(id)}`}
         className="group bg-gray-50 rounded-xl overflow-hidden hover:shadow-md transition-all duration-300 block"
       >
         {content}

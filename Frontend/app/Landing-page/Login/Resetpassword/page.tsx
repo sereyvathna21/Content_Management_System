@@ -549,7 +549,7 @@ export default function ResetPassword() {
                 </p>
 
                 <Link
-                  href="/Landing_page/Login"
+                  href="/Landing-page/Login"
                   className="w-full inline-block text-center bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-fluid-base"
                   style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
                 >

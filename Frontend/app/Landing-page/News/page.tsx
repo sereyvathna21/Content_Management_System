@@ -199,7 +199,7 @@ export default function News() {
                   {totalVideoPages > 1 && (
                     <div className="flex justify-center mt-5">
                       <Link
-                        href="/Landing_page/News/videos/1"
+                        href="/Landing-page/News/videos/1"
                         className="text-sm font-semibold text-primary hover:underline"
                       >
                         See more

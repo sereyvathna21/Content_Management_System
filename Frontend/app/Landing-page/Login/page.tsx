@@ -246,7 +246,7 @@ export default function Login() {
                   </label>
                 </div>
                 <Link
-                  href="/Landing_page/Login/Forgetpassword"
+                  href="/Landing-page/Login/Forgetpassword"
                   className="font-medium text-white lg:text-primary hover:text-primary/80 transition-colors"
                 >
                   Forgot password?

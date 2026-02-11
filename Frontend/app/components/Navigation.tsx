@@ -200,8 +200,8 @@ export default function Navigation() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex text-white font-bold text-sm lg:text-base xl:text-lg justify-center items-center gap-4 lg:gap-6 xl:gap-10 py-4 lg:py-5 px-4">
             <Link
-              href="/Landing_page/Home"
-              className={`nav-link ${pathname === "/Landing_page/Home" ? "active" : ""}`}
+              href="/Landing-page/Home"
+              className={`nav-link ${pathname === "/Landing-page/Home" ? "active" : ""}`}
             >
               Home
             </Link>
@@ -214,7 +214,7 @@ export default function Navigation() {
                   setShowAboutDropdown(!showAboutDropdown);
                 }}
                 className={`nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300 ${
-                  pathname?.includes("/Landing_page/About_us") ? "active" : ""
+                  pathname?.includes("/Landing-page/About-us") ? "active" : ""
                 }`}
               >
                 About Us
@@ -251,7 +251,7 @@ export default function Navigation() {
 
                   <div className="py-2">
                     <Link
-                      href="/Landing_page/About_us/National"
+                      href="/Landing-page/About-us/National"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -281,7 +281,7 @@ export default function Navigation() {
                     </Link>
 
                     <Link
-                      href="/Landing_page/About_us/Executive"
+                      href="/Landing-page/About-us/Executive"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -311,7 +311,7 @@ export default function Navigation() {
                     </Link>
 
                     <Link
-                      href="/Landing_page/About_us/General"
+                      href="/Landing-page/About-us/General"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -352,7 +352,7 @@ export default function Navigation() {
                   setShowResourcesDropdown(!showResourcesDropdown);
                 }}
                 className={`nav-link flex items-center gap-2 hover:opacity-80 transition-all duration-300 ${
-                  pathname?.includes("/Landing_page/Resources") ? "active" : ""
+                  pathname?.includes("/Landing-page/Resources") ? "active" : ""
                 }`}
               >
                 Resources
@@ -389,7 +389,7 @@ export default function Navigation() {
 
                   <div className="py-2">
                     <Link
-                      href="/Landing_page/Resources/Laws"
+                      href="/Landing-page/Resources/Laws"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -419,7 +419,7 @@ export default function Navigation() {
                     </Link>
 
                     <Link
-                      href="/Landing_page/Resources/Publication"
+                      href="/Landing-page/Resources/Publication"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -449,7 +449,7 @@ export default function Navigation() {
                     </Link>
 
                     <Link
-                      href="/Landing_page/Resources/Social"
+                      href="/Landing-page/Resources/Social"
                       className="dropdown-item flex items-center gap-4 px-6 py-4 hover:bg-gradient-to-r hover:from-primary/5 hover:via-primary/3 hover:to-transparent transition-all duration-300 text-gray-800 group"
                     >
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
@@ -483,14 +483,14 @@ export default function Navigation() {
             </div>
 
             <Link
-              href="/Landing_page/News"
-              className={`nav-link ${pathname === "/Landing_page/News" ? "active" : ""}`}
+              href="/Landing-page/News"
+              className={`nav-link ${pathname === "/Landing-page/News" ? "active" : ""}`}
             >
               News & Announment
             </Link>
             <Link
-              href="/Landing_page/Contact"
-              className={`nav-link ${pathname === "/Landing_page/Contact" ? "active" : ""}`}
+              href="/Landing-page/Contact"
+              className={`nav-link ${pathname === "/Landing-page/Contact" ? "active" : ""}`}
             >
               Contact Us
             </Link>
@@ -501,7 +501,7 @@ export default function Navigation() {
             <div className="lg:hidden bg-primary border-t border-white/10 mobile-menu-enter">
               <div className="flex flex-col text-white font-bold text-sm sm:text-base py-2 max-h-[calc(100vh-200px)] overflow-y-auto">
                 <Link
-                  href="/Landing_page/Home"
+                  href="/Landing-page/Home"
                   className="px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -534,7 +534,7 @@ export default function Navigation() {
                   {showMobileAboutDropdown && (
                     <div className="bg-white/5 py-2 overflow-hidden">
                       <Link
-                        href="/Landing_page/About_us/National"
+                        href="/Landing-page/About-us/National"
                         className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                         onClick={() => {
                           setMobileMenuOpen(false);
@@ -544,7 +544,7 @@ export default function Navigation() {
                         National Social Protection Council
                       </Link>
                       <Link
-                        href="/Landing_page/About_us/Executive"
+                        href="/Landing-page/About-us/Executive"
                         className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                         onClick={() => {
                           setMobileMenuOpen(false);
@@ -554,7 +554,7 @@ export default function Navigation() {
                         Executive Secretariat Office
                       </Link>
                       <Link
-                        href="/Landing_page/About_us/General"
+                        href="/Landing-page/About-us/General"
                         className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                         onClick={() => {
                           setMobileMenuOpen(false);
@@ -595,7 +595,7 @@ export default function Navigation() {
                   {showMobileResourcesDropdown && (
                     <div className="bg-white/5 py-2 overflow-hidden">
                       <Link
-                        href="/Landing_page/Resources/Laws"
+                        href="/Landing-page/Resources/Laws"
                         className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                         onClick={() => {
                           setMobileMenuOpen(false);
@@ -605,7 +605,7 @@ export default function Navigation() {
                         Law & Regulation
                       </Link>
                       <Link
-                        href="/Landing_page/Resources/Publication"
+                        href="/Landing-page/Resources/Publication"
                         className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                         onClick={() => {
                           setMobileMenuOpen(false);
@@ -615,7 +615,7 @@ export default function Navigation() {
                         Publication & Report
                       </Link>
                       <Link
-                        href="/Landing_page/Resources/Social"
+                        href="/Landing-page/Resources/Social"
                         className="block px-8 sm:px-10 py-2.5 text-xs sm:text-sm hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                         onClick={() => {
                           setMobileMenuOpen(false);
@@ -629,14 +629,14 @@ export default function Navigation() {
                 </div>
 
                 <Link
-                  href="/Landing_page/News"
+                  href="/Landing-page/News"
                   className="px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   News & Announment
                 </Link>
                 <Link
-                  href="/Landing_page/Contact"
+                  href="/Landing-page/Contact"
                   className="px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >

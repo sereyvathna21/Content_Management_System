@@ -113,7 +113,7 @@ export default async function ArticlePage({
                       .map((a) => (
                         <li key={a.id}>
                           <Link
-                            href={`/Landing_page/News/${encodeURIComponent(a.id)}`}
+                            href={`/Landing-page/News/${encodeURIComponent(a.id)}`}
                             className="flex items-center gap-3 py-2"
                           >
                             <img

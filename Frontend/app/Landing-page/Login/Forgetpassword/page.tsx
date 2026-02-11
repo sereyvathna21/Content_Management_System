@@ -162,7 +162,7 @@ export default function ForgotPassword() {
 
                   <div className="text-center animate-[fadeIn_0.6s_ease-out_0.8s_both]">
                     <Link
-                      href="/Landing_page/Login"
+                      href="/Landing-page/Login"
                       className="inline-flex items-center gap-2 text-white lg:text-primary hover:text-primary/80 transition-colors font-medium text-fluid-sm"
                     >
                       <svg
@@ -239,7 +239,7 @@ export default function ForgotPassword() {
                   </button>
 
                   <Link
-                    href="/Landing_page/Login"
+                    href="/Landing-page/Login"
                     className="w-full inline-block text-center bg-white text-white lg:text-primary border-2 border-primary font-semibold rounded-xl hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-sm hover:shadow-md text-fluid-base"
                     style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
                   >

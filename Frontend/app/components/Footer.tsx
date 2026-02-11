@@ -54,7 +54,7 @@ export default function Footer() {
             <ul className="text-base sm:text-lg md:text-xl text-white/90 space-y-2 sm:space-y-3">
               <li>
                 <Link
-                  href="/Landing_page/about/national"
+                  href="/Landing-page/about/national"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
                   About
@@ -62,7 +62,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/Landing_page/resources"
+                  href="/Landing-page/resources"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
                   Resources
@@ -70,7 +70,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/Landing_page/News"
+                  href="/Landing-page/News"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
                   News & Announcement
@@ -78,7 +78,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/Landing_page/Contact"
+                  href="/Landing-page/Contact"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
                   Contact

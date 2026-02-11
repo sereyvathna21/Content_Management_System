@@ -35,7 +35,7 @@ export default function NewsCard({
   image,
 }: NewsCardProps) {
   return (
-    <Link href={`/Landing_page/News/${id}`}>
+    <Link href={`/Landing-page/News/${id}`}>
       <article className="group bg-gray-50 rounded-xl overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col">
         {/* Image Section */}
         <div className="relative w-full aspect-video overflow-hidden">
