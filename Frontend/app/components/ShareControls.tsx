@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function ShareControls() {
+  const t = useTranslations("NewsPage");
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -71,7 +73,7 @@ export default function ShareControls() {
           onClick={() => setMenuOpen((s) => !s)}
           aria-haspopup="true"
           aria-expanded={menuOpen}
-          aria-label="Share"
+          aria-label={t("share.share")}
           className="inline-flex items-center px-3 py-2 rounded-md bg-primary hover:bg-primary-dark text-white text-fluid-sm font-medium"
         >
           <svg
@@ -82,7 +84,7 @@ export default function ShareControls() {
           >
             <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a3.3 3.3 0 000-1.39l7.02-4.11A3 3 0 1014 4a3 3 0 001.96.77L9 8.88a3 3 0 10-.02 6.25l7 4.11c-.01.08-.02.16-.02.26A3 3 0 1018 16.08z" />
           </svg>
-          Share
+          {t("share.share")}
         </button>
 
         {menuOpen && (
@@ -92,19 +94,19 @@ export default function ShareControls() {
                 onClick={handleShareFacebook}
                 className="w-full text-left px-4 py-2 text-fluid-sm text-gray-700 hover:bg-gray-100"
               >
-                Share to Facebook
+                {t("share.facebook")}
               </button>
               <button
                 onClick={handleShareLinkedIn}
                 className="w-full text-left px-4 py-2 text-fluid-sm text-gray-700 hover:bg-gray-100"
               >
-                Share to LinkedIn
+                {t("share.linkedin")}
               </button>
               <button
                 onClick={handleCopyLink}
                 className="w-full text-left px-4 py-2 text-fluid-sm text-gray-700 hover:bg-gray-100"
               >
-                Copy link
+                {t("share.copyLink")}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Footer from "@/app/components/Footer";
@@ -19,30 +20,40 @@ interface NewsArticle {
   category: string;
   image: string;
 }
-import { newsArticles } from "./articles";
-import { videos } from "./videos";
+import { newsArticles } from "@/app/Landing-page/News/articles";
+import { videos } from "@/app/Landing-page/News/videos";
 
 const newsPerPage = 12; // Limit for news articles
 const videosPerPage = 3; // Limit for videos
 
 export default function News() {
+  const t = useTranslations("NewsPage");
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initialSort = searchParams?.get("sort") || "";
 
   const [currentNewsPage, setCurrentNewsPage] = useState(1);
   const [currentVideoPage, setCurrentVideoPage] = useState(1);
-  const [sortOption, setSortOption] = useState(initialSort);
+  const [sortOption, setSortOption] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  // Handle initial sort parameter after component mounts
+  useEffect(() => {
+    setMounted(true);
+    const initialSort = searchParams?.get("sort") || "";
+    setSortOption(initialSort);
+  }, [searchParams]);
 
   const handleSortChange = (v: string) => {
     setSortOption(v);
-    const params = new URLSearchParams(Array.from(searchParams.entries()));
-    if (v) params.set("sort", v);
-    else params.delete("sort");
-    const qs = params.toString();
-    // update URL without refreshing the page
-    router.replace(`${window.location.pathname}${qs ? `?${qs}` : ""}`);
+    if (mounted) {
+      const params = new URLSearchParams(Array.from(searchParams.entries()));
+      if (v) params.set("sort", v);
+      else params.delete("sort");
+      const qs = params.toString();
+      // update URL without refreshing the page
+      router.replace(`${window.location.pathname}${qs ? `?${qs}` : ""}`);
+    }
   };
 
   // support combined sort+direction values like 'date_desc' or 'title_asc'
@@ -99,6 +110,25 @@ export default function News() {
     setCurrentVideoPage(page);
   };
 
+  // Prevent hydration issues by not rendering until mounted
+  if (!mounted) {
+    return (
+      <>
+        <Header />
+        <Navigation />
+        <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
+        <div className="min-h-screen bg-white to-blue-50/30">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10 py-8">
+            <div className="flex justify-center items-center min-h-[400px]">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
@@ -110,8 +140,8 @@ export default function News() {
         <div className="relative w-full animate-fade-in overflow-hidden">
           <HeroCover
             image="/news.svg"
-            title="News and Announcements"
-            subtitle="Stay up to date with the latest news and updates from our organization."
+            title={t("hero.title")}
+            subtitle={t("hero.subtitle")}
           />
         </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10 ">
@@ -124,7 +154,7 @@ export default function News() {
               <SearchBar
                 value={searchTerm}
                 onChange={setSearchTerm}
-                placeholder="Search News, Categories..."
+                placeholder={t("toolbar.searchPlaceholder")}
               />
             </div>
           </div>
@@ -132,7 +162,7 @@ export default function News() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
             <main className="lg:col-span-8">
               <h2 className="font-bold text-primary text-lg sm:text-xl md:text-2xl mb-4 sm:mb-5 md:mb-6">
-                Latest News
+                {t("latestNews")}
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
                 {paginatedArticles.map((article) => (
@@ -169,9 +199,11 @@ export default function News() {
                       />
                     </svg>
                   </div>
-                  <p className="text-gray-600 font-medium">No results found</p>
+                  <p className="text-gray-600 font-medium">
+                    {t("noResults.title")}
+                  </p>
                   <p className="text-gray-500 text-sm mt-1">
-                    Try a different search or filter
+                    {t("noResults.subtitle")}
                   </p>
                 </div>
               )}
@@ -182,11 +214,10 @@ export default function News() {
                 <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100">
                   <div className="text-center lg:text-left mb-4">
                     <h3 className="font-bold text-primary text-lg sm:text-xl">
-                      Social Protection System in Cambodia
+                      {t("aside.title")}
                     </h3>
                     <p className="text-gray-600 text-sm sm:text-base mt-2 lg:mt-0">
-                      Watch our latest videos and learn more about social
-                      protection initiatives
+                      {t("aside.description")}
                     </p>
                   </div>
 
@@ -202,7 +233,7 @@ export default function News() {
                         href="/Landing-page/News/videos/1"
                         className="text-sm font-semibold text-primary hover:underline"
                       >
-                        See more
+                        {t("seeMore")}
                       </Link>
                     </div>
                   )}

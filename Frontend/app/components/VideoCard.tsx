@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface VideoCardProps {
   id?: string;
@@ -14,6 +17,17 @@ const VideoCard: React.FC<VideoCardProps> = ({
   title,
   description,
 }) => {
+  const t = useTranslations("NewsPage");
+  const titleKey = id ? `content.videos.${id}.title` : undefined;
+  const descKey = id ? `content.videos.${id}.description` : undefined;
+  let displayedTitle = title;
+  let displayedDesc = description;
+  if (id) {
+    const maybe = t(titleKey!);
+    if (maybe !== titleKey) displayedTitle = maybe;
+    const maybeDesc = t(descKey!);
+    if (maybeDesc !== descKey) displayedDesc = maybeDesc;
+  }
   const content = (
     <>
       <div className="relative w-full aspect-video overflow-hidden">
@@ -34,10 +48,10 @@ const VideoCard: React.FC<VideoCardProps> = ({
           title={title}
           className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 truncate whitespace-nowrap group-hover:text-blue-600 transition-colors"
         >
-          {title}
+          {displayedTitle}
         </h3>
         <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">
-          {description}
+          {displayedDesc}
         </p>
       </div>
     </>

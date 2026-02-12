@@ -1,6 +1,7 @@
 import React from "react";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { videos } from "../../videos";
+import { videos } from "@/app/Landing-page/News/videos";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import Navigation from "@/app/components/Navigation";
@@ -10,16 +11,11 @@ import AllVideosPlayer from "@/app/components/AllVideosPlayer";
 export default async function VideoPage({
   params,
 }: {
-  params: Promise<Record<string, string>>;
+  params: Promise<{ id: string }>;
 }) {
+  const t = await getTranslations("NewsPage");
   const resolvedParams = await params;
-  const raw =
-    resolvedParams.Video ??
-    resolvedParams.video ??
-    resolvedParams.id ??
-    resolvedParams.slug ??
-    "";
-  const id = decodeURIComponent(raw);
+  const id = decodeURIComponent(resolvedParams.id);
 
   // Try to find by id first, then try by slugified title fallback
   let video = videos.find((v) => v.id === id);
@@ -42,7 +38,7 @@ export default async function VideoPage({
 
       <main className="bg-white via-blue-50/20 to-indigo-50/30 min-h-screen mt-4 sm:mt-8 md:mt-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-          <Breadcrumbs currentLabel="Video" />
+          <Breadcrumbs currentLabel={t("videoLabel")} />
 
           <div className="max-w-7xl mx-auto">
             <article className="mx-auto w-full max-w-6xl space-y-6">

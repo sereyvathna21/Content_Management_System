@@ -1,4 +1,6 @@
+"use client";
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface SortControlProps {
   value: string;
@@ -6,13 +8,15 @@ interface SortControlProps {
 }
 
 const SortControl: React.FC<SortControlProps> = ({ value, onChange }) => {
+  const t = useTranslations("NewsPage");
+
   return (
     <div className="inline-flex items-center gap-2 sm:gap-3 bg-white border border-gray-100 rounded-xl shadow-sm px-2 sm:px-3 py-1 sm:py-2">
       <label
         htmlFor="sort"
         className="text-fluid-xs text-xs sm:text-sm font-semibold uppercase text-gray-500 tracking-wider"
       >
-        Sort by:
+        {t("toolbar.sortLabel")}
       </label>
       {/* Custom dropdown */}
       <div className="relative">
@@ -32,10 +36,12 @@ function Dropdown({
   onChange: (v: string) => void;
 }) {
   // Provide explicit direction variants so user can choose asc/desc
+  const t = useTranslations("NewsPage");
+
   const OPTIONS = [
-    { value: "", label: "Default (Newest first)" },
-    { value: "date_desc", label: "Date: Newest → Oldest" },
-    { value: "date_asc", label: "Date: Oldest → Newest" },
+    { value: "", label: t("toolbar.sortOptions.default") },
+    { value: "date_desc", label: t("toolbar.sortOptions.date_desc") },
+    { value: "date_asc", label: t("toolbar.sortOptions.date_asc") },
   ];
 
   const [open, setOpen] = useState(false);

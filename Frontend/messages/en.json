@@ -1,0 +1,195 @@
+{
+    "HomePage": {
+        "title": "Hello world!"
+    },
+    "ContactPage": {
+        "title": "Get in Touch",
+        "subtitle": "We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+        "phone": "Phone",
+        "email": "Email",
+        "socialMedia": "Social Media",
+        "sendFeedback": "Send a Feedback",
+        "location": "Location",
+        "address": "No. 01, Russian Federation Blvd (110), Sangkat Teuk Laak I, Khan Toul Kork, Phnom Penh, Cambodia",
+        "form": {
+            "name": "Name",
+            "namePlaceholder": "Enter your name",
+            "nameRequired": "Name is required",
+            "nameMinLength": "Name must be at least 2 characters",
+            "nameMaxLength": "Name must be less than 100 characters",
+            "email": "Email",
+            "emailPlaceholder": "Enter your email",
+            "emailRequired": "Email is required",
+            "emailInvalid": "Please enter a valid email address",
+            "subject": "Subject",
+            "subjectPlaceholder": "Enter subject",
+            "subjectRequired": "Subject is required",
+            "subjectMinLength": "Subject must be at least 5 characters",
+            "subjectMaxLength": "Subject must be less than 200 characters",
+            "message": "Message",
+            "messagePlaceholder": "Enter your message",
+            "messageRequired": "Message is required",
+            "messageMinLength": "Message must be at least 10 characters",
+            "messageMaxLength": "Message must be less than 1000 characters",
+            "submit": "Submit",
+            "submitting": "Submitting...",
+            "errorMessage": "Please fill the form before submitting.",
+            "successMessage": "Thank you for your message! We'll get back to you soon."
+        }
+    },
+    "NewsPage": {
+        "hero": {
+            "title": "News and Announcements",
+            "subtitle": "Stay up to date with the latest news and updates from our organization."
+        },
+        "toolbar": {
+            "searchPlaceholder": "Search News, Categories...",
+            "sortLabel": "Sort by:",
+            "sortOptions": {
+                "default": "Default",
+                "date_desc": "Date: Newest → Oldest",
+                "date_asc": "Date: Oldest → Newest"
+            }
+        },
+        "latestNews": "Latest News",
+        "noResults": {
+            "title": "No results found",
+            "subtitle": "Try a different search or filter"
+        },
+        "aside": {
+            "title": "Social Protection System in Cambodia",
+            "description": "Watch our latest videos and learn more about social protection initiatives"
+        },
+        "seeMore": "See more",
+        "videoLabel": "Video",
+        "articleLabel": "Article",
+        "relatedArticles": "Related articles",
+        "breadcrumbs": {
+            "home": "Home",
+            "news": "News"
+        },
+        "share": {
+            "share": "Share",
+            "facebook": "Share to Facebook",
+            "linkedin": "Share to LinkedIn",
+            "copyLink": "Copy link"
+        },
+        "newsSection": {
+            "title": "News & Announcements",
+            "subtitle": "Stay updated with our latest initiatives, publications, and community engagements",
+            "readMore": "Read more",
+            "viewAll": "View All News"
+        },
+        "categories": {
+            "events": "Events",
+            "programs": "Programs",
+            "impact": "Impact",
+            "partnerships": "Partnerships"
+        },
+        "allVideos": "All videos",
+        "content": {
+            "articles": {
+                "1": {
+                    "title": "NSPC Annual Conference 2026 Announced",
+                    "excerpt": "Join us for the biggest event of the year featuring keynote speakers, workshops, and networking opportunities for students nationwide.",
+                    "subtitle": "Keynotes • Workshops • Networking — Feb 2026"
+                },
+                "2": {
+                    "title": "New Scholarship Program Launched",
+                    "excerpt": "NSPC introduces a comprehensive scholarship program to support outstanding students in their academic pursuits and leadership development.",
+                    "subtitle": "Financial support and mentorship for high-achieving students"
+                },
+                "3": {
+                    "title": "Student Leadership Summit Success",
+                    "excerpt": "Over 500 students participated in the recent leadership summit, learning essential skills for future community impact.",
+                    "subtitle": "Highlights and outcomes from the 2025 summit"
+                },
+                "4": {
+                    "title": "Community Outreach Initiative Update",
+                    "excerpt": "Our members have contributed over 10,000 volunteer hours to local communities, making a significant positive impact.",
+                    "subtitle": "Volunteering impact across regions"
+                },
+                "5": {
+                    "title": "Partnership with National Universities",
+                    "excerpt": "NSPC announces strategic partnerships with leading universities to enhance educational opportunities for our members.",
+                    "subtitle": "New collaborations to expand learning pathways"
+                },
+                "6": {
+                    "title": "Youth Empowerment Workshop Series",
+                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy.",
+                    "subtitle": "Monthly workshops for skill-building and leadership"
+                },
+                "7": {
+                    "title": "Youth Empowerment Workshop Series",
+                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
+                },
+                "8": {
+                    "title": "Youth Empowerment Workshop Series",
+                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
+                },
+                "9": {
+                    "title": "Youth Empowerment Workshop Series",
+                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
+                },
+                "10": {
+                    "title": "Youth Empowerment Workshop Series",
+                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
+                },
+                "11": {
+                    "title": "Youth Empowerment Workshop Series",
+                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
+                }
+            },
+            "videos": {
+                "1": {
+                    "title": "Introduction to Social Protection in Cambodia",
+                    "description": "Learn about the social protection system and its impact on Cambodian communities."
+                },
+                "2": {
+                    "title": "Community Impact Stories",
+                    "description": "Hear from community members about how social protection programs have changed their lives."
+                },
+                "3": {
+                    "title": "Annual Conference Highlights 2023",
+                    "description": "Key moments and discussions from our annual social protection conference."
+                },
+                "4": {
+                    "title": "Youth Employment Programs",
+                    "description": "Explore initiatives helping young Cambodians access employment opportunities."
+                },
+                "5": {
+                    "title": "Healthcare Access for All",
+                    "description": "Understanding how social protection ensures healthcare access for vulnerable populations."
+                },
+                "6": {
+                    "title": "Education Support Initiatives",
+                    "description": "Programs supporting education access for children from low-income families."
+                }
+            }
+        }
+    },
+    "Common": {
+        "nav": {
+            "home": "Home",
+            "about": "About Us",
+            "learnMore": "Learn more about NSPC",
+            "resources": "Resources",
+            "accessDocs": "Access our documents & materials",
+            "news": "News & Announcement",
+            "contact": "Contact Us",
+            "eng": "ENG",
+            "kh": "KH",
+            "selectLanguage": "Select language",
+            "login": "Log in"
+        },
+        "footer": {
+            "description": "National Social Protection Council — ensuring social protection for all.",
+            "quickLinks": "Quick Links",
+            "contactTitle": "Contact",
+            "address": "Ministry address, Phnom Penh",
+            "emailLabel": "Email:",
+            "phoneLabel": "Phone:",
+            "rights": "© {year} National Social Protection Council. All rights reserved."
+        }
+    }
+}

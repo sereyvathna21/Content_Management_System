@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function NewsSection() {
+  const t = useTranslations("NewsPage");
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -57,11 +59,10 @@ export default function NewsSection() {
     >
       <div className="text-center mb-6 sm:mb-8">
         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-3 sm:mb-4">
-          News & Announcements
+          {t("newsSection.title")}
         </h2>
         <p className="text-gray-600 text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-4">
-          Stay updated with our latest initiatives, publications, and community
-          engagements
+          {t("newsSection.subtitle")}
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
@@ -102,7 +103,7 @@ export default function NewsSection() {
                   href="/Landing-page/news"
                   className="text-primary font-semibold hover:gap-3 flex items-center gap-2 text-sm sm:text-base transition-all duration-300 group-hover:translate-x-1"
                 >
-                  Read more
+                  {t("newsSection.readMore")}
                   <svg
                     className="w-4 h-4 sm:w-5 sm:h-5"
                     fill="none"
@@ -128,7 +129,7 @@ export default function NewsSection() {
           href="/Landing-page/News"
           className="bg-primary text-white px-5 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 rounded-full font-bold text-sm sm:text-base md:text-lg hover:shadow-xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-2"
         >
-          View All News
+          {t("newsSection.viewAll")}
           <svg
             className="w-4 h-4 sm:w-5 sm:h-5"
             fill="none"

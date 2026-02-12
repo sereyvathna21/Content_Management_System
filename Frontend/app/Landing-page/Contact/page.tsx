@@ -1,12 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import { Phone, Mail, MapPin, Facebook, Send } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Header from "@/app/components/Header";
 import Navigation from "@/app/components/Navigation";
 import Footer from "@/app/components/Footer";
 import FormAlert from "@/app/components/FormAlert";
 
 export default function Contact() {
+  const t = useTranslations("ContactPage");
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -37,34 +40,27 @@ export default function Contact() {
   const validateField = (name: string, value: string): string => {
     switch (name) {
       case "name":
-        if (!value.trim()) return "Name is required";
-        if (value.trim().length < 2)
-          return "Name must be at least 2 characters";
-        if (value.trim().length > 100)
-          return "Name must be less than 100 characters";
+        if (!value.trim()) return t("form.nameRequired");
+        if (value.trim().length < 2) return t("form.nameMinLength");
+        if (value.trim().length > 100) return t("form.nameMaxLength");
         return "";
 
       case "email":
-        if (!value.trim()) return "Email is required";
+        if (!value.trim()) return t("form.emailRequired");
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value))
-          return "Please enter a valid email address";
+        if (!emailRegex.test(value)) return t("form.emailInvalid");
         return "";
 
       case "subject":
-        if (!value.trim()) return "Subject is required";
-        if (value.trim().length < 5)
-          return "Subject must be at least 5 characters";
-        if (value.trim().length > 200)
-          return "Subject must be less than 200 characters";
+        if (!value.trim()) return t("form.subjectRequired");
+        if (value.trim().length < 5) return t("form.subjectMinLength");
+        if (value.trim().length > 200) return t("form.subjectMaxLength");
         return "";
 
       case "message":
-        if (!value.trim()) return "Message is required";
-        if (value.trim().length < 10)
-          return "Message must be at least 10 characters";
-        if (value.trim().length > 1000)
-          return "Message must be less than 1000 characters";
+        if (!value.trim()) return t("form.messageRequired");
+        if (value.trim().length < 10) return t("form.messageMinLength");
+        if (value.trim().length > 1000) return t("form.messageMaxLength");
         return "";
 
       default:
@@ -124,7 +120,7 @@ export default function Contact() {
       setIsSubmitting(false);
       setSubmitStatus({
         type: "error",
-        message: "Please fill the form before submitting.",
+        message: t("form.errorMessage"),
       });
       return;
     }
@@ -133,7 +129,7 @@ export default function Contact() {
     setTimeout(() => {
       setSubmitStatus({
         type: "success",
-        message: "Thank you for your message! We'll get back to you soon.",
+        message: t("form.successMessage"),
       });
       setIsSubmitting(false);
       setFormData({ name: "", email: "", subject: "", message: "" });
@@ -151,11 +147,10 @@ export default function Contact() {
         <div className="bg-primary text-white py-6 sm:py-8 md:py-10 lg:py-12 animate-fade-in">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 sm:mb-2 md:mb-3 animate-slide-down">
-              Get in Touch
+              {t("title")}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-center text-white/80 max-w-2xl mx-auto animate-slide-up">
-              We'd love to hear from you. Send us a message and we'll respond as
-              soon as possible.
+              {t("subtitle")}
             </p>
           </div>
         </div>
@@ -172,7 +167,7 @@ export default function Contact() {
                   <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
                 <h3 className="ml-3 sm:ml-4 text-base sm:text-lg md:text-xl font-semibold">
-                  Phone
+                  {t("phone")}
                 </h3>
               </div>
               <p className="text-gray-600">+855 061 701 111</p>
@@ -188,7 +183,7 @@ export default function Contact() {
                   <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
                 <h3 className="ml-3 sm:ml-4 text-base sm:text-lg md:text-xl font-semibold">
-                  Email
+                  {t("email")}
                 </h3>
               </div>
               <p className="text-gray-600">info@nspc.gov.kh</p>
@@ -204,7 +199,7 @@ export default function Contact() {
                   <Facebook className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                 </div>
                 <h3 className="ml-3 sm:ml-4 text-base sm:text-lg md:text-xl font-semibold">
-                  Social Media
+                  {t("socialMedia")}
                 </h3>
               </div>
               <a
@@ -225,7 +220,7 @@ export default function Contact() {
               style={{ animationDelay: "0.4s" }}
             >
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 md:mb-5 text-gray-800">
-                Send a Feedback
+                {t("sendFeedback")}
               </h2>
               <form
                 onSubmit={handleSubmit}
@@ -236,7 +231,7 @@ export default function Contact() {
                     htmlFor="name"
                     className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
                   >
-                    Full Name <span className="text-red-600">*</span>
+                    {t("form.name")} <span className="text-red-600">*</span>
                   </label>
                   <input
                     type="text"
@@ -250,7 +245,7 @@ export default function Contact() {
                         ? "border-red-500 focus:ring-red-500 animate-shake"
                         : "border-gray-300"
                     }`}
-                    placeholder="John Doe"
+                    placeholder={t("form.namePlaceholder")}
                   />
                   <div className="h-6 mt-1">
                     {errors.name && touched.name && (
@@ -266,7 +261,7 @@ export default function Contact() {
                     htmlFor="email"
                     className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
                   >
-                    Email <span className="text-red-600">*</span>
+                    {t("form.email")} <span className="text-red-600">*</span>
                   </label>
                   <input
                     type="email"
@@ -280,7 +275,7 @@ export default function Contact() {
                         ? "border-red-500 focus:ring-red-500 animate-shake"
                         : "border-gray-300"
                     }`}
-                    placeholder="john@example.com"
+                    placeholder={t("form.emailPlaceholder")}
                   />
                   <div className="h-6 mt-1">
                     {errors.email && touched.email && (
@@ -296,7 +291,7 @@ export default function Contact() {
                     htmlFor="subject"
                     className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
                   >
-                    Subject <span className="text-red-600">*</span>
+                    {t("form.subject")} <span className="text-red-600">*</span>
                   </label>
                   <input
                     type="text"
@@ -310,7 +305,7 @@ export default function Contact() {
                         ? "border-red-500 focus:ring-red-500 animate-shake"
                         : "border-gray-300"
                     }`}
-                    placeholder="How can we help you?"
+                    placeholder={t("form.subjectPlaceholder")}
                   />
                   <div className="h-6 mt-1">
                     {errors.subject && touched.subject && (
@@ -326,7 +321,7 @@ export default function Contact() {
                     htmlFor="message"
                     className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
                   >
-                    Message <span className="text-red-600">*</span>
+                    {t("form.message")} <span className="text-red-600">*</span>
                   </label>
                   <textarea
                     id="message"
@@ -341,7 +336,7 @@ export default function Contact() {
                         ? "border-red-500 focus:ring-red-500 animate-shake"
                         : "border-gray-300"
                     }`}
-                    placeholder="Tell us more about your inquiry..."
+                    placeholder={t("form.messagePlaceholder")}
                   />
                   <div className="flex justify-between items-start mt-1 min-h-[1.5rem]">
                     <div className="flex-1">
@@ -404,12 +399,12 @@ export default function Contact() {
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         ></path>
                       </svg>
-                      Sending...
+                      {t("form.submitting")}
                     </>
                   ) : (
                     <>
                       <Send className="w-5 h-5" />
-                      Send Message
+                      {t("form.submit")}
                     </>
                   )}
                 </button>
@@ -427,7 +422,7 @@ export default function Contact() {
                     <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                   </div>
                   <h2 className="ml-3 sm:ml-4 text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-gray-800">
-                    Our Location
+                    {t("location")}
                   </h2>
                 </div>
                 <p className="text-gray-600 mb-2 sm:mb-3">

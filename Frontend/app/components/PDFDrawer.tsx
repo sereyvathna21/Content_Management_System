@@ -54,19 +54,6 @@ export default function PDFDrawer({
         maxTitle = 80;
         maxDesc = 160;
       }
-
-      const tTitle =
-        typeof pub.title === "string" && pub.title.length > maxTitle
-          ? pub.title.slice(0, maxTitle).trimEnd() + "..."
-          : pub.title || "";
-
-      const tDesc =
-        typeof pub.description === "string" && pub.description.length > maxDesc
-          ? pub.description.slice(0, maxDesc).trimEnd() + "..."
-          : pub.description || "";
-
-      setTruncatedTitle(tTitle);
-      setTruncatedDescription(tDesc);
     };
 
     const initialWidth =

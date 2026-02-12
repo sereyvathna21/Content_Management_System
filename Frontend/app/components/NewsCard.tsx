@@ -1,5 +1,7 @@
+"use client";
 import Link from "next/link";
 import React from "react";
+import { useLocale, useTranslations } from "next-intl";
 
 interface NewsCardProps {
   id: string;
@@ -34,6 +36,16 @@ export default function NewsCard({
   category,
   image,
 }: NewsCardProps) {
+  const locale = useLocale();
+  const t = useTranslations("NewsPage");
+  const dateLocale = locale === "kh" ? "km-KH" : locale || "en-US";
+  const titleKey = `content.articles.${id}.title`;
+  const excerptKey = `content.articles.${id}.excerpt`;
+  let displayedTitle = t(titleKey);
+  if (displayedTitle === titleKey) displayedTitle = title;
+  let displayedExcerpt = t(excerptKey);
+  if (displayedExcerpt === excerptKey) displayedExcerpt = excerpt;
+
   return (
     <Link href={`/Landing-page/News/${id}`}>
       <article className="group bg-gray-50 rounded-xl overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col">
@@ -43,14 +55,18 @@ export default function NewsCard({
 
           <div className="absolute top-2 left-2">
             <time className="text-xs sm:text-sm font-semibold text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md">
-              {date}
+              {new Date(date).toLocaleDateString(dateLocale, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
             </time>
           </div>
 
           <div
             className={`absolute top-2 right-2 rounded-md font-semibold text-white text-xs sm:text-sm px-2 py-1 ${getCategoryColor(category)}`}
           >
-            {category}
+            {t(`categories.${category.toLowerCase()}`)}
           </div>
         </div>
 
@@ -60,10 +76,10 @@ export default function NewsCard({
             title={title}
             className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 truncate whitespace-nowrap group-hover:text-primary transition-colors"
           >
-            {title}
+            {displayedTitle}
           </h3>
           <p className="text-xs sm:text-sm text-gray-600 line-clamp-2 flex-1">
-            {excerpt}
+            {displayedExcerpt}
           </p>
         </div>
       </article>

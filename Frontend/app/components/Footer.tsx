@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Facebook } from "lucide-react";
+import { useTranslations } from "next-intl";
 export default function Footer() {
+  const t = useTranslations("Common");
   const [isVisible, setIsVisible] = useState(false);
   const footerRef = useRef<HTMLElement>(null);
 
@@ -42,14 +44,13 @@ export default function Footer() {
               />
             </div>
             <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed">
-              National Social Protection Council — ensuring social protection
-              for all.
+              {t("footer.description")}
             </p>
           </div>
 
           <div>
             <h4 className="font-bold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-5 md:mb-6">
-              Quick Links
+              {t("footer.quickLinks")}
             </h4>
             <ul className="text-base sm:text-lg md:text-xl text-white/90 space-y-2 sm:space-y-3">
               <li>
@@ -57,7 +58,7 @@ export default function Footer() {
                   href="/Landing-page/about/national"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
-                  About
+                  {t("nav.about")}
                 </Link>
               </li>
               <li>
@@ -65,7 +66,7 @@ export default function Footer() {
                   href="/Landing-page/resources"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
-                  Resources
+                  {t("nav.resources")}
                 </Link>
               </li>
               <li>
@@ -73,7 +74,7 @@ export default function Footer() {
                   href="/Landing-page/News"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
-                  News & Announcement
+                  {t("nav.news")}
                 </Link>
               </li>
               <li>
@@ -81,7 +82,7 @@ export default function Footer() {
                   href="/Landing-page/Contact"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
-                  Contact
+                  {t("nav.contact")}
                 </Link>
               </li>
             </ul>
@@ -89,16 +90,16 @@ export default function Footer() {
 
           <div>
             <h4 className="font-bold text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-5 md:mb-6">
-              Contact
+              {t("footer.contactTitle")}
             </h4>
             <p className="text-base sm:text-lg md:text-xl text-white/90 mb-2">
-              Ministry address, Phnom Penh
+              {t("footer.address")}
             </p>
             <p className="text-base sm:text-lg md:text-xl text-white/90 mb-2">
-              Email: info@nspc.gov.kh
+              {t("footer.emailLabel")} info@nspc.gov.kh
             </p>
             <p className="text-base sm:text-lg md:text-xl text-white/90 mb-4 sm:mb-5 md:mb-6">
-              Phone: +855 23 000 000
+              {t("footer.phoneLabel")} +855 23 000 000
             </p>
 
             <div className="flex items-center gap-3 sm:gap-4">
@@ -114,8 +115,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 sm:mt-14 md:mt-16 pt-8 sm:pt-9 md:pt-10 border-t border-white/20 text-center text-sm sm:text-base md:text-lg text-white/90">
-          © {new Date().getFullYear()} National Social Protection Council. All
-          rights reserved.
+          {t("footer.rights", { year: new Date().getFullYear() })}
         </div>
       </div>
     </footer>

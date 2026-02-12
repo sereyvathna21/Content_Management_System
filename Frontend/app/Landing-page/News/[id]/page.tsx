@@ -1,6 +1,8 @@
 import React from "react";
+import { getTranslations } from "next-intl/server";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { newsArticles } from "../articles";
+import { newsArticles } from "@/app/Landing-page/News/articles";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import Navigation from "@/app/components/Navigation";
@@ -11,16 +13,13 @@ import Link from "next/link";
 export default async function ArticlePage({
   params,
 }: {
-  params: Promise<Record<string, string>>;
+  params: Promise<{ id: string }>;
 }) {
+  const t = await getTranslations("NewsPage");
+  const cookieStore = await cookies();
+  const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
   const resolvedParams = await params;
-  const raw =
-    resolvedParams.Article ??
-    resolvedParams.article ??
-    resolvedParams.id ??
-    resolvedParams.slug ??
-    "";
-  const id = decodeURIComponent(raw);
+  const id = decodeURIComponent(resolvedParams.id);
 
   // try to find by id first, then try by slugified title fallback
   let article = newsArticles.find((a) => a.id === id);
@@ -48,6 +47,18 @@ export default async function ArticlePage({
     }
   };
 
+  const titleKey = `content.articles.${article.id}.title`;
+  const subtitleKey = `content.articles.${article.id}.subtitle`;
+  const excerptKey = `content.articles.${article.id}.excerpt`;
+  const displayedTitle = t(titleKey) !== titleKey ? t(titleKey) : article.title;
+  const displayedSubtitle = (article as any).subtitle
+    ? t(subtitleKey) !== subtitleKey
+      ? t(subtitleKey)
+      : (article as any).subtitle
+    : undefined;
+  const displayedExcerpt =
+    t(excerptKey) !== excerptKey ? t(excerptKey) : article.excerpt;
+
   return (
     <>
       <Header />
@@ -56,13 +67,13 @@ export default async function ArticlePage({
 
       <main className="mt-8 sm:mt-12 md:mt-16 bg-white to-blue-50/30 min-h-screen">
         <div className="container mx-auto px-4 sm:px-6 py-8 sm:py-10 md:py-12">
-          <Breadcrumbs currentLabel="Article" />
+          <Breadcrumbs currentLabel={t("articleLabel")} />
           <article className="grid lg:grid-cols-3 gap-10 items-start max-w-6xl mx-auto">
             <header className="lg:col-span-2">
               <div className="relative rounded-xl overflow-hidden shadow-lg ">
                 <img
                   src={article.image}
-                  alt={article.title}
+                  alt={displayedTitle}
                   className="w-full h-72 sm:h-96 object-cover rounded-xl"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -71,12 +82,17 @@ export default async function ArticlePage({
                     <span
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(article.category)}`}
                     >
-                      {article.category}
+                      {t(`categories.${article.category.toLowerCase()}`)}
                     </span>
-                    <p className="text-xs text-gray-200">{article.date}</p>
+                    <p className="text-xs text-gray-200">
+                      {new Date(article.date).toLocaleDateString(
+                        locale || "en-US",
+                        { year: "numeric", month: "short", day: "numeric" },
+                      )}
+                    </p>
                   </div>
                   <h1 className="mt-3 text-3xl sm:text-5xl font-extrabold leading-tight">
-                    {article.title}
+                    {displayedTitle}
                   </h1>
                 </div>
               </div>
@@ -84,12 +100,12 @@ export default async function ArticlePage({
                 <ShareControls />
               </div>
               <div className="mt-6 bg-white rounded-xl shadow-md p-4 prose prose-neutral max-w-none text-gray-800">
-                {"subtitle" in article && (article as any).subtitle ? (
+                {displayedSubtitle ? (
                   <h2 className=" text-xl text-primary font-semibold">
-                    {(article as any).subtitle}
+                    {displayedSubtitle}
                   </h2>
                 ) : null}
-                <p className="mt-2 text-lg text-gray-700">{article.excerpt}</p>
+                <p className="mt-2 text-lg text-gray-700">{displayedExcerpt}</p>
                 {"content" in article && (article as any).content ? (
                   <div
                     dangerouslySetInnerHTML={{
@@ -104,34 +120,48 @@ export default async function ArticlePage({
               <div className="sticky top-24 space-y-4">
                 <div className="bg-white rounded-xl shadow p-4">
                   <h3 className="text-sm font-semibold text-primary mb-3">
-                    Related articles
+                    {t("relatedArticles")}
                   </h3>
                   <ul className="space-y-4">
                     {newsArticles
                       .filter((a) => a.id !== article.id)
                       .slice(0, 5)
-                      .map((a) => (
-                        <li key={a.id}>
-                          <Link
-                            href={`/Landing-page/News/${encodeURIComponent(a.id)}`}
-                            className="flex items-center gap-3 py-2"
-                          >
-                            <img
-                              src={a.image}
-                              alt={a.title}
-                              className="w-28 h-16 object-cover rounded"
-                            />
-                            <div className="text-base">
-                              <div className="font-medium text-gray-800">
-                                {a.title}
+                      .map((a) => {
+                        const relatedTitleKey = `content.articles.${a.id}.title`;
+                        const relatedTitle =
+                          t(relatedTitleKey) !== relatedTitleKey
+                            ? t(relatedTitleKey)
+                            : a.title;
+                        return (
+                          <li key={a.id}>
+                            <Link
+                              href={`/Landing-page/News/${encodeURIComponent(a.id)}`}
+                              className="flex items-center gap-3 py-2"
+                            >
+                              <img
+                                src={a.image}
+                                alt={relatedTitle}
+                                className="w-28 h-16 object-cover rounded"
+                              />
+                              <div className="text-base">
+                                <div className="font-medium text-gray-800">
+                                  {relatedTitle}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {new Date(a.date).toLocaleDateString(
+                                    locale || "en-US",
+                                    {
+                                      year: "numeric",
+                                      month: "short",
+                                      day: "numeric",
+                                    },
+                                  )}
+                                </div>
                               </div>
-                              <div className="text-xs text-gray-500">
-                                {a.date}
-                              </div>
-                            </div>
-                          </Link>
-                        </li>
-                      ))}
+                            </Link>
+                          </li>
+                        );
+                      })}
                   </ul>
                 </div>
               </div>

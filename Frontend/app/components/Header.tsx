@@ -1,11 +1,29 @@
 "use client";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import { useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 
 export default function Header() {
-  const [lang, setLang] = useState<"en" | "kh">("en");
+  const currentLocale = useLocale();
+  const t = useTranslations("Common");
+  const [lang, setLang] = useState<"en" | "kh">(currentLocale as "en" | "kh");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  // Update lang state when locale changes
+  useEffect(() => {
+    setLang(currentLocale as "en" | "kh");
+  }, [currentLocale]);
+
+  const changeLocale = (newLocale: "en" | "kh") => {
+    // Set cookie
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
+    setLang(newLocale);
+    setDropdownOpen(false);
+    // Reload page to apply new locale
+    window.location.reload();
+  };
 
   useEffect(() => {
     function handleDocClick(e: MouseEvent) {
@@ -57,14 +75,14 @@ export default function Header() {
               }}
               aria-expanded={dropdownOpen}
               aria-haspopup="true"
-              aria-label="Select language"
+              aria-label={t("nav.selectLanguage")}
               className="flex items-center gap-1 sm:gap-2 rounded-full text-primary ring-1 ring-primary font-semibold text-sm hover:ring-2 hover:bg-primary/5 focus:ring-2 focus:outline-none focus:ring-primary/50 transition-all duration-300 px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5"
             >
               <span className="text-base sm:text-lg md:text-xl">
                 {lang === "en" ? "🇬🇧" : "🇰🇭"}
               </span>
               <span className="hidden md:inline">
-                {lang === "en" ? "ENG" : "KH"}
+                {lang === "en" ? t("nav.eng") : t("nav.kh")}
               </span>
               <svg
                 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${dropdownOpen ? "-rotate-180" : "rotate-0"}`}
@@ -103,14 +121,12 @@ export default function Header() {
                 `}</style>
                 <button
                   onClick={() => {
-                    setLang("en");
-                    setDropdownOpen(false);
+                    changeLocale("en");
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      setLang("en");
-                      setDropdownOpen(false);
+                      changeLocale("en");
                     }
                   }}
                   role="menuitem"
@@ -119,18 +135,16 @@ export default function Header() {
                   }`}
                 >
                   <span className="text-base sm:text-lg">🇬🇧</span>
-                  ENG
+                  {t("nav.eng")}
                 </button>
                 <button
                   onClick={() => {
-                    setLang("kh");
-                    setDropdownOpen(false);
+                    changeLocale("kh");
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
-                      setLang("kh");
-                      setDropdownOpen(false);
+                      changeLocale("kh");
                     }
                   }}
                   role="menuitem"
@@ -139,7 +153,7 @@ export default function Header() {
                   }`}
                 >
                   <span className="text-base sm:text-lg">🇰🇭</span>
-                  KH
+                  {t("nav.kh")}
                 </button>
               </div>
             )}
@@ -150,7 +164,7 @@ export default function Header() {
               href="/Landing-page/Login"
               className="bg-primary text-white font-semibold rounded-full hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 hover:bg-primary/90 focus:ring-2 focus:ring-primary/50 focus:outline-none border border-transparent inline-block px-4 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 text-sm sm:text-base"
             >
-              Log in
+              {t("nav.login")}
             </Link>
           </div>
         </div>

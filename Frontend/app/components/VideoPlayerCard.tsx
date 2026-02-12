@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import ShareControls from "@/app/components/ShareControls";
+import { useTranslations, useLocale } from "next-intl";
 
 type Video = {
   id: string;
@@ -27,6 +28,10 @@ const getCategoryColor = (category: string) => {
 };
 
 export default function VideoPlayerCard({ video }: { video: Video }) {
+  const t = useTranslations("NewsPage");
+  const locale = useLocale();
+  const dateLocale = locale === "kh" ? "km-KH" : locale || "en-US";
+
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
       <div className="relative w-full aspect-video bg-black">
@@ -60,7 +65,7 @@ export default function VideoPlayerCard({ video }: { video: Video }) {
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
-              {new Date(video.date).toLocaleDateString("en-US", {
+              {new Date(video.date).toLocaleDateString(dateLocale, {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
@@ -71,7 +76,7 @@ export default function VideoPlayerCard({ video }: { video: Video }) {
                 video.category,
               )} shadow-sm`}
             >
-              {video.category}
+              {t(`categories.${video.category.toLowerCase()}`)}
             </span>
           </div>
           <span className="mb-3">
