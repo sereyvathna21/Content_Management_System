@@ -308,5 +308,68 @@
                 "goToSignIn": "Go to Sign In"
             }
         }
+    },
+    "LawsPage": {
+        "hero": {
+            "title": "Laws and Regulations",
+            "subtitle": "Access and download official legal documents and policies.",
+            "imgAlt": "Laws cover"
+        },
+        "categoryLabels": {
+            "All": "All",
+            "Royal Degree": "Royal Degree",
+            "Sub-Degree": "Sub-Degree",
+            "Prakas": "Prakas",
+            "Decision and Guideline": "Decision and Guideline"
+        },
+        "control": {
+            "filterByCategory": "Filter by Category",
+            "searchPlaceholder": "Search documents...",
+            "export": "Export",
+            "clear": "Clear",
+            "exportSelectedConfirm": "Please select at least one PDF to export."
+        },
+        "preview": {
+            "emptyTitle": "No Document Selected",
+            "emptySubtitle": "Select a document from the list to preview it here.",
+            "download": "Download",
+            "close": "Close",
+            "openInNewTab": "Open PDF in new tab",
+            "loading": "Loading preview…",
+            "loadError": "Could not load PDF preview — you can open it in a new tab."
+        },
+        "card": {
+            "noDate": "No Date",
+            "noResults": "No documents found matching your criteria."
+        },
+        "exportPdf": {
+            "title": "Laws & Regulations",
+            "generatedOn": "Generated on:",
+            "totalRecords": "Total Records:",
+            "category": "Category:",
+            "tableHead": [
+                "#",
+                "Title",
+                "Category",
+                "Upload Date",
+                "PDF Link"
+            ]
+        },
+        "content": {
+            "items": {
+                "1": {
+                    "title": "National Health Act"
+                },
+                "2": {
+                    "title": "Environmental Regulations"
+                },
+                "3": {
+                    "title": "Education Policy Update"
+                },
+                "4": {
+                    "title": "Public Safety Notice"
+                }
+            }
+        }
     }
 }

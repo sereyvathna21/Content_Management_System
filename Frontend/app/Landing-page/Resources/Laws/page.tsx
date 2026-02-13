@@ -12,6 +12,7 @@ import MobilePDFModal from "@/app/components/MobilePDFModal";
 import ExportConfirmModal from "@/app/components/ExportConfirmModal";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import { useTranslations } from "next-intl";
 
 type LawItem = {
   id: string;
@@ -53,6 +54,7 @@ const SAMPLE_LAWS: LawItem[] = [
 ];
 
 export default function Laws() {
+  const t = useTranslations("LawsPage");
   const categories = useMemo(
     () => ["All", ...Array.from(new Set(SAMPLE_LAWS.map((l) => l.category)))],
     [],
@@ -100,14 +102,22 @@ export default function Laws() {
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.setTextColor(40, 40, 40);
-    doc.text("Laws & Regulations", 14, 20);
+    doc.text(t("exportPdf.title"), 14, 20);
 
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 28);
-    doc.text(`Total Records: ${filtered.length}`, 14, 34);
+    doc.text(
+      `${t("exportPdf.generatedOn")} ${new Date().toLocaleDateString()}`,
+      14,
+      28,
+    );
+    doc.text(`${t("exportPdf.totalRecords")} ${filtered.length}`, 14, 34);
     if (selectedCategory !== "All")
-      doc.text(`Category: ${selectedCategory}`, 14, 40);
+      doc.text(
+        `${t("exportPdf.category")} ${t(`categoryLabels.${selectedCategory}`) || selectedCategory}`,
+        14,
+        40,
+      );
 
     const exportItems = [...filtered].sort((a, b) => {
       const ta = a.uploadDate ? new Date(a.uploadDate).getTime() : 0;
@@ -117,15 +127,16 @@ export default function Laws() {
 
     const tableData = exportItems.map((law, index) => [
       index + 1,
-      law.title,
-      law.category,
+      t(`content.items.${law.id}.title`) || law.title,
+      t(`categoryLabels.${law.category}`) || law.category,
       law.uploadDate ? new Date(law.uploadDate).toLocaleDateString() : "-",
       law.url,
     ]);
+    const head = t("exportPdf.tableHead");
 
     (doc as any).autoTable({
       startY: 45,
-      head: [["#", "Title", "Category", "Upload Date", "PDF Link"]],
+      head: [head],
       body: tableData,
       theme: "striped",
       headStyles: {
@@ -149,7 +160,7 @@ export default function Laws() {
   // Request to open confirmation modal for exporting selected PDFs
   const handleRequestExportSelected = () => {
     if (selectedIds.length === 0) {
-      alert("Please select at least one PDF to export.");
+      alert(t("control.exportSelectedConfirm"));
       return;
     }
     setShowExportConfirm(true);
@@ -168,7 +179,8 @@ export default function Laws() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        const safeTitle = (law.title || "document")
+        const localizedTitle = t(`content.items.${law.id}.title`) || law.title;
+        const safeTitle = (localizedTitle || "document")
           .replace(/[^a-z0-9\s\-_.]/gi, "")
           .trim()
           .replace(/\s+/g, "-")
@@ -195,17 +207,17 @@ export default function Laws() {
       <div className="relative w-full animate-fade-in overflow-hidden">
         <img
           src="/hero1.svg"
-          alt="Laws cover"
+          alt={t("hero.imgAlt")}
           className="absolute inset-0 w-full h-[13rem] sm:h-[14rem] md:h-[18.8rem] lg:h-[21.2rem] object-cover pointer-events-none transition-transform duration-700 ease-out"
         />
         <div className="absolute w-full h-[13rem] sm:h-[14rem] md:h-[18.8rem] lg:h-[21.3rem] bg-black/50 animate-fade-in" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 lg:py-32">
           <div className="text-center">
             <h1 className="fluid-title font-extrabold text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight animate-slide-up-fade [animation-delay:0.3s] opacity-0">
-              Laws and Regulations
+              {t("hero.title")}
             </h1>
             <p className="text-white/90 max-w-2xl mx-auto mt-2 sm:mt-3 md:mt-4 text-sm sm:text-base md:text-lg animate-slide-up-fade [animation-delay:0.6s] opacity-0">
-              Access and download official legal documents and policies.
+              {t("hero.subtitle")}
             </p>
           </div>
         </div>
@@ -238,7 +250,10 @@ export default function Laws() {
             items={selectedIds
               .map((id) => SAMPLE_LAWS.find((l) => l.id === id))
               .filter((l): l is LawItem => Boolean(l))
-              .map((l) => ({ id: l.id, title: l.title }))}
+              .map((l) => ({
+                id: l.id,
+                title: t(`content.items.${l.id}.title`) || l.title,
+              }))}
             onCancel={() => setShowExportConfirm(false)}
             onConfirm={() =>
               performExportSelected(
@@ -262,7 +277,7 @@ export default function Laws() {
                   >
                     <LawCard
                       id={law.id}
-                      title={law.title}
+                      title={t(`content.items.${law.id}.title`) || law.title}
                       category={law.category}
                       uploadDate={law.uploadDate}
                       isSelected={selectedPdf?.id === law.id}
@@ -293,7 +308,7 @@ export default function Laws() {
                       </svg>
                     </div>
                     <p className="text-gray-500 font-medium">
-                      No documents found matching your criteria.
+                      {t("card.noResults")}
                     </p>
                   </div>
                 </div>
@@ -306,7 +321,10 @@ export default function Laws() {
             <div className="transition-all duration-300 ease-in-out transform hover:scale-[1.02]">
               {selectedPdf ? (
                 <PDFPreview
-                  title={selectedPdf.title}
+                  title={
+                    t(`content.items.${selectedPdf.id}.title`) ||
+                    selectedPdf.title
+                  }
                   url={selectedPdf.url}
                   onClose={() => setSelectedPdf(null)}
                 />
@@ -321,7 +339,9 @@ export default function Laws() {
         {selectedPdf && (
           <div className="animate-fade-in-scale">
             <MobilePDFModal
-              title={selectedPdf.title}
+              title={
+                t(`content.items.${selectedPdf.id}.title`) || selectedPdf.title
+              }
               url={selectedPdf.url}
               onClose={() => setSelectedPdf(null)}
             />

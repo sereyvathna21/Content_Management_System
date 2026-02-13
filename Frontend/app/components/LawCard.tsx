@@ -1,4 +1,8 @@
+"use client";
+
 import React from "react";
+import { useTranslations } from "next-intl";
+import { getCategoryBadgeClasses } from "@/app/lib/categoryColors";
 
 type LawCardProps = {
   id: string;
@@ -11,20 +15,7 @@ type LawCardProps = {
   onToggleCheck: () => void;
 };
 
-const getCategoryColor = (category: string) => {
-  switch (category.toLowerCase()) {
-    case "act":
-      return "text-blue-600 bg-blue-50 border-blue-200";
-    case "regulation":
-      return "text-green-600 bg-green-50 border-green-200";
-    case "policy":
-      return "text-amber-600 bg-amber-50 border-amber-200";
-    case "notification":
-      return "text-purple-600 bg-purple-50 border-purple-200";
-    default:
-      return "text-gray-600 bg-gray-50 border-gray-200";
-  }
-};
+
 
 export default function LawCard({
   title,
@@ -35,6 +26,8 @@ export default function LawCard({
   onSelect,
   onToggleCheck,
 }: LawCardProps) {
+  const tCard = useTranslations("LawsPage.card");
+  const tRoot = useTranslations("LawsPage");
   return (
     <div
       onClick={onSelect}
@@ -90,17 +83,17 @@ export default function LawCard({
 
             <div className="mt-1 sm:mt-1.5 flex sm:flex-row flex-col sm:items-center items-start gap-1 sm:gap-3">
               <span
-                className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-medium border ${getCategoryColor(
+                className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-medium border ${getCategoryBadgeClasses(
                   category,
                 )}`}
               >
-                {category}
+                {tRoot(`categoryLabels.${category}`) || category}
               </span>
 
               <span className="text-[9px] sm:text-[10px] text-gray-500 mt-0.5 sm:mt-0 truncate">
                 {uploadDate
                   ? new Date(uploadDate).toLocaleDateString()
-                  : "No Date"}
+                  : tCard("noDate")}
               </span>
             </div>
           </div>

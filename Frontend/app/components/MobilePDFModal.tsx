@@ -1,4 +1,7 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type MobilePDFModalProps = {
   title: string;
@@ -16,6 +19,8 @@ export default function MobilePDFModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => setMounted(true), []);
+
+  const t = useTranslations("LawsPage.preview");
 
   useEffect(() => {
     let revoked = false;
@@ -56,6 +61,7 @@ export default function MobilePDFModal({
         <button
           onClick={onClose}
           className="p-2 -ml-2 text-gray-600 hover:text-gray-900 rounded-full hover:bg-gray-100"
+          aria-label={t("close")}
         >
           <svg
             className="w-6 h-6"
@@ -101,7 +107,7 @@ export default function MobilePDFModal({
               }
             }}
             className="text-primary p-2"
-            aria-label="Open PDF in new tab"
+            aria-label={t("openInNewTab")}
           >
             <svg
               className="w-6 h-6"
@@ -122,11 +128,13 @@ export default function MobilePDFModal({
       <div className="flex-1 relative overflow-auto">
         {loading && (
           <div className="p-4 text-center text-sm text-gray-500">
-            Loading preview…
+            {t("loading")}
           </div>
         )}
         {error && (
-          <div className="p-4 text-center text-sm text-red-500">{error}</div>
+          <div className="p-4 text-center text-sm text-red-500">
+            {t("loadError")}
+          </div>
         )}
         <iframe src={blobUrl || url} className="w-full h-full min-h-[320px]" />
       </div>
