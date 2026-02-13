@@ -12,23 +12,9 @@ type Video = {
   description?: string;
 };
 
-const getCategoryColor = (category: string) => {
-  switch (category.toLowerCase()) {
-    case "events":
-      return "bg-blue-600";
-    case "programs":
-      return "bg-green-600";
-    case "impact":
-      return "bg-yellow-500 text-black";
-    case "partnerships":
-      return "bg-purple-600";
-    default:
-      return "bg-gray-600";
-  }
-};
-
 export default function VideoPlayerCard({ video }: { video: Video }) {
-  const t = useTranslations("NewsPage");
+  const t = useTranslations();
+
   const locale = useLocale();
   const dateLocale = locale === "kh" ? "km-KH" : locale || "en-US";
 
@@ -70,13 +56,6 @@ export default function VideoPlayerCard({ video }: { video: Video }) {
                 month: "long",
                 day: "numeric",
               })}
-            </span>
-            <span
-              className={`inline-flex text-white items-center px-4 py-1.5 rounded-full text-fluid-xs text-xs sm:text-sm font-bold tracking-wide ${getCategoryColor(
-                video.category,
-              )} shadow-sm`}
-            >
-              {t(`categories.${video.category.toLowerCase()}`)}
             </span>
           </div>
           <span className="mb-3">

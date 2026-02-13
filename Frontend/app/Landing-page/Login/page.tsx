@@ -1,8 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { useTranslations } from "next-intl";
+import TopNav from "@/app/components/TopNav";
+
 export default function Login() {
+  const t = useTranslations("LoginPage.signIn");
+  const tc = useTranslations("Common");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,15 +30,15 @@ export default function Login() {
     };
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email = t("errors.emailRequired");
     } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email = t("errors.emailInvalid");
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = t("errors.passwordRequired");
     } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+      newErrors.password = t("errors.passwordMinLength");
     }
 
     setErrors(newErrors);
@@ -81,6 +85,7 @@ export default function Login() {
   return (
     <div>
       <section className="min-h-screen flex items-stretch">
+        <TopNav />
         <div
           className="hidden lg:flex lg:w-1/2 bg-cover relative items-center justify-center p-8 md:p-12"
           style={{
@@ -91,11 +96,9 @@ export default function Login() {
           <div
             className="absolute lg:hidden inset-0 z-0 bg-cover bg-center"
             style={{ backgroundImage: "url(/login.svg)" }}
-          >
-            <div className="absolute inset-0 bg-black/40"></div>
-          </div>
+          ></div>
           <div className="w-full max-w-md z-20">
-            <div className="flex justify-center animate-[fadeInDown_0.6s_ease-out]">
+            <div className="flex justify-center animate-[fadeInDown_0.6s_ease-out_0.2s_both]">
               <div className="bg-white p-4 rounded-2xl shadow-lg hover:scale-110 transition-transform duration-300">
                 <img
                   src="/favicon.svg"
@@ -108,10 +111,10 @@ export default function Login() {
             </div>
 
             <h1 className="font-bold lg:text-gray-900 text-white text-center text-xl sm:text-2xl md:text-3xl mb-2 animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-              Sign In
+              {t("title")}
             </h1>
             <p className="lg:text-gray-600 text-white/90 text-center text-sm sm:text-base mb-6 sm:mb-8 animate-[fadeIn_0.8s_ease-out_0.4s_both]">
-              Enter your credentials to access your account
+              {t("subtitle")}
             </p>
 
             <form
@@ -123,7 +126,7 @@ export default function Login() {
                   htmlFor="email"
                   className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
                 >
-                  Email Address
+                  {t("emailLabel")}
                 </label>
                 <input
                   type="email"
@@ -131,7 +134,7 @@ export default function Login() {
                   id="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="name@example.com"
+                  placeholder={t("emailPlaceholder")}
                   autoComplete="email"
                   aria-invalid={!!errors.email}
                   aria-describedby={errors.email ? "email-error" : undefined}
@@ -155,7 +158,7 @@ export default function Login() {
                   htmlFor="password"
                   className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
                 >
-                  Password
+                  {t("passwordLabel")}
                 </label>
                 <div className="relative">
                   <input
@@ -167,7 +170,7 @@ export default function Login() {
                     id="password"
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder="Enter your password"
+                    placeholder={t("passwordPlaceholder")}
                     autoComplete="current-password"
                     aria-invalid={!!errors.password}
                     aria-describedby={
@@ -179,7 +182,7 @@ export default function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1 transition-colors"
                     aria-label={
-                      showPassword ? "Hide password" : "Show password"
+                      showPassword ? t("hidePassword") : t("showPassword")
                     }
                   >
                     {showPassword ? (
@@ -242,14 +245,14 @@ export default function Login() {
                     htmlFor="remember-me"
                     className="ml-2 block lg:text-gray-700 text-white"
                   >
-                    Remember me
+                    {t("rememberMe")}
                   </label>
                 </div>
                 <Link
                   href="/Landing-page/Login/Forgetpassword"
                   className="font-medium text-white lg:text-primary hover:text-primary/80 transition-colors"
                 >
-                  Forgot password?
+                  {t("forgotPassword")}
                 </Link>
               </div>
 
@@ -258,7 +261,7 @@ export default function Login() {
                 disabled={isSubmitting}
                 className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3 animate-[slideInUp_0.6s_ease-out_0.9s_both]"
               >
-                {isSubmitting ? "Signing In..." : "Sign In"}
+                {isSubmitting ? t("signingIn") : t("signInButton")}
               </button>
             </form>
           </div>

@@ -146,8 +146,8 @@ export default function News() {
         </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10 ">
           {/* Toolbar: sort + info */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row items-end sm:items-end justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div className="w-full sm:w-auto">
               <SortControl value={sortOption} onChange={handleSortChange} />
             </div>
             <div className="gap-3 mt-2 sm:mt-0 w-full sm:w-auto justify-end">

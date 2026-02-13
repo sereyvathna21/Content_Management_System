@@ -1,9 +1,11 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { useTranslations } from "next-intl";
+import TopNav from "@/app/components/TopNav";
 
 export default function ForgotPassword() {
+  const t = useTranslations("LoginPage.forgotPassword");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,12 +21,12 @@ export default function ForgotPassword() {
     setError("");
 
     if (!email.trim()) {
-      setError("Email is required");
+      setError(t("errors.emailRequired"));
       return;
     }
 
     if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
+      setError(t("errors.emailInvalid"));
       return;
     }
 
@@ -38,7 +40,7 @@ export default function ForgotPassword() {
       setIsSuccess(true);
     } catch (error) {
       console.error("Password reset error:", error);
-      setError("Something went wrong. Please try again.");
+      setError(t("errors.sendError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -54,6 +56,7 @@ export default function ForgotPassword() {
   return (
     <div>
       <section className="min-h-screen flex items-stretch">
+        <TopNav />
         <div
           className="hidden lg:flex lg:w-1/2 bg-cover relative items-center justify-center"
           style={{
@@ -95,14 +98,13 @@ export default function ForgotPassword() {
                   className="font-bold lg:text-gray-900 text-white text-center text-fluid-3xl animate-[fadeIn_0.8s_ease-out_0.2s_both]"
                   style={{ marginBottom: "clamp(0.5rem, 2vw, 0.5rem)" }}
                 >
-                  Forgot Password?
+                  {t("title")}
                 </h1>
                 <p
                   className="lg:text-gray-600 text-white/90 text-center text-fluid-base animate-[fadeIn_0.8s_ease-out_0.4s_both]"
                   style={{ marginBottom: "clamp(1.5rem, 4vw, 2rem)" }}
                 >
-                  No worries! Enter your email and we'll send you reset
-                  instructions
+                  {t("subtitle")}
                 </p>
 
                 <form
@@ -120,7 +122,7 @@ export default function ForgotPassword() {
                       className="block font-medium lg:text-gray-700 text-white text-fluid-sm"
                       style={{ marginBottom: "clamp(0.375rem, 1.5vw, 0.5rem)" }}
                     >
-                      Email Address
+                      {t("emailLabel")}
                     </label>
                     <input
                       type="email"
@@ -128,7 +130,7 @@ export default function ForgotPassword() {
                       id="email"
                       value={email}
                       onChange={handleChange}
-                      placeholder="name@example.com"
+                      placeholder={t("emailPlaceholder")}
                       autoComplete="email"
                       aria-invalid={!!error}
                       aria-describedby={error ? "email-error" : undefined}
@@ -157,7 +159,7 @@ export default function ForgotPassword() {
                     className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-fluid-base animate-[slideInUp_0.6s_ease-out_0.7s_both]"
                     style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
                   >
-                    {isSubmitting ? "Sending..." : "Send Reset Link"}
+                    {isSubmitting ? t("sending") : t("sendButton")}
                   </button>
 
                   <div className="text-center animate-[fadeIn_0.6s_ease-out_0.8s_both]">
@@ -178,7 +180,7 @@ export default function ForgotPassword() {
                           d="M15 19l-7-7 7-7"
                         />
                       </svg>
-                      Back to Sign In
+                      {t("backToSignIn")}
                     </Link>
                   </div>
                 </form>
@@ -207,13 +209,13 @@ export default function ForgotPassword() {
                   className="font-bold lg:text-gray-900 text-white text-center text-fluid-3xl"
                   style={{ marginBottom: "clamp(0.5rem, 2vw, 0.5rem)" }}
                 >
-                  Check Your Email
+                  {t("success.title")}
                 </h1>
                 <p
                   className="lg:text-gray-600 text-white/90 text-center text-fluid-base"
                   style={{ marginBottom: "clamp(1.5rem, 4vw, 2rem)" }}
                 >
-                  We've sent password reset instructions to{" "}
+                  {t("success.message")}{" "}
                   <span className="font-semibold lg:text-gray-900 text-white">
                     {email}
                   </span>
@@ -235,7 +237,7 @@ export default function ForgotPassword() {
                     className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-fluid-base"
                     style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
                   >
-                    Try Another Email
+                    {t("success.tryAnotherEmail")}
                   </button>
 
                   <Link
@@ -243,7 +245,7 @@ export default function ForgotPassword() {
                     className="w-full inline-block text-center bg-white text-white lg:text-primary border-2 border-primary font-semibold rounded-xl hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-sm hover:shadow-md text-fluid-base"
                     style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
                   >
-                    Back to Sign In
+                    {t("success.backToSignIn")}
                   </Link>
                 </div>
 
@@ -251,8 +253,7 @@ export default function ForgotPassword() {
                   className="lg:text-gray-500 text-white/70 text-center text-fluid-sm"
                   style={{ marginTop: "clamp(1rem, 3vw, 1.5rem)" }}
                 >
-                  Didn't receive the email? Check your spam folder or try
-                  another email
+                  {t("success.didntReceive")}
                 </p>
               </div>
             )}

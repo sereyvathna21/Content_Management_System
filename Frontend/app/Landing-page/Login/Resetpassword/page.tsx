@@ -1,10 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { useTranslations, useLocale } from "next-intl";
+import TopNav from "@/app/components/TopNav";
 import { useSearchParams } from "next/navigation";
 
 export default function ResetPassword() {
+  const t = useTranslations("LoginPage.resetPassword");
+
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     password: "",
@@ -20,7 +23,6 @@ export default function ResetPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [token, setToken] = useState<string | null>(null);
-
   useEffect(() => {
     const resetToken = searchParams.get("token");
     setToken(resetToken);
@@ -38,10 +40,10 @@ export default function ResetPassword() {
 
   const getStrengthLabel = (strength: number): string => {
     if (strength === 0) return "";
-    if (strength <= 2) return "Weak";
-    if (strength <= 3) return "Medium";
-    if (strength <= 4) return "Strong";
-    return "Very Strong";
+    if (strength <= 2) return t("strength.weak");
+    if (strength <= 3) return t("strength.medium");
+    if (strength <= 4) return t("strength.strong");
+    return t("strength.veryStrong");
   };
 
   const getStrengthColor = (strength: number): string => {
@@ -59,23 +61,21 @@ export default function ResetPassword() {
     };
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = t("errors.passwordRequired");
     } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+      newErrors.password = t("errors.passwordMinLength");
     } else if (!/(?=.*[a-z])(?=.*[A-Z])/.test(formData.password)) {
-      newErrors.password =
-        "Password must contain both uppercase and lowercase letters";
+      newErrors.password = t("errors.passwordUpperLower");
     } else if (!/(?=.*\d)/.test(formData.password)) {
-      newErrors.password = "Password must contain at least one number";
+      newErrors.password = t("errors.passwordNumber");
     } else if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(formData.password)) {
-      newErrors.password =
-        "Password must contain at least one special character";
+      newErrors.password = t("errors.passwordSpecial");
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
+      newErrors.confirmPassword = t("errors.confirmRequired");
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = t("errors.confirmMismatch");
     }
 
     setErrors(newErrors);
@@ -121,7 +121,7 @@ export default function ResetPassword() {
       console.error("Password reset error:", error);
       setErrors({
         password: "",
-        confirmPassword: "Something went wrong. Please try again.",
+        confirmPassword: t("errors.resetError"),
       });
     } finally {
       setIsSubmitting(false);
@@ -131,6 +131,7 @@ export default function ResetPassword() {
   return (
     <div>
       <section className="min-h-screen flex items-stretch">
+        <TopNav />
         <div
           className="hidden lg:flex lg:w-1/2 bg-cover relative items-center justify-center"
           style={{
@@ -172,13 +173,13 @@ export default function ResetPassword() {
                   className="font-bold lg:text-gray-900 text-white text-center text-fluid-3xl animate-[fadeIn_0.8s_ease-out_0.2s_both]"
                   style={{ marginBottom: "clamp(0.5rem, 2vw, 0.5rem)" }}
                 >
-                  Reset Password
+                  {t("title")}
                 </h1>
                 <p
                   className="lg:text-gray-600 text-white/90 text-center text-fluid-base animate-[fadeIn_0.8s_ease-out_0.4s_both]"
                   style={{ marginBottom: "clamp(1.5rem, 4vw, 2rem)" }}
                 >
-                  Create a strong password to secure your account
+                  {t("subtitle")}
                 </p>
 
                 <form
@@ -196,7 +197,7 @@ export default function ResetPassword() {
                       className="block font-medium lg:text-gray-700 text-white text-fluid-sm"
                       style={{ marginBottom: "clamp(0.375rem, 1.5vw, 0.5rem)" }}
                     >
-                      New Password
+                      {t("newPasswordLabel")}
                     </label>
                     <div className="relative">
                       <input
@@ -213,7 +214,7 @@ export default function ResetPassword() {
                         id="password"
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="Enter new password"
+                        placeholder={t("newPasswordPlaceholder")}
                         autoComplete="new-password"
                         aria-invalid={!!errors.password}
                         aria-describedby={
@@ -225,7 +226,7 @@ export default function ResetPassword() {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1 transition-colors"
                         aria-label={
-                          showPassword ? "Hide password" : "Show password"
+                          showPassword ? t("hidePassword") : t("showPassword")
                         }
                       >
                         {showPassword ? (
@@ -312,7 +313,7 @@ export default function ResetPassword() {
                       className="block font-medium lg:text-gray-700 text-white text-fluid-sm"
                       style={{ marginBottom: "clamp(0.375rem, 1.5vw, 0.5rem)" }}
                     >
-                      Confirm Password
+                      {t("confirmPasswordLabel")}
                     </label>
                     <div className="relative">
                       <input
@@ -331,7 +332,7 @@ export default function ResetPassword() {
                         id="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        placeholder="Confirm new password"
+                        placeholder={t("confirmPasswordPlaceholder")}
                         autoComplete="new-password"
                         aria-invalid={!!errors.confirmPassword}
                         aria-describedby={
@@ -348,8 +349,8 @@ export default function ResetPassword() {
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1 transition-colors"
                         aria-label={
                           showConfirmPassword
-                            ? "Hide password"
-                            : "Show password"
+                            ? t("hidePassword")
+                            : t("showPassword")
                         }
                       >
                         {showConfirmPassword ? (
@@ -403,7 +404,7 @@ export default function ResetPassword() {
                   {/* Password Requirements */}
                   <div className="bg-primary/5 rounded-lg p-3 animate-[fadeIn_0.6s_ease-out_0.8s_both]">
                     <p className="font-medium lg:text-gray-900 text-white text-fluid-sm mb-2">
-                      Password must contain:
+                      {t("requirements.title")}
                     </p>
                     <ul
                       className="space-y-1"
@@ -433,7 +434,7 @@ export default function ResetPassword() {
                             d="M5 13l4 4L19 7"
                           />
                         </svg>
-                        At least 8 characters
+                        {t("requirements.minLength")}
                       </li>
                       <li
                         className={`flex items-center gap-2 text-fluid-xs ${
@@ -455,7 +456,7 @@ export default function ResetPassword() {
                             d="M5 13l4 4L19 7"
                           />
                         </svg>
-                        Uppercase and lowercase letters
+                        {t("requirements.upperLower")}
                       </li>
                       <li
                         className={`flex items-center gap-2 text-fluid-xs ${
@@ -477,7 +478,7 @@ export default function ResetPassword() {
                             d="M5 13l4 4L19 7"
                           />
                         </svg>
-                        At least one number
+                        {t("requirements.number")}
                       </li>
                       <li
                         className={`flex items-center gap-2 text-fluid-xs ${
@@ -499,7 +500,7 @@ export default function ResetPassword() {
                             d="M5 13l4 4L19 7"
                           />
                         </svg>
-                        At least one special character (!@#$%^&*)
+                        {t("requirements.special")}
                       </li>
                     </ul>
                   </div>
@@ -510,7 +511,7 @@ export default function ResetPassword() {
                     className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-fluid-base animate-[slideInUp_0.6s_ease-out_0.9s_both]"
                     style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
                   >
-                    {isSubmitting ? "Resetting..." : "Reset Password"}
+                    {isSubmitting ? t("resetting") : t("resetButton")}
                   </button>
                 </form>
               </>
@@ -538,14 +539,13 @@ export default function ResetPassword() {
                   className="font-bold lg:text-gray-900 text-white text-center text-fluid-3xl"
                   style={{ marginBottom: "clamp(0.5rem, 2vw, 0.5rem)" }}
                 >
-                  Password Reset Successful!
+                  {t("success.title")}
                 </h1>
                 <p
                   className="lg:text-gray-600 text-white/90 text-center text-fluid-base"
                   style={{ marginBottom: "clamp(1.5rem, 4vw, 2rem)" }}
                 >
-                  Your password has been successfully reset. You can now sign in
-                  with your new password.
+                  {t("success.message")}
                 </p>
 
                 <Link
@@ -553,7 +553,7 @@ export default function ResetPassword() {
                   className="w-full inline-block text-center bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-fluid-base"
                   style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
                 >
-                  Go to Sign In
+                  {t("success.goToSignIn")}
                 </Link>
               </div>
             )}

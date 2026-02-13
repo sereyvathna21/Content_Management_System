@@ -46,7 +46,7 @@
             "searchPlaceholder": "Search News, Categories...",
             "sortLabel": "Sort by:",
             "sortOptions": {
-                "default": "Default",
+                "default": "Default (Newest - Oldest)",
                 "date_desc": "Date: Newest → Oldest",
                 "date_asc": "Date: Oldest → Newest"
             }
@@ -180,7 +180,39 @@
             "eng": "ENG",
             "kh": "KH",
             "selectLanguage": "Select language",
-            "login": "Log in"
+            "login": "Log in",
+            "aboutDropdown": {
+                "title": "About Us",
+                "description": "Learn more about NSPC",
+                "national": {
+                    "title": "National",
+                    "description": "Discover our organization's mission, vision, and commitment to advancing social protection across the nation."
+                },
+                "executive": {
+                    "title": "Executive",
+                    "description": "Meet our leadership team and learn about their roles in guiding social protection initiatives."
+                },
+                "general": {
+                    "title": "General",
+                    "description": "Access general information about our organizational structure and governance framework."
+                }
+            },
+            "resourcesDropdown": {
+                "title": "Resources",
+                "description": "Access our documents & materials",
+                "laws": {
+                    "title": "Laws",
+                    "description": "Access comprehensive legal frameworks and regulations governing social protection systems."
+                },
+                "publication": {
+                    "title": "Publication",
+                    "description": "Explore our research reports, policy papers, and informational publications."
+                },
+                "social": {
+                    "title": "Social",
+                    "description": "Connect with our social initiatives and community engagement programs."
+                }
+            }
         },
         "footer": {
             "description": "National Social Protection Council — ensuring social protection for all.",
@@ -190,6 +222,91 @@
             "emailLabel": "Email:",
             "phoneLabel": "Phone:",
             "rights": "© {year} National Social Protection Council. All rights reserved."
+        }
+    },
+    "LoginPage": {
+        "signIn": {
+            "title": "Sign In",
+            "subtitle": "Enter your credentials to access your account",
+            "emailLabel": "Email Address",
+            "emailPlaceholder": "name@example.com",
+            "passwordLabel": "Password",
+            "passwordPlaceholder": "Enter your password",
+            "showPassword": "Show password",
+            "hidePassword": "Hide password",
+            "rememberMe": "Remember me",
+            "forgotPassword": "Forgot password?",
+            "signInButton": "Sign In",
+            "signingIn": "Signing In...",
+            "backToHome": "Back to Home",
+            "switchLanguage": "Switch Language",
+            "errors": {
+                "emailRequired": "Email is required",
+                "emailInvalid": "Please enter a valid email address",
+                "passwordRequired": "Password is required",
+                "passwordMinLength": "Password must be at least 8 characters"
+            }
+        },
+        "forgotPassword": {
+            "title": "Forgot Password?",
+            "subtitle": "No worries! Enter your email and we'll send you reset instructions",
+            "emailLabel": "Email Address",
+            "emailPlaceholder": "name@example.com",
+            "sendButton": "Send Reset Link",
+            "sending": "Sending...",
+            "backToSignIn": "Back to Sign In",
+            "success": {
+                "title": "Check Your Email",
+                "message": "We've sent password reset instructions to",
+                "tryAnotherEmail": "Try Another Email",
+                "backToSignIn": "Back to Sign In",
+                "didntReceive": "Didn't receive the email? Check your spam folder or try another email"
+            },
+            "errors": {
+                "emailRequired": "Email is required",
+                "emailInvalid": "Please enter a valid email address",
+                "sendError": "Something went wrong. Please try again."
+            }
+        },
+        "resetPassword": {
+            "title": "Reset Password",
+            "subtitle": "Create a strong password to secure your account",
+            "newPasswordLabel": "New Password",
+            "newPasswordPlaceholder": "Enter new password",
+            "confirmPasswordLabel": "Confirm Password",
+            "confirmPasswordPlaceholder": "Confirm new password",
+            "showPassword": "Show password",
+            "hidePassword": "Hide password",
+            "resetButton": "Reset Password",
+            "resetting": "Resetting...",
+            "strength": {
+                "weak": "Weak",
+                "medium": "Medium",
+                "strong": "Strong",
+                "veryStrong": "Very Strong"
+            },
+            "requirements": {
+                "title": "Password must contain:",
+                "minLength": "At least 8 characters",
+                "upperLower": "Uppercase and lowercase letters",
+                "number": "At least one number",
+                "special": "At least one special character (!@#$%^&*)"
+            },
+            "errors": {
+                "passwordRequired": "Password is required",
+                "passwordMinLength": "Password must be at least 8 characters",
+                "passwordUpperLower": "Password must contain both uppercase and lowercase letters",
+                "passwordNumber": "Password must contain at least one number",
+                "passwordSpecial": "Password must contain at least one special character",
+                "confirmRequired": "Please confirm your password",
+                "confirmMismatch": "Passwords do not match",
+                "resetError": "Something went wrong. Please try again."
+            },
+            "success": {
+                "title": "Password Reset Successful!",
+                "message": "Your password has been successfully reset. You can now sign in with your new password.",
+                "goToSignIn": "Go to Sign In"
+            }
         }
     }
 }

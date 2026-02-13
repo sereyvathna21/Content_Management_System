@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export default function Navigation() {
+  const t = useTranslations("Common.nav");
   const [showAboutDropdown, setShowAboutDropdown] = useState(false);
   const [showResourcesDropdown, setShowResourcesDropdown] = useState(false);
   const [showMobileAboutDropdown, setShowMobileAboutDropdown] = useState(false);
@@ -203,7 +205,7 @@ export default function Navigation() {
               href="/Landing-page/Home"
               className={`nav-link ${pathname === "/Landing-page/Home" ? "active" : ""}`}
             >
-              Home
+              {t("home")}
             </Link>
 
             {/* About Us Dropdown */}
@@ -217,7 +219,7 @@ export default function Navigation() {
                   pathname?.includes("/Landing-page/About-us") ? "active" : ""
                 }`}
               >
-                About Us
+                {t("about")}
                 <svg
                   className={`w-4 h-4 transition-transform duration-300 ${
                     showAboutDropdown ? "rotate-180" : ""
@@ -243,9 +245,11 @@ export default function Navigation() {
                   }}
                 >
                   <div className="bg-gradient-to-r from-primary to-primary/90 px-6 py-4">
-                    <h3 className="text-white font-bold text-lg">About Us</h3>
+                    <h3 className="text-white font-bold text-lg">
+                      {t("aboutDropdown.title")}
+                    </h3>
                     <p className="text-white/80 text-xs mt-1">
-                      Learn more about NSPC
+                      {t("aboutDropdown.description")}
                     </p>
                   </div>
 
@@ -259,10 +263,10 @@ export default function Navigation() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-base text-gray-900 group-hover:text-primary transition-colors">
-                          National
+                          {t("aboutDropdown.national.title")}
                         </p>
                         <p className="text-sm text-gray-500 group-hover:text-gray-700">
-                          National Social Protection Council
+                          {t("aboutDropdown.national.description")}
                         </p>
                       </div>
                       <svg
@@ -289,10 +293,10 @@ export default function Navigation() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-base text-gray-900 group-hover:text-primary transition-colors">
-                          Executives
+                          {t("aboutDropdown.executive.title")}
                         </p>
                         <p className="text-sm text-gray-500 group-hover:text-gray-700">
-                          Executive Committee & Secretariat Office
+                          {t("aboutDropdown.executive.description")}
                         </p>
                       </div>
                       <svg
@@ -319,10 +323,10 @@ export default function Navigation() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-base text-gray-900 group-hover:text-primary transition-colors">
-                          General
+                          {t("aboutDropdown.general.title")}
                         </p>
                         <p className="text-sm text-gray-500 group-hover:text-gray-700">
-                          General Secretariat Office
+                          {t("aboutDropdown.general.description")}
                         </p>
                       </div>
                       <svg
@@ -355,7 +359,7 @@ export default function Navigation() {
                   pathname?.includes("/Landing-page/Resources") ? "active" : ""
                 }`}
               >
-                Resources
+                {t("resources")}
                 <svg
                   className={`w-4 h-4 transition-transform duration-300 ${
                     showResourcesDropdown ? "rotate-180" : ""
@@ -381,9 +385,11 @@ export default function Navigation() {
                   }}
                 >
                   <div className="bg-gradient-to-r from-primary to-primary/90 px-6 py-4">
-                    <h3 className="text-white font-bold text-lg">Resources</h3>
+                    <h3 className="text-white font-bold text-lg">
+                      {t("resourcesDropdown.title")}
+                    </h3>
                     <p className="text-white/80 text-xs mt-1">
-                      Access our documents & materials
+                      {t("resourcesDropdown.description")}
                     </p>
                   </div>
 
@@ -397,10 +403,10 @@ export default function Navigation() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-base text-gray-900 group-hover:text-primary transition-colors">
-                          Law
+                          {t("resourcesDropdown.laws.title")}
                         </p>
                         <p className="text-sm text-gray-500 group-hover:text-gray-700">
-                          Legal documents & regulations
+                          {t("resourcesDropdown.laws.description")}
                         </p>
                       </div>
                       <svg
@@ -427,10 +433,10 @@ export default function Navigation() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-base text-gray-900 group-hover:text-primary transition-colors">
-                          Publication
+                          {t("resourcesDropdown.publication.title")}
                         </p>
                         <p className="text-sm text-gray-500 group-hover:text-gray-700">
-                          Research papers & articles
+                          {t("resourcesDropdown.publication.description")}
                         </p>
                       </div>
                       <svg
@@ -457,10 +463,10 @@ export default function Navigation() {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-base text-gray-900 group-hover:text-primary transition-colors">
-                          Social
+                          {t("resourcesDropdown.social.title")}
                         </p>
                         <p className="text-sm text-gray-500 group-hover:text-gray-700">
-                          Community & engagement
+                          {t("resourcesDropdown.social.description")}
                         </p>
                       </div>
                       <svg
@@ -486,13 +492,13 @@ export default function Navigation() {
               href="/Landing-page/News"
               className={`nav-link ${pathname === "/Landing-page/News" ? "active" : ""}`}
             >
-              News & Announment
+              {t("news")}
             </Link>
             <Link
               href="/Landing-page/Contact"
               className={`nav-link ${pathname === "/Landing-page/Contact" ? "active" : ""}`}
             >
-              Contact Us
+              {t("contact")}
             </Link>
           </div>
 
@@ -505,7 +511,7 @@ export default function Navigation() {
                   className="px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Home
+                  {t("home")}
                 </Link>
 
                 {/* Mobile About Dropdown */}
@@ -516,7 +522,7 @@ export default function Navigation() {
                     }}
                     className="w-full px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 flex justify-between items-center active:bg-white/20"
                   >
-                    About Us
+                    {t("about")}
                     <svg
                       className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ${showMobileAboutDropdown ? "rotate-180" : ""}`}
                       fill="none"
@@ -541,7 +547,7 @@ export default function Navigation() {
                           setShowAboutDropdown(false);
                         }}
                       >
-                        National Social Protection Council
+                        {t("aboutDropdown.national.title")}
                       </Link>
                       <Link
                         href="/Landing-page/About-us/Executive"
@@ -551,7 +557,7 @@ export default function Navigation() {
                           setShowMobileAboutDropdown(false);
                         }}
                       >
-                        Executive Secretariat Office
+                        {t("aboutDropdown.executive.title")}
                       </Link>
                       <Link
                         href="/Landing-page/About-us/General"
@@ -561,7 +567,7 @@ export default function Navigation() {
                           setShowMobileAboutDropdown(false);
                         }}
                       >
-                        General Secretariat Office
+                        {t("aboutDropdown.general.title")}
                       </Link>
                     </div>
                   )}
@@ -577,7 +583,7 @@ export default function Navigation() {
                     }}
                     className="w-full px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 flex justify-between items-center active:bg-white/20"
                   >
-                    Resources
+                    {t("resources")}
                     <svg
                       className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ${showMobileResourcesDropdown ? "rotate-180" : ""}`}
                       fill="none"
@@ -602,7 +608,7 @@ export default function Navigation() {
                           setShowMobileResourcesDropdown(false);
                         }}
                       >
-                        Law & Regulation
+                        {t("resourcesDropdown.laws.title")}
                       </Link>
                       <Link
                         href="/Landing-page/Resources/Publication"
@@ -612,7 +618,7 @@ export default function Navigation() {
                           setShowMobileResourcesDropdown(false);
                         }}
                       >
-                        Publication & Report
+                        {t("resourcesDropdown.publication.title")}
                       </Link>
                       <Link
                         href="/Landing-page/Resources/Social"
@@ -622,7 +628,7 @@ export default function Navigation() {
                           setShowMobileResourcesDropdown(false);
                         }}
                       >
-                        Social Protection Program
+                        {t("resourcesDropdown.social.title")}
                       </Link>
                     </div>
                   )}
@@ -633,14 +639,14 @@ export default function Navigation() {
                   className="px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  News & Announment
+                  {t("news")}
                 </Link>
                 <Link
                   href="/Landing-page/Contact"
                   className="px-4 sm:px-6 py-3 hover:bg-white/10 transition-all duration-300 active:bg-white/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Contact Us
+                  {t("contact")}
                 </Link>
               </div>
             </div>

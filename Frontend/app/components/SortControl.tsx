@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 interface SortControlProps {
@@ -19,7 +19,7 @@ const SortControl: React.FC<SortControlProps> = ({ value, onChange }) => {
         {t("toolbar.sortLabel")}
       </label>
       {/* Custom dropdown */}
-      <div className="relative">
+      <div>
         <Dropdown value={value} onChange={onChange} />
       </div>
     </div>
@@ -48,55 +48,10 @@ function Dropdown({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLUListElement | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    function onDoc(e: MouseEvent | TouchEvent) {
-      if (!rootRef.current) return;
-      if (e.target instanceof Node && !rootRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    }
-    function onKey(e: KeyboardEvent) {
-      if (!open) return;
-      if (e.key === "Escape") {
-        setOpen(false);
-        return;
-      }
-      // keyboard navigation when open
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setFocusedIndex((fi) => {
-          const next = fi === null ? 0 : Math.min(OPTIONS.length - 1, fi + 1);
-          return next;
-        });
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setFocusedIndex((fi) => {
-          const next = fi === null ? OPTIONS.length - 1 : Math.max(0, fi - 1);
-          return next;
-        });
-      } else if (e.key === "Enter") {
-        if (focusedIndex !== null) {
-          const opt = OPTIONS[focusedIndex];
-          onChange(opt.value);
-          setOpen(false);
-        }
-      }
-    }
-    document.addEventListener("mousedown", onDoc);
-    document.addEventListener("touchstart", onDoc);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDoc);
-      document.removeEventListener("touchstart", onDoc);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open, focusedIndex, onChange]);
-
   const current = OPTIONS.find((o) => o.value === value) || OPTIONS[0];
 
   return (
-    <div className="relative inline-block text-left" ref={rootRef}>
+    <div className="relative inline-block text-right" ref={rootRef}>
       <button
         type="button"
         aria-haspopup="listbox"
@@ -144,8 +99,7 @@ function Dropdown({
               ? `sort-opt-${String(OPTIONS[focusedIndex].value)}`
               : undefined
           }
-          className="absolute z-50 mt-2 min-w-[220px] sm:min-w-[320px] origin-top-right rounded-md bg-white border border-gray-100 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-          style={{ right: 0 }}
+          className="absolute right-0 z-50 mt-2 min-w-[220px] sm:min-w-[320px] origin-top-right rounded-md bg-white border border-gray-100 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
         >
           {OPTIONS.map((opt, idx) => (
             <li
