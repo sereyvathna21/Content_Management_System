@@ -168,6 +168,83 @@
             }
         }
     },
+    "PublicationPage": {
+        "hero": {
+            "title": "Publications",
+            "subtitle": "Stay updated with the latest news, resources, and publications from NSPC.",
+            "imgAlt": "Publications cover"
+        },
+        "categoryLabels": {
+            "All": "All",
+            "NSPC": "NSPC",
+            "Others": "Others"
+        },
+        "control": {
+            "searchPlaceholder": "Search publications...",
+            "filterByCategory": "Filter by Category",
+            "clear": "Clear"
+        },
+        "noResults": "No publications found.",
+        "actions": {
+            "open": "Open",
+            "download": "Download",
+            "close": "Close"
+        },
+        "noPreview": "No preview",
+        "pdfNotAvailable": "PDF preview not available.",
+        "content": {
+            "items": {
+                "1": {
+                    "title": "Publication Title 1",
+                    "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
+                },
+                "2": {
+                    "title": "Publication Title 2",
+                    "description": "Summary of the second publication."
+                },
+                "3": {
+                    "title": "Publication Title 3",
+                    "description": "Summary of the third publication."
+                },
+                "4": {
+                    "title": "Publication Title 4",
+                    "description": "Summary of the fourth publication."
+                },
+                "5": {
+                    "title": "Publication Title 1",
+                    "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
+                },
+                "6": {
+                    "title": "Publication Title 2",
+                    "description": "Summary of the second publication."
+                },
+                "7": {
+                    "title": "Publication Title 3",
+                    "description": "Summary of the third publication."
+                },
+                "8": {
+                    "title": "Publication Title 4",
+                    "description": "Summary of the fourth publication."
+                },
+                "9": {
+                    "title": "Publication Title 1",
+                    "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
+                },
+                "10": {
+                    "title": "Publication Title 2",
+                    "description": "Summary of the second publication."
+                },
+                "11": {
+                    "title": "Publication Title 3",
+                    "description": "Summary of the third publication."
+                },
+                "12": {
+                    "title": "Publication Title 4",
+                    "description": "Summary of the fourth publication."
+                }
+            }
+        }
+    },
     "Common": {
         "nav": {
             "home": "Home",
@@ -177,8 +254,8 @@
             "accessDocs": "Access our documents & materials",
             "news": "News & Announcement",
             "contact": "Contact Us",
-            "eng": "ENG",
-            "kh": "KH",
+            "eng": "English",
+            "kh": "ភាសាខ្មែរ",
             "selectLanguage": "Select language",
             "login": "Log in",
             "aboutDropdown": {
@@ -201,16 +278,50 @@
                 "title": "Resources",
                 "description": "Access our documents & materials",
                 "laws": {
-                    "title": "Laws",
-                    "description": "Access comprehensive legal frameworks and regulations governing social protection systems."
-                },
-                "publication": {
-                    "title": "Publication",
-                    "description": "Explore our research reports, policy papers, and informational publications."
-                },
-                "social": {
-                    "title": "Social",
-                    "description": "Connect with our social initiatives and community engagement programs."
+                    "2": {
+                        "title": "Publication Title 2",
+                        "description": "Summary of the second publication."
+                    },
+                    "3": {
+                        "title": "Publication Title 3",
+                        "description": "Summary of the third publication."
+                    },
+                    "4": {
+                        "title": "Publication Title 4",
+                        "description": "Summary of the fourth publication."
+                    },
+                    "5": {
+                        "title": "Publication Title 1",
+                        "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
+                    },
+                    "6": {
+                        "title": "Publication Title 2",
+                        "description": "Summary of the second publication."
+                    },
+                    "7": {
+                        "title": "Publication Title 3",
+                        "description": "Summary of the third publication."
+                    },
+                    "8": {
+                        "title": "Publication Title 4",
+                        "description": "Summary of the fourth publication."
+                    },
+                    "9": {
+                        "title": "Publication Title 1",
+                        "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
+                    },
+                    "10": {
+                        "title": "Publication Title 2",
+                        "description": "Summary of the second publication."
+                    },
+                    "11": {
+                        "title": "Publication Title 3",
+                        "description": "Summary of the third publication."
+                    },
+                    "12": {
+                        "title": "Publication Title 4",
+                        "description": "Summary of the fourth publication."
+                    }
                 }
             }
         },
@@ -310,6 +421,15 @@
         }
     },
     "LawsPage": {
+        "ExportConfirmModal": {
+            "confirmExport": "Confirm Export",
+            "exportMessage": "You are about to download {count} PDF{count, plural, one {} other {s}}.",
+            "pdfCount": "{count} PDF{count, plural, one {} other {s}}",
+            "actions": {
+                "cancel": "Cancel",
+                "confirmDownload": "Confirm Download"
+            }
+        },
         "hero": {
             "title": "Laws and Regulations",
             "subtitle": "Access and download official legal documents and policies.",

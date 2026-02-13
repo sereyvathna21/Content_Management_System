@@ -15,8 +15,6 @@ type LawCardProps = {
   onToggleCheck: () => void;
 };
 
-
-
 export default function LawCard({
   title,
   category,
@@ -26,8 +24,7 @@ export default function LawCard({
   onSelect,
   onToggleCheck,
 }: LawCardProps) {
-  const tCard = useTranslations("LawsPage.card");
-  const tRoot = useTranslations("LawsPage");
+  const t = useTranslations("LawsPage");
   return (
     <div
       onClick={onSelect}
@@ -87,13 +84,13 @@ export default function LawCard({
                   category,
                 )}`}
               >
-                {tRoot(`categoryLabels.${category}`) || category}
+                {t(`categoryLabels.${category}`) || category}
               </span>
 
               <span className="text-[9px] sm:text-[10px] text-gray-500 mt-0.5 sm:mt-0 truncate">
                 {uploadDate
                   ? new Date(uploadDate).toLocaleDateString()
-                  : tCard("noDate")}
+                  : t("card.noDate")}
               </span>
             </div>
           </div>

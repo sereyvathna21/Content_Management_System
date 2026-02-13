@@ -1,15 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 export default function ShareControls() {
   const t = useTranslations("NewsPage");
   const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [currentUrl, setCurrentUrl] = useState("");
 
-  const getUrl = () =>
-    typeof window !== "undefined" ? window.location.href : "";
+  useEffect(() => {
+    setCurrentUrl(window.location.href);
+  }, []);
+
+  const getUrl = () => currentUrl;
 
   const copyLink = async () => {
     const url = getUrl();

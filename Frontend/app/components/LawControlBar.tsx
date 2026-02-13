@@ -25,8 +25,7 @@ export default function LawControlBar({
   onExportSelected,
   onClearSelected,
 }: LawControlBarProps) {
-  const t = useTranslations("LawsPage.control");
-  const tRoot = useTranslations("LawsPage");
+  const t = useTranslations("LawsPage");
   return (
     <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden sticky top-4 z-20 backdrop-blur-sm bg-white/95">
       <div className="p-6">
@@ -34,7 +33,7 @@ export default function LawControlBar({
           {/* Left section - Categories */}
           <div className="flex-1 w-full lg:w-auto">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 lg:hidden">
-              {t("filterByCategory")}
+              {t("control.filterByCategory")}
             </h3>
 
             {/* Dropdown for small/medium screens */}
@@ -47,7 +46,7 @@ export default function LawControlBar({
                 >
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
-                      {tRoot(`categoryLabels.${cat}`) || cat}
+                      {t(`categoryLabels.${cat}`) || cat}
                     </option>
                   ))}
                 </select>
@@ -86,7 +85,7 @@ export default function LawControlBar({
                     <span
                       className={`inline-block w-2 h-2 rounded-full mr-2`}
                     />
-                    {tRoot(`categoryLabels.${cat}`) || cat}
+                    {t(`categoryLabels.${cat}`) || cat}
                     {active && (
                       <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs bg-white/20 rounded-full">
                         ✓
@@ -120,7 +119,7 @@ export default function LawControlBar({
               <input
                 type="text"
                 className="w-full pl-12 pr-4 py-3 bg-gray-50 border-0 rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all duration-200"
-                placeholder={t("searchPlaceholder")}
+                placeholder={t("control.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
               />
@@ -167,7 +166,7 @@ export default function LawControlBar({
                     />
                   </svg>
                   <span className="relative z-10">
-                    {t("export")} ({selectedCount})
+                    {t("control.export")} ({selectedCount})
                   </span>
                 </button>
 
@@ -175,7 +174,7 @@ export default function LawControlBar({
                   onClick={() => onClearSelected?.()}
                   className={`inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold border bg-gray-50 text-gray-700 border-gray-200 hover:bg-primary hover:text-white hover:border-primary hover:shadow-md transition-all duration-200`}
                 >
-                  {t("clear")}
+                  {t("control.clear")}
                 </button>
               </div>
             )}

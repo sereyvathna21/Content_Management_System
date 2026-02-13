@@ -12,7 +12,7 @@ type PDFPreviewProps = {
 export default function PDFPreview({ title, url, onClose }: PDFPreviewProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const t = useTranslations("LawsPage.preview");
+  const t = useTranslations("LawsPage");
 
   return (
     <div
@@ -32,9 +32,9 @@ export default function PDFPreview({ title, url, onClose }: PDFPreviewProps) {
             <button
               onClick={onClose}
               className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-colors"
-              aria-label={t("close")}
+              aria-label={t("preview.close")}
             >
-              <span className="sr-only">{t("close")}</span>
+              <span className="sr-only">{t("preview.close")}</span>
               <svg
                 className="w-4 h-4 sm:w-5 sm:h-5"
                 fill="none"
@@ -69,7 +69,9 @@ export default function PDFPreview({ title, url, onClose }: PDFPreviewProps) {
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            <span className="hidden xs:inline sm:inline">{t("download")}</span>
+            <span className="hidden xs:inline sm:inline">
+              {t("preview.download")}
+            </span>
             <span className="xs:hidden sm:hidden">⬇</span>
           </a>
         </div>

@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
+import { getCategoryBadgeClasses } from "@/app/lib/categoryColors";
 
 type Pub = {
   id: number | string;
@@ -23,14 +25,37 @@ export default function PDFDrawer({
 }) {
   if (!open || !pub) return null;
 
+  const t = useTranslations("PublicationPage");
+  const translatedTitle = pub.id ? t(`content.items.${pub.id}.title`) : "";
+  const rawTitle =
+    translatedTitle && !translatedTitle.startsWith("content.items")
+      ? translatedTitle
+      : pub.title;
+
+  const translatedDescription = pub.id
+    ? t(`content.items.${pub.id}.description`)
+    : "";
+  const rawDescription =
+    translatedDescription && !translatedDescription.startsWith("content.items")
+      ? translatedDescription
+      : pub.description;
+
+  const translatedCategory = pub.category
+    ? t(`categoryLabels.${pub.category}`)
+    : "";
+  const rawCategory =
+    translatedCategory && !translatedCategory.startsWith("categoryLabels")
+      ? translatedCategory
+      : pub.category;
+
   const pdfUrl = typeof pub.pdf === "string" ? pub.pdf : undefined;
 
   // responsive character truncation for title & description
   const [truncatedTitle, setTruncatedTitle] = useState<string>(
-    typeof pub.title === "string" ? pub.title : "",
+    typeof rawTitle === "string" ? rawTitle : "",
   );
   const [truncatedDescription, setTruncatedDescription] = useState<string>(
-    typeof pub.description === "string" ? pub.description : "",
+    typeof rawDescription === "string" ? rawDescription : "",
   );
 
   useEffect(() => {
@@ -56,16 +81,18 @@ export default function PDFDrawer({
       }
     };
 
-    const initialWidth =
-      typeof window !== "undefined" ? window.innerWidth : 1024;
-    compute(initialWidth);
+    // Initial compute with default width
+    compute(1024);
+
+    // Only add resize listener after component mounts
     const onResize = () => compute(window.innerWidth);
-    if (typeof window !== "undefined") {
-      window.addEventListener("resize", onResize);
-      return () => window.removeEventListener("resize", onResize);
-    }
-    return;
-  }, [pub.title, pub.description]);
+    window.addEventListener("resize", onResize);
+
+    // Initial client-side computation with actual width
+    compute(window.innerWidth);
+
+    return () => window.removeEventListener("resize", onResize);
+  }, [rawTitle, rawDescription]);
 
   const handleDownload = async () => {
     try {
@@ -117,20 +144,28 @@ export default function PDFDrawer({
             <div>
               <h3
                 className="text-primary text-lg sm:text-xl md:text-2xl font-semibold title-clamp"
-                title={pub.title}
+                title={rawTitle}
               >
                 {truncatedTitle}
               </h3>
-              {pub.description && (
+              {rawDescription && (
                 <div
                   className="text-sm md:text-base text-gray-600 mt-1 desc-clamp"
-                  title={pub.description}
+                  title={rawDescription}
                 >
                   {truncatedDescription}
                 </div>
               )}
-              <div className="text-xs text-gray-500 mt-2">
-                {pub.category} · {pub.date}
+              <div className="flex items-center gap-2 mt-2">
+                <span
+                  className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getCategoryBadgeClasses(
+                    pub.category || "",
+                  )}`}
+                >
+                  {rawCategory}
+                </span>
+                <span className="text-xs text-gray-500">·</span>
+                <span className="text-xs text-gray-500">{pub.date}</span>
               </div>
             </div>
           </div>
@@ -141,28 +176,28 @@ export default function PDFDrawer({
             <iframe
               src={pdfUrl}
               className="w-full h-full block"
-              title={pub.title}
+              title={rawTitle}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500">
-              PDF preview not available.
+              {t("pdfNotAvailable")}
             </div>
           )}
         </div>
 
-        <footer className="p-4 border-t bg-white flex items-center justify-end gap-3">
+        <footer className="p-4 border-t bg-white flex items-center justify-start gap-3">
           <button
             onClick={handleDownload}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-primary text-white text-sm font-semibold"
           >
-            Download
+            {t("actions.download")}
           </button>
           <button
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("actions.close")}
             className="inline-flex items-center px-3 py-2 text-sm rounded-md border border-gray-200"
           >
-            Close
+            {t("actions.close")}
           </button>
         </footer>
       </aside>

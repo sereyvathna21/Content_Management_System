@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Header from "@/app/components/Header";
 import Navigation from "@/app/components/Navigation";
 import Footer from "@/app/components/Footer";
@@ -55,6 +55,19 @@ const SAMPLE_LAWS: LawItem[] = [
 
 export default function Laws() {
   const t = useTranslations("LawsPage");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(
+        window.matchMedia && window.matchMedia("(max-width: 640px)").matches,
+      );
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const categories = useMemo(
     () => ["All", ...Array.from(new Set(SAMPLE_LAWS.map((l) => l.category)))],
     [],
@@ -67,11 +80,7 @@ export default function Laws() {
   const [showExportConfirm, setShowExportConfirm] = useState(false);
 
   const handleSelectLaw = (law: LawItem) => {
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia &&
-      window.matchMedia("(max-width: 640px)").matches
-    ) {
+    if (isMobile) {
       try {
         window.open(law.url, "_blank", "noopener,noreferrer");
       } catch (e) {
@@ -106,11 +115,15 @@ export default function Laws() {
 
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(
-      `${t("exportPdf.generatedOn")} ${new Date().toLocaleDateString()}`,
-      14,
-      28,
-    );
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+    const isoDate = currentDate.toISOString().split("T")[0];
+
+    doc.text(`${t("exportPdf.generatedOn")} ${formattedDate}`, 14, 28);
     doc.text(`${t("exportPdf.totalRecords")} ${filtered.length}`, 14, 34);
     if (selectedCategory !== "All")
       doc.text(
@@ -148,7 +161,7 @@ export default function Laws() {
       styles: { fontSize: 9, cellPadding: 4 },
     });
 
-    doc.save(`laws-regulations-${new Date().toISOString().split("T")[0]}.pdf`);
+    doc.save(`laws-regulations-${isoDate}.pdf`);
   };
 
   const handleToggleSelect = (id: string) => {

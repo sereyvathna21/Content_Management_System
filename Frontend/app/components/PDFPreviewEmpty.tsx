@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 export default function PDFPreviewEmpty() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const t = useTranslations("LawsPage.preview");
+  const t = useTranslations("LawsPage");
 
   return (
     <div
@@ -30,10 +30,10 @@ export default function PDFPreviewEmpty() {
         </svg>
       </div>
       <h3 className="text-sm sm:text-base md:text-lg font-bold text-primary">
-        {t("emptyTitle")}
+        {t("preview.emptyTitle")}
       </h3>
       <p className="text-xs sm:text-sm text-primary mt-1 max-w-[200px] sm:max-w-xs leading-relaxed">
-        {t("emptySubtitle")}
+        {t("preview.emptySubtitle")}
       </p>
     </div>
   );

@@ -6,12 +6,14 @@ import Footer from "@/app/components/Footer";
 import Pagination from "@/app/components/Pagination";
 import PublicationCard from "@/app/components/PublicationCard";
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 
 const PDFDrawerWrapper = dynamic(() => import("@/app/components/PDFDrawer"), {
   ssr: false,
 });
 
 export default function Publication() {
+  const t = useTranslations("PublicationPage");
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [selectedPub, setSelectedPub] = useState<any | null>(null);
   const publications = [
@@ -157,8 +159,6 @@ export default function Publication() {
     return filtered.slice(start, start + pageSize);
   }, [filtered, currentPage]);
 
-  // PublicationCard moved to app/components/PublicationCard.tsx
-
   return (
     <>
       <Header />
@@ -168,11 +168,10 @@ export default function Publication() {
         <div className="bg-primary py-6 sm:py-8 md:py-10 lg:py-12 animate-fade-in">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h1 className="fluid-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 sm:mb-2 md:mb-3 animate-slide-down text-white">
-              Publications
+              {t("hero.title")}
             </h1>
             <p className="text-base sm:text-lg md:text-xl text-center text-white/90 max-w-2xl mx-auto animate-slide-up">
-              Stay updated with the latest news, resources, and publications
-              from NSPC.
+              {t("hero.subtitle")}
             </p>
           </div>
         </div>
@@ -185,23 +184,23 @@ export default function Publication() {
                   <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                     <div className="flex-1 w-full sm:w-auto">
                       <h3 className="text-sm font-semibold text-gray-700 mb-3 sm:hidden">
-                        Filter by Category
+                        {t("control.filterByCategory")}
                       </h3>
 
                       <div className="hidden sm:flex items-center gap-2 flex-wrap">
-                        {tabs.map((t) => {
-                          const active = t.key === activeTab;
+                        {tabs.map((tab) => {
+                          const active = tab.key === activeTab;
                           return (
                             <button
-                              key={t.key}
-                              onClick={() => setActiveTab(t.key)}
+                              key={tab.key}
+                              onClick={() => setActiveTab(tab.key)}
                               className={`px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-200 transform ${
                                 active
                                   ? "bg-primary text-white border-primary shadow-lg scale-105"
                                   : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:scale-105"
                               }`}
                             >
-                              {t.label}
+                              {t(`categoryLabels.${tab.label}`)}
                               {active && (
                                 <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs bg-white/20 rounded-full">
                                   ✓
@@ -219,9 +218,9 @@ export default function Publication() {
                             onChange={(e) => setActiveTab(e.target.value)}
                             className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 appearance-none cursor-pointer hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white"
                           >
-                            {tabs.map((t) => (
-                              <option key={t.key} value={t.key}>
-                                {t.label}
+                            {tabs.map((tab) => (
+                              <option key={tab.key} value={tab.key}>
+                                {t(`categoryLabels.${tab.label}`)}
                               </option>
                             ))}
                           </select>
@@ -265,7 +264,7 @@ export default function Publication() {
                           type="text"
                           value={query}
                           onChange={(e) => setQuery(e.target.value)}
-                          placeholder="Search publications..."
+                          placeholder={t("control.searchPlaceholder")}
                           className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-primary rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all duration-200"
                         />
                         {query && (
@@ -312,7 +311,7 @@ export default function Publication() {
                 ))}
                 {filtered.length === 0 && (
                   <div className="col-span-full text-center text-gray-500">
-                    No publications found.
+                    {t("noResults")}
                   </div>
                 )}
               </div>

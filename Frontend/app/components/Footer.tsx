@@ -114,7 +114,10 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 sm:mt-14 md:mt-16 pt-8 sm:pt-9 md:pt-10 border-t border-white/20 text-center text-sm sm:text-base md:text-lg text-white/90">
+        <div
+          className="mt-12 sm:mt-14 md:mt-16 pt-8 sm:pt-9 md:pt-10 border-t border-white/20 text-center text-sm sm:text-base md:text-lg text-white/90"
+          suppressHydrationWarning={true}
+        >
           {t("footer.rights", { year: new Date().getFullYear() })}
         </div>
       </div>

@@ -51,13 +51,13 @@ function Dropdown({
   const current = OPTIONS.find((o) => o.value === value) || OPTIONS[0];
 
   return (
-    <div className="relative inline-block text-right" ref={rootRef}>
+    <div className="relative" ref={rootRef}>
       <button
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => setOpen((s) => !s)}
-        className="inline-flex items-center gap-2 bg-transparent text-fluid-sm text-sm sm:text-base font-medium text-primary px-2 sm:px-3 py-1 focus:outline-none w-full sm:w-auto max-w-none whitespace-normal"
+        className="inline-flex items-center gap-2 bg-transparent text-fluid-sm text-sm sm:text-base font-medium text-primary px-2 sm:px-3 py-1 focus:outline-none whitespace-nowrap min-w-[180px] sm:min-w-[200px] justify-between"
         onKeyDown={(e) => {
           // open with ArrowDown
           if (e.key === "ArrowDown") {

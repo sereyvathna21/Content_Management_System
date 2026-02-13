@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import usePdfThumbnail from "@/app/lib/usePdfThumbnail";
+import { useTranslations } from "next-intl";
+import { getCategoryBadgeClasses } from "@/app/lib/categoryColors";
 
 type Pub = {
   id: number | string;
@@ -19,8 +21,32 @@ export default function PublicationCard({
   pub: Pub;
   onOpen?: (p: Pub) => void;
 }) {
+  const t = useTranslations("PublicationPage");
   const thumb = usePdfThumbnail(pub.pdf, 2);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
+
+  // Get translated title and description, fallback to hardcoded values
+  const translatedTitle = pub.id ? t(`content.items.${pub.id}.title`) : "";
+  const displayTitle =
+    translatedTitle && !translatedTitle.startsWith("content.items")
+      ? translatedTitle
+      : pub.title;
+
+  const translatedDescription = pub.id
+    ? t(`content.items.${pub.id}.description`)
+    : "";
+  const displayDescription =
+    translatedDescription && !translatedDescription.startsWith("content.items")
+      ? translatedDescription
+      : pub.description;
+
+  const translatedCategory = pub.category
+    ? t(`categoryLabels.${pub.category}`)
+    : "";
+  const displayCategory =
+    translatedCategory && !translatedCategory.startsWith("categoryLabels")
+      ? translatedCategory
+      : pub.category;
 
   useEffect(() => {
     if (pub.pdf && typeof pub.pdf !== "string" && pub.pdf instanceof File) {
@@ -37,10 +63,10 @@ export default function PublicationCard({
 
   // responsive character-based truncation (adjusts with resize)
   const [truncatedTitle, setTruncatedTitle] = useState<string>(() =>
-    typeof pub.title === "string" ? pub.title : "",
+    typeof displayTitle === "string" ? displayTitle : "",
   );
   const [truncatedDescription, setTruncatedDescription] = useState<string>(
-    () => (typeof pub.description === "string" ? pub.description : ""),
+    () => (typeof displayDescription === "string" ? displayDescription : ""),
   );
 
   useEffect(() => {
@@ -66,14 +92,15 @@ export default function PublicationCard({
       }
 
       const tTitle =
-        typeof pub.title === "string" && pub.title.length > maxTitle
-          ? pub.title.slice(0, maxTitle).trimEnd() + "..."
-          : pub.title || "";
+        typeof displayTitle === "string" && displayTitle.length > maxTitle
+          ? displayTitle.slice(0, maxTitle).trimEnd() + "..."
+          : displayTitle || "";
 
       const tDesc =
-        typeof pub.description === "string" && pub.description.length > maxDesc
-          ? pub.description.slice(0, maxDesc).trimEnd() + "..."
-          : pub.description || "";
+        typeof displayDescription === "string" &&
+        displayDescription.length > maxDesc
+          ? displayDescription.slice(0, maxDesc).trimEnd() + "..."
+          : displayDescription || "";
 
       setTruncatedTitle(tTitle);
       setTruncatedDescription(tDesc);
@@ -90,7 +117,7 @@ export default function PublicationCard({
       return () => window.removeEventListener("resize", onResize);
     }
     return;
-  }, [pub.title, pub.description]);
+  }, [displayTitle, displayDescription]);
 
   return (
     <div className="bg-white/80 border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition p-4 sm:p-5 flex flex-col h-full backdrop-blur-sm">
@@ -102,30 +129,34 @@ export default function PublicationCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={thumb}
-            alt={pub.title}
+            alt={displayTitle}
             className="object-cover object-top w-full h-full transition-transform duration-400 ease-out hover:scale-105"
           />
         ) : (
           <div className="flex items-center justify-center h-full w-full text-sm text-gray-400">
-            No preview
+            {t("noPreview")}
           </div>
         )}
 
-        <div className="absolute top-3 left-3 bg-white/40 backdrop-blur rounded-full px-3 py-1 text-xs font-semibold text-gray-800 border border-white/30">
-          {pub.category}
+        <div
+          className={`absolute top-3 left-3 backdrop-blur rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${getCategoryBadgeClasses(
+            pub.category || "",
+          )}`}
+        >
+          {displayCategory}
         </div>
       </div>
 
       <h3
         className="text-primary text-base sm:text-lg md:text-xl font-semibold truncate mb-2"
-        title={pub.title}
+        title={displayTitle}
       >
         {truncatedTitle}
       </h3>
 
       <p
         className="text-sm md:text-base text-gray-600 mb-4"
-        title={pub.description}
+        title={displayDescription}
       >
         {truncatedDescription || ""}
       </p>
@@ -141,7 +172,7 @@ export default function PublicationCard({
               onClick={() => onOpen(pub)}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow hover:shadow-md transform transition hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
-              Open
+              {t("actions.open")}
             </button>
           ) : openHref ? (
             <a
@@ -150,11 +181,11 @@ export default function PublicationCard({
               rel="noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow"
             >
-              Open
+              {t("actions.open")}
             </a>
           ) : (
             <button className="w-full text-sm text-gray-400" disabled>
-              Open
+              {t("actions.open")}
             </button>
           )}
         </div>
