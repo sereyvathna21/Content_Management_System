@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import Header from "@/app/components/Header";
+import Image from "next/image";
 import Navigation from "@/app/components/Navigation";
 import Footer from "@/app/components/Footer";
 import LawCard from "@/app/components/LawCard";
@@ -218,9 +219,11 @@ export default function Laws() {
 
       {/* Hero Section */}
       <div className="relative w-full animate-fade-in overflow-hidden">
-        <img
+        <Image
           src="/hero1.svg"
           alt={t("hero.imgAlt")}
+          fill
+          priority
           className="absolute inset-0 w-full h-[13rem] sm:h-[14rem] md:h-[18.8rem] lg:h-[21.2rem] object-cover pointer-events-none transition-transform duration-700 ease-out"
         />
         <div className="absolute w-full h-[13rem] sm:h-[14rem] md:h-[18.8rem] lg:h-[21.3rem] bg-black/50 animate-fade-in" />

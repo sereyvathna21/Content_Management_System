@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import TopNav from "@/app/components/TopNav";
@@ -79,7 +80,7 @@ export default function ForgotPassword() {
           <div className="w-full max-w-md z-20">
             <div className="flex justify-center animate-[fadeInDown_0.6s_ease-out]">
               <div className="bg-white p-4 rounded-2xl shadow-lg hover:scale-110 transition-transform duration-300">
-                <img
+                <Image
                   src="/favicon.svg"
                   alt="Logo"
                   width={96}

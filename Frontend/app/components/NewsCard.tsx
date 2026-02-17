@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import React from "react";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 
 interface NewsCardProps {
@@ -51,7 +52,7 @@ export default function NewsCard({
       <article className="group bg-gray-50 rounded-xl overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col">
         {/* Image Section */}
         <div className="relative w-full aspect-video overflow-hidden">
-          <img src={image} alt={title} className="w-full h-full object-cover" />
+          <Image src={image} alt={title} fill className="object-cover" />
 
           <div className="absolute top-2 left-2">
             <time className="text-xs sm:text-sm font-semibold text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md">

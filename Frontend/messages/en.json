@@ -78,7 +78,7 @@
             "title": "News & Announcements",
             "subtitle": "Stay updated with our latest initiatives, publications, and community engagements",
             "readMore": "Read more",
-            "viewAll": "View All News"
+            "viewAll": "See more"
         },
         "categories": {
             "events": "Events",
@@ -278,50 +278,16 @@
                 "title": "Resources",
                 "description": "Access our documents & materials",
                 "laws": {
-                    "2": {
-                        "title": "Publication Title 2",
-                        "description": "Summary of the second publication."
-                    },
-                    "3": {
-                        "title": "Publication Title 3",
-                        "description": "Summary of the third publication."
-                    },
-                    "4": {
-                        "title": "Publication Title 4",
-                        "description": "Summary of the fourth publication."
-                    },
-                    "5": {
-                        "title": "Publication Title 1",
-                        "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
-                    },
-                    "6": {
-                        "title": "Publication Title 2",
-                        "description": "Summary of the second publication."
-                    },
-                    "7": {
-                        "title": "Publication Title 3",
-                        "description": "Summary of the third publication."
-                    },
-                    "8": {
-                        "title": "Publication Title 4",
-                        "description": "Summary of the fourth publication."
-                    },
-                    "9": {
-                        "title": "Publication Title 1",
-                        "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
-                    },
-                    "10": {
-                        "title": "Publication Title 2",
-                        "description": "Summary of the second publication."
-                    },
-                    "11": {
-                        "title": "Publication Title 3",
-                        "description": "Summary of the third publication."
-                    },
-                    "12": {
-                        "title": "Publication Title 4",
-                        "description": "Summary of the fourth publication."
-                    }
+                    "title": "Laws",
+                    "description": "Access comprehensive legal frameworks and regulations governing social protection systems."
+                },
+                "publication": {
+                    "title": "Publications",
+                    "description": "Explore our research reports, policy documents, and informational publications."
+                },
+                "social": {
+                    "title": "Social",
+                    "description": "Connect with social activities and community engagement programs."
                 }
             }
         },

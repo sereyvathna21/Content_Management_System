@@ -1,0 +1,27 @@
+.marquee {
+  animation: marquee-scroll 10s linear infinite;
+  will-change: transform;
+}
+
+.paused {
+  animation: none !important;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    animation: none !important;
+  }
+}
+
+.logo-shine {
+  pointer-events: none;
+}

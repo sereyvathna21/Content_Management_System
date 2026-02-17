@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
@@ -53,10 +54,12 @@ export default function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-white backdrop-blur-lg shadow-md transition-all duration-500 border-b border-gray-100">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 lg:px-10 lg:py-4">
         <div className="transition-transform hover:scale-105 duration-300">
-          <img
+          <Image
             src="/logo.svg"
             className="w-auto h-12 sm:h-14 md:h-16 lg:h-20"
             alt="logo"
+            width={160}
+            height={64}
           />
         </div>
 

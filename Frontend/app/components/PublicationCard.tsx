@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import usePdfThumbnail from "@/app/lib/usePdfThumbnail";
 import { useTranslations } from "next-intl";
 import { getCategoryBadgeClasses } from "@/app/lib/categoryColors";
@@ -126,10 +127,11 @@ export default function PublicationCard({
         style={{ height: "clamp(12rem, 26vw, 18rem)" }}
       >
         {thumb ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={thumb}
             alt={displayTitle}
+            fill
+            unoptimized
             className="object-cover object-top w-full h-full transition-transform duration-400 ease-out hover:scale-105"
           />
         ) : (

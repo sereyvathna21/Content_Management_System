@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Facebook } from "lucide-react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 export default function Footer() {
   const t = useTranslations("Common");
@@ -37,10 +38,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 md:gap-14 lg:gap-16">
           <div>
             <div className="transition-transform hover:scale-105 duration-300">
-              <img
+              <Image
                 src="/favicon.svg"
                 alt="NSPC logo"
                 className="mb-6 sm:mb-8 h-16 sm:h-20 md:h-24 lg:h-32 xl:h-40"
+                width={160}
+                height={160}
               />
             </div>
             <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed">
@@ -106,7 +109,7 @@ export default function Footer() {
               <a
                 href="https://www.facebook.com/CAMNSPC/"
                 aria-label="Facebook"
-                className="text-2xl sm:text-3xl md:text-4xl hover:scale-125 transition-transform duration-300"
+                className="text-2xl bg-blue-600 rounded-full p-2 sm:text-3xl md:text-4xl hover:scale-125 transition-transform duration-300"
               >
                 <Facebook />
               </a>

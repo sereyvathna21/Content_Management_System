@@ -20,7 +20,7 @@ module.exports = {
     extend: {
       colors: {
         primary: "#4CAF4F",
-        secondary: "var(--secondary-color)",
+        secondary: "#1976D2",
       },
       fontSize: {
         // Mobile-first responsive typography

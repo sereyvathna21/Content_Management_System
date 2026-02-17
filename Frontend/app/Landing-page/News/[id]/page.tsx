@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { newsArticles } from "@/app/Landing-page/News/articles";
 import Header from "@/app/components/Header";
+import Image from "next/image";
 import Footer from "@/app/components/Footer";
 import Navigation from "@/app/components/Navigation";
 import ShareControls from "@/app/components/ShareControls";
@@ -71,10 +72,12 @@ export default async function ArticlePage({
           <article className="grid lg:grid-cols-3 gap-10 items-start max-w-6xl mx-auto">
             <header className="lg:col-span-2">
               <div className="relative rounded-xl overflow-hidden shadow-lg ">
-                <img
+                <Image
                   src={article.image}
                   alt={displayedTitle}
                   className="w-full h-72 sm:h-96 object-cover rounded-xl"
+                  width={1200}
+                  height={640}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6 text-white">
@@ -138,9 +141,11 @@ export default async function ArticlePage({
                               href={`/Landing-page/News/${encodeURIComponent(a.id)}`}
                               className="flex items-center gap-3 py-2"
                             >
-                              <img
+                              <Image
                                 src={a.image}
                                 alt={relatedTitle}
+                                width={112}
+                                height={64}
                                 className="w-28 h-16 object-cover rounded"
                               />
                               <div className="text-base">

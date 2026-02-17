@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 
 export default function AboutSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -35,10 +36,12 @@ export default function AboutSection() {
       </h1>
       <div className="flex flex-col lg:flex-row items-start gap-3 sm:gap-8 md:gap-10 lg:gap-12 py-4 sm:py-8 md:py-12 lg:py-16">
         <div className="flex-shrink-0 transition-transform duration-700 hover:scale-105 w-auto self-center lg:self-start">
-          <img
+          <Image
             src="/minister.svg"
             alt="Minister photo"
             className="rounded-2xl shadow-2xl w-72 sm:w-80 md:min-w-88 lg:w-auto max-w-full mx-auto lg:mx-0"
+            width={360}
+            height={420}
           />
         </div>
 
@@ -62,9 +65,6 @@ export default function AboutSection() {
             cohesion and ensuring that all citizens have the opportunity to lead
             dignified and productive lives.
           </p>
-          <button className="border-2 text-primary border-primary px-4 py-2 sm:px-5 sm:py-2.5 md:px-6 md:py-3 rounded-full font-semibold text-sm sm:text-base w-28 sm:w-32 md:w-36 hover:bg-primary hover:text-white transition-all duration-300 shadow-md hover:shadow-lg">
-            See more
-          </button>
         </div>
       </div>
     </div>
