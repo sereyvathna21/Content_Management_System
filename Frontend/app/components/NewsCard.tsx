@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -29,6 +29,49 @@ const getCategoryColor = (category: string) => {
   }
 };
 
+function ClientFormattedDate({
+  date,
+  dateLocale,
+  className,
+}: {
+  date: string;
+  dateLocale: string;
+  className?: string;
+}) {
+  const [displayed, setDisplayed] = useState<string>(() => {
+    // initial deterministic fallback (ISO date) to avoid large server/client surprises
+    try {
+      return new Date(date).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return new Date(date).toISOString().slice(0, 10);
+    }
+  });
+
+  useEffect(() => {
+    // compute the locale-aware string on the client and update
+    try {
+      const formatted = new Date(date).toLocaleDateString(dateLocale, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      setDisplayed(formatted);
+    } catch {
+      setDisplayed(new Date(date).toISOString().slice(0, 10));
+    }
+  }, [date, dateLocale]);
+
+  return (
+    <time suppressHydrationWarning className={className}>
+      {displayed}
+    </time>
+  );
+}
+
 export default function NewsCard({
   id,
   title,
@@ -47,21 +90,32 @@ export default function NewsCard({
   let displayedExcerpt = t(excerptKey);
   if (displayedExcerpt === excerptKey) displayedExcerpt = excerpt;
 
+  // handle remote image failures by falling back to a local placeholder
+  const [imgSrc, setImgSrc] = useState<string>(image);
+
+  useEffect(() => {
+    setImgSrc(image);
+  }, [image]);
+
   return (
     <Link href={`/Landing-page/News/${id}`}>
       <article className="group bg-gray-50 rounded-xl overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col">
         {/* Image Section */}
         <div className="relative w-full aspect-video overflow-hidden">
-          <Image src={image} alt={title} fill className="object-cover" />
+          <Image
+            src={imgSrc}
+            alt={title}
+            fill
+            className="object-cover"
+            onError={() => setImgSrc("/images/placeholder.svg")}
+          />
 
           <div className="absolute top-2 left-2">
-            <time className="text-xs sm:text-sm font-semibold text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md">
-              {new Date(date).toLocaleDateString(dateLocale, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
-            </time>
+            <ClientFormattedDate
+              date={date}
+              dateLocale={dateLocale}
+              className="text-xs sm:text-sm font-semibold text-white bg-black/60 backdrop-blur-sm px-2 py-1 rounded-md"
+            />
           </div>
 
           <div

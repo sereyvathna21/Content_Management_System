@@ -224,9 +224,9 @@ export default function Laws() {
           alt={t("hero.imgAlt")}
           fill
           priority
-          className="absolute inset-0 w-full h-[13rem] sm:h-[14rem] md:h-[18.8rem] lg:h-[21.2rem] object-cover pointer-events-none transition-transform duration-700 ease-out"
+          className="absolute inset-0 w-full h-[13rem] sm:h-[14rem] md:h-[18.8rem] lg:h-[22.2rem] object-cover pointer-events-none transition-transform duration-700 ease-out"
         />
-        <div className="absolute w-full h-[13rem] sm:h-[14rem] md:h-[18.8rem] lg:h-[21.3rem] bg-black/50 animate-fade-in" />
+        <div className="absolute w-full h-[15rem] sm:h-[15rem] md:h-[20rem] lg:h-[22.5rem] bg-black/50 animate-fade-in" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 lg:py-32">
           <div className="text-center">
             <h1 className="fluid-title font-extrabold text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl leading-tight tracking-tight animate-slide-up-fade [animation-delay:0.3s] opacity-0">
