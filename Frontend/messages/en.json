@@ -2,6 +2,79 @@
     "HomePage": {
         "title": "Hello world!"
     },
+    "AboutPage": {
+        "title": "What is National Social Protection Council?",
+        "ministerTitle": "A word from our Minister's",
+        "description": "The National Social Protection Council (NSPC) is a governmental body responsible for formulating and implementing social protection policies and programs in Cambodia.​​​​​​​ Established to address the needs of vulnerable populations, the NSPC aims to enhance social welfare, reduce poverty, and promote inclusive development across the country. The council collaborates with various stakeholders, including government agencies, non-governmental organizations, and international partners, to design and execute initiatives that provide social safety nets, improve access to essential services, and support economic empowerment for disadvantaged groups. Through its efforts, the NSPC plays a crucial role in fostering social cohesion and ensuring that all citizens have the opportunity to lead dignified and productive lives."
+    },
+    "VisionPage": {
+        "title": "Our Vision",
+        "paragraph": "NSPC envisions a Cambodia where every person enjoys dignity, social security and opportunity. We strive to build resilient communities through inclusive policies and strong partnerships.",
+        "bullets": {
+            "1": "Dignified social protection for all",
+            "2": "Resilient households and communities",
+            "3": "Equitable access to essential services"
+        }
+    },
+    "GoalsPage": {
+        "title": "Our Goals",
+        "intro": "The National Social Protection Council pursues a set of strategic goals to promote equity, reduce vulnerability, and ensure access to essential services for all Cambodians.",
+        "goals": {
+            "goal1": {
+                "title": "Inclusive Protection",
+                "desc": "Design social programs that reach the most vulnerable and leave no one behind."
+            },
+            "goal2": {
+                "title": "Poverty Reduction",
+                "desc": "Implement targeted support to sustainably lift households out of poverty."
+            },
+            "goal3": {
+                "title": "Access to Services",
+                "desc": "Improve access to health, education and social services for all communities."
+            },
+            "goal4": {
+                "title": "Resilience & Capacity",
+                "desc": "Strengthen household and community resilience to shocks and stresses."
+            }
+        }
+    },
+    "PartnersPage": {
+        "trustedBy": "Trusted by industry leaders",
+        "title": "Partnerships",
+        "ariaLabel": "Partner logos"
+    },
+    "ObjectivesPage": {
+        "missionLabel": "Our Mission",
+        "title": "What We Do?",
+        "nspcName": "The National Social Protection Council (NSPC) of Cambodia",
+        "descriptionRest": "is the high-level body responsible for developing, regulating, and harmonizing the national social protection system to reduce poverty and vulnerability."
+    },
+    "ObjectivesDetail": {
+        "prev": "Previous",
+        "next": "Next",
+        "objectives": {
+            "0": {
+                "title": "Startup Nurturing",
+                "desc": "Nurturing and growing digital startups into successful and sustainable businesses through accelerator programs."
+            },
+            "1": {
+                "title": "Community",
+                "desc": "Enhancing stakeholder interaction through meetups, capacity building, and networking events."
+            },
+            "2": {
+                "title": "Digital Platform",
+                "desc": "Developing platforms and services that startups can plug into to find resources and investors."
+            },
+            "3": {
+                "title": "Research",
+                "desc": "Conducting trusted research to provide accurate data and resources for startups and stakeholders."
+            },
+            "4": {
+                "title": "Enterprises Go Digital",
+                "desc": "Strengthening enterprises' digital capabilities through adoption and enabling participation in the digital economy."
+            }
+        }
+    },
     "ContactPage": {
         "title": "Get in Touch",
         "subtitle": "We'd love to hear from you. Send us a message and we'll respond as soon as possible.",

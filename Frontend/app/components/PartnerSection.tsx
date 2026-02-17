@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
-import styles from "./PartnerSection.module.css";
+import styles from "@/app/styles/PartnerSection.module.css";
 
 export default function PartnerSection() {
+  const t = useTranslations("PartnersPage");
   interface Partner {
     src: string;
     name: string;
@@ -77,12 +79,12 @@ export default function PartnerSection() {
         {/* Heading */}
         <div className="relative z-10 text-center mb-12">
           <p className="text-xs font-medium tracking-widest uppercase text-primary/70 mb-2">
-            Trusted by industry leaders
+            {t("trustedBy")}
           </p>
           <h2 className="text-4xl sm:text-5xl md:text-6xl font-semibold leading-tight text-primary">
-            Partnerships
+            {t("title")}
           </h2>
-          <div className="flex items-center justify-center gap-3 mt-2">
+          <div className="flex items-center justify-center gap-3 mt-6">
             <span className="block w-20 h-px bg-primary/50" />
             <span className="w-1.5 h-1.5 bg-primary rotate-45 rounded-sm shadow-md" />
             <span className="block w-20 h-px bg-primary/50" />
@@ -98,7 +100,7 @@ export default function PartnerSection() {
             setHoveredIdx(null);
           }}
           role="region"
-          aria-label="Partner logos"
+          aria-label={t("ariaLabel")}
         >
           <div
             className="absolute inset-y-0 left-0 w-40 pointer-events-none z-20  "

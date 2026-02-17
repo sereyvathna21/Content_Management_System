@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslations } from "next-intl";
 import type { Objective } from "@/types/objectives";
 
 type DetailCardProps = {
@@ -14,6 +15,7 @@ export default function ObjectivesDetailCard({
   selectedObjective,
   setSelectedObjective,
 }: DetailCardProps) {
+  const t = useTranslations("ObjectivesDetail");
   return (
     <div className="relative bg-white rounded-2xl p-6 shadow-2xl overflow-hidden w-full md:h-[350px] h-auto flex items-center">
       <div
@@ -36,11 +38,11 @@ export default function ObjectivesDetailCard({
         <h2
           className={`text-lg md:text-xl font-bold ${objective.color.text} transition-all duration-500`}
         >
-          {objective.title}
+          {t(`objectives.${selectedObjective}.title`)}
         </h2>
 
         <p className="text-slate-600 text-base leading-relaxed text-center px-2">
-          {objective.description}
+          {t(`objectives.${selectedObjective}.desc`)}
         </p>
 
         <div className="flex justify-center items-center space-x-2 pt-3">
@@ -49,6 +51,7 @@ export default function ObjectivesDetailCard({
               key={i}
               onClick={() => setSelectedObjective(i)}
               className="group relative"
+              aria-label={`Go to ${t(`objectives.${i}.title`)}`}
             >
               <div
                 className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${selectedObjective === i ? `bg-gradient-to-r ${objective.color.primary} scale-125` : "bg-slate-300 group-hover:bg-slate-400"}`}
@@ -65,6 +68,7 @@ export default function ObjectivesDetailCard({
               )
             }
             className={`p-2 rounded-full border-2 ${objective.color.border} ${objective.color.text} hover:bg-gradient-to-br ${objective.color.primary} hover:text-white transition-all duration-300 hover:scale-110`}
+            aria-label={t("prev")}
           >
             <svg
               className="w-5 h-5"
@@ -86,6 +90,7 @@ export default function ObjectivesDetailCard({
               setSelectedObjective((prev) => (prev + 1) % objectives.length)
             }
             className={`p-2 rounded-full border-2 ${objective.color.border} ${objective.color.text} hover:bg-gradient-to-br ${objective.color.primary} hover:text-white transition-all duration-300 hover:scale-110`}
+            aria-label={t("next")}
           >
             <svg
               className="w-5 h-5"

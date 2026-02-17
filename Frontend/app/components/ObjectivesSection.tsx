@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { OBJECTIVES } from "../data/objectives";
+import { useTranslations } from "next-intl";
 import {
   useIntersectionObserver,
   useAutoRotation,
@@ -12,6 +13,7 @@ export default function ObjectivesSection() {
   const { isVisible, sectionRef } = useIntersectionObserver();
   const { selectedObjective, setSelectedObjective } =
     useAutoRotation(OBJECTIVES);
+  const t = useTranslations("ObjectivesPage");
 
   return (
     <>
@@ -25,25 +27,23 @@ export default function ObjectivesSection() {
               className={`inline-block transition-all duration-1000 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-10"}`}
             >
               <span className="inline-block px-4 py-2 border border-primary/30 rounded-full text-primary  text-sm font-semibold tracking-wider uppercase mb-4">
-                Our Mission
+                {t("missionLabel")}
               </span>
             </div>
 
             <h1
-              className={`text-4xl sm:text-5xl md:text-6xl font-bold bg-primary bg-clip-text text-transparent transition-all duration-1000 delay-150 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-10"}`}
+              className={`text-4xl sm:text-5xl md:text-6xl font-bold text-primary  transition-all duration-1000 delay-150 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-10"}`}
             >
-              What We Do?
+              {t("title")}
             </h1>
 
             <p
               className={`text-black text-lg md:text-xl leading-relaxed max-w-4xl mx-auto transition-all duration-1000 delay-300 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-10"}`}
             >
               <span className="font-semibold text-primary">
-                The National Social Protection Council (NSPC) of Cambodia
+                {t("nspcName")}
               </span>{" "}
-              is the high-level body responsible for developing, regulating, and
-              harmonizing the national social protection system to reduce
-              poverty and vulnerability.
+              {t("descriptionRest")}
             </p>
           </div>
 

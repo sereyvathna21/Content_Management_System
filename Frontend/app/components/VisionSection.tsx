@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function VisionSection() {
+  const t = useTranslations("VisionPage");
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -29,13 +31,11 @@ export default function VisionSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-primary mb-4">
-              Our Vision
+              {t("title")}
             </h2>
 
             <p className="text-gray-700 mb-4 leading-relaxed">
-              NSPC envisions a Cambodia where every person enjoys dignity,
-              social security and opportunity. We strive to build resilient
-              communities through inclusive policies and strong partnerships.
+              {t("paragraph")}
             </p>
 
             <ul className="space-y-3">
@@ -43,25 +43,19 @@ export default function VisionSection() {
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary">
                   ✓
                 </span>
-                <span className="text-gray-700">
-                  Dignified social protection for all
-                </span>
+                <span className="text-gray-700">{t("bullets.1")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary">
                   ✓
                 </span>
-                <span className="text-gray-700">
-                  Resilient households and communities
-                </span>
+                <span className="text-gray-700">{t("bullets.2")}</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary">
                   ✓
                 </span>
-                <span className="text-gray-700">
-                  Equitable access to essential services
-                </span>
+                <span className="text-gray-700">{t("bullets.3")}</span>
               </li>
             </ul>
           </div>
