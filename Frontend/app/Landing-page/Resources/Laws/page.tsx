@@ -14,6 +14,7 @@ import ExportConfirmModal from "@/app/components/ExportConfirmModal";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { useTranslations } from "next-intl";
+import { matchesSearch } from "@/app/lib/searchUtils";
 
 type LawItem = {
   id: string;
@@ -94,14 +95,23 @@ export default function Laws() {
   };
 
   const filtered = useMemo(() => {
-    const q = (searchQuery || "").trim().toLowerCase();
+    const q = (searchQuery || "").trim();
+    const getTitle = (it: LawItem) => {
+      const tr = t(`content.items.${it.id}.title`);
+      return tr && !tr.startsWith("content.items") ? tr : it.title;
+    };
+    const getCategoryLabel = (it: LawItem) => {
+      const tr = t(`categoryLabels.${it.category}`);
+      return tr && !tr.startsWith("categoryLabels") ? tr : it.category;
+    };
+
     return SAMPLE_LAWS.filter((item) => {
       if (selectedCategory !== "All" && item.category !== selectedCategory)
         return false;
       if (!q) return true;
       return (
-        item.title.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q)
+        matchesSearch(getTitle(item), q) ||
+        matchesSearch(getCategoryLabel(item), q)
       );
     });
   }, [selectedCategory, searchQuery]);

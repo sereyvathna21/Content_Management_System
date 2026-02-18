@@ -7,8 +7,7 @@ export const newsArticles = [
     subtitle: "Keynotes • Workshops • Networking — Feb 2026",
     date: "January 15, 2026",
     category: "Events",
-    image:
-      "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop",
+    image: "/images/placeholder.svg",
   },
   {
     id: "2",
@@ -18,8 +17,7 @@ export const newsArticles = [
     subtitle: "Financial support and mentorship for high-achieving students",
     date: "January 10, 2026",
     category: "Programs",
-    image:
-      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop",
+    image: "/images/placeholder.svg",
   },
   {
     id: "3",
@@ -29,8 +27,7 @@ export const newsArticles = [
     subtitle: "Highlights and outcomes from the 2025 summit",
     date: "December 28, 2025",
     category: "Events",
-    image:
-      "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&auto=format&fit=crop",
+    image: "/images/placeholder.svg",
   },
   {
     id: "4",
@@ -40,8 +37,7 @@ export const newsArticles = [
     subtitle: "Volunteering impact across regions",
     date: "December 20, 2025",
     category: "Impact",
-    image:
-      "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800&auto=format&fit=crop",
+    image: "/images/placeholder.svg",
   },
   {
     id: "5",
@@ -51,8 +47,7 @@ export const newsArticles = [
     subtitle: "New collaborations to expand learning pathways",
     date: "December 15, 2025",
     category: "Partnerships",
-    image:
-      "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop",
+    image: "/images/placeholder.svg",
   },
   {
     id: "6",
@@ -62,8 +57,7 @@ export const newsArticles = [
     subtitle: "Monthly workshops for skill-building and leadership",
     date: "December 5, 2025",
     category: "Programs",
-    image:
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop",
+    image: "/images/placeholder.svg",
   },
   {
     id: "7",
@@ -72,8 +66,7 @@ export const newsArticles = [
       "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy.",
     date: "December 5, 2025",
     category: "Programs",
-    image:
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop",
+    image: "/images/placeholder.svg",
   },
   {
     id: "8",
@@ -82,8 +75,7 @@ export const newsArticles = [
       "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy.",
     date: "December 5, 2025",
     category: "Programs",
-    image:
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop",
+    image: "/images/placeholder.svg",
   },
   {
     id: "9",
@@ -92,8 +84,7 @@ export const newsArticles = [
       "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy.",
     date: "December 5, 2025",
     category: "Programs",
-    image:
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop",
+    image: "/images/placeholder.svg",
   },
   {
     id: "10",
@@ -102,8 +93,7 @@ export const newsArticles = [
       "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy.",
     date: "December 5, 2025",
     category: "Programs",
-    image:
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop",
+    image: "/images/placeholder.svg",
   },
   {
     id: "11",

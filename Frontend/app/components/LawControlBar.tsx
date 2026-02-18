@@ -100,10 +100,10 @@ export default function LawControlBar({
           {/* Right section - Search and Actions */}
           <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto lg:flex-shrink-0">
             {/* Search */}
-            <div className="relative flex-1 sm:flex-initial sm:w-80">
+            <div className="relative flex-1 sm:flex-initial sm:w-80 border border-primary rounded-xl shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <svg
-                  className="h-5 w-5 text-gray-400"
+                  className="h-5 w-5 "
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

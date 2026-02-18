@@ -6,7 +6,10 @@ import Footer from "@/app/components/Footer";
 import Pagination from "@/app/components/Pagination";
 import PublicationCard from "@/app/components/PublicationCard";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { matchesSearch } from "@/app/lib/searchUtils";
+import enMessages from "@/messages/en.json";
+import khMessages from "@/messages/kh.json";
 
 const PDFDrawerWrapper = dynamic(() => import("@/app/components/PDFDrawer"), {
   ssr: false,
@@ -127,18 +130,58 @@ export default function Publication() {
     label,
   }));
 
+  const locale = useLocale();
+
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = query.trim();
+
+    const safeGet = (obj: any, path: string) => {
+      if (!obj) return undefined;
+      const parts = path.split(".");
+      let cur: any = obj;
+      for (const p of parts) {
+        if (cur && typeof cur === "object" && p in cur) cur = cur[p];
+        else return undefined;
+      }
+      return cur;
+    };
+
+    const bundles: Record<string, any> = { en: enMessages, kh: khMessages };
+    const bundle = bundles[locale] || enMessages;
+
+    const getTitle = (p: any) => {
+      const msg = safeGet(
+        bundle,
+        `PublicationPage.content.items.${p.id}.title`,
+      );
+      return typeof msg === "string" && msg.length > 0 ? msg : p.title;
+    };
+    const getDescription = (p: any) => {
+      const msg = safeGet(
+        bundle,
+        `PublicationPage.content.items.${p.id}.description`,
+      );
+      return typeof msg === "string" && msg.length > 0 ? msg : p.description;
+    };
+
     return publications.filter((p) => {
       if (activeTab !== "all" && p.category.toLowerCase() !== activeTab)
         return false;
       if (!q) return true;
+
+      const localizedTitle = getTitle(p);
+      const rawTitle = p.title;
+      const localizedDesc = getDescription(p);
+      const rawDesc = p.description;
+
       return (
-        p.title.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
+        matchesSearch(localizedTitle, q) ||
+        matchesSearch(rawTitle, q) ||
+        matchesSearch(localizedDesc, q) ||
+        matchesSearch(rawDesc, q)
       );
     });
-  }, [publications, query, activeTab]);
+  }, [publications, query, activeTab, locale]);
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 9;

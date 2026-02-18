@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Footer from "@/app/components/Footer";
@@ -21,6 +21,9 @@ interface NewsArticle {
   image: string;
 }
 import { newsArticles } from "@/app/Landing-page/News/articles";
+import { matchesSearch, compareText } from "@/app/lib/searchUtils";
+import enMessages from "@/messages/en.json";
+import khMessages from "@/messages/kh.json";
 import { videos } from "@/app/Landing-page/News/videos";
 
 const newsPerPage = 12; // Limit for news articles
@@ -60,15 +63,49 @@ export default function News() {
   const effectiveSort = sortOption || "date_desc"; // treat Default as newest-first
   const [sortKey, sortDir] = effectiveSort.split("_");
 
+  const locale = useLocale();
+
+  const safeGet = (obj: any, path: string) => {
+    if (!obj) return undefined;
+    const parts = path.split(".");
+    let cur: any = obj;
+    for (const p of parts) {
+      if (cur && typeof cur === "object" && p in cur) cur = cur[p];
+      else return undefined;
+    }
+    return cur;
+  };
+
+  const bundles: Record<string, any> = { en: enMessages, kh: khMessages };
+  const bundle = bundles[locale] || enMessages;
+
+  const getArticleTitle = (a: NewsArticle) => {
+    const msg = safeGet(bundle, `NewsPage.content.articles.${a.id}.title`);
+    return typeof msg === "string" && msg.length > 0 ? msg : a.title;
+  };
+
+  const getArticleExcerpt = (a: NewsArticle) => {
+    const msg = safeGet(bundle, `NewsPage.content.articles.${a.id}.excerpt`);
+    return typeof msg === "string" && msg.length > 0 ? msg : a.excerpt;
+  };
+
+  const getArticleCategory = (a: NewsArticle) => {
+    const msg = safeGet(
+      bundle,
+      `NewsPage.categories.${a.category.toLowerCase()}`,
+    );
+    return typeof msg === "string" && msg.length > 0 ? msg : a.category;
+  };
+
   const sortedArticles = [...newsArticles].sort((a, b) => {
     if (sortKey === "date") {
       const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
       return sortDir === "asc" ? diff : -diff;
     } else if (sortKey === "title") {
-      const cmp = a.title.localeCompare(b.title);
+      const cmp = compareText(getArticleTitle(a), getArticleTitle(b));
       return sortDir === "asc" ? cmp : -cmp;
     } else if (sortKey === "category") {
-      const cmp = a.category.localeCompare(b.category);
+      const cmp = compareText(getArticleCategory(a), getArticleCategory(b));
       return sortDir === "asc" ? cmp : -cmp;
     }
     return 0;
@@ -76,11 +113,11 @@ export default function News() {
   // filter by search term (title, excerpt, category)
   const filteredArticles = sortedArticles.filter((a) => {
     if (!searchTerm) return true;
-    const q = searchTerm.toLowerCase();
+    const q = searchTerm.trim();
     return (
-      a.title.toLowerCase().includes(q) ||
-      a.excerpt.toLowerCase().includes(q) ||
-      a.category.toLowerCase().includes(q)
+      matchesSearch(getArticleTitle(a), q) ||
+      matchesSearch(getArticleExcerpt(a), q) ||
+      matchesSearch(getArticleCategory(a), q)
     );
   });
 
