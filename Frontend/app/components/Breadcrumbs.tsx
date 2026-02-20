@@ -12,7 +12,7 @@ export default function Breadcrumbs({ currentLabel }: Props) {
   const label = currentLabel || t("videoLabel");
 
   return (
-    <nav className="mb-4 sm:mb-6 md:mb-8" aria-label="Breadcrumb">
+    <nav className="mb-4 sm:mb-6 md:mb-8 mt-16 sm:mt-0" aria-label="Breadcrumb">
       <ol className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base">
         <li>
           <Link

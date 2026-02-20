@@ -2,12 +2,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import { useTranslations } from "next-intl";
 
 export default function Header() {
   const currentLocale = useLocale();
   const t = useTranslations("Common");
+  const router = useRouter();
   const [lang, setLang] = useState<"en" | "kh">(currentLocale as "en" | "kh");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -22,8 +24,8 @@ export default function Header() {
     document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
     setLang(newLocale);
     setDropdownOpen(false);
-    // Reload page to apply new locale
-    window.location.reload();
+    // Refresh server components to pick up new locale without a full page reload
+    router.refresh();
   };
 
   useEffect(() => {

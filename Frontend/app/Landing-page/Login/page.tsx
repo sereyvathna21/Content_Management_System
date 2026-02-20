@@ -72,8 +72,7 @@ export default function Login() {
 
     try {
       // Add your login logic here
-      console.log("Login data:", formData);
-      // Simulate API call
+      // Simulate API call — replace with: await api.post('/auth/login', formData)
       await new Promise((resolve) => setTimeout(resolve, 1000));
       // Handle successful login
     } catch (error) {

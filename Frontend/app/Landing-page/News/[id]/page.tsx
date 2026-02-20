@@ -18,7 +18,7 @@ export default async function ArticlePage({
 }) {
   const t = await getTranslations("NewsPage");
   const cookieStore = await cookies();
-  const locale = cookieStore.get("NEXT_LOCALE")?.value || "en";
+  const locale = cookieStore.get("NEXT_LOCALE")?.value || "kh";
   const resolvedParams = await params;
   const id = decodeURIComponent(resolvedParams.id);
 
@@ -122,7 +122,7 @@ export default async function ArticlePage({
             <aside className="lg:col-span-1 mt-8">
               <div className="sticky top-24 space-y-4">
                 <div className="bg-white rounded-xl shadow p-4">
-                  <h3 className="text-sm font-semibold text-primary mb-3">
+                  <h3 className="text-lg font-semibold text-primary mb-3">
                     {t("relatedArticles")}
                   </h3>
                   <ul className="space-y-4">
