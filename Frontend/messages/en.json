@@ -516,6 +516,13 @@
             "noDate": "No Date",
             "noResults": "No documents found matching your criteria."
         },
+        "noPreview": "No preview available",
+        "pdfNotAvailable": "PDF preview not available.",
+        "actions": {
+            "open": "Open",
+            "download": "Download",
+            "close": "Close"
+        },
         "exportPdf": {
             "title": "Laws & Regulations",
             "generatedOn": "Generated on:",
@@ -532,16 +539,20 @@
         "content": {
             "items": {
                 "1": {
-                    "title": "National Health Act"
+                    "title": "National Health Act",
+                    "description": "A comprehensive health regulation framework"
                 },
                 "2": {
-                    "title": "Environmental Regulations"
+                    "title": "Environmental Regulations",
+                    "description": "Guidelines for environmental protection and sustainability"
                 },
                 "3": {
-                    "title": "Education Policy Update"
+                    "title": "Education Policy Update",
+                    "description": "Updated policies for the education sector"
                 },
                 "4": {
-                    "title": "Public Safety Notice"
+                    "title": "Public Safety Notice",
+                    "description": "Important safety guidelines for public awareness"
                 }
             }
         }

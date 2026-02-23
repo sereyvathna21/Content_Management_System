@@ -1,99 +1,182 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import usePdfThumbnail from "@/app/lib/usePdfThumbnail";
 import { useTranslations } from "next-intl";
 import { getCategoryBadgeClasses } from "@/app/lib/categoryColors";
 
 type LawCardProps = {
   id: string;
   title: string;
+  description?: string;
   category: string;
-  uploadDate?: string;
-  isSelected: boolean;
-  isChecked: boolean;
-  onSelect: () => void;
-  onToggleCheck: () => void;
+  date?: string;
+  pdf?: string;
+  onOpen?: (law: LawCardProps) => void;
 };
 
 export default function LawCard({
+  id,
   title,
+  description,
   category,
-  uploadDate,
-  isSelected,
-  isChecked,
-  onSelect,
-  onToggleCheck,
+  date,
+  pdf,
+  onOpen,
 }: LawCardProps) {
   const t = useTranslations("LawsPage");
+  const thumb = usePdfThumbnail(pdf, 2);
+
+  // Get translated title and description, fallback to hardcoded values
+  const translatedTitle = id ? t(`content.items.${id}.title`) : "";
+  const displayTitle =
+    translatedTitle && !translatedTitle.startsWith("content.items")
+      ? translatedTitle
+      : title;
+
+  const translatedDescription = id ? t(`content.items.${id}.description`) : "";
+  const displayDescription =
+    translatedDescription && !translatedDescription.startsWith("content.items")
+      ? translatedDescription
+      : description;
+
+  const translatedCategory = category ? t(`categoryLabels.${category}`) : "";
+  const displayCategory =
+    translatedCategory && !translatedCategory.startsWith("categoryLabels")
+      ? translatedCategory
+      : category;
+
+  // responsive character-based truncation (adjusts with resize)
+  const [truncatedTitle, setTruncatedTitle] = useState<string>(() =>
+    typeof displayTitle === "string" ? displayTitle : "",
+  );
+  const [truncatedDescription, setTruncatedDescription] = useState<string>(
+    () => (typeof displayDescription === "string" ? displayDescription : ""),
+  );
+
+  useEffect(() => {
+    // compute truncation lengths with mobile-first breakpoints
+    const compute = (w: number) => {
+      let maxTitle = 60;
+      let maxDesc = 120;
+      if (w < 640) {
+        maxTitle = 30;
+        maxDesc = 60;
+      } else if (w < 768) {
+        maxTitle = 40;
+        maxDesc = 80;
+      } else if (w < 1024) {
+        maxTitle = 50;
+        maxDesc = 100;
+      } else if (w < 1280) {
+        maxTitle = 60;
+        maxDesc = 120;
+      } else {
+        maxTitle = 70;
+        maxDesc = 140;
+      }
+
+      const tTitle =
+        typeof displayTitle === "string" && displayTitle.length > maxTitle
+          ? displayTitle.slice(0, maxTitle).trimEnd() + "..."
+          : displayTitle || "";
+
+      const tDesc =
+        typeof displayDescription === "string" &&
+        displayDescription.length > maxDesc
+          ? displayDescription.slice(0, maxDesc).trimEnd() + "..."
+          : displayDescription || "";
+
+      setTruncatedTitle(tTitle);
+      setTruncatedDescription(tDesc);
+    };
+
+    // initial compute (guard window for SSR)
+    const initialWidth =
+      typeof window !== "undefined" ? window.innerWidth : 1024;
+    compute(initialWidth);
+
+    const onResize = () => compute(window.innerWidth);
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", onResize);
+      return () => window.removeEventListener("resize", onResize);
+    }
+    return;
+  }, [displayTitle, displayDescription]);
+
   return (
-    <div
-      onClick={onSelect}
-      className={`relative group border rounded-lg sm:rounded-xl p-2 sm:p-3 cursor-pointer
-        ${isSelected ? "bg-blue-50 shadow-sm" : "bg-white border-gray-200 hover:border-primary/60"}
-      `}
-    >
-      {/* Checkbox */}
+    <div className="bg-white/80 border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition p-4 sm:p-5 flex flex-col h-full backdrop-blur-sm">
       <div
-        className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10"
-        onClick={(e) => e.stopPropagation()}
+        className="relative rounded-lg overflow-hidden mb-4 bg-gray-100"
+        style={{ height: "clamp(12rem, 26vw, 18rem)" }}
       >
-        <input
-          type="checkbox"
-          checked={isChecked}
-          onChange={onToggleCheck}
-          className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
-        />
+        {thumb ? (
+          <Image
+            src={thumb}
+            alt={displayTitle}
+            fill
+            unoptimized
+            className="object-cover object-top w-full h-full transition-transform duration-400 ease-out hover:scale-105"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full w-full text-sm text-gray-400">
+            {t("noPreview")}
+          </div>
+        )}
+
+        <div
+          className={`absolute top-3 left-3 backdrop-blur rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${getCategoryBadgeClasses(
+            category || "",
+          )}`}
+        >
+          {displayCategory}
+        </div>
       </div>
 
-      <div className="flex gap-2 sm:gap-3 items-center">
-        {/* Icon */}
-        <div
-          className={`p-1.5 sm:p-2 md:p-2.5 rounded-md sm:rounded-lg shrink-0 ${
-            isSelected ? "bg-white" : "bg-gray-100"
-          }`}
-        >
-          <svg
-            className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-primary"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
+      <h3
+        className="text-primary text-base sm:text-lg md:text-xl font-semibold truncate mb-2"
+        title={displayTitle}
+      >
+        {truncatedTitle}
+      </h3>
+
+      <p
+        className="text-sm md:text-base text-gray-600 mb-4"
+        title={displayDescription}
+      >
+        {truncatedDescription || ""}
+      </p>
+
+      <div className="mt-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="text-xs text-gray-500">{date}</div>
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="max-h-20 sm:max-h-28 md:max-h-32 overflow-hidden sm:overflow-auto pr-4 sm:pr-6 custom-scrollbar">
-            <h3
-              title={title}
-              className={`text-sm sm:text-base md:text-lg font-semibold leading-snug ${
-                isSelected ? "text-primary" : "text-gray-900"
-              } truncate whitespace-nowrap`}
+        <div className="w-full sm:w-auto flex justify-end">
+          {onOpen ? (
+            <button
+              onClick={() =>
+                onOpen({ id, title, description, category, date, pdf })
+              }
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow hover:shadow-md transform transition hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
-              {title}
-            </h3>
-
-            <div className="mt-1 sm:mt-1.5 flex sm:flex-row flex-col sm:items-center items-start gap-1 sm:gap-3">
-              <span
-                className={`inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-medium border ${getCategoryBadgeClasses(
-                  category,
-                )}`}
-              >
-                {t(`categoryLabels.${category}`) || category}
-              </span>
-
-              <span className="text-[9px] sm:text-[10px] text-gray-500 mt-0.5 sm:mt-0 truncate">
-                {uploadDate
-                  ? new Date(uploadDate).toLocaleDateString()
-                  : t("card.noDate")}
-              </span>
-            </div>
-          </div>
+              {t("actions.open")}
+            </button>
+          ) : pdf ? (
+            <a
+              href={pdf}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow"
+            >
+              {t("actions.open")}
+            </a>
+          ) : (
+            <button className="w-full text-sm text-gray-400" disabled>
+              {t("actions.open")}
+            </button>
+          )}
         </div>
       </div>
     </div>

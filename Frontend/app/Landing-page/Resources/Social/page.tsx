@@ -3,13 +3,15 @@
 import Header from "@/app/components/Header";
 import Navigation from "@/app/components/Navigation";
 import Footer from "@/app/components/Footer";
+import HeroCover from "@/app/components/HeroCover";
 import { useState } from "react";
 
 const topics = [
   {
     id: "governance",
     title: "Governance",
-    subtitle: "Policies, oversight and institutional frameworks for social services.",
+    subtitle:
+      "Policies, oversight and institutional frameworks for social services.",
     description:
       "Policies, oversight and institutional frameworks for social services.",
     href: "/Landing-page/Resources/Social/Governance",
@@ -19,7 +21,8 @@ const topics = [
   {
     id: "assistance",
     title: "Social Assistance",
-    subtitle: "Programs and support for vulnerable groups, benefits and services.",
+    subtitle:
+      "Programs and support for vulnerable groups, benefits and services.",
     description:
       "Programs and support for vulnerable groups, benefits and services.",
     href: "/Landing-page/Resources/Social/SocialAssistance",
@@ -62,17 +65,15 @@ export default function Social() {
     <>
       <Header />
       <Navigation />
+      <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
 
-      <div className="min-h-screen bg-white pt-24 sm:pt-32 md:pt-36 lg:pt-44">
-        <div className="bg-primary py-6 sm:py-8 md:py-10 lg:py-12">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="fluid-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 sm:mb-2 md:mb-3 text-white">
-              Social Resources
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-center text-white/90 max-w-2xl mx-auto">
-              Explore governance, assistance and social security resources.
-            </p>
-          </div>
+      <div className="min-h-screen bg-white">
+        <div className="relative w-full animate-fade-in overflow-hidden">
+          <HeroCover
+            image="/social.svg"
+            title="Social Resources"
+            subtitle="Explore governance, assistance and social security resources."
+          />
         </div>
 
         <div className="min-h-screen bg-gray-50/50">

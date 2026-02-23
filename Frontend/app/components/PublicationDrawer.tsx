@@ -14,7 +14,7 @@ type Pub = {
   pdf?: string | File | undefined;
 };
 
-export default function PDFDrawer({
+export default function PublicationDrawer({
   open,
   pub,
   onClose,
@@ -79,6 +79,19 @@ export default function PDFDrawer({
         maxTitle = 80;
         maxDesc = 160;
       }
+
+      const tTitle =
+        typeof rawTitle === "string" && rawTitle.length > maxTitle
+          ? rawTitle.slice(0, maxTitle).trimEnd() + "..."
+          : rawTitle || "";
+
+      const tDesc =
+        typeof rawDescription === "string" && rawDescription.length > maxDesc
+          ? rawDescription.slice(0, maxDesc).trimEnd() + "..."
+          : rawDescription || "";
+
+      setTruncatedTitle(tTitle);
+      setTruncatedDescription(tDesc);
     };
 
     // Initial compute with default width
@@ -188,14 +201,14 @@ export default function PDFDrawer({
         <footer className="p-4 border-t bg-white flex items-center justify-start gap-3">
           <button
             onClick={handleDownload}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-primary text-white text-sm font-semibold"
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
           >
             {t("actions.download")}
           </button>
           <button
             onClick={onClose}
             aria-label={t("actions.close")}
-            className="inline-flex items-center px-3 py-2 text-sm rounded-md border border-gray-200"
+            className="inline-flex items-center px-3 py-2 text-sm rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
           >
             {t("actions.close")}
           </button>

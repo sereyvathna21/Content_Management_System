@@ -6,6 +6,7 @@ import Header from "@/app/components/Header";
 import Navigation from "@/app/components/Navigation";
 import Footer from "@/app/components/Footer";
 import FormAlert from "@/app/components/FormAlert";
+import HeroCover from "@/app/components/HeroCover";
 
 export default function Contact() {
   const t = useTranslations("ContactPage");
@@ -142,17 +143,14 @@ export default function Contact() {
     <>
       <Header />
       <Navigation />
-      <div className="min-h-screen bg-white pt-24 sm:pt-32 md:pt-36 lg:pt-44">
-        {/* Header Section */}
-        <div className="bg-primary text-white py-6 sm:py-8 md:py-10 lg:py-12 animate-fade-in">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 sm:mb-2 md:mb-3 animate-slide-down">
-              {t("title")}
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-center text-white/80 max-w-2xl mx-auto animate-slide-up">
-              {t("subtitle")}
-            </p>
-          </div>
+      <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
+      <div className="min-h-screen bg-white">
+        <div className="relative w-full animate-fade-in overflow-hidden">
+          <HeroCover
+            image="/contact.svg"
+            title={t("title")}
+            subtitle={t("subtitle")}
+          />
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-7 lg:py-8">

@@ -7,13 +7,17 @@ import Pagination from "@/app/components/Pagination";
 import PublicationCard from "@/app/components/PublicationCard";
 import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
+import HeroCover from "@/app/components/HeroCover";
 import { matchesSearch } from "@/app/lib/searchUtils";
 import enMessages from "@/messages/en.json";
 import khMessages from "@/messages/kh.json";
 
-const PDFDrawerWrapper = dynamic(() => import("@/app/components/PDFDrawer"), {
-  ssr: false,
-});
+const PublicationDrawerWrapper = dynamic(
+  () => import("@/app/components/PublicationDrawer"),
+  {
+    ssr: false,
+  },
+);
 
 export default function Publication() {
   const t = useTranslations("PublicationPage");
@@ -206,17 +210,14 @@ export default function Publication() {
     <>
       <Header />
       <Navigation />
-      <div className="min-h-screen bg-white pt-24 sm:pt-32 md:pt-36 lg:pt-44">
-        {/* Header Section */}
-        <div className="bg-primary py-6 sm:py-8 md:py-10 lg:py-12 animate-fade-in">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h1 className="fluid-title text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-2 sm:mb-2 md:mb-3 animate-slide-down text-white">
-              {t("hero.title")}
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-center text-white/90 max-w-2xl mx-auto animate-slide-up">
-              {t("hero.subtitle")}
-            </p>
-          </div>
+      <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
+      <div className="min-h-screen bg-white">
+        <div className="relative w-full animate-fade-in overflow-hidden">
+          <HeroCover
+            image="/publication.svg"
+            title={t("hero.title")}
+            subtitle={t("hero.subtitle")}
+          />
         </div>
 
         <div className="min-h-screen bg-gray-50/50 animate-fade-in-up [animation-delay:0.9s] opacity-0">
@@ -369,7 +370,7 @@ export default function Publication() {
                 // lazy render the drawer component so bundle only loads when used
                 <React.Suspense fallback={null}>
                   {/* dynamic import to avoid SSR issues */}
-                  <PDFDrawerWrapper
+                  <PublicationDrawerWrapper
                     pub={selectedPub}
                     open={drawerOpen}
                     onClose={() => {
