@@ -41,7 +41,9 @@
     "PartnersPage": {
         "trustedBy": "ទទួលការទុកចិត្តពីដឹកនាំឧស្សាហកម្ម",
         "title": "សម្ព័ន្ធភាព",
-        "ariaLabel": "រូបសញ្ញាដៃគូ"
+        "ariaLabel": "រូបសញ្ញាដៃគូ",
+        "marqueeAriaLabel": "រង្វើលរូបសញ្ញាដៃគូ",
+        "partnerListLabel": "ដៃគូរបស់យើង"
     },
     "ObjectivesPage": {
         "missionLabel": "បេសកកម្មរបស់យើង",
@@ -556,5 +558,17 @@
                 }
             }
         }
+    },
+    "SocialPage": {
+        "hero": {
+            "title": "ប្រព័ន្ធការពារសង្គម",
+            "subtitle": "ស្វែងយល់ពីធនធានអភិបាលកិច្ច ជំនួយសង្គម និងសន្តិសុខសង្គម។"
+        },
+        "tabs": {
+            "governance": "អភិបាលកិច្ច",
+            "assistance": "ជំនួយសង្គម",
+            "security": "សន្តិសុខសង្គម"
+        },
+        "reference": "ឯកសារយោង"
     }
 }

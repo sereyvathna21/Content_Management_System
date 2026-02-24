@@ -41,7 +41,9 @@
     "PartnersPage": {
         "trustedBy": "Trusted by industry leaders",
         "title": "Partnerships",
-        "ariaLabel": "Partner logos"
+        "ariaLabel": "Partner logos",
+        "marqueeAriaLabel": "Partner logos carousel",
+        "partnerListLabel": "Our partners"
     },
     "ObjectivesPage": {
         "missionLabel": "Our Mission",
@@ -556,5 +558,17 @@
                 }
             }
         }
+    },
+    "SocialPage": {
+        "hero": {
+            "title": "Social Protection System",
+            "subtitle": "Explore governance, assistance and social security resources."
+        },
+        "tabs": {
+            "governance": "Governance",
+            "assistance": "Social Assistance",
+            "security": "Social Security"
+        },
+        "reference": "Reference"
     }
 }

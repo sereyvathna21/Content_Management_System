@@ -102,7 +102,10 @@ export default function Footer() {
               {t("footer.emailLabel")} info@nspc.gov.kh
             </p>
             <p className="text-base sm:text-lg md:text-xl text-white/90 mb-4 sm:mb-5 md:mb-6">
-              {t("footer.phoneLabel")} +855 23 000 000
+              {t("footer.phoneLabel")}{" "}
+              <a href="tel:+85523000000" className="hover:underline">
+                +855 23 000 000
+              </a>
             </p>
 
             <div className="flex items-center gap-3 sm:gap-4">

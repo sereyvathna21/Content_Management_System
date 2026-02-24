@@ -1,27 +1,24 @@
+
+@keyframes marquee-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
 .marquee {
-  animation: marquee-scroll 10s linear infinite;
-  will-change: transform;
+  animation: marquee-scroll 30s linear infinite;
 }
 
 .paused {
-  animation: none !important;
+  animation-play-state: paused;
 }
 
-@keyframes marquee-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-33.333%);
-  }
+/* ── Logo shine sweep (opt-in via JS className) ──────────────────────────── */
+@keyframes shine-sweep {
+  0%   { opacity: 0; transform: translateX(-100%); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(100%); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .marquee {
-    animation: none !important;
-  }
-}
-
-.logo-shine {
-  pointer-events: none;
+.logoShine {
+  animation: shine-sweep 550ms ease forwards;
 }

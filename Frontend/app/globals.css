@@ -33,6 +33,36 @@ html[lang="km"] body {
   font-family: var(--font-family-km);
 }
 
+/* Make Khmer content paragraphs slightly larger for better readability */
+html[lang="kh"] .text-lg,
+html[lang="km"] .text-lg {
+  font-size: 1.25rem; /* Increase from default 1.125rem */
+  line-height: 1.8;
+}
+
+/* Make Khmer base text larger for better readability */
+html[lang="kh"] .text-base,
+html[lang="km"] .text-base {
+  font-size: 1.125rem; /* Increase from default 1rem */
+  line-height: 1.7;
+}
+
+/* Responsive Khmer base text for mobile */
+@media (max-width: 640px) {
+  html[lang="kh"] .text-base,
+  html[lang="km"] .text-base {
+    font-size: 1.125rem; /* Maintain larger size on mobile for readability */
+    line-height: 1.7;
+  }
+}
+
+/* Make Khmer reference text bigger for better readability */
+html[lang="kh"] .text-sm,
+html[lang="km"] .text-sm {
+  font-size: 1.0625rem; /* Increase from default 0.875rem (17px) */
+  line-height: 1.6;
+}
+
 /* Make the app root fill the viewport so the scroll container can be 100% high */
 #__next {
   height: 100%;
@@ -328,4 +358,26 @@ html[lang="km"] body {
 /* Custom animation delays */
 [style*="animation-delay"] {
   animation-fill-mode: forwards;
+}
+
+/* Text Justification - Like MS Word */
+@layer utilities {
+  .text-justify-full {
+    text-align: justify;
+    text-align-last: left;
+    text-justify: inter-word;
+    hyphens: none;
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    word-spacing: 0.05em;
+    word-break: normal;
+  }
+  
+  /* Khmer-specific text alignment - LEFT ONLY to avoid broken rendering */
+  html[lang="kh"] .text-justify-full,
+  html[lang="km"] .text-justify-full {
+    text-align: left;
+    text-justify: none;
+    word-spacing: normal;
+  }
 }

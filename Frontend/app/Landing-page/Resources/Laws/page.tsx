@@ -274,8 +274,12 @@ export default function Laws() {
                       date={law.date}
                       pdf={law.pdf}
                       onOpen={() => {
-                        setSelectedLaw(law);
-                        setDrawerOpen(true);
+                        if (window.innerWidth < 640 && law.pdf) {
+                          window.open(law.pdf, "_blank", "noopener,noreferrer");
+                        } else {
+                          setSelectedLaw(law);
+                          setDrawerOpen(true);
+                        }
                       }}
                     />
                   </div>

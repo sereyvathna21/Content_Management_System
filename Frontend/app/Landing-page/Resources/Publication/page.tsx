@@ -59,64 +59,22 @@ export default function Publication() {
     },
     {
       id: 5,
-      title: "Publication Title 1",
-      description:
-        "A brief description of the publication goes here. It provides an overview of the content and key findings.",
-      category: "NSPC",
-      date: "2023-05-01",
-      pdf: "/laws/test.pdf",
-    },
-    {
-      id: 6,
       title: "Publication Title 2",
       description: "Summary of the second publication.",
       category: "Others",
+      date: "2023-05-01",
+      pdf: "/laws/sample.pdf",
+    },
+    {
+      id: 6,
+      title: "Publication Title 3",
+      description: "Summary of the third publication.",
+      category: "NSPC",
       date: "2023-05-01",
       pdf: "/laws/sample.pdf",
     },
     {
       id: 7,
-      title: "Publication Title 3",
-      description: "Summary of the third publication.",
-      category: "NSPC",
-      date: "2023-05-01",
-      pdf: "/laws/sample.pdf",
-    },
-    {
-      id: 8,
-      title: "Publication Title 4",
-      description: "Summary of the fourth publication.",
-      category: "NSPC",
-      date: "2023-05-01",
-      pdf: "/laws/sample.pdf",
-    },
-    {
-      id: 9,
-      title: "Publication Title 1",
-      description:
-        "A brief description of the publication goes here. It provides an overview of the content and key findings.",
-      category: "NSPC",
-      date: "2023-05-01",
-      pdf: "/laws/test.pdf",
-    },
-    {
-      id: 10,
-      title: "Publication Title 2",
-      description: "Summary of the second publication.",
-      category: "Others",
-      date: "2023-05-01",
-      pdf: "/laws/sample.pdf",
-    },
-    {
-      id: 11,
-      title: "Publication Title 3",
-      description: "Summary of the third publication.",
-      category: "NSPC",
-      date: "2023-05-01",
-      pdf: "/laws/sample.pdf",
-    },
-    {
-      id: 12,
       title: "Publication Title 4",
       description: "Summary of the fourth publication.",
       category: "NSPC",
@@ -347,8 +305,14 @@ export default function Publication() {
                     <PublicationCard
                       pub={p}
                       onOpen={(pub) => {
-                        setSelectedPub(pub);
-                        setDrawerOpen(true);
+                        const pdfUrl =
+                          typeof pub.pdf === "string" ? pub.pdf : undefined;
+                        if (window.innerWidth < 640 && pdfUrl) {
+                          window.open(pdfUrl, "_blank", "noopener,noreferrer");
+                        } else {
+                          setSelectedPub(pub);
+                          setDrawerOpen(true);
+                        }
                       }}
                     />
                   </div>

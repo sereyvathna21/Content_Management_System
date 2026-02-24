@@ -62,6 +62,7 @@ export default function Header() {
             alt="logo"
             width={160}
             height={64}
+            priority
           />
         </div>
 
@@ -167,7 +168,7 @@ export default function Header() {
           <div>
             <Link
               href="/Landing-page/Login"
-              className="bg-primary text-white font-semibold rounded-full hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 hover:bg-primary/90 focus:ring-2 focus:ring-primary/50 focus:outline-none border border-transparent inline-block px-4 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 text-sm sm:text-base"
+              className="bg-primary text-white font-semibold rounded-full hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 hover:bg-primary/90 focus:ring-2 focus:ring-primary/50 focus:outline-none border border-transparent inline-block px-2 py-2 sm:px-6 sm:py-2.5 md:px-8 md:py-3 text-sm sm:text-base"
             >
               {t("nav.login")}
             </Link>

@@ -4,44 +4,19 @@ import Header from "@/app/components/Header";
 import Navigation from "@/app/components/Navigation";
 import Footer from "@/app/components/Footer";
 import HeroCover from "@/app/components/HeroCover";
+import SocialContentRenderer from "@/app/components/SocialContentRenderer";
+import { socialContent } from "@/app/data/socialContent";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 const topics = [
-  {
-    id: "governance",
-    title: "Governance",
-    subtitle:
-      "Policies, oversight and institutional frameworks for social services.",
-    description:
-      "Policies, oversight and institutional frameworks for social services.",
-    href: "/Landing-page/Resources/Social/Governance",
-    category: "Governance",
-    image: "/images/landing/governance.jpg",
-  },
-  {
-    id: "assistance",
-    title: "Social Assistance",
-    subtitle:
-      "Programs and support for vulnerable groups, benefits and services.",
-    description:
-      "Programs and support for vulnerable groups, benefits and services.",
-    href: "/Landing-page/Resources/Social/SocialAssistance",
-    category: "Assistance",
-    image: "/images/landing/social-assistance.jpg",
-  },
-  {
-    id: "security",
-    title: "Social Security",
-    subtitle: "Contributory and non-contributory systems: pensions, insurance.",
-    description:
-      "Contributory and non-contributory systems: pensions, insurance.",
-    href: "/Landing-page/Resources/Social/SocialSecurity",
-    category: "Security",
-    image: "/images/landing/social-security.jpg",
-  },
+  socialContent.governance,
+  socialContent.assistance,
+  socialContent.security,
 ];
 
 export default function Social() {
+  const t = useTranslations("SocialPage");
   const [selectedTopicId, setSelectedTopicId] = useState<string>(
     topics[0]?.id ?? "",
   );
@@ -61,6 +36,12 @@ export default function Social() {
     }, 220);
   };
 
+  const renderContent = () => {
+    const topic = topics.find((t) => t.id === selectedTopicId);
+    if (!topic) return null;
+    return <SocialContentRenderer topic={topic} showHeader={false} />;
+  };
+
   return (
     <>
       <Header />
@@ -71,8 +52,8 @@ export default function Social() {
         <div className="relative w-full animate-fade-in overflow-hidden">
           <HeroCover
             image="/social.svg"
-            title="Social Resources"
-            subtitle="Explore governance, assistance and social security resources."
+            title={t("hero.title")}
+            subtitle={t("hero.subtitle")}
           />
         </div>
 
@@ -90,12 +71,19 @@ export default function Social() {
                   }}
                 />
 
-                {topics.map((t) => {
-                  const isActive = t.id === selectedTopicId;
+                {topics.map((topic) => {
+                  const isActive = topic.id === selectedTopicId;
+                  // Map topic id to translation key
+                  const tabKey =
+                    topic.id === "governance"
+                      ? "governance"
+                      : topic.id === "assistance"
+                        ? "assistance"
+                        : "security";
                   return (
                     <button
-                      key={t.id}
-                      onClick={() => handleTabChange(t.id)}
+                      key={topic.id}
+                      onClick={() => handleTabChange(topic.id)}
                       className={`
                         relative z-10 flex-1 flex items-center justify-center gap-2
                         py-3 px-4 rounded-xl text-sm font-semibold
@@ -108,7 +96,7 @@ export default function Social() {
                         }
                       `}
                     >
-                      <span>{t.title}</span>
+                      <span>{t(`tabs.${tabKey}`)}</span>
                     </button>
                   );
                 })}
@@ -143,29 +131,7 @@ export default function Social() {
                     transition: "opacity 220ms ease, transform 220ms ease",
                   }}
                 >
-                  {selectedTopic && (
-                    <div className="p-8">
-                      {/* Header row */}
-                      <div className="flex items-start gap-5 mb-6">
-                        <div>
-                          <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary/70 mb-1">
-                            {selectedTopic.category}
-                          </span>
-                          <h2 className="text-2xl font-bold text-gray-900 leading-tight">
-                            {selectedTopic.title}
-                          </h2>
-                        </div>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="h-px bg-gradient-to-r from-primary/20 via-gray-200 to-transparent mb-6" />
-
-                      {/* Description */}
-                      <p className="text-gray-600 leading-relaxed mb-8 text-base">
-                        {selectedTopic.description}
-                      </p>
-                    </div>
-                  )}
+                  <div className="p-8 lg:p-12">{renderContent()}</div>
                 </div>
               </div>
             </div>
