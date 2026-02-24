@@ -4,10 +4,13 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import NewsCard from "./NewsCard";
+import ListSkeleton from "./ListSkeleton";
+import { newsArticles } from "@/app/Landing-page/News/articles";
 
 export default function NewsSection() {
   const t = useTranslations("NewsPage");
   const [isVisible, setIsVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -27,35 +30,14 @@ export default function NewsSection() {
     return () => observer.disconnect();
   }, []);
 
-  const newsItems = [
-    {
-      id: "outreach-2026",
-      title: "NSPC launches new outreach program",
-      date: "Jan 15, 2026",
-      excerpt:
-        "A new initiative to expand social protection services across provinces.",
-      image: "/hero3.svg",
-      category: "Programs",
-    },
-    {
-      id: "report-2025",
-      title: "Publication: Social Protection Report 2025",
-      date: "Dec 22, 2025",
-      excerpt:
-        "Comprehensive findings and recommendations from the 2025 study.",
-      image: "/hero2.svg",
-      category: "Impact",
-    },
-    {
-      id: "consultation-2025",
-      title: "Public Consultation Schedule Announced",
-      date: "Nov 30, 2025",
-      excerpt:
-        "Join us for regional consultations to gather feedback on the draft policy.",
-      image: "/hero1.svg",
-      category: "Events",
-    },
-  ];
+  // Get the first 3 articles from the articles data
+  const newsItems = newsArticles.slice(0, 3);
+
+  // demo loading: simulate fetch delay, then disable loading
+  useEffect(() => {
+    const tmr = setTimeout(() => setLoading(false), 700);
+    return () => clearTimeout(tmr);
+  }, []);
 
   return (
     <section
@@ -72,28 +54,33 @@ export default function NewsSection() {
           {t("newsSection.subtitle")}
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-        {newsItems.map((item, idx) => (
-          <div
-            key={item.id}
-            className={`transition-all duration-500 transform ${
-              isVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-10"
-            }`}
-            style={{ transitionDelay: isVisible ? `${idx * 150}ms` : "0ms" }}
-          >
-            <NewsCard
-              id={item.id}
-              title={item.title}
-              excerpt={item.excerpt}
-              date={item.date}
-              category={item.category}
-              image={item.image}
-            />
-          </div>
-        ))}
-      </div>
+
+      {loading ? (
+        <ListSkeleton count={newsItems.length} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+          {newsItems.map((item, idx) => (
+            <div
+              key={item.id}
+              className={`transition-all duration-500 transform ${
+                isVisible
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-10"
+              }`}
+              style={{ transitionDelay: isVisible ? `${idx * 150}ms` : "0ms" }}
+            >
+              <NewsCard
+                id={item.id}
+                title={item.title}
+                excerpt={item.excerpt}
+                date={item.date}
+                category={item.category}
+                image={item.image}
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="mt-4 sm:mt-8 flex justify-center">
         <Link

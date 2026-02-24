@@ -9,6 +9,7 @@ import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
 import HeroCover from "@/app/components/HeroCover";
 import { matchesSearch } from "@/app/lib/searchUtils";
+import ListSkeleton from "@/app/components/ListSkeleton";
 import enMessages from "@/messages/en.json";
 import khMessages from "@/messages/kh.json";
 
@@ -146,8 +147,13 @@ export default function Publication() {
   }, [publications, query, activeTab, locale]);
 
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [mounted, setMounted] = useState(false);
   const pageSize = 9;
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     // reset to first page when filters change
@@ -163,6 +169,33 @@ export default function Publication() {
     const start = (currentPage - 1) * pageSize;
     return filtered.slice(start, start + pageSize);
   }, [filtered, currentPage]);
+
+  // Show loading skeleton while mounting
+  if (!mounted) {
+    return (
+      <>
+        <Header />
+        <Navigation />
+        <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
+        <div className="min-h-screen bg-white">
+          <div className="relative w-full">
+            <div
+              className="w-full h-64 bg-gray-100 animate-pulse"
+              style={{ animationDuration: "1.5s" }}
+            />
+          </div>
+          <div className="min-h-screen bg-gray-50/50">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="max-w-6xl mx-auto">
+                <ListSkeleton count={9} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

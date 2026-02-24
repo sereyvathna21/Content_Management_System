@@ -12,6 +12,7 @@ import VideoSection from "@/app/components/VideoSection";
 import SortControl from "@/app/components/SortControl";
 import SearchBar from "@/app/components/SearchBar";
 import HeroCover from "@/app/components/HeroCover";
+import ListSkeleton from "@/app/components/ListSkeleton";
 interface NewsArticle {
   id: string;
   title: string;
@@ -26,7 +27,7 @@ import enMessages from "@/messages/en.json";
 import khMessages from "@/messages/kh.json";
 import { videos } from "@/app/Landing-page/News/videos";
 
-const newsPerPage = 12; // Limit for news articles
+const newsPerPage = 9; // Limit for news articles
 const videosPerPage = 3; // Limit for videos
 
 export default function News() {
@@ -155,9 +156,23 @@ export default function News() {
         <Navigation />
         <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
         <div className="min-h-screen bg-white to-blue-50/30">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10 py-8">
-            <div className="flex justify-center items-center min-h-[400px]">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="relative w-full">
+            <div
+              className="w-full h-64 bg-gray-100 animate-pulse"
+              style={{ animationDuration: "1.5s" }}
+            />
+          </div>
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start mt-8">
+              <main className="lg:col-span-8">
+                <ListSkeleton count={9} />
+              </main>
+              <aside className="lg:col-span-4">
+                <div
+                  className="bg-gray-100 rounded-2xl h-96 animate-pulse"
+                  style={{ animationDuration: "1.5s", animationDelay: "150ms" }}
+                />
+              </aside>
             </div>
           </div>
         </div>
@@ -201,7 +216,7 @@ export default function News() {
               <h2 className="font-bold text-primary text-lg sm:text-xl md:text-2xl mb-4 sm:mb-5 md:mb-6">
                 {t("latestNews")}
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
                 {paginatedArticles.map((article) => (
                   <NewsCard key={article.id} {...article} />
                 ))}

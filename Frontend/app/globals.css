@@ -1,81 +1,112 @@
 /* Font Imports */
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Noto+Sans+Khmer:wght@400;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-/* Khmer Font: use Noto Sans Khmer from Google Fonts */
 
-/* Color & Font Variables */
+/* ====================================
+   CSS VARIABLES
+   ==================================== */
 :root {
   /* Fonts */
-  --font-family-en:
-    "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family-en: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-family-km: "Noto Sans Khmer";
+  
+  /* Animation Durations */
+  --duration-fast: 0.3s;
+  --duration-normal: 0.6s;
+  --duration-slow: 0.8s;
 }
 
-/* Smooth scrolling behavior */
+/* ====================================
+   BASE STYLES
+   ==================================== */
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+}
+
+/* Disable smooth scroll for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 body {
   font-family: var(--font-family-en);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Prevent the body from scrolling so a single scroll container can be used */
   overflow: hidden;
 }
 
-/* Use Noto Sans Khmer when the document language is Khmer (covers 'kh' and 'km') */
+/* ====================================
+   KHMER LANGUAGE SUPPORT
+   ==================================== */
 html[lang="kh"] body,
 html[lang="km"] body {
   font-family: var(--font-family-km);
 }
 
-/* Make Khmer content paragraphs slightly larger for better readability */
+/* Khmer text sizing for better readability */
 html[lang="kh"] .text-lg,
 html[lang="km"] .text-lg {
-  font-size: 1.25rem; /* Increase from default 1.125rem */
+  font-size: 1.25rem;
   line-height: 1.8;
 }
 
-/* Make Khmer base text larger for better readability */
 html[lang="kh"] .text-base,
 html[lang="km"] .text-base {
-  font-size: 1.125rem; /* Increase from default 1rem */
+  font-size: 1.125rem;
   line-height: 1.7;
 }
 
-/* Responsive Khmer base text for mobile */
+html[lang="kh"] .text-sm,
+html[lang="km"] .text-sm {
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
 @media (max-width: 640px) {
   html[lang="kh"] .text-base,
   html[lang="km"] .text-base {
-    font-size: 1.125rem; /* Maintain larger size on mobile for readability */
+    font-size: 1.125rem;
     line-height: 1.7;
   }
 }
 
-/* Make Khmer reference text bigger for better readability */
-html[lang="kh"] .text-sm,
-html[lang="km"] .text-sm {
-  font-size: 1.0625rem; /* Increase from default 0.875rem (17px) */
-  line-height: 1.6;
-}
-
-/* Make the app root fill the viewport so the scroll container can be 100% high */
+/* ====================================
+   LAYOUT UTILITIES
+   ==================================== */
 #__next {
   height: 100%;
 }
 
-/* Single scroll container used by the app layout */
 .app-scroll-container {
   height: 100%;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Modern animations */
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* ====================================
+   KEYFRAME ANIMATIONS
+   ==================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -87,12 +118,36 @@ html[lang="km"] .text-sm {
   }
 }
 
-@keyframes fadeIn {
+@keyframes fadeInDown {
   from {
     opacity: 0;
+    transform: translateY(-30px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -119,177 +174,14 @@ html[lang="km"] .text-sm {
 }
 
 @keyframes shake {
-  0%,
-  100% {
+  0%, 100% {
     transform: translateX(0);
   }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
+  10%, 30%, 50%, 70%, 90% {
     transform: translateX(-5px);
   }
-  20%,
-  40%,
-  60%,
-  80% {
+  20%, 40%, 60%, 80% {
     transform: translateX(5px);
-  }
-}
-
-@keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.6s ease-out;
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.8s ease-out;
-  animation-fill-mode: both;
-}
-
-.animate-slide-down {
-  animation: slideDown 0.6s ease-out;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.6s ease-out;
-}
-
-.animate-shake {
-  animation: shake 0.5s ease-in-out;
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(50px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.8s ease-out forwards;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.6s ease-out forwards;
-}
-
-.animate-slide-in-left {
-  animation: slideInLeft 0.8s ease-out forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.8s ease-out forwards;
-}
-
-/* Responsive container / typography breakpoints */
-.container {
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-
-/* Page Animation Classes */
-@keyframes slideUpFade {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideDownFade {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideRightFade {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideLeftFade {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
   }
 }
 
@@ -322,46 +214,87 @@ html[lang="km"] .text-sm {
   }
 }
 
-/* Animation utility classes */
+/* ====================================
+   ANIMATION UTILITY CLASSES
+   ==================================== */
 .animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
-}
-
-.animate-slide-up-fade {
-  animation: slideUpFade 0.8s ease-out forwards;
+  animation: fadeIn var(--duration-normal) ease-out forwards;
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.8s ease-out forwards;
+  animation: fadeInUp var(--duration-slow) ease-out forwards;
 }
 
-.animate-slide-down-fade {
-  animation: slideDownFade 0.6s ease-out forwards;
+.animate-fade-in-down {
+  animation: fadeInDown var(--duration-slow) ease-out forwards;
 }
 
-.animate-slide-right-fade {
-  animation: slideRightFade 0.6s ease-out forwards;
+.animate-slide-in-left {
+  animation: slideInLeft var(--duration-slow) ease-out forwards;
 }
 
-.animate-slide-left-fade {
-  animation: slideLeftFade 0.6s ease-out forwards;
+.animate-slide-in-right {
+  animation: slideInRight var(--duration-slow) ease-out forwards;
+}
+
+.animate-slide-down {
+  animation: slideDown var(--duration-normal) ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp var(--duration-normal) ease-out forwards;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
 }
 
 .animate-bounce-in {
-  animation: bounceIn 0.8s ease-out forwards;
+  animation: bounceIn var(--duration-slow) ease-out forwards;
 }
 
 .animate-fade-in-scale {
-  animation: fadeInScale 0.3s ease-out forwards;
+  animation: fadeInScale var(--duration-fast) ease-out forwards;
 }
 
-/* Custom animation delays */
+/* Alias classes for consistency */
+.animate-slide-up-fade {
+  animation: fadeInUp var(--duration-slow) ease-out forwards;
+}
+
+.animate-slide-down-fade {
+  animation: slideDown var(--duration-normal) ease-out forwards;
+}
+
+.animate-slide-right-fade {
+  animation: slideInLeft var(--duration-normal) ease-out forwards;
+}
+
+.animate-slide-left-fade {
+  animation: slideInRight var(--duration-normal) ease-out forwards;
+}
+
+/* Animation delay support */
 [style*="animation-delay"] {
   animation-fill-mode: forwards;
 }
 
-/* Text Justification - Like MS Word */
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ====================================
+   CUSTOM UTILITIES
+   ==================================== */
 @layer utilities {
+  /* Text Justification */
   .text-justify-full {
     text-align: justify;
     text-align-last: left;
@@ -379,5 +312,42 @@ html[lang="km"] .text-sm {
     text-align: left;
     text-justify: none;
     word-spacing: normal;
+  }
+
+  /* Focus visible for better accessibility */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  }
+
+  /* Performance optimization for animated elements */
+  .will-animate {
+    will-change: transform, opacity;
+  }
+
+  /* Smooth scroll snap */
+  .snap-y {
+    scroll-snap-type: y mandatory;
+  }
+
+  .snap-center {
+    scroll-snap-align: center;
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
   }
 }

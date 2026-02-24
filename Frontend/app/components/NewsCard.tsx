@@ -3,6 +3,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
+import CardSkeleton from "./CardSkeleton";
 
 interface NewsCardProps {
   id: string;
@@ -11,6 +12,7 @@ interface NewsCardProps {
   date: string;
   category: string;
   image: string;
+  loading?: boolean;
 }
 
 // Map category to color
@@ -39,7 +41,6 @@ function ClientFormattedDate({
   className?: string;
 }) {
   const [displayed, setDisplayed] = useState<string>(() => {
-    // initial deterministic fallback (ISO date) to avoid large server/client surprises
     try {
       return new Date(date).toLocaleDateString("en-US", {
         year: "numeric",
@@ -52,7 +53,6 @@ function ClientFormattedDate({
   });
 
   useEffect(() => {
-    // compute the locale-aware string on the client and update
     try {
       const formatted = new Date(date).toLocaleDateString(dateLocale, {
         year: "numeric",
@@ -79,6 +79,7 @@ export default function NewsCard({
   date,
   category,
   image,
+  loading = false,
 }: NewsCardProps) {
   const locale = useLocale();
   const t = useTranslations("NewsPage");
@@ -96,6 +97,8 @@ export default function NewsCard({
   useEffect(() => {
     setImgSrc(image);
   }, [image]);
+
+  if (loading) return <CardSkeleton />;
 
   return (
     <Link href={`/Landing-page/News/${id}`}>
