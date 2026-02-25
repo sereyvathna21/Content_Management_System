@@ -53,11 +53,11 @@ export default function AboutSection() {
           </h2>
 
           <p
-            className="text-sm sm:text-base md:text-lg text-gray-700 leading-relaxed"
+            className="text-sm sm:text-base md:text-lg text-gray-700 leading-relaxed text-justify-full"
             style={{
-              textAlign: "justify",
-              lineHeight: 1.9,
-              textIndent: "1.25rem",
+              
+              lineHeight: 2,
+              textIndent: "1.5rem",
               whiteSpace: "pre-line",
             }}
           >

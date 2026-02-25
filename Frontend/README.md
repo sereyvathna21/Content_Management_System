@@ -1,15 +1,5 @@
 # NSPC CMS — Frontend (Next.js)
 
-⭐ If you like this project, please star the repository! ⭐
-
-------- 👇 Template Demo Below 👇 --------
-
-<!-- Logo placeholder -->
-
-![Logo](public/logo.png)
-
-# NSPC CMS — Readme Template
-
 💡 Overview
 NSPC CMS (Frontend) is a public-facing Next.js application that serves landing pages, news, videos, publications and laws. It focuses on accessibility, internationalization (Khmer/English), and reusable UI components that consume the NSPC backend APIs.
 
@@ -91,16 +81,6 @@ npm run dev
 📃 API Documentation
 If the backend provides Swagger/OpenAPI docs, mount them under `/api/docs` on the API host. Frontend consumes the CMS API configured by `NEXT_PUBLIC_API_URL`.
 
-🤝 Contributing
-We welcome contributions:
-
-1. Fork the repository
-2. Create a branch: `git checkout -b feature/your-feature`
-3. Make changes and commit: `git commit -m "Add feature"`
-4. Push and open a PR
-
-Please include tests or manual steps to verify changes when relevant.
-
 🐛 Issues
 If you encounter problems, open an issue with:
 
@@ -120,7 +100,3 @@ Example install:
 ```bash
 npm install -D vitest @testing-library/react @testing-library/jest-dom
 ```
-
-## Deployment
-
-Recommended: Vercel (first-class support for Next.js). Set `NEXT_PUBLIC_API_URL` in the provider settings. Other hosts that support Next.js are also fine.

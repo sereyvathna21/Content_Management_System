@@ -1,574 +1,581 @@
 {
-    "HomePage": {
-        "title": "Hello world!"
-    },
-    "AboutPage": {
-        "title": "What is National Social Protection Council?",
-        "ministerTitle": "A word from our Minister's",
-        "description": "The National Social Protection Council (NSPC) is a governmental body responsible for formulating and implementing social protection policies and programs in Cambodia.​​​​​​​ Established to address the needs of vulnerable populations, the NSPC aims to enhance social welfare, reduce poverty, and promote inclusive development across the country. The council collaborates with various stakeholders, including government agencies, non-governmental organizations, and international partners, to design and execute initiatives that provide social safety nets, improve access to essential services, and support economic empowerment for disadvantaged groups. Through its efforts, the NSPC plays a crucial role in fostering social cohesion and ensuring that all citizens have the opportunity to lead dignified and productive lives."
-    },
-    "VisionPage": {
-        "title": "Our Vision",
-        "paragraph": "NSPC envisions a Cambodia where every person enjoys dignity, social security and opportunity. We strive to build resilient communities through inclusive policies and strong partnerships.",
-        "bullets": {
-            "1": "Dignified social protection for all",
-            "2": "Resilient households and communities",
-            "3": "Equitable access to essential services"
-        }
-    },
-    "GoalsPage": {
-        "title": "Our Goals",
-        "intro": "The National Social Protection Council pursues a set of strategic goals to promote equity, reduce vulnerability, and ensure access to essential services for all Cambodians.",
-        "goals": {
-            "goal1": {
-                "title": "Inclusive Protection",
-                "desc": "Design social programs that reach the most vulnerable and leave no one behind."
-            },
-            "goal2": {
-                "title": "Poverty Reduction",
-                "desc": "Implement targeted support to sustainably lift households out of poverty."
-            },
-            "goal3": {
-                "title": "Access to Services",
-                "desc": "Improve access to health, education and social services for all communities."
-            },
-            "goal4": {
-                "title": "Resilience & Capacity",
-                "desc": "Strengthen household and community resilience to shocks and stresses."
-            }
-        }
-    },
-    "PartnersPage": {
-        "trustedBy": "Trusted by industry leaders",
-        "title": "Partnerships",
-        "ariaLabel": "Partner logos",
-        "marqueeAriaLabel": "Partner logos carousel",
-        "partnerListLabel": "Our partners"
-    },
-    "ObjectivesPage": {
-        "missionLabel": "Our Mission",
-        "title": "What We Do?",
-        "nspcName": "The National Social Protection Council (NSPC) of Cambodia",
-        "descriptionRest": "is the high-level body responsible for developing, regulating, and harmonizing the national social protection system to reduce poverty and vulnerability."
-    },
-    "ObjectivesDetail": {
-        "prev": "Previous",
-        "next": "Next",
-        "objectives": {
-            "0": {
-                "title": "Startup Nurturing",
-                "desc": "Nurturing and growing digital startups into successful and sustainable businesses through accelerator programs."
-            },
-            "1": {
-                "title": "Community",
-                "desc": "Enhancing stakeholder interaction through meetups, capacity building, and networking events."
-            },
-            "2": {
-                "title": "Digital Platform",
-                "desc": "Developing platforms and services that startups can plug into to find resources and investors."
-            },
-            "3": {
-                "title": "Research",
-                "desc": "Conducting trusted research to provide accurate data and resources for startups and stakeholders."
-            },
-            "4": {
-                "title": "Enterprises Go Digital",
-                "desc": "Strengthening enterprises' digital capabilities through adoption and enabling participation in the digital economy."
-            }
-        }
-    },
-    "ContactPage": {
-        "title": "Get in Touch",
-        "subtitle": "We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
-        "phone": "Phone",
-        "email": "Email",
-        "socialMedia": "Social Media",
-        "sendFeedback": "Send a Feedback",
-        "location": "Location",
-        "address": "No. 01, Russian Federation Blvd (110), Sangkat Teuk Laak I, Khan Toul Kork, Phnom Penh, Cambodia",
-        "form": {
-            "name": "Name",
-            "namePlaceholder": "Enter your name",
-            "nameRequired": "Name is required",
-            "nameMinLength": "Name must be at least 2 characters",
-            "nameMaxLength": "Name must be less than 100 characters",
-            "email": "Email",
-            "emailPlaceholder": "Enter your email",
-            "emailRequired": "Email is required",
-            "emailInvalid": "Please enter a valid email address",
-            "subject": "Subject",
-            "subjectPlaceholder": "Enter subject",
-            "subjectRequired": "Subject is required",
-            "subjectMinLength": "Subject must be at least 5 characters",
-            "subjectMaxLength": "Subject must be less than 200 characters",
-            "message": "Message",
-            "messagePlaceholder": "Enter your message",
-            "messageRequired": "Message is required",
-            "messageMinLength": "Message must be at least 10 characters",
-            "messageMaxLength": "Message must be less than 1000 characters",
-            "submit": "Submit",
-            "submitting": "Submitting...",
-            "errorMessage": "Please fill the form before submitting.",
-            "successMessage": "Thank you for your message! We'll get back to you soon."
-        }
-    },
-    "NewsPage": {
-        "hero": {
-            "title": "News and Announcements",
-            "subtitle": "Stay up to date with the latest news and updates from our organization."
-        },
-        "toolbar": {
-            "searchPlaceholder": "Search News, Categories...",
-            "sortLabel": "Sort by:",
-            "sortOptions": {
-                "default": "Default (Newest - Oldest)",
-                "date_desc": "Date: Newest → Oldest",
-                "date_asc": "Date: Oldest → Newest"
-            }
-        },
-        "latestNews": "Latest News",
-        "noResults": {
-            "title": "No results found",
-            "subtitle": "Try a different search or filter"
-        },
-        "aside": {
-            "title": "Social Protection System in Cambodia",
-            "description": "Watch our latest videos and learn more about social protection initiatives"
-        },
-        "seeMore": "See more",
-        "videoLabel": "Video",
-        "articleLabel": "Article",
-        "relatedArticles": "Related articles",
-        "breadcrumbs": {
-            "home": "Home",
-            "news": "News"
-        },
-        "share": {
-            "share": "Share",
-            "facebook": "Share to Facebook",
-            "linkedin": "Share to LinkedIn",
-            "copyLink": "Copy link"
-        },
-        "newsSection": {
-            "title": "News & Announcements",
-            "subtitle": "Stay updated with our latest initiatives, publications, and community engagements",
-            "readMore": "Read more",
-            "viewAll": "See more"
-        },
-        "categories": {
-            "events": "Events",
-            "programs": "Programs",
-            "impact": "Impact",
-            "partnerships": "Partnerships"
-        },
-        "allVideos": "All videos",
-        "content": {
-            "articles": {
-                "1": {
-                    "title": "NSPC Annual Conference 2026 Announced",
-                    "excerpt": "Join us for the biggest event of the year featuring keynote speakers, workshops, and networking opportunities for students nationwide.",
-                    "subtitle": "Keynotes • Workshops • Networking — Feb 2026"
-                },
-                "2": {
-                    "title": "New Scholarship Program Launched",
-                    "excerpt": "NSPC introduces a comprehensive scholarship program to support outstanding students in their academic pursuits and leadership development.",
-                    "subtitle": "Financial support and mentorship for high-achieving students"
-                },
-                "3": {
-                    "title": "Student Leadership Summit Success",
-                    "excerpt": "Over 500 students participated in the recent leadership summit, learning essential skills for future community impact.",
-                    "subtitle": "Highlights and outcomes from the 2025 summit"
-                },
-                "4": {
-                    "title": "Community Outreach Initiative Update",
-                    "excerpt": "Our members have contributed over 10,000 volunteer hours to local communities, making a significant positive impact.",
-                    "subtitle": "Volunteering impact across regions"
-                },
-                "outreach-2026": {
-                    "title": "Community Outreach Initiative Expanded in 2026",
-                    "excerpt": "Our members contributed over 12,000 volunteer hours across regions, expanding community support and services.",
-                    "subtitle": "Volunteer engagement and impact — 2026"
-                },
-                "report-2025": {
-                    "title": "Annual Social Protection Report 2025 Released",
-                    "excerpt": "The 2025 report highlights progress, challenges, and recommendations for strengthening social protection systems nationwide.",
-                    "subtitle": "Key findings and recommendations — 2025"
-                },
-                "consultation-2025": {
-                    "title": "Public Consultation on Policy Updates",
-                    "excerpt": "Stakeholders participated in a series of consultations to inform upcoming policy reforms and enhance stakeholder engagement.",
-                    "subtitle": "Consultation outcomes — 2025"
-                },
-                "5": {
-                    "title": "Partnership with National Universities",
-                    "excerpt": "NSPC announces strategic partnerships with leading universities to enhance educational opportunities for our members.",
-                    "subtitle": "New collaborations to expand learning pathways"
-                },
-                "6": {
-                    "title": "Youth Empowerment Workshop Series",
-                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy.",
-                    "subtitle": "Monthly workshops for skill-building and leadership"
-                },
-                "7": {
-                    "title": "Youth Empowerment Workshop Series",
-                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
-                },
-                "8": {
-                    "title": "Youth Empowerment Workshop Series",
-                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
-                },
-                "9": {
-                    "title": "Youth Empowerment Workshop Series",
-                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
-                },
-                "10": {
-                    "title": "Youth Empowerment Workshop Series",
-                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
-                },
-                "11": {
-                    "title": "Youth Empowerment Workshop Series",
-                    "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
-                }
-            },
-            "videos": {
-                "1": {
-                    "title": "Introduction to Social Protection in Cambodia",
-                    "description": "Learn about the social protection system and its impact on Cambodian communities."
-                },
-                "2": {
-                    "title": "Community Impact Stories",
-                    "description": "Hear from community members about how social protection programs have changed their lives."
-                },
-                "3": {
-                    "title": "Annual Conference Highlights 2023",
-                    "description": "Key moments and discussions from our annual social protection conference."
-                },
-                "4": {
-                    "title": "Youth Employment Programs",
-                    "description": "Explore initiatives helping young Cambodians access employment opportunities."
-                },
-                "5": {
-                    "title": "Healthcare Access for All",
-                    "description": "Understanding how social protection ensures healthcare access for vulnerable populations."
-                },
-                "6": {
-                    "title": "Education Support Initiatives",
-                    "description": "Programs supporting education access for children from low-income families."
-                }
-            }
-        }
-    },
-    "PublicationPage": {
-        "hero": {
-            "title": "Publications",
-            "subtitle": "Stay updated with the latest news, resources, and publications from NSPC.",
-            "imgAlt": "Publications cover"
-        },
-        "categoryLabels": {
-            "All": "All",
-            "NSPC": "NSPC",
-            "Others": "Others"
-        },
-        "control": {
-            "searchPlaceholder": "Search publications...",
-            "filterByCategory": "Filter by Category",
-            "clear": "Clear"
-        },
-        "noResults": "No publications found.",
-        "actions": {
-            "open": "Open",
-            "download": "Download",
-            "close": "Close"
-        },
-        "noPreview": "No preview",
-        "pdfNotAvailable": "PDF preview not available.",
-        "content": {
-            "items": {
-                "1": {
-                    "title": "Publication Title 1",
-                    "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
-                },
-                "2": {
-                    "title": "Publication Title 2",
-                    "description": "Summary of the second publication."
-                },
-                "3": {
-                    "title": "Publication Title 3",
-                    "description": "Summary of the third publication."
-                },
-                "4": {
-                    "title": "Publication Title 4",
-                    "description": "Summary of the fourth publication."
-                },
-                "5": {
-                    "title": "Publication Title 1",
-                    "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
-                },
-                "6": {
-                    "title": "Publication Title 2",
-                    "description": "Summary of the second publication."
-                },
-                "7": {
-                    "title": "Publication Title 3",
-                    "description": "Summary of the third publication."
-                },
-                "8": {
-                    "title": "Publication Title 4",
-                    "description": "Summary of the fourth publication."
-                },
-                "9": {
-                    "title": "Publication Title 1",
-                    "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
-                },
-                "10": {
-                    "title": "Publication Title 2",
-                    "description": "Summary of the second publication."
-                },
-                "11": {
-                    "title": "Publication Title 3",
-                    "description": "Summary of the third publication."
-                },
-                "12": {
-                    "title": "Publication Title 4",
-                    "description": "Summary of the fourth publication."
-                }
-            }
-        }
-    },
-    "Common": {
-        "nav": {
-            "home": "Home",
-            "about": "About Us",
-            "learnMore": "Learn more about NSPC",
-            "resources": "Resources",
-            "accessDocs": "Access our documents & materials",
-            "news": "News & Announcement",
-            "contact": "Contact Us",
-            "eng": "English",
-            "kh": "ភាសាខ្មែរ",
-            "selectLanguage": "Select language",
-            "login": "Log in",
-            "aboutDropdown": {
-                "title": "About Us",
-                "description": "Learn more about NSPC",
-                "national": {
-                    "title": "National",
-                    "description": "Discover our organization's mission, vision, and commitment to advancing social protection across the nation."
-                },
-                "executive": {
-                    "title": "Executive",
-                    "description": "Meet our leadership team and learn about their roles in guiding social protection initiatives."
-                },
-                "general": {
-                    "title": "General",
-                    "description": "Access general information about our organizational structure and governance framework."
-                }
-            },
-            "resourcesDropdown": {
-                "title": "Resources",
-                "description": "Access our documents & materials",
-                "laws": {
-                    "title": "Laws",
-                    "description": "Access comprehensive legal frameworks and regulations governing social protection systems."
-                },
-                "publication": {
-                    "title": "Publications",
-                    "description": "Explore our research reports, policy documents, and informational publications."
-                },
-                "social": {
-                    "title": "Social",
-                    "description": "Connect with social activities and community engagement programs."
-                }
-            }
-        },
-        "footer": {
-            "description": "National Social Protection Council — ensuring social protection for all.",
-            "quickLinks": "Quick Links",
-            "contactTitle": "Contact",
-            "address": "Ministry address, Phnom Penh",
-            "emailLabel": "Email:",
-            "phoneLabel": "Phone:",
-            "rights": "© {year} National Social Protection Council. All rights reserved."
-        }
-    },
-    "LoginPage": {
-        "signIn": {
-            "title": "Sign In",
-            "subtitle": "Enter your credentials to access your account",
-            "emailLabel": "Email Address",
-            "emailPlaceholder": "name@example.com",
-            "passwordLabel": "Password",
-            "passwordPlaceholder": "Enter your password",
-            "showPassword": "Show password",
-            "hidePassword": "Hide password",
-            "rememberMe": "Remember me",
-            "forgotPassword": "Forgot password?",
-            "signInButton": "Sign In",
-            "signingIn": "Signing In...",
-            "backToHome": "Back to Home",
-            "switchLanguage": "Switch Language",
-            "errors": {
-                "emailRequired": "Email is required",
-                "emailInvalid": "Please enter a valid email address",
-                "passwordRequired": "Password is required",
-                "passwordMinLength": "Password must be at least 8 characters"
-            }
-        },
-        "forgotPassword": {
-            "title": "Forgot Password?",
-            "subtitle": "No worries! Enter your email and we'll send you reset instructions",
-            "emailLabel": "Email Address",
-            "emailPlaceholder": "name@example.com",
-            "sendButton": "Send Reset Link",
-            "sending": "Sending...",
-            "backToSignIn": "Back to Sign In",
-            "success": {
-                "title": "Check Your Email",
-                "message": "We've sent password reset instructions to",
-                "tryAnotherEmail": "Try Another Email",
-                "backToSignIn": "Back to Sign In",
-                "didntReceive": "Didn't receive the email? Check your spam folder or try another email"
-            },
-            "errors": {
-                "emailRequired": "Email is required",
-                "emailInvalid": "Please enter a valid email address",
-                "sendError": "Something went wrong. Please try again."
-            }
-        },
-        "resetPassword": {
-            "title": "Reset Password",
-            "subtitle": "Create a strong password to secure your account",
-            "newPasswordLabel": "New Password",
-            "newPasswordPlaceholder": "Enter new password",
-            "confirmPasswordLabel": "Confirm Password",
-            "confirmPasswordPlaceholder": "Confirm new password",
-            "showPassword": "Show password",
-            "hidePassword": "Hide password",
-            "resetButton": "Reset Password",
-            "resetting": "Resetting...",
-            "strength": {
-                "weak": "Weak",
-                "medium": "Medium",
-                "strong": "Strong",
-                "veryStrong": "Very Strong"
-            },
-            "requirements": {
-                "title": "Password must contain:",
-                "minLength": "At least 8 characters",
-                "upperLower": "Uppercase and lowercase letters",
-                "number": "At least one number",
-                "special": "At least one special character (!@#$%^&*)"
-            },
-            "errors": {
-                "passwordRequired": "Password is required",
-                "passwordMinLength": "Password must be at least 8 characters",
-                "passwordUpperLower": "Password must contain both uppercase and lowercase letters",
-                "passwordNumber": "Password must contain at least one number",
-                "passwordSpecial": "Password must contain at least one special character",
-                "confirmRequired": "Please confirm your password",
-                "confirmMismatch": "Passwords do not match",
-                "resetError": "Something went wrong. Please try again."
-            },
-            "success": {
-                "title": "Password Reset Successful!",
-                "message": "Your password has been successfully reset. You can now sign in with your new password.",
-                "goToSignIn": "Go to Sign In"
-            }
-        }
-    },
-    "LawsPage": {
-        "ExportConfirmModal": {
-            "confirmExport": "Confirm Export",
-            "exportMessage": "You are about to download {count} PDF{count, plural, one {} other {s}}.",
-            "pdfCount": "{count} PDF{count, plural, one {} other {s}}",
-            "actions": {
-                "cancel": "Cancel",
-                "confirmDownload": "Confirm Download"
-            }
-        },
-        "hero": {
-            "title": "Laws and Regulations",
-            "subtitle": "Access and download official legal documents and policies.",
-            "imgAlt": "Laws cover"
-        },
-        "categoryLabels": {
-            "All": "All",
-            "Royal Degree": "Royal Degree",
-            "Sub-Degree": "Sub-Degree",
-            "Prakas": "Prakas",
-            "Decision and Guideline": "Decision and Guideline"
-        },
-        "control": {
-            "filterByCategory": "Filter by Category",
-            "searchPlaceholder": "Search documents...",
-            "export": "Export",
-            "clear": "Clear",
-            "exportSelectedConfirm": "Please select at least one PDF to export."
-        },
-        "preview": {
-            "emptyTitle": "No Document Selected",
-            "emptySubtitle": "Select a document from the list to preview it here.",
-            "download": "Download",
-            "close": "Close",
-            "openInNewTab": "Open PDF in new tab",
-            "loading": "Loading preview…",
-            "loadError": "Could not load PDF preview — you can open it in a new tab."
-        },
-        "card": {
-            "noDate": "No Date",
-            "noResults": "No documents found matching your criteria."
-        },
-        "noPreview": "No preview available",
-        "pdfNotAvailable": "PDF preview not available.",
-        "actions": {
-            "open": "Open",
-            "download": "Download",
-            "close": "Close"
-        },
-        "exportPdf": {
-            "title": "Laws & Regulations",
-            "generatedOn": "Generated on:",
-            "totalRecords": "Total Records:",
-            "category": "Category:",
-            "tableHead": [
-                "#",
-                "Title",
-                "Category",
-                "Upload Date",
-                "PDF Link"
-            ]
-        },
-        "content": {
-            "items": {
-                "1": {
-                    "title": "National Health Act",
-                    "description": "A comprehensive health regulation framework"
-                },
-                "2": {
-                    "title": "Environmental Regulations",
-                    "description": "Guidelines for environmental protection and sustainability"
-                },
-                "3": {
-                    "title": "Education Policy Update",
-                    "description": "Updated policies for the education sector"
-                },
-                "4": {
-                    "title": "Public Safety Notice",
-                    "description": "Important safety guidelines for public awareness"
-                }
-            }
-        }
-    },
-    "SocialPage": {
-        "hero": {
-            "title": "Social Protection System",
-            "subtitle": "Explore governance, assistance and social security resources."
-        },
-        "tabs": {
-            "governance": "Governance",
-            "assistance": "Social Assistance",
-            "security": "Social Security"
-        },
-        "reference": "Reference"
+  "HomePage": {
+    "title": "Hello world!"
+  },
+  "AboutPage": {
+    "title": "What is National Social Protection Council?",
+    "ministerTitle": "A word from our Minister's",
+    "description": "The National Social Protection Council (NSPC) is a governmental body responsible for formulating and implementing social protection policies and programs in Cambodia.​​​​​​​ Established to address the needs of vulnerable populations, the NSPC aims to enhance social welfare, reduce poverty, and promote inclusive development across the country. The council collaborates with various stakeholders, including government agencies, non-governmental organizations, and international partners, to design and execute initiatives that provide social safety nets, improve access to essential services, and support economic empowerment for disadvantaged groups. Through its efforts, the NSPC plays a crucial role in fostering social cohesion and ensuring that all citizens have the opportunity to lead dignified and productive lives."
+  },
+  "VisionPage": {
+    "title": "Our Vision",
+    "paragraph": "NSPC envisions a Cambodia where every person enjoys dignity, social security and opportunity. We strive to build resilient communities through inclusive policies and strong partnerships.",
+    "bullets": {
+      "1": "Dignified social protection for all",
+      "2": "Resilient households and communities",
+      "3": "Equitable access to essential services"
     }
+  },
+  "GoalsPage": {
+    "title": "Our Goals",
+    "intro": "The National Social Protection Council pursues a set of strategic goals to promote equity, reduce vulnerability, and ensure access to essential services for all Cambodians.",
+    "goals": {
+      "goal1": {
+        "title": "Inclusive Protection",
+        "desc": "Design social programs that reach the most vulnerable and leave no one behind."
+      },
+      "goal2": {
+        "title": "Poverty Reduction",
+        "desc": "Implement targeted support to sustainably lift households out of poverty."
+      },
+      "goal3": {
+        "title": "Access to Services",
+        "desc": "Improve access to health, education and social services for all communities."
+      },
+      "goal4": {
+        "title": "Resilience & Capacity",
+        "desc": "Strengthen household and community resilience to shocks and stresses."
+      }
+    }
+  },
+  "PartnersPage": {
+    "trustedBy": "Trusted by industry leaders",
+    "title": "Partnerships",
+    "ariaLabel": "Partner logos",
+    "marqueeAriaLabel": "Partner logos carousel",
+    "partnerListLabel": "Our partners"
+  },
+  "ObjectivesPage": {
+    "missionLabel": "Our Mission",
+    "title": "What We Do?",
+    "nspcName": "The National Social Protection Council (NSPC) of Cambodia",
+    "descriptionRest": "is the high-level body responsible for developing, regulating, and harmonizing the national social protection system to reduce poverty and vulnerability."
+  },
+  "ObjectivesDetail": {
+    "prev": "Previous",
+    "next": "Next",
+    "objectives": {
+      "0": {
+        "title": "Startup Nurturing",
+        "desc": "Nurturing and growing digital startups into successful and sustainable businesses through accelerator programs."
+      },
+      "1": {
+        "title": "Community",
+        "desc": "Enhancing stakeholder interaction through meetups, capacity building, and networking events."
+      },
+      "2": {
+        "title": "Digital Platform",
+        "desc": "Developing platforms and services that startups can plug into to find resources and investors."
+      },
+      "3": {
+        "title": "Research",
+        "desc": "Conducting trusted research to provide accurate data and resources for startups and stakeholders."
+      },
+      "4": {
+        "title": "Enterprises Go Digital",
+        "desc": "Strengthening enterprises' digital capabilities through adoption and enabling participation in the digital economy."
+      }
+    }
+  },
+  "ContactPage": {
+    "title": "Get in Touch",
+    "subtitle": "We'd love to hear from you. Send us a message and we'll respond as soon as possible.",
+    "phone": "Phone",
+    "email": "Email",
+    "socialMedia": "Social Media",
+    "sendFeedback": "Send a Feedback",
+    "location": "Location",
+    "address": "No. 01, Russian Federation Blvd (110), Sangkat Teuk Laak I, Khan Toul Kork, Phnom Penh, Cambodia",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Enter your name",
+      "nameRequired": "Name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameMaxLength": "Name must be less than 100 characters",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "subject": "Subject",
+      "subjectPlaceholder": "Enter subject",
+      "subjectRequired": "Subject is required",
+      "subjectMinLength": "Subject must be at least 5 characters",
+      "subjectMaxLength": "Subject must be less than 200 characters",
+      "message": "Message",
+      "messagePlaceholder": "Enter your message",
+      "messageRequired": "Message is required",
+      "messageMinLength": "Message must be at least 10 characters",
+      "messageMaxLength": "Message must be less than 1000 characters",
+      "submit": "Submit",
+      "submitting": "Submitting...",
+      "errorMessage": "Please fill the form before submitting.",
+      "successMessage": "Thank you for your message! We'll get back to you soon."
+    }
+  },
+  "NewsPage": {
+    "hero": {
+      "title": "News and Announcements",
+      "subtitle": "Stay up to date with the latest news and updates from our organization."
+    },
+    "toolbar": {
+      "searchPlaceholder": "Search News, Categories...",
+      "sortLabel": "Sort by:",
+      "sortOptions": {
+        "default": "Default (Newest - Oldest)",
+        "date_desc": "Date: Newest → Oldest",
+        "date_asc": "Date: Oldest → Newest"
+      }
+    },
+    "latestNews": "Latest News",
+    "noResults": {
+      "title": "No results found",
+      "subtitle": "Try a different search or filter"
+    },
+    "aside": {
+      "title": "Social Protection System in Cambodia",
+      "description": "Watch our latest videos and learn more about social protection initiatives"
+    },
+    "seeMore": "See more",
+    "videoLabel": "Video",
+    "articleLabel": "Article",
+    "relatedArticles": "Related articles",
+    "breadcrumbs": {
+      "home": "Home",
+      "news": "News"
+    },
+    "share": {
+      "share": "Share",
+      "facebook": "Share to Facebook",
+      "linkedin": "Share to LinkedIn",
+      "copyLink": "Copy link"
+    },
+    "newsSection": {
+      "title": "News & Announcements",
+      "subtitle": "Stay updated with our latest initiatives, publications, and community engagements",
+      "readMore": "Read more",
+      "viewAll": "See more"
+    },
+    "categories": {
+      "events": "Events",
+      "programs": "Programs",
+      "impact": "Impact",
+      "partnerships": "Partnerships"
+    },
+    "allVideos": "All videos",
+    "content": {
+      "articles": {
+        "1": {
+          "title": "NSPC Annual Conference 2026 Announced",
+          "excerpt": "Join us for the biggest event of the year featuring keynote speakers, workshops, and networking opportunities for students nationwide.",
+          "subtitle": "Keynotes • Workshops • Networking — Feb 2026"
+        },
+        "2": {
+          "title": "New Scholarship Program Launched",
+          "excerpt": "NSPC introduces a comprehensive scholarship program to support outstanding students in their academic pursuits and leadership development.",
+          "subtitle": "Financial support and mentorship for high-achieving students"
+        },
+        "3": {
+          "title": "Student Leadership Summit Success",
+          "excerpt": "Over 500 students participated in the recent leadership summit, learning essential skills for future community impact.",
+          "subtitle": "Highlights and outcomes from the 2025 summit"
+        },
+        "4": {
+          "title": "Community Outreach Initiative Update",
+          "excerpt": "Our members have contributed over 10,000 volunteer hours to local communities, making a significant positive impact.",
+          "subtitle": "Volunteering impact across regions"
+        },
+        "outreach-2026": {
+          "title": "Community Outreach Initiative Expanded in 2026",
+          "excerpt": "Our members contributed over 12,000 volunteer hours across regions, expanding community support and services.",
+          "subtitle": "Volunteer engagement and impact — 2026"
+        },
+        "report-2025": {
+          "title": "Annual Social Protection Report 2025 Released",
+          "excerpt": "The 2025 report highlights progress, challenges, and recommendations for strengthening social protection systems nationwide.",
+          "subtitle": "Key findings and recommendations — 2025"
+        },
+        "consultation-2025": {
+          "title": "Public Consultation on Policy Updates",
+          "excerpt": "Stakeholders participated in a series of consultations to inform upcoming policy reforms and enhance stakeholder engagement.",
+          "subtitle": "Consultation outcomes — 2025"
+        },
+        "5": {
+          "title": "Partnership with National Universities",
+          "excerpt": "NSPC announces strategic partnerships with leading universities to enhance educational opportunities for our members.",
+          "subtitle": "New collaborations to expand learning pathways"
+        },
+        "6": {
+          "title": "Youth Empowerment Workshop Series",
+          "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy.",
+          "subtitle": "Monthly workshops for skill-building and leadership"
+        },
+        "7": {
+          "title": "Youth Empowerment Workshop Series",
+          "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
+        },
+        "8": {
+          "title": "Youth Empowerment Workshop Series",
+          "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
+        },
+        "9": {
+          "title": "Youth Empowerment Workshop Series",
+          "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
+        },
+        "10": {
+          "title": "Youth Empowerment Workshop Series",
+          "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
+        },
+        "11": {
+          "title": "Youth Empowerment Workshop Series",
+          "excerpt": "Join our monthly workshop series designed to equip young leaders with skills in communication, project management, and advocacy."
+        }
+      },
+      "videos": {
+        "1": {
+          "title": "Introduction to Social Protection in Cambodia",
+          "description": "Learn about the social protection system and its impact on Cambodian communities."
+        },
+        "2": {
+          "title": "Community Impact Stories",
+          "description": "Hear from community members about how social protection programs have changed their lives."
+        },
+        "3": {
+          "title": "Annual Conference Highlights 2023",
+          "description": "Key moments and discussions from our annual social protection conference."
+        },
+        "4": {
+          "title": "Youth Employment Programs",
+          "description": "Explore initiatives helping young Cambodians access employment opportunities."
+        },
+        "5": {
+          "title": "Healthcare Access for All",
+          "description": "Understanding how social protection ensures healthcare access for vulnerable populations."
+        },
+        "6": {
+          "title": "Education Support Initiatives",
+          "description": "Programs supporting education access for children from low-income families."
+        }
+      }
+    }
+  },
+  "PublicationPage": {
+    "hero": {
+      "title": "Publications",
+      "subtitle": "Stay updated with the latest news, resources, and publications from NSPC.",
+      "imgAlt": "Publications cover"
+    },
+    "categoryLabels": {
+      "All": "All",
+      "NSPC": "NSPC",
+      "Others": "Others"
+    },
+    "control": {
+      "searchPlaceholder": "Search publications...",
+      "filterByCategory": "Filter by Category",
+      "clear": "Clear"
+    },
+    "noResults": "No publications found.",
+    "actions": {
+      "open": "Open",
+      "download": "Download",
+      "close": "Close"
+    },
+    "noPreview": "No preview",
+    "pdfNotAvailable": "PDF preview not available.",
+    "content": {
+      "items": {
+        "1": {
+          "title": "Publication Title 1",
+          "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
+        },
+        "2": {
+          "title": "Publication Title 2",
+          "description": "Summary of the second publication."
+        },
+        "3": {
+          "title": "Publication Title 3",
+          "description": "Summary of the third publication."
+        },
+        "4": {
+          "title": "Publication Title 4",
+          "description": "Summary of the fourth publication."
+        },
+        "5": {
+          "title": "Publication Title 1",
+          "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
+        },
+        "6": {
+          "title": "Publication Title 2",
+          "description": "Summary of the second publication."
+        },
+        "7": {
+          "title": "Publication Title 3",
+          "description": "Summary of the third publication."
+        },
+        "8": {
+          "title": "Publication Title 4",
+          "description": "Summary of the fourth publication."
+        },
+        "9": {
+          "title": "Publication Title 1",
+          "description": "A brief description of the publication goes here. It provides an overview of the content and key findings."
+        },
+        "10": {
+          "title": "Publication Title 2",
+          "description": "Summary of the second publication."
+        },
+        "11": {
+          "title": "Publication Title 3",
+          "description": "Summary of the third publication."
+        },
+        "12": {
+          "title": "Publication Title 4",
+          "description": "Summary of the fourth publication."
+        }
+      }
+    }
+  },
+  "Common": {
+    "nav": {
+      "home": "Home",
+      "about": "About Us",
+      "learnMore": "Learn more about NSPC",
+      "resources": "Resources",
+      "accessDocs": "Access our documents & materials",
+      "news": "News & Announcement",
+      "contact": "Contact Us",
+      "eng": "English",
+      "kh": "ភាសាខ្មែរ",
+      "selectLanguage": "Select language",
+      "login": "Log in",
+      "aboutDropdown": {
+        "title": "About Us",
+        "description": "Learn more about NSPC",
+        "national": {
+          "title": "National",
+          "description": "Discover our organization's mission, vision, and commitment to advancing social protection across the nation."
+        },
+        "executive": {
+          "title": "Executive",
+          "description": "Meet our leadership team and learn about their roles in guiding social protection initiatives."
+        },
+        "general": {
+          "title": "General",
+          "description": "Access general information about our organizational structure and governance framework."
+        }
+      },
+      "resourcesDropdown": {
+        "title": "Resources",
+        "description": "Access our documents & materials",
+        "laws": {
+          "title": "Laws",
+          "description": "Access comprehensive legal frameworks and regulations governing social protection systems."
+        },
+        "publication": {
+          "title": "Publications",
+          "description": "Explore our research reports, policy documents, and informational publications."
+        },
+        "social": {
+          "title": "Social",
+          "description": "Connect with social activities and community engagement programs."
+        }
+      }
+    },
+    "footer": {
+      "description": "National Social Protection Council — ensuring social protection for all.",
+      "quickLinks": "Quick Links",
+      "contactTitle": "Contact",
+      "address": "Ministry address, Phnom Penh",
+      "emailLabel": "Email:",
+      "phoneLabel": "Phone:",
+      "rights": "© {year} National Social Protection Council. All rights reserved."
+    }
+  },
+  "LoginPage": {
+    "signIn": {
+      "title": "Sign In",
+      "subtitle": "Enter your credentials to access your account",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "signInButton": "Sign In",
+      "signingIn": "Signing In...",
+      "backToHome": "Back to Home",
+      "switchLanguage": "Switch Language",
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Password must be at least 8 characters"
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot Password?",
+      "subtitle": "No worries! Enter your email and we'll send you reset instructions",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "name@example.com",
+      "sendButton": "Send Reset Link",
+      "sending": "Sending...",
+      "backToSignIn": "Back to Sign In",
+      "success": {
+        "title": "Check Your Email",
+        "message": "We've sent password reset instructions to",
+        "tryAnotherEmail": "Try Another Email",
+        "backToSignIn": "Back to Sign In",
+        "didntReceive": "Didn't receive the email? Check your spam folder or try another email"
+      },
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "sendError": "Something went wrong. Please try again."
+      }
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Create a strong password to secure your account",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "resetButton": "Reset Password",
+      "resetting": "Resetting...",
+      "strength": {
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong",
+        "veryStrong": "Very Strong"
+      },
+      "requirements": {
+        "title": "Password must contain:",
+        "minLength": "At least 8 characters",
+        "upperLower": "Uppercase and lowercase letters",
+        "number": "At least one number",
+        "special": "At least one special character (!@#$%^&*)"
+      },
+      "errors": {
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Password must be at least 8 characters",
+        "passwordUpperLower": "Password must contain both uppercase and lowercase letters",
+        "passwordNumber": "Password must contain at least one number",
+        "passwordSpecial": "Password must contain at least one special character",
+        "confirmRequired": "Please confirm your password",
+        "confirmMismatch": "Passwords do not match",
+        "resetError": "Something went wrong. Please try again."
+      },
+      "success": {
+        "title": "Password Reset Successful!",
+        "message": "Your password has been successfully reset. You can now sign in with your new password.",
+        "goToSignIn": "Go to Sign In"
+      }
+    }
+  },
+  "LawsPage": {
+    "ExportConfirmModal": {
+      "confirmExport": "Confirm Export",
+      "exportMessage": "You are about to download {count} PDF{count, plural, one {} other {s}}.",
+      "pdfCount": "{count} PDF{count, plural, one {} other {s}}",
+      "actions": {
+        "cancel": "Cancel",
+        "confirmDownload": "Confirm Download"
+      }
+    },
+    "hero": {
+      "title": "Laws and Regulations",
+      "subtitle": "Access and download official legal documents and policies.",
+      "imgAlt": "Laws cover"
+    },
+    "categoryLabels": {
+      "All": "All",
+      "Royal Degree": "Royal Degree",
+      "Sub-Degree": "Sub-Degree",
+      "Prakas": "Prakas",
+      "Decision and Guideline": "Decision and Guideline"
+    },
+    "control": {
+      "filterByCategory": "Filter by Category",
+      "searchPlaceholder": "Search documents...",
+      "export": "Export",
+      "clear": "Clear",
+      "exportSelectedConfirm": "Please select at least one PDF to export."
+    },
+    "preview": {
+      "emptyTitle": "No Document Selected",
+      "emptySubtitle": "Select a document from the list to preview it here.",
+      "download": "Download",
+      "close": "Close",
+      "openInNewTab": "Open PDF in new tab",
+      "loading": "Loading preview…",
+      "loadError": "Could not load PDF preview — you can open it in a new tab."
+    },
+    "card": {
+      "noDate": "No Date",
+      "noResults": "No documents found matching your criteria."
+    },
+    "noPreview": "No preview available",
+    "pdfNotAvailable": "PDF preview not available.",
+    "actions": {
+      "open": "Open",
+      "download": "Download",
+      "close": "Close"
+    },
+    "exportPdf": {
+      "title": "Laws & Regulations",
+      "generatedOn": "Generated on:",
+      "totalRecords": "Total Records:",
+      "category": "Category:",
+      "tableHead": ["#", "Title", "Category", "Upload Date", "PDF Link"]
+    },
+    "content": {
+      "items": {
+        "1": {
+          "title": "National Health Act",
+          "description": "A comprehensive health regulation framework"
+        },
+        "2": {
+          "title": "Environmental Regulations",
+          "description": "Guidelines for environmental protection and sustainability"
+        },
+        "3": {
+          "title": "Education Policy Update",
+          "description": "Updated policies for the education sector"
+        },
+        "4": {
+          "title": "Public Safety Notice",
+          "description": "Important safety guidelines for public awareness"
+        }
+      }
+    }
+  },
+  "SocialPage": {
+    "hero": {
+      "title": "Social Protection System",
+      "subtitle": "Explore governance, assistance and social security resources."
+    },
+    "tabs": {
+      "governance": "Governance",
+      "assistance": "Social Assistance",
+      "security": "Social Security"
+    },
+    "reference": "Reference"
+  },
+  "NotFound": {
+    "title": "Page Not Found",
+    "description": "The page you requested could not be located. It may have been moved, renamed, or is temporarily unavailable.",
+    "return": "Return to Homepage"
+  },
+  "ErrorPage": {
+    "watermark": "Error",
+    "title": "Oops",
+    "heading": "Something went wrong",
+    "description": "An unexpected error occurred. You can try again or return to the homepage.",
+    "tryAgain": "Try again",
+    "return": "Return to Homepage"
+  }
 }
