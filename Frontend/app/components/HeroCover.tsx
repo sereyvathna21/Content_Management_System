@@ -13,7 +13,7 @@ export default function HeroCover({
   image = "/hero1.svg",
   title,
   subtitle,
-  heightClass = "h-[13rem] sm:h-[14rem] md:h-[18.8rem] lg:h-[21.3rem]",
+  heightClass = "h-[13rem] sm:h-[14rem] md:h-[18.8rem] lg:h-[22rem]",
 }: Props) {
   return (
     <div className="relative w-full animate-fade-in overflow-hidden">

@@ -278,7 +278,9 @@
     "actions": {
       "open": "បើក",
       "download": "ទាញយក",
-      "close": "បិទ"
+      "close": "បិទ",
+      "cancel": "បោះបង់",
+      "confirmDownload": "តើអ្នកចង់ទាញយក PDF នេះទេ?"
     },
     "noPreview": "មិនមានការមើលជាមុន",
     "pdfNotAvailable": "មិនអាចមើល PDF ជាមុនបាន។",
@@ -389,6 +391,16 @@
       "emailLabel": "អ៊ីមែល:",
       "phoneLabel": "ទូរស័ព្ទ:",
       "rights": "© {year} ក្រុមប្រឹក្សាការពារសង្គមជាតិ។ គ្រប់សិទ្ធិបានរក្សាទុក។"
+    },
+    "ExportBar": {
+      "selected": "{count} ជ្រើសរើស",
+      "export": "នាំចេញ",
+      "clear": "លុប",
+      "title": "នាំចេញ ({count})",
+      "confirmMessage": "អ្នកកំពុងតែទាញយក {count} PDF{count, plural, one {} other {s}}។ តើអ្នកចង់បន្តទេ?",
+      "confirmLabel": "យល់ព្រម នាំចេញ",
+      "cancel": "បោះបង់",
+      "exporting": "កំពុងនាំចេញ..."
     }
   },
   "LoginPage": {
@@ -523,7 +535,9 @@
     "actions": {
       "open": "បើក",
       "download": "ទាញយក",
-      "close": "បិទ"
+      "close": "បិទ",
+      "cancel": "បោះបង់",
+      "confirmDownload": "តើអ្នកចង់ទាញយក PDF នេះទេ?"
     },
     "exportPdf": {
       "title": "ច្បាប់ និង វិន័យ",

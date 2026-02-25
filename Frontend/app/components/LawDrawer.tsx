@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import ConfirmDialog from "./ConfirmDialog";
 import { useTranslations } from "next-intl";
 import { getCategoryBadgeClasses } from "@/app/lib/categoryColors";
 
@@ -49,6 +50,8 @@ export default function LawDrawer({
       : law.category;
 
   const pdfUrl = law.pdf;
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   // responsive character truncation for title & description
   const [truncatedTitle, setTruncatedTitle] = useState<string>(
@@ -107,7 +110,7 @@ export default function LawDrawer({
     return () => window.removeEventListener("resize", onResize);
   }, [rawTitle, rawDescription]);
 
-  const handleDownload = async () => {
+  const performDownload = async () => {
     try {
       if (pdfUrl) {
         const res = await fetch(pdfUrl);
@@ -130,6 +133,8 @@ export default function LawDrawer({
       alert("Failed to download PDF.");
     }
   };
+
+  const handleDownload = () => setConfirmOpen(true);
 
   const drawer = (
     <div className="fixed inset-0 z-[99999] flex">
@@ -209,5 +214,27 @@ export default function LawDrawer({
   );
 
   if (typeof document === "undefined") return null;
-  return createPortal(drawer, document.body);
+  const confirmMessage =
+    t("actions.confirmDownload") &&
+    !t("actions.confirmDownload").startsWith("actions")
+      ? t("actions.confirmDownload")
+      : "Are you sure you want to download this PDF?";
+
+  return (
+    <>
+      {createPortal(drawer, document.body)}
+      <ConfirmDialog
+        open={confirmOpen}
+        title={t("actions.download")}
+        message={confirmMessage}
+        confirmLabel={t("actions.download")}
+        cancelLabel={t("actions.cancel") || t("actions.close")}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          performDownload();
+        }}
+        onCancel={() => setConfirmOpen(false)}
+      />
+    </>
+  );
 }

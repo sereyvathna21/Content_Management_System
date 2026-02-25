@@ -1,5 +1,6 @@
 import "./globals.css";
 import { NextIntlClientProvider } from "next-intl";
+import ClientProviders from "./components/ClientProviders";
 import { getLocale, getMessages } from "next-intl/server";
 
 export const metadata = {
@@ -22,7 +23,7 @@ export default async function RootLayout({
     <html lang={locale} className="scroll-smooth">
       <body className="antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
+          <ClientProviders>{children}</ClientProviders>
         </NextIntlClientProvider>
       </body>
     </html>

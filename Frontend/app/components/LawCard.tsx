@@ -5,6 +5,7 @@ import Image from "next/image";
 import usePdfThumbnail from "@/app/lib/usePdfThumbnail";
 import { useTranslations } from "next-intl";
 import { getCategoryBadgeClasses } from "@/app/lib/categoryColors";
+import { useSelection } from "./SelectionContext";
 
 type LawCardProps = {
   id: string;
@@ -27,6 +28,7 @@ export default function LawCard({
 }: LawCardProps) {
   const t = useTranslations("LawsPage");
   const thumb = usePdfThumbnail(pdf, 2);
+  const { selected, toggle } = useSelection();
 
   // Get translated title and description, fallback to hardcoded values
   const translatedTitle = id ? t(`content.items.${id}.title`) : "";
@@ -111,6 +113,17 @@ export default function LawCard({
         className="relative rounded-lg overflow-hidden mb-4 bg-gray-100"
         style={{ height: "clamp(12rem, 26vw, 18rem)" }}
       >
+        <label className="absolute top-3 right-3 z-20">
+          <input
+            type="checkbox"
+            aria-label="Select"
+            checked={!!selected[`law:${id}`]}
+            onChange={() =>
+              toggle({ key: `law:${id}`, id, type: "law", title, pdf })
+            }
+            className="w-4 h-4 rounded border"
+          />
+        </label>
         {thumb ? (
           <Image
             src={thumb}

@@ -278,7 +278,9 @@
     "actions": {
       "open": "Open",
       "download": "Download",
-      "close": "Close"
+      "close": "Close",
+      "cancel": "Cancel",
+      "confirmDownload": "Are you sure you want to download this PDF?"
     },
     "noPreview": "No preview",
     "pdfNotAvailable": "PDF preview not available.",
@@ -389,6 +391,16 @@
       "emailLabel": "Email:",
       "phoneLabel": "Phone:",
       "rights": "© {year} National Social Protection Council. All rights reserved."
+    },
+    "ExportBar": {
+      "selected": "{count} selected",
+      "export": "Export",
+      "clear": "Clear",
+      "title": "Export ({count})",
+      "confirmMessage": "You are about to download {count} PDF{count, plural, one {} other {s}}. Continue?",
+      "confirmLabel": "Yes, export",
+      "cancel": "Cancel",
+      "exporting": "Exporting..."
     }
   },
   "LoginPage": {
@@ -483,7 +495,10 @@
       "pdfCount": "{count} PDF{count, plural, one {} other {s}}",
       "actions": {
         "cancel": "Cancel",
-        "confirmDownload": "Confirm Download"
+        "confirmDownload": "Are you sure you want to download this PDF?",
+        "open": "Open",
+        "download": "Download",
+        "close": "Close"
       }
     },
     "hero": {

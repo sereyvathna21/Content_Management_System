@@ -46,7 +46,7 @@ const VideoCard: React.FC<VideoCardProps> = ({
       <div className="p-3 sm:p-4 space-y-1.5 sm:space-y-2">
         <h3
           title={title}
-          className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 truncate whitespace-nowrap group-hover:text-blue-600 transition-colors"
+          className="font-semibold text-sm sm:text-base md:text-lg text-gray-900 truncate whitespace-nowrap group-hover:text-primary transition-colors"
         >
           {displayedTitle}
         </h3>

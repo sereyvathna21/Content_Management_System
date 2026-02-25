@@ -30,7 +30,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({
   const t = useTranslations("NewsPage");
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {paginatedVideos.map((video, index) => (
         <VideoCard
           key={video.id || index}

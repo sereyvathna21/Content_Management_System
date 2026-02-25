@@ -73,14 +73,16 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
       return localizedContent.map((paragraph, idx) => (
         <p
           key={idx}
-          className="text-base sm:text-lg text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full"
+          className={`text-base sm:text-lg text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full ${locale === "kh" ? "indent-6" : ""}`}
         >
           {formatTextWithBoldNumbers(paragraph)}
         </p>
       ));
     }
     return (
-      <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full">
+      <p
+        className={`text-base sm:text-lg text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full ${locale === "kh" ? "indent-6" : ""}`}
+      >
         {formatTextWithBoldNumbers(localizedContent)}
       </p>
     );
@@ -279,9 +281,9 @@ export default function SocialContentRenderer({
       ))}
 
       <div className="mt-8 sm:mt-12 pt-4 sm:pt-6 border-t border-gray-200">
-        <p className="text-xs sm:text-sm text-gray-600 italic">
+        <p className="text-sm sm:text-sm text-gray-600 italic">
           {t("reference")}:{" "}
-          <span className="font-bold text-primary not-italic">
+          <span className="font-bold text-primary">
             {getLocalizedText(topic.reference)}
           </span>
         </p>
