@@ -73,11 +73,11 @@ export default function GoalsSection() {
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
       }`}
     >
-      <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-primary/95 mb-6">
+      <h2 className="text-2xl sm:text-4xl font-extrabold text-center text-primary/95 mb-6">
         {t("title")}
       </h2>
 
-      <p className="text-center text-gray-700 max-w-3xl mx-auto mb-8 leading-relaxed">
+      <p className="text-center text-lg text-gray-700 max-w-3xl mx-auto mb-8 leading-relaxed">
         {t("intro")}
       </p>
 

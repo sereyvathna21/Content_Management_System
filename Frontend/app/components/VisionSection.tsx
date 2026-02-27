@@ -30,15 +30,15 @@ export default function VisionSection() {
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-primary mb-4">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-primary mb-4">
               {t("title")}
             </h2>
 
-            <p className="text-gray-700 mb-4 leading-relaxed">
+            <p className="text-gray-700 mb-4 leading-relaxed text-xl">
               {t("paragraph")}
             </p>
 
-            <ul className="space-y-3">
+            <ul className="space-y-3 text-xl">
               <li className="flex items-start gap-3">
                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary">
                   ✓

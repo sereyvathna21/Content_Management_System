@@ -359,11 +359,35 @@
         },
         "executive": {
           "title": "Executive",
-          "description": "Meet our leadership team and learn about their roles in guiding social protection initiatives."
+          "description": "Meet our leadership team and learn about their roles in guiding social protection initiatives.",
+          "overview": {
+            "title": "Overview",
+            "description": "General information about our executive committee"
+          },
+          "leadership": {
+            "title": "Leadership",
+            "description": "Meet our executive board members and leaders"
+          },
+          "structure": {
+            "title": "Organizational Structure",
+            "description": "Explore our executive organizational framework"
+          }
         },
         "general": {
           "title": "General",
-          "description": "Access general information about our organizational structure and governance framework."
+          "description": "Access general information about our organizational structure and governance framework.",
+          "overview": {
+            "title": "Overview",
+            "description": "Introduction to the National Social Protection Council"
+          },
+          "mission": {
+            "title": "Mission & Vision",
+            "description": "Our mission, vision, and strategic objectives"
+          },
+          "history": {
+            "title": "History",
+            "description": "Learn about our organizational history and milestones"
+          }
         }
       },
       "resourcesDropdown": {

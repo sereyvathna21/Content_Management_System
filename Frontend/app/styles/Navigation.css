@@ -65,6 +65,53 @@
   will-change: transform, opacity;
 }
 
+/* Smooth open/close panel transitions */
+.dropdown-panel {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0.25s;
+  will-change: transform, opacity;
+}
+
+.dropdown-panel.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+  transition:
+    opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0s;
+}
+
+.dropdown-subpanel {
+  opacity: 0;
+  transform: translateX(-6px);
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0.2s;
+  will-change: transform, opacity;
+}
+
+.dropdown-subpanel.open {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  visibility: visible;
+  transition:
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0s;
+}
+
 .dropdown-item {
   position: relative;
   overflow: hidden;
@@ -77,11 +124,6 @@
   top: 0;
   height: 100%;
   width: 3px;
-  background: linear-gradient(
-    to bottom,
-    var(--tw-gradient-from),
-    var(--tw-gradient-to)
-  );
   transform: scaleY(0);
   transform-origin: top;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -97,7 +139,11 @@
   .nav-link::after,
   .dropdown-item::before,
   .mobile-menu-enter,
-  .dropdown-enter {
+  .dropdown-enter,
+  .dropdown-panel,
+  .dropdown-panel.open,
+  .dropdown-subpanel,
+  .dropdown-subpanel.open {
     transition: none !important;
     animation: none !important;
   }

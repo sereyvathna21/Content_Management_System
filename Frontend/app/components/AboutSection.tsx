@@ -53,7 +53,7 @@ export default function AboutSection() {
           </h2>
 
           <p
-            className="text-sm sm:text-base md:text-lg text-gray-700 leading-relaxed text-justify-full"
+            className="text-lg sm:text-base md:text-lg text-gray-700 leading-relaxed text-justify-full"
             style={{
               
               lineHeight: 2,
