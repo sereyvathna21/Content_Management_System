@@ -428,7 +428,7 @@ const MobileDropdown = memo(function MobileDropdown({
                         <Link
                           key={subIt.href || `mobile-sub-${subIdx}`}
                           href={subIt.href!}
-                          className="block px-12 sm:px-14 py-2 text-sm sm:text-base hover:bg-white/10 transition-all duration-300 active:bg-white/20 font-light flex items-center gap-2"
+                          className="px-12 sm:px-14 py-2 text-sm sm:text-base hover:bg-white/10 transition-all duration-300 active:bg-white/20 font-light flex items-center gap-2"
                           onClick={() => closeMenu()}
                         >
                           {subIt.icon && (
@@ -444,7 +444,7 @@ const MobileDropdown = memo(function MobileDropdown({
                 // Regular item without sub-items
                 <Link
                   href={it.href!}
-                  className="block px-8 sm:px-10 py-2.5 text-sm sm:text-base hover:bg-white/10 transition-all duration-300 active:bg-white/20 font-normal flex items-center gap-2"
+                  className="px-8 sm:px-10 py-2.5 text-sm sm:text-base hover:bg-white/10 transition-all duration-300 active:bg-white/20 font-normal flex items-center gap-2"
                   onClick={() => closeMenu()}
                 >
                   {it.icon && <span className="opacity-70">{it.icon}</span>}

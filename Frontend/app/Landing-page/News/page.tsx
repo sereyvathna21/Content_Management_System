@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations, useMessages } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import Footer from "@/app/components/Footer";
 import Header from "@/app/components/Header";
 import Navigation from "@/app/components/Navigation";
@@ -13,6 +12,10 @@ import SortControl from "@/app/components/SortControl";
 import SearchBar from "@/app/components/SearchBar";
 import HeroCover from "@/app/components/HeroCover";
 import ListSkeleton from "@/app/components/ListSkeleton";
+import { newsArticles } from "@/app/Landing-page/News/articles";
+import { matchesSearch, compareText } from "@/app/lib/searchUtils";
+import { videos } from "@/app/Landing-page/News/videos";
+
 interface NewsArticle {
   id: string;
   title: string;
@@ -21,17 +24,13 @@ interface NewsArticle {
   category: string;
   image: string;
 }
-import { newsArticles } from "@/app/Landing-page/News/articles";
-import { matchesSearch, compareText } from "@/app/lib/searchUtils";
-import enMessages from "@/messages/en.json";
-import khMessages from "@/messages/kh.json";
-import { videos } from "@/app/Landing-page/News/videos";
 
 const newsPerPage = 9; // Limit for news articles
 const videosPerPage = 3; // Limit for videos
 
 export default function News() {
   const t = useTranslations("NewsPage");
+  const messages = useMessages();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -48,6 +47,11 @@ export default function News() {
     setSortOption(initialSort);
   }, [searchParams]);
 
+  // Reset news pagination when search or sort changes
+  useEffect(() => {
+    setCurrentNewsPage(1);
+  }, [searchTerm, sortOption]);
+
   const handleSortChange = (v: string) => {
     setSortOption(v);
     if (mounted) {
@@ -55,48 +59,53 @@ export default function News() {
       if (v) params.set("sort", v);
       else params.delete("sort");
       const qs = params.toString();
-      // update URL without refreshing the page
       router.replace(`${window.location.pathname}${qs ? `?${qs}` : ""}`);
     }
   };
 
+  const handleNewsPageChange = (page: number) => setCurrentNewsPage(page);
+  const handleVideoPageChange = (page: number) => setCurrentVideoPage(page);
+
   // support combined sort+direction values like 'date_desc' or 'title_asc'
-  const effectiveSort = sortOption || "date_desc"; // treat Default as newest-first
+  const effectiveSort = sortOption || "date_desc";
   const [sortKey, sortDir] = effectiveSort.split("_");
 
-  const locale = useLocale();
-
-  const safeGet = (obj: any, path: string) => {
-    if (!obj) return undefined;
+  // Safe typed traversal of the next-intl message bundle for the current locale.
+  // Uses useMessages() instead of double-importing JSON files.
+  const safeGet = (
+    obj: Record<string, unknown>,
+    path: string,
+  ): string | undefined => {
     const parts = path.split(".");
-    let cur: any = obj;
+    let cur: unknown = obj;
     for (const p of parts) {
-      if (cur && typeof cur === "object" && p in cur) cur = cur[p];
-      else return undefined;
+      if (
+        cur !== null &&
+        typeof cur === "object" &&
+        p in (cur as Record<string, unknown>)
+      ) {
+        cur = (cur as Record<string, unknown>)[p];
+      } else {
+        return undefined;
+      }
     }
-    return cur;
+    return typeof cur === "string" && cur.length > 0 ? cur : undefined;
   };
 
-  const bundles: Record<string, any> = { en: enMessages, kh: khMessages };
-  const bundle = bundles[locale] || enMessages;
+  const bundle =
+    ((messages as Record<string, unknown>).NewsPage as Record<
+      string,
+      unknown
+    >) ?? {};
 
-  const getArticleTitle = (a: NewsArticle) => {
-    const msg = safeGet(bundle, `NewsPage.content.articles.${a.id}.title`);
-    return typeof msg === "string" && msg.length > 0 ? msg : a.title;
-  };
+  const getArticleTitle = (a: NewsArticle): string =>
+    safeGet(bundle, `content.articles.${a.id}.title`) ?? a.title;
 
-  const getArticleExcerpt = (a: NewsArticle) => {
-    const msg = safeGet(bundle, `NewsPage.content.articles.${a.id}.excerpt`);
-    return typeof msg === "string" && msg.length > 0 ? msg : a.excerpt;
-  };
+  const getArticleExcerpt = (a: NewsArticle): string =>
+    safeGet(bundle, `content.articles.${a.id}.excerpt`) ?? a.excerpt;
 
-  const getArticleCategory = (a: NewsArticle) => {
-    const msg = safeGet(
-      bundle,
-      `NewsPage.categories.${a.category.toLowerCase()}`,
-    );
-    return typeof msg === "string" && msg.length > 0 ? msg : a.category;
-  };
+  const getArticleCategory = (a: NewsArticle): string =>
+    safeGet(bundle, `categories.${a.category.toLowerCase()}`) ?? a.category;
 
   const sortedArticles = [...newsArticles].sort((a, b) => {
     if (sortKey === "date") {
@@ -130,31 +139,13 @@ export default function News() {
     currentNewsPage * newsPerPage,
   );
 
-  // reset news pagination when search or sort changes
-  React.useEffect(() => {
-    setCurrentNewsPage(1);
-  }, [searchTerm, sortOption]);
-
-  const paginatedVideos = videos.slice(
-    (currentVideoPage - 1) * videosPerPage,
-    currentVideoPage * videosPerPage,
-  );
-
-  const handleNewsPageChange = (page: number) => {
-    setCurrentNewsPage(page);
-  };
-
-  const handleVideoPageChange = (page: number) => {
-    setCurrentVideoPage(page);
-  };
-
   if (!mounted) {
     return (
       <>
         <Header />
         <Navigation />
         <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
-        <div className="min-h-screen bg-white to-blue-50/30">
+        <div className="min-h-screen bg-white">
           <div className="relative w-full">
             <div
               className="w-full h-64 bg-gray-100 animate-pulse"
@@ -162,16 +153,25 @@ export default function News() {
             />
           </div>
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start mt-8">
-              <main className="lg:col-span-8">
+            {/* Toolbar skeleton */}
+            <div className="flex flex-col sm:flex-row items-end justify-between gap-6 sm:gap-4 mb-6 sm:mb-8 mt-6">
+              <div
+                className="w-40 h-9 bg-gray-100 rounded-lg animate-pulse"
+                style={{ animationDuration: "1.5s" }}
+              />
+              <div
+                className="w-64 h-9 bg-gray-100 rounded-lg animate-pulse"
+                style={{ animationDuration: "1.5s", animationDelay: "75ms" }}
+              />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+              <main className="lg:col-span-8 lg:col-start-3">
                 <ListSkeleton count={9} />
-              </main>
-              <aside className="lg:col-span-4">
                 <div
-                  className="bg-gray-100 rounded-2xl h-96 animate-pulse"
+                  className="mt-10 bg-gray-100 rounded-2xl h-64 animate-pulse"
                   style={{ animationDuration: "1.5s", animationDelay: "150ms" }}
                 />
-              </aside>
+              </main>
             </div>
           </div>
         </div>
@@ -187,7 +187,7 @@ export default function News() {
       {/* spacer to offset fixed Navigation height so page header is visible */}
 
       <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
-      <div className="min-h-screen bg-white to-blue-50/30">
+      <div className="min-h-screen bg-white">
         <div className="relative w-full animate-fade-in overflow-hidden">
           <HeroCover
             image="/news.svg"
@@ -197,11 +197,11 @@ export default function News() {
         </div>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10">
           {/* Toolbar: sort + info */}
-          <div className="flex flex-col sm:flex-row items-end sm:items-end justify-between  gap-6 sm:gap-4 mb-6 sm:mb-8 ">
+          <div className="flex flex-col sm:flex-row items-end justify-between gap-6 sm:gap-4 mb-6 sm:mb-8">
             <div className="w-full sm:w-auto">
               <SortControl value={sortOption} onChange={handleSortChange} />
             </div>
-            <div className="gap-3 mt-2 sm:mt-0 w-full sm:w-auto justify-end">
+            <div className="w-full sm:w-auto">
               <SearchBar
                 value={searchTerm}
                 onChange={setSearchTerm}
@@ -222,17 +222,6 @@ export default function News() {
                   ))}
                 </div>
               </div>
-              {/* News Pagination Controls */}
-              {totalNewsPages > 1 && (
-                <div className="flex justify-center mt-10 sm:mt-12">
-                  <Pagination
-                    currentPage={currentNewsPage}
-                    totalPages={totalNewsPages}
-                    onPageChange={handleNewsPageChange}
-                  />
-                </div>
-              )}
-
               {/* No Results Found Message */}
               {paginatedArticles.length === 0 && (
                 <div className="text-center py-16">
@@ -260,7 +249,18 @@ export default function News() {
                 </div>
               )}
 
-              {/* Centered Video Section (larger) */}
+              {/* News Pagination Controls */}
+              {totalNewsPages > 1 && (
+                <div className="flex justify-center mt-10 sm:mt-12">
+                  <Pagination
+                    currentPage={currentNewsPage}
+                    totalPages={totalNewsPages}
+                    onPageChange={handleNewsPageChange}
+                  />
+                </div>
+              )}
+
+              {/* Video Section */}
               <div className="mt-10 flex justify-center">
                 <div className="w-full max-w-5xl">
                   <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100">
@@ -279,23 +279,20 @@ export default function News() {
                       currentPage={currentVideoPage}
                     />
 
+                    {/* Video Pagination Controls */}
                     {totalVideoPages > 1 && (
                       <div className="flex justify-center mt-5">
-                        <Link
-                          href="/Landing-page/News/videos/1"
-                          className="text-sm font-semibold text-primary hover:underline"
-                        >
-                          {t("seeMore")}
-                        </Link>
+                        <Pagination
+                          currentPage={currentVideoPage}
+                          totalPages={totalVideoPages}
+                          onPageChange={handleVideoPageChange}
+                        />
                       </div>
                     )}
                   </div>
                 </div>
               </div>
-
-              
             </main>
-            
           </div>
         </div>
       </div>

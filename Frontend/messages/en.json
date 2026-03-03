@@ -453,6 +453,8 @@
       "forgotPassword": "Forgot password?",
       "signInButton": "Sign In",
       "signingIn": "Signing In...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Create one",
       "backToHome": "Back to Home",
       "switchLanguage": "Switch Language",
       "errors": {
@@ -520,6 +522,54 @@
       "success": {
         "title": "Password Reset Successful!",
         "message": "Your password has been successfully reset. You can now sign in with your new password.",
+        "goToSignIn": "Go to Sign In"
+      }
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Join NSPC and be part of our community",
+      "fullNameLabel": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Repeat your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "agreeToTerms": {
+        "prefix": "I agree to the",
+        "terms": "Terms of Service",
+        "and": "and",
+        "privacy": "Privacy Policy"
+      },
+      "registerButton": "Create Account",
+      "registering": "Creating Account...",
+      "alreadyHaveAccount": "Already have an account?",
+      "signInLink": "Sign In",
+      "strength": {
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong",
+        "veryStrong": "Very Strong"
+      },
+      "errors": {
+        "fullNameRequired": "Full name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Password must be at least 8 characters",
+        "passwordUpperLower": "Password must contain both uppercase and lowercase letters",
+        "passwordNumber": "Password must contain at least one number",
+        "passwordSpecial": "Password must contain at least one special character",
+        "confirmRequired": "Please confirm your password",
+        "confirmMismatch": "Passwords do not match",
+        "agreeToTermsRequired": "You must agree to the terms and privacy policy"
+      },
+      "success": {
+        "title": "Account Created!",
+        "message": "Your account has been successfully created. You can now sign in.",
         "goToSignIn": "Go to Sign In"
       }
     }
@@ -656,5 +706,117 @@
     "description": "An unexpected error occurred. You can try again or return to the homepage.",
     "tryAgain": "Try again",
     "return": "Return to Homepage"
+  },
+  "Legal": {
+    "Terms": {
+      "lastUpdated": "March 3, 2026",
+      "contactEmail": "info@nspc.gov.kh",
+      "contactAddress": "National Social Protection Council, Phnom Penh, Kingdom of Cambodia",
+      "hero": {
+        "title": "Terms of Service",
+        "subtitle": "Please read these terms carefully before using our website"
+      },
+      "sections": [
+        {
+          "title": "1. Acceptance of Terms",
+          "content": "<p>By accessing or using the NSPC website, you agree to be bound by these Terms of Service and all applicable laws and regulations of the Kingdom of Cambodia. If you do not agree with any of these terms, you are prohibited from using or accessing this Site.</p>"
+        },
+        {
+          "title": "2. Use of the Website",
+          "content": "<p>This Site is provided for informational purposes about social protection policies, programs, and resources managed by the National Social Protection Council (NSPC). You agree to use it only for lawful purposes and in a way that does not infringe the rights of others.</p><p>You must not:</p><ul><li>Use the Site in any way that violates any applicable law or regulation</li><li>Attempt to gain unauthorized access to any part of the Site or its systems</li><li>Scrape, harvest, or extract data from the Site without prior written permission</li><li>Transmit any unsolicited or unauthorized advertising material or other forms of solicitation</li><li>Knowingly transmit any data or material containing viruses, trojans, or other malicious code</li></ul>"
+        },
+        {
+          "title": "3. Account Registration",
+          "content": "<p>To access certain features of the Site, you may be required to register for an account. When you register, you agree to provide accurate, current, and complete information; maintain and promptly update your account information; keep your password confidential and not share it with any third party; accept responsibility for all activities that occur under your account; and notify NSPC immediately if you suspect any unauthorized use of your account. NSPC reserves the right to suspend or terminate any account that violates these terms.</p>"
+        },
+        {
+          "title": "4. Intellectual Property",
+          "content": "<p>All content published on this Site — including text, publications, laws, policy documents, reports, images, graphics, and logos — is the property of the National Social Protection Council and/or the Royal Government of Cambodia, protected under applicable intellectual property laws. You may download and print materials for personal, non-commercial use only, provided that you retain all copyright and proprietary notices. Any other reproduction, redistribution, or commercial use requires prior written consent from NSPC.</p>"
+        },
+        {
+          "title": "5. Prohibited Activities",
+          "content": "<p>The following activities are strictly prohibited on this Site:</p><ul><li>Impersonating any person, entity, or government official, including NSPC staff</li><li>Publishing or transmitting any content that is false, misleading, or defamatory</li><li>Interfering with or disrupting the integrity or performance of the Site or its related systems</li><li>Attempting to probe, scan, or test the vulnerability of any NSPC system or network</li><li>Using the Site for any form of illegal commercial activity</li></ul>"
+        },
+        {
+          "title": "6. Disclaimer of Warranties",
+          "content": "<p>The information on this Site is provided for general informational purposes only. While NSPC endeavors to keep content accurate and up-to-date, it makes no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, or suitability of the information. Nothing on this Site constitutes legal, financial, or professional advice.</p>"
+        },
+        {
+          "title": "7. Limitation of Liability",
+          "content": "<p>To the fullest extent permitted by law, NSPC and the Royal Government of Cambodia shall not be liable for any direct, indirect, incidental, consequential, or punitive damages arising from your access to or use of (or inability to use) this Site, or from any errors or omissions in its content, even if NSPC has been advised of the possibility of such damages.</p>"
+        },
+        {
+          "title": "8. External Links",
+          "content": "<p>This Site may contain links to external websites operated by third parties. These links are provided for your convenience only. NSPC has no control over the content of those sites and accepts no responsibility for them or for any loss or damage that may arise from your use of them. The inclusion of a link does not imply endorsement by NSPC.</p>"
+        },
+        {
+          "title": "9. Changes to Terms",
+          "content": "<p>NSPC reserves the right to modify these Terms of Service at any time without prior notice. Changes will be effective immediately upon posting to the Site. The \"Last Updated\" date at the top of this page will reflect the most recent revision. Your continued use of the Site following any changes constitutes your acceptance of the new terms.</p>"
+        },
+        {
+          "title": "10. Governing Law",
+          "content": "<p>These Terms of Service are governed by and construed in accordance with the laws of the Kingdom of Cambodia. Any disputes arising under or in connection with these terms shall be subject to the exclusive jurisdiction of the competent courts of the Kingdom of Cambodia.</p>"
+        },
+        {
+          "title": "11. Contact Us",
+          "content": "<p>If you have any questions about these Terms of Service, please contact us:</p><ul><li><strong>Email:</strong> <a href=\"mailto:info@nspc.gov.kh\">info@nspc.gov.kh</a></li><li><strong>Address:</strong> National Social Protection Council, Phnom Penh, Kingdom of Cambodia</li></ul>"
+        }
+      ]
+    },
+    "Privacy": {
+      "lastUpdated": "March 3, 2026",
+      "contactEmail": "info@nspc.gov.kh",
+      "contactAddress": "National Social Protection Council, Phnom Penh, Kingdom of Cambodia",
+      "hero": {
+        "title": "Privacy Policy",
+        "subtitle": "How we collect, use, and protect your personal information"
+      },
+      "sections": [
+        {
+          "title": "1. Information We Collect",
+          "content": "<p>When you use our Site or register for an account, we may collect the following types of information:</p><ul><li><strong>Personal Information:</strong> Your full name, email address, and any other information you voluntarily provide when registering or contacting us</li><li><strong>Usage Data:</strong> Pages visited, time spent on the Site, links clicked, browser type, device type, and IP address</li><li><strong>Cookies & Tracking Data:</strong> Information collected through cookies and similar technologies</li></ul><p>We do not collect sensitive personal data (such as health records, financial information, or identification numbers) unless explicitly required and with your informed consent.</p>"
+        },
+        {
+          "title": "2. How We Use Your Information",
+          "content": "<p>NSPC uses the information we collect to: create and manage your account, respond to your inquiries and requests, send you updates and newsletters if you opt in, analyze and improve the Site, and comply with legal obligations. We will not use your personal information for unrelated purposes without your explicit consent.</p>"
+        },
+        {
+          "title": "3. Legal Basis for Processing",
+          "content": "<p>We process your personal information on the following legal bases: <strong>Consent</strong> (where given), <strong>Legitimate Interest</strong> (e.g., site improvement and security), and <strong>Legal Obligation</strong> (where required by law).</p>"
+        },
+        {
+          "title": "4. Data Sharing",
+          "content": "<p>NSPC does not sell, trade, or rent your personal information to third parties. We may share your data in limited circumstances: with government partners for official coordination, with trusted service providers under data processing agreements, or when disclosure is required by law.</p>"
+        },
+        {
+          "title": "5. Cookies & Tracking",
+          "content": "<p>Our Site uses cookies to enhance your browsing experience. We use essential cookies (session management, language preference) and analytics cookies (e.g., Google Analytics) to understand visitor behavior. You can control cookies through your browser settings; disabling some cookies may affect site functionality.</p>"
+        },
+        {
+          "title": "6. Data Retention",
+          "content": "<p>We retain your personal information only for as long as necessary to fulfill the purposes described in this Privacy Policy, or as required by applicable law. Account data is kept for the duration of your active account and for a reasonable period afterwards.</p>"
+        },
+        {
+          "title": "7. Your Rights",
+          "content": "<p>You have rights including access, correction, deletion, withdrawal of consent, and objection to processing. To exercise any of these rights, please contact us using the details in the Contact section.</p>"
+        },
+        {
+          "title": "8. Data Security",
+          "content": "<p>NSPC takes reasonable technical and organizational measures to protect your personal information, including encrypted transmission (HTTPS), access controls, and security reviews. However, no method of transmission over the internet is 100% secure.</p>"
+        },
+        {
+          "title": "9. Children's Privacy",
+          "content": "<p>This Site is not intended for use by children under the age of 13. We do not knowingly collect personal information from children under 13. If you believe a child under 13 has provided us with personal information, please contact us immediately.</p>"
+        },
+        {
+          "title": "10. Changes to This Policy",
+          "content": "<p>NSPC may update this Privacy Policy periodically. When we make material changes, we will update the \"Last Updated\" date. Continued use of the Site after changes constitutes acceptance of the revised policy.</p>"
+        },
+        {
+          "title": "11. Contact Us",
+          "content": "<p>If you have any questions or requests regarding this Privacy Policy, please contact our Data Protection team: <ul><li><strong>Email:</strong> <a href=\"mailto:info@nspc.gov.kh\">info@nspc.gov.kh</a></li><li><strong>Address:</strong> National Social Protection Council, Phnom Penh, Kingdom of Cambodia</li></ul></p>"
+        }
+      ]
+    }
   }
 }

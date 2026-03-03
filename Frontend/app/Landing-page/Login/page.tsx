@@ -263,6 +263,16 @@ export default function Login() {
               >
                 {isSubmitting ? t("signingIn") : t("signInButton")}
               </button>
+
+              <p className="text-center text-xs sm:text-sm lg:text-gray-600 text-white/90 animate-[fadeIn_0.6s_ease-out_1s_both]">
+                {t("noAccount")}{" "}
+                <Link
+                  href="/Landing-page/Login/Register"
+                  className="font-semibold text-white lg:text-primary hover:text-primary/80 transition-colors"
+                >
+                  {t("registerLink")}
+                </Link>
+              </p>
             </form>
           </div>
         </div>
