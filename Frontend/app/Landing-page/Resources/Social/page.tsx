@@ -6,8 +6,9 @@ import Footer from "@/app/components/Footer";
 import HeroCover from "@/app/components/HeroCover";
 import SocialContentRenderer from "@/app/components/SocialContentRenderer";
 import { socialContent } from "@/app/data/socialContent";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { useSearchParams, useRouter } from "next/navigation";
 
 const topics = [
   socialContent.governance,
@@ -17,30 +18,74 @@ const topics = [
 
 export default function Social() {
   const t = useTranslations("SocialPage");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Read URL params for initial state
+  const urlTopic = searchParams.get("topic");
+
   const [selectedTopicId, setSelectedTopicId] = useState<string>(
-    topics[0]?.id ?? "",
+    urlTopic || (topics[0]?.id ?? ""),
   );
-  const [prevTopicId, setPrevTopicId] = useState<string | null>(null);
   const [animating, setAnimating] = useState(false);
+
+  const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isInternalNavigation = useRef(false);
+  const prevUrlRef = useRef({ topic: urlTopic });
 
   const selectedTopic = topics.find((t) => t.id === selectedTopicId) ?? null;
   const selectedIndex = topics.findIndex((t) => t.id === selectedTopicId);
 
-  const handleTabChange = (id: string) => {
-    if (id === selectedTopicId || animating) return;
-    setPrevTopicId(selectedTopicId);
-    setAnimating(true);
-    setTimeout(() => {
-      setSelectedTopicId(id);
-      setAnimating(false);
-    }, 220);
-  };
+  // Update state when URL params change (e.g., from navbar)
+  useEffect(() => {
+    // Check if URL actually changed
+    const urlChanged = prevUrlRef.current.topic !== urlTopic;
 
-  const renderContent = () => {
+    if (urlChanged && !isInternalNavigation.current) {
+      const newTopicId = urlTopic || topics[0]?.id || "";
+      setSelectedTopicId(newTopicId);
+    }
+
+    // Reset the flag and update previous URL
+    isInternalNavigation.current = false;
+    prevUrlRef.current = { topic: urlTopic };
+  }, [urlTopic]);
+
+  // Cleanup animation timer on unmount
+  useEffect(() => {
+    return () => {
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleTabChange = useCallback(
+    (id: string) => {
+      if (id === selectedTopicId || animating) return;
+      setAnimating(true);
+      isInternalNavigation.current = true;
+      if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
+      animationTimerRef.current = setTimeout(() => {
+        setSelectedTopicId(id);
+        setAnimating(false);
+
+        // Update URL after state change
+        const params = new URLSearchParams();
+        params.set("topic", id);
+        router.replace(`/Landing-page/Resources/Social?${params.toString()}`, {
+          scroll: false,
+        });
+      }, 220);
+    },
+    [selectedTopicId, animating, router],
+  );
+
+  const renderContent = useCallback(() => {
     const topic = topics.find((t) => t.id === selectedTopicId);
     if (!topic) return null;
     return <SocialContentRenderer topic={topic} showHeader={false} />;
-  };
+  }, [selectedTopicId]);
 
   return (
     <>
@@ -61,13 +106,13 @@ export default function Social() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="max-w-7xl mx-auto">
               {/* ── Connected Tab Bar ── */}
-              <div className="relative flex mt-4 bg-gray-100 rounded-2xl p-1.5 shadow-inner mb-0 mx-auto max-w-4xl w-full">
+              <div className="relative flex mt-4 bg-gray-100 rounded-2xl p-1 sm:p-1.5 shadow-inner mb-0 mx-auto max-w-4xl w-full">
                 {/* Sliding background pill */}
                 <div
                   className="absolute top-1.5 bottom-1.5 rounded-xl bg-white shadow-md transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
                   style={{
-                    width: `calc(${100 / topics.length}% - 4px)`,
-                    left: `calc(${selectedIndex * (100 / topics.length)}% + 4px)`,
+                    width: `calc(${100 / topics.length}% - ${topics.length > 2 ? "3px" : "4px"})`,
+                    left: `calc(${selectedIndex * (100 / topics.length)}% + ${topics.length > 2 ? "2px" : "4px"})`,
                   }}
                 />
 
@@ -86,7 +131,8 @@ export default function Social() {
                       onClick={() => handleTabChange(topic.id)}
                       className={`
                         relative z-10 flex-1 flex items-center justify-center gap-2
-                        py-3 px-4 rounded-xl text-sm font-semibold
+                        py-2.5 px-3 sm:py-3 sm:px-4 md:py-3.5 md:px-5
+                        rounded-xl text-xs sm:text-sm md:text-base font-semibold
                         transition-colors duration-300 ease-in-out select-none
                         focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50
                         ${
@@ -104,7 +150,7 @@ export default function Social() {
 
               {/* Connector line between tab bar and card */}
               <div
-                className="relative mx-auto transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] h-0"
+                className="relative mx-auto transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] h-0 hidden sm:block"
                 style={{
                   width: `calc(${100 / topics.length}% - 24px)`,
                   marginLeft: `calc(${selectedIndex * (100 / topics.length)}% + 12px)`,
@@ -131,7 +177,7 @@ export default function Social() {
                     transition: "opacity 220ms ease, transform 220ms ease",
                   }}
                 >
-                  <div className="p-8 lg:p-12">{renderContent()}</div>
+                  <div className="p-6 sm:p-8 lg:p-12">{renderContent()}</div>
                 </div>
               </div>
             </div>

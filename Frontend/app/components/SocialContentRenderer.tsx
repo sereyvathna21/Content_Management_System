@@ -73,7 +73,7 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
       return localizedContent.map((paragraph, idx) => (
         <p
           key={idx}
-          className={`text-base sm:text-lg text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full ${locale === "kh" ? "indent-6" : ""}`}
+          className={`text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full ${locale === "kh" ? "indent-6" : ""}`}
         >
           {formatTextWithBoldNumbers(paragraph)}
         </p>
@@ -81,7 +81,7 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
     }
     return (
       <p
-        className={`text-base sm:text-lg text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full ${locale === "kh" ? "indent-6" : ""}`}
+        className={`text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full ${locale === "kh" ? "indent-6" : ""}`}
       >
         {formatTextWithBoldNumbers(localizedContent)}
       </p>
@@ -128,7 +128,7 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
               className="w-full h-auto object-cover"
             />
             {img.caption && (
-              <p className="text-sm text-gray-600 italic mt-2 text-center">
+              <p className="text-xs sm:text-sm text-gray-600 italic mt-2 text-center">
                 {getLocalizedText(img.caption)}
               </p>
             )}
@@ -141,11 +141,11 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
   const getHeadingClass = (lvl: number) => {
     switch (lvl) {
       case 2:
-        return "text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4";
+        return "text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-3 sm:mb-4";
       case 3:
-        return "text-xl sm:text-2xl font-semibold text-gray-900 mb-3 sm:mb-4";
+        return "text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 mb-3 sm:mb-4";
       case 4:
-        return "text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-3";
+        return "text-base sm:text-lg md:text-xl font-semibold text-gray-800 mb-2 sm:mb-3";
       case 5:
         return "text-base sm:text-lg font-semibold text-gray-800 mb-2 sm:mb-3";
       default:
@@ -262,17 +262,17 @@ export default function SocialContentRenderer({
   return (
     <>
       {showHeader && (
-        <div className="mb-6 sm:mb-10">
-          <span className="inline-block text-xs font-bold uppercase tracking-widest text-primary/70 mb-2">
+        <div className="mb-6 sm:mb-8 lg:mb-10">
+          <span className="inline-block text-xs sm:text-xs font-bold uppercase tracking-widest text-primary/70 mb-2">
             {getLocalizedText(topic.category)}
           </span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-2 sm:mb-3">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-2 sm:mb-3 lg:mb-4">
             {getLocalizedText(topic.title)}
           </h1>
-          <p className="text-lg sm:text-xl text-gray-600 text-justify-full">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed">
             {getLocalizedText(topic.subtitle)}
           </p>
-          <div className="h-px bg-gradient-to-r from-primary/30 via-gray-200 to-transparent mt-4 sm:mt-6"></div>
+          <div className="h-1 w-16 sm:w-20 lg:w-32 bg-primary mt-3 sm:mt-4 lg:mt-6"></div>
         </div>
       )}
 
@@ -281,7 +281,7 @@ export default function SocialContentRenderer({
       ))}
 
       <div className="mt-8 sm:mt-12 pt-4 sm:pt-6 border-t border-gray-200">
-        <p className="text-sm sm:text-sm text-gray-600 italic">
+        <p className="text-xs sm:text-sm md:text-base text-gray-600 italic">
           {t("reference")}:{" "}
           <span className="font-bold text-primary">
             {getLocalizedText(topic.reference)}

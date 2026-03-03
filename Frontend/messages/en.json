@@ -354,39 +354,39 @@
         "title": "About Us",
         "description": "Learn more about NSPC",
         "national": {
-          "title": "National",
+          "title": "National Council",
           "description": "Discover our organization's mission, vision, and commitment to advancing social protection across the nation."
         },
         "executive": {
-          "title": "Executive",
+          "title": "Executive Secretariat",
           "description": "Meet our leadership team and learn about their roles in guiding social protection initiatives.",
-          "overview": {
-            "title": "Overview",
-            "description": "General information about our executive committee"
+          "executiveCommittee": {
+            "title": "Executive Committee",
+            "description": "Learn about the executive committee and its role"
           },
-          "leadership": {
-            "title": "Leadership",
-            "description": "Meet our executive board members and leaders"
+          "uhc": {
+            "title": "Universal Health Coverage",
+            "description": "Universal Health Coverage Sub-Committee"
           },
-          "structure": {
-            "title": "Organizational Structure",
-            "description": "Explore our executive organizational framework"
+          "digitalSP": {
+            "title": "Digital Social Protection",
+            "description": "Digital Social Protection Sub-Committee"
           }
         },
         "general": {
-          "title": "General",
+          "title": "General Secretariat",
           "description": "Access general information about our organizational structure and governance framework.",
-          "overview": {
-            "title": "Overview",
-            "description": "Introduction to the National Social Protection Council"
+          "generalSecretariat": {
+            "title": "General Secretariat",
+            "description": "Overview of the General Secretariat"
           },
-          "mission": {
-            "title": "Mission & Vision",
-            "description": "Our mission, vision, and strategic objectives"
+          "uhc": {
+            "title": "UHC Secretariat",
+            "description": "UHC Secretariat overview and functions"
           },
-          "history": {
-            "title": "History",
-            "description": "Learn about our organizational history and milestones"
+          "digitalSP": {
+            "title": "Digital SP Secretariat",
+            "description": "Digital Social Protection Secretariat"
           }
         }
       },
@@ -402,8 +402,20 @@
           "description": "Explore our research reports, policy documents, and informational publications."
         },
         "social": {
-          "title": "Social",
-          "description": "Connect with social activities and community engagement programs."
+          "title": "Social Protection",
+          "description": "Explore Cambodia's social protection system and programs.",
+          "governance": {
+            "title": "Social Protection Governance",
+            "description": "Framework and structure of social protection governance"
+          },
+          "assistance": {
+            "title": "Social Assistance",
+            "description": "Social assistance programs and support for vulnerable populations"
+          },
+          "security": {
+            "title": "Social Security",
+            "description": "Social security coverage and contributory schemes"
+          }
         }
       }
     },
@@ -601,6 +613,34 @@
       "governance": "Governance",
       "assistance": "Social Assistance",
       "security": "Social Security"
+    },
+    "reference": "Reference"
+  },
+  "AboutUsPage": {
+    "hero": {
+      "title": "About Us",
+      "subtitle": "Learn about the National Social Protection Council and our mission."
+    },
+    "tabs": {
+      "national": "National Council",
+      "executive": "Executive Secretariat",
+      "general": "General Secretariat"
+    },
+    "subTabs": {
+      "executive": {
+        "executive-committee": "Executive Committee",
+        "UHC": "Universal Health Coverage",
+        "Digital-SP": "Digital Social Protection"
+      },
+      "general": {
+        "General-Secretariat": "General Secretariat",
+        "UHC": "UHC Secretariat",
+        "Digital-SP": "Digital SP Secretariat"
+      }
+    },
+    "aria": {
+      "mainTabs": "Main navigation tabs",
+      "subTabs": "Sub-category tabs"
     },
     "reference": "Reference"
   },

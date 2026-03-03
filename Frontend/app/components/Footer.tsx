@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { Facebook } from "lucide-react";
+import { Facebook} from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 export default function Footer() {
@@ -42,9 +42,9 @@ export default function Footer() {
               <Image
                 src="/favicon.svg"
                 alt="NSPC logo"
-                className="mb-4 sm:mb-6 h-16 sm:h-20 md:h-24"
-                width={120}
-                height={120}
+                className="mb-4 sm:mb-6 w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32"
+                width={128}
+                height={128}
               />
             </div>
             <p className="text-sm sm:text-base text-white/90 leading-relaxed">
@@ -60,7 +60,7 @@ export default function Footer() {
             <ul className="text-sm sm:text-base text-white/90 space-y-2 sm:space-y-3">
               <li>
                 <Link
-                  href="/Landing-page/About-us/National"
+                  href="/Landing-page/About-us?topic=national"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
                   {t("nav.aboutDropdown.national.title")}
@@ -68,7 +68,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/Landing-page/About-us/Executive"
+                  href="/Landing-page/About-us?topic=executive&subtopic=executive-committee"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
                   {t("nav.aboutDropdown.executive.title")}
@@ -76,7 +76,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/Landing-page/About-us/General"
+                  href="/Landing-page/About-us?topic=general&subtopic=General-Secretariat"
                   className="hover:text-white hover:translate-x-1 inline-block transition-all duration-300"
                 >
                   {t("nav.aboutDropdown.general.title")}
@@ -141,11 +141,11 @@ export default function Footer() {
                 info@nspc.gov.kh
               </a>
               <a
-                href="tel:+85523000000"
+                href="tel:+855 061 701 111"
                 className="hover:text-white hover:underline transition-all duration-300 block"
               >
                 <span className="font-semibold">{t("footer.phoneLabel")}</span>{" "}
-                +855 23 000 000
+                +855 61 701 111
               </a>
             </div>
 
@@ -153,7 +153,7 @@ export default function Footer() {
               <h5 className="font-semibold text-base sm:text-lg mb-3">
                 Follow Us
               </h5>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <a
                   href="https://www.facebook.com/CAMNSPC/"
                   target="_blank"

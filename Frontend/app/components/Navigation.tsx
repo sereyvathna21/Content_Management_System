@@ -12,6 +12,17 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import {
+  Building2,
+  Users,
+  Briefcase,
+  FileText,
+  Heart,
+  Shield,
+  Scale,
+  BookOpen,
+  Globe,
+} from "lucide-react";
 import "@/app/styles/Navigation.css";
 
 type MenuItem = {
@@ -226,6 +237,11 @@ const DesktopDropdown = memo(function DesktopDropdown({
                   className="relative"
                 >
                   <div className="dropdown-item flex items-center px-4 py-3 min-h-[64px] transition-all duration-300 ease-out text-gray-800 group cursor-pointer hover:bg-primary/5">
+                    {it.icon && (
+                      <div className="mr-3 text-gray-400 group-hover:text-primary transition-colors duration-300">
+                        {it.icon}
+                      </div>
+                    )}
                     <div className="flex-1">
                       <p className="font-semibold text-base transition-colors duration-300 ease-out text-gray-900 group-hover:text-primary">
                         {t(it.titleKey)}
@@ -280,6 +296,11 @@ const DesktopDropdown = memo(function DesktopDropdown({
                             className="flex items-start px-4 py-3 hover:bg-primary/5 transition-all duration-300 ease-out text-gray-700 group"
                             onClick={() => onCloseAll()}
                           >
+                            {subIt.icon && (
+                              <div className="mr-2 mt-0.5 text-gray-400 group-hover:text-primary transition-colors duration-300">
+                                {subIt.icon}
+                              </div>
+                            )}
                             <div className="flex-1 min-w-0">
                               <p className="font-semibold text-sm text-gray-800 group-hover:text-primary transition-colors duration-300 ease-out leading-tight">
                                 {t(subIt.titleKey)}
@@ -303,6 +324,11 @@ const DesktopDropdown = memo(function DesktopDropdown({
                   className="dropdown-item flex items-center px-4 py-3 min-h-[64px] hover:bg-primary/5 transition-all duration-300 ease-out text-gray-800 group"
                   onClick={() => onCloseAll()}
                 >
+                  {it.icon && (
+                    <div className="mr-3 text-gray-400 group-hover:text-primary transition-colors duration-300">
+                      {it.icon}
+                    </div>
+                  )}
                   <div className="flex-1">
                     <p className="font-semibold text-base text-gray-900 group-hover:text-primary transition-colors duration-300 ease-out">
                       {t(it.titleKey)}
@@ -378,7 +404,10 @@ const MobileDropdown = memo(function MobileDropdown({
                     onClick={() => onToggleSubItem(it.titleKey)}
                     className="w-full px-8 sm:px-10 py-2.5 text-sm sm:text-base hover:bg-white/10 transition-all duration-300 active:bg-white/20 font-normal flex justify-between items-center"
                   >
-                    {t(it.titleKey)}
+                    <span className="flex items-center gap-2">
+                      {it.icon && <span className="opacity-70">{it.icon}</span>}
+                      {t(it.titleKey)}
+                    </span>
                     <svg
                       className={`w-4 h-4 transition-transform duration-300 ${expandedItems.has(it.titleKey) ? "rotate-90" : ""}`}
                       fill="none"
@@ -399,9 +428,12 @@ const MobileDropdown = memo(function MobileDropdown({
                         <Link
                           key={subIt.href || `mobile-sub-${subIdx}`}
                           href={subIt.href!}
-                          className="block px-12 sm:px-14 py-2 text-sm sm:text-base hover:bg-white/10 transition-all duration-300 active:bg-white/20 font-light"
+                          className="block px-12 sm:px-14 py-2 text-sm sm:text-base hover:bg-white/10 transition-all duration-300 active:bg-white/20 font-light flex items-center gap-2"
                           onClick={() => closeMenu()}
                         >
+                          {subIt.icon && (
+                            <span className="opacity-70">{subIt.icon}</span>
+                          )}
                           {t(subIt.titleKey)}
                         </Link>
                       ))}
@@ -412,9 +444,10 @@ const MobileDropdown = memo(function MobileDropdown({
                 // Regular item without sub-items
                 <Link
                   href={it.href!}
-                  className="block px-8 sm:px-10 py-2.5 text-sm sm:text-base hover:bg-white/10 transition-all duration-300 active:bg-white/20 font-normal"
+                  className="block px-8 sm:px-10 py-2.5 text-sm sm:text-base hover:bg-white/10 transition-all duration-300 active:bg-white/20 font-normal flex items-center gap-2"
                   onClick={() => closeMenu()}
                 >
+                  {it.icon && <span className="opacity-70">{it.icon}</span>}
                   {t(it.titleKey)}
                 </Link>
               )}
@@ -430,56 +463,58 @@ const MobileDropdown = memo(function MobileDropdown({
 const MENU_ITEMS = {
   aboutItems: [
     {
-      href: "/Landing-page/About-us/National",
-
+      href: "/Landing-page/About-us?topic=national",
+      icon: <Building2 className="w-6 h-6" />,
       titleKey: "aboutDropdown.national.title",
       descKey: "aboutDropdown.national.description",
     },
     {
+      icon: <Briefcase className="w-6 h-6" />,
       titleKey: "aboutDropdown.executive.title",
       descKey: "aboutDropdown.executive.description",
       subItems: [
         {
-          href: "/Landing-page/About-us/Executive",
-
-          titleKey: "aboutDropdown.executive.overview.title",
-          descKey: "aboutDropdown.executive.overview.description",
+          href: "/Landing-page/About-us?topic=executive&subtopic=executive-committee",
+          icon: <Users className="w-5 h-5" />,
+          titleKey: "aboutDropdown.executive.executiveCommittee.title",
+          descKey: "aboutDropdown.executive.executiveCommittee.description",
         },
         {
-          href: "/Landing-page/About-us/Executive/Leadership",
-
-          titleKey: "aboutDropdown.executive.leadership.title",
-          descKey: "aboutDropdown.executive.leadership.description",
+          href: "/Landing-page/About-us?topic=executive&subtopic=UHC",
+          icon: <Heart className="w-5 h-5" />,
+          titleKey: "aboutDropdown.executive.uhc.title",
+          descKey: "aboutDropdown.executive.uhc.description",
         },
         {
-          href: "/Landing-page/About-us/Executive/Structure",
-
-          titleKey: "aboutDropdown.executive.structure.title",
-          descKey: "aboutDropdown.executive.structure.description",
+          href: "/Landing-page/About-us?topic=executive&subtopic=Digital-SP",
+          icon: <Globe className="w-5 h-5" />,
+          titleKey: "aboutDropdown.executive.digitalSP.title",
+          descKey: "aboutDropdown.executive.digitalSP.description",
         },
       ],
     },
     {
+      icon: <FileText className="w-6 h-6" />,
       titleKey: "aboutDropdown.general.title",
       descKey: "aboutDropdown.general.description",
       subItems: [
         {
-          href: "/Landing-page/About-us/General",
-
-          titleKey: "aboutDropdown.general.overview.title",
-          descKey: "aboutDropdown.general.overview.description",
+          href: "/Landing-page/About-us?topic=general&subtopic=General-Secretariat",
+          icon: <Building2 className="w-5 h-5" />,
+          titleKey: "aboutDropdown.general.generalSecretariat.title",
+          descKey: "aboutDropdown.general.generalSecretariat.description",
         },
         {
-          href: "/Landing-page/About-us/General/Mission",
-
-          titleKey: "aboutDropdown.general.mission.title",
-          descKey: "aboutDropdown.general.mission.description",
+          href: "/Landing-page/About-us?topic=general&subtopic=UHC",
+          icon: <Heart className="w-5 h-5" />,
+          titleKey: "aboutDropdown.general.uhc.title",
+          descKey: "aboutDropdown.general.uhc.description",
         },
         {
-          href: "/Landing-page/About-us/General/History",
-
-          titleKey: "aboutDropdown.general.history.title",
-          descKey: "aboutDropdown.general.history.description",
+          href: "/Landing-page/About-us?topic=general&subtopic=Digital-SP",
+          icon: <Globe className="w-5 h-5" />,
+          titleKey: "aboutDropdown.general.digitalSP.title",
+          descKey: "aboutDropdown.general.digitalSP.description",
         },
       ],
     },
@@ -487,21 +522,40 @@ const MENU_ITEMS = {
   resourcesItems: [
     {
       href: "/Landing-page/Resources/Laws",
-
+      icon: <Scale className="w-6 h-6" />,
       titleKey: "resourcesDropdown.laws.title",
       descKey: "resourcesDropdown.laws.description",
     },
     {
       href: "/Landing-page/Resources/Publication",
-
+      icon: <BookOpen className="w-6 h-6" />,
       titleKey: "resourcesDropdown.publication.title",
       descKey: "resourcesDropdown.publication.description",
     },
     {
-      href: "/Landing-page/Resources/Social",
-
+      icon: <Shield className="w-6 h-6" />,
       titleKey: "resourcesDropdown.social.title",
       descKey: "resourcesDropdown.social.description",
+      subItems: [
+        {
+          href: "/Landing-page/Resources/Social?topic=governance",
+          icon: <Building2 className="w-5 h-5" />,
+          titleKey: "resourcesDropdown.social.governance.title",
+          descKey: "resourcesDropdown.social.governance.description",
+        },
+        {
+          href: "/Landing-page/Resources/Social?topic=assistance",
+          icon: <Heart className="w-5 h-5" />,
+          titleKey: "resourcesDropdown.social.assistance.title",
+          descKey: "resourcesDropdown.social.assistance.description",
+        },
+        {
+          href: "/Landing-page/Resources/Social?topic=security",
+          icon: <Shield className="w-5 h-5" />,
+          titleKey: "resourcesDropdown.social.security.title",
+          descKey: "resourcesDropdown.social.security.description",
+        },
+      ],
     },
   ] as MenuItem[],
 };
