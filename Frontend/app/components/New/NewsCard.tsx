@@ -3,7 +3,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
-import CardSkeleton from "./CardSkeleton";
+import CardSkeleton from "@/app/components/CardSkeleton";
 
 interface NewsCardProps {
   id: string;

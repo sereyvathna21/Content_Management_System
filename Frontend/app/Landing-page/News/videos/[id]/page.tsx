@@ -2,11 +2,11 @@ import React from "react";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { videos } from "@/app/Landing-page/News/videos";
-import Header from "@/app/components/Header";
-import Footer from "@/app/components/Footer";
-import Navigation from "@/app/components/Navigation";
-import Breadcrumbs from "@/app/components/Breadcrumbs";
-import AllVideosPlayer from "@/app/components/AllVideosPlayer";
+import Header from "@/app/components/Home/Header";
+import Footer from "@/app/components/Home/Footer";
+import Navigation from "@/app/components/Home/Navigation";
+import Breadcrumbs from "@/app/components/New/Breadcrumbs";
+import AllVideosPlayer from "@/app/components/New/AllVideosPlayer";
 
 export default async function VideoPage({
   params,

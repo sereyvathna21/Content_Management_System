@@ -1,7 +1,7 @@
 "use client";
-import Header from "@/app/components/Header";
-import Navigation from "@/app/components/Navigation";
-import Footer from "@/app/components/Footer";
+import Header from "@/app/components/Home/Header";
+import Navigation from "@/app/components/Home/Navigation";
+import Footer from "@/app/components/Home/Footer";
 import HeroCover from "@/app/components/HeroCover";
 import { useLocale, useMessages } from "next-intl";
 

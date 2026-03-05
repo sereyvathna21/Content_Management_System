@@ -4,7 +4,7 @@ import {
   PlatformIcon,
   ResearchIcon,
   EnterpriseIcon,
-} from "../components/ObjectiveIcons";
+} from "../components/Home/ObjectiveIcons";
 import type { Objective } from "../../types/objectives";
 
 export const OBJECTIVES: Objective[] = [

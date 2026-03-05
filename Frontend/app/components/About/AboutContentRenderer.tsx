@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import Image from "next/image";
-import { ContentSection, AboutTopic } from "../data/aboutContent";
+import { ContentSection, AboutTopic } from "../../data/aboutContent";
 import { useTranslations, useLocale } from "next-intl";
 import {
   getLocalizedText,
@@ -10,7 +10,7 @@ import {
   isNumberedItem,
   type LocaleType,
   type BilingualContent,
-} from "../lib/textRenderUtils";
+} from "../../lib/textRenderUtils";
 
 interface SectionRendererProps {
   section: ContentSection;

@@ -1,10 +1,10 @@
 "use client";
 
-import Header from "@/app/components/Header";
-import Navigation from "@/app/components/Navigation";
-import Footer from "@/app/components/Footer";
+import Header from "@/app/components/Home/Header";
+import Navigation from "@/app/components/Home/Navigation";
+import Footer from "@/app/components/Home/Footer";
 import HeroCover from "@/app/components/HeroCover";
-import AboutContentRenderer from "@/app/components/AboutContentRenderer";
+import AboutContentRenderer from "@/app/components/About/AboutContentRenderer";
 import { aboutContent, AboutTopic } from "@/app/data/aboutContent";
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import TopNav from "@/app/components/TopNav";
+import TopNav from "@/app/components/Home/TopNav";
 
 export default function Login() {
   const t = useTranslations("LoginPage.signIn");

@@ -2,12 +2,12 @@
 import React, { useState, useEffect } from "react";
 import { useTranslations, useMessages } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import Footer from "@/app/components/Footer";
-import Header from "@/app/components/Header";
-import Navigation from "@/app/components/Navigation";
-import NewsCard from "@/app/components/NewsCard";
+import Footer from "@/app/components/Home/Footer";
+import Header from "@/app/components/Home/Header";
+import Navigation from "@/app/components/Home/Navigation";
+import NewsCard from "@/app/components/New/NewsCard";
 import Pagination from "@/app/components/Pagination";
-import VideoSection from "@/app/components/VideoSection";
+import VideoSection from "@/app/components/New/VideoSection";
 import SortControl from "@/app/components/SortControl";
 import SearchBar from "@/app/components/SearchBar";
 import HeroCover from "@/app/components/HeroCover";

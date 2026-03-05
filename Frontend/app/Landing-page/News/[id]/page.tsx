@@ -3,12 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { newsArticles } from "@/app/Landing-page/News/articles";
-import Header from "@/app/components/Header";
+import Header from "@/app/components/Home/Header";
 import Image from "next/image";
-import Footer from "@/app/components/Footer";
-import Navigation from "@/app/components/Navigation";
+import Footer from "@/app/components/Home/Footer";
+import Navigation from "@/app/components/Home/Navigation";
 import ShareControls from "@/app/components/ShareControls";
-import Breadcrumbs from "@/app/components/Breadcrumbs";
+import Breadcrumbs from "@/app/components/New/Breadcrumbs";
 import Link from "next/link";
 
 export default async function ArticlePage({

@@ -1,11 +1,11 @@
 "use client";
 import React from "react";
-import { OBJECTIVES } from "../data/objectives";
+import { OBJECTIVES } from "../../data/objectives";
 import { useTranslations } from "next-intl";
 import {
   useIntersectionObserver,
   useAutoRotation,
-} from "../hooks/useObjectivesSection";
+} from "../../hooks/useObjectivesSection";
 import ObjectivesWheel from "./ObjectivesWheel";
 import ObjectivesDetailCard from "./ObjectivesDetailCard";
 

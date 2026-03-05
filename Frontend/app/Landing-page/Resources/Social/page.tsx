@@ -1,10 +1,10 @@
 "use client";
 
-import Header from "@/app/components/Header";
-import Navigation from "@/app/components/Navigation";
-import Footer from "@/app/components/Footer";
+import Header from "@/app/components/Home/Header";
+import Navigation from "@/app/components/Home/Navigation";
+import Footer from "@/app/components/Home/Footer";
 import HeroCover from "@/app/components/HeroCover";
-import SocialContentRenderer from "@/app/components/SocialContentRenderer";
+import SocialContentRenderer from "@/app/components/Resource/SocialContentRenderer";
 import { socialContent } from "@/app/data/socialContent";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";

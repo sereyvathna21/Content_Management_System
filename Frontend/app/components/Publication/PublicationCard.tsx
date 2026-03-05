@@ -5,49 +5,64 @@ import Image from "next/image";
 import usePdfThumbnail from "@/app/lib/usePdfThumbnail";
 import { useTranslations } from "next-intl";
 import { getCategoryBadgeClasses } from "@/app/lib/categoryColors";
-import { useSelection } from "./SelectionContext";
+import { useSelection } from "@/app/components/SelectionContext";
 
-type LawCardProps = {
-  id: string;
+type Pub = {
+  id: number | string;
   title: string;
   description?: string;
-  category: string;
+  category?: string;
   date?: string;
-  pdf?: string;
-  onOpen?: (law: LawCardProps) => void;
+  pdf?: string | File;
 };
 
-export default function LawCard({
-  id,
-  title,
-  description,
-  category,
-  date,
-  pdf,
+export default function PublicationCard({
+  pub,
   onOpen,
-}: LawCardProps) {
-  const t = useTranslations("LawsPage");
-  const thumb = usePdfThumbnail(pdf, 2);
+}: {
+  pub: Pub;
+  onOpen?: (p: Pub) => void;
+}) {
+  const t = useTranslations("PublicationPage");
+  const thumb = usePdfThumbnail(pub.pdf, 2);
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const { selected, toggle } = useSelection();
 
   // Get translated title and description, fallback to hardcoded values
-  const translatedTitle = id ? t(`content.items.${id}.title`) : "";
+  const translatedTitle = pub.id ? t(`content.items.${pub.id}.title`) : "";
   const displayTitle =
     translatedTitle && !translatedTitle.startsWith("content.items")
       ? translatedTitle
-      : title;
+      : pub.title;
 
-  const translatedDescription = id ? t(`content.items.${id}.description`) : "";
+  const translatedDescription = pub.id
+    ? t(`content.items.${pub.id}.description`)
+    : "";
   const displayDescription =
     translatedDescription && !translatedDescription.startsWith("content.items")
       ? translatedDescription
-      : description;
+      : pub.description;
 
-  const translatedCategory = category ? t(`categoryLabels.${category}`) : "";
+  const translatedCategory = pub.category
+    ? t(`categoryLabels.${pub.category}`)
+    : "";
   const displayCategory =
     translatedCategory && !translatedCategory.startsWith("categoryLabels")
       ? translatedCategory
-      : category;
+      : pub.category;
+
+  useEffect(() => {
+    if (pub.pdf && typeof pub.pdf !== "string" && pub.pdf instanceof File) {
+      const url = URL.createObjectURL(pub.pdf);
+      setObjectUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+    setObjectUrl(null);
+    return;
+  }, [pub.pdf]);
+
+  const openHref =
+    typeof pub.pdf === "string" ? pub.pdf : objectUrl || undefined;
 
   // responsive character-based truncation (adjusts with resize)
   const [truncatedTitle, setTruncatedTitle] = useState<string>(() =>
@@ -117,9 +132,15 @@ export default function LawCard({
           <input
             type="checkbox"
             aria-label="Select"
-            checked={!!selected[`law:${id}`]}
+            checked={!!selected[`pub:${pub.id}`]}
             onChange={() =>
-              toggle({ key: `law:${id}`, id, type: "law", title, pdf })
+              toggle({
+                key: `pub:${pub.id}`,
+                id: pub.id,
+                type: "pub",
+                title: pub.title,
+                pdf: pub.pdf,
+              })
             }
             className="w-4 h-4 rounded border"
           />
@@ -140,7 +161,7 @@ export default function LawCard({
 
         <div
           className={`absolute top-3 left-3 backdrop-blur rounded-full px-3 py-1 text-xs font-semibold shadow-sm ${getCategoryBadgeClasses(
-            category || "",
+            pub.category || "",
           )}`}
         >
           {displayCategory}
@@ -163,22 +184,20 @@ export default function LawCard({
 
       <div className="mt-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="text-xs text-gray-500">{date}</div>
+          <div className="text-xs text-gray-500">{pub.date}</div>
         </div>
 
         <div className="w-full sm:w-auto flex justify-end">
           {onOpen ? (
             <button
-              onClick={() =>
-                onOpen({ id, title, description, category, date, pdf })
-              }
+              onClick={() => onOpen(pub)}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow hover:shadow-md transform transition hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
               {t("actions.open")}
             </button>
-          ) : pdf ? (
+          ) : openHref ? (
             <a
-              href={pdf}
+              href={openHref}
               target="_blank"
               rel="noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow"

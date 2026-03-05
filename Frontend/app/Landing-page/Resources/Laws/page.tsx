@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import Header from "@/app/components/Header";
-import Navigation from "@/app/components/Navigation";
-import Footer from "@/app/components/Footer";
-import LawCard from "@/app/components/LawCard";
+import Header from "@/app/components/Home/Header";
+import Navigation from "@/app/components/Home/Navigation";
+import Footer from "@/app/components/Home/Footer";
+import LawCard from "@/app/components/Law/LawCard";
 import HeroCover from "@/app/components/HeroCover";
 import Pagination from "@/app/components/Pagination";
 import dynamic from "next/dynamic";
@@ -12,7 +12,7 @@ import { useTranslations } from "next-intl";
 import { matchesSearch } from "@/app/lib/searchUtils";
 import ListSkeleton from "@/app/components/ListSkeleton";
 
-const LawDrawerWrapper = dynamic(() => import("@/app/components/LawDrawer"), {
+const LawDrawerWrapper = dynamic(() => import("@/app/components/Law/LawDrawer"), {
   ssr: false,
 });
 

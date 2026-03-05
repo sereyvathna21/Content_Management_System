@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import { Phone, Mail, MapPin, Facebook, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Header from "@/app/components/Header";
-import Navigation from "@/app/components/Navigation";
-import Footer from "@/app/components/Footer";
+import Header from "@/app/components/Home/Header";
+import Navigation from "@/app/components/Home/Navigation";
+import Footer from "@/app/components/Home/Footer";
 import FormAlert from "@/app/components/FormAlert";
 import HeroCover from "@/app/components/HeroCover";
 

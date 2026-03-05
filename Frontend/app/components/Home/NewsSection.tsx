@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import NewsCard from "./NewsCard";
-import ListSkeleton from "./ListSkeleton";
+import NewsCard from "@/app/components/New/NewsCard";
+import ListSkeleton from "@/app/components/ListSkeleton";
 import { newsArticles } from "@/app/Landing-page/News/articles";
 
 export default function NewsSection() {

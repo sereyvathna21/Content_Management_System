@@ -624,7 +624,9 @@
     "actions": {
       "open": "Open",
       "download": "Download",
-      "close": "Close"
+      "close": "Close",
+      "cancel": "Cancel",
+      "confirmDownload": "Are you sure you want to download this PDF?"
     },
     "exportPdf": {
       "title": "Laws & Regulations",

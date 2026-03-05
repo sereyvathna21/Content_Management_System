@@ -1,6 +1,6 @@
 "use client";
 
-import SocialContentRenderer from "@/app/components/SocialContentRenderer";
+import SocialContentRenderer from "@/app/components/Resource/SocialContentRenderer";
 import { socialContent } from "@/app/data/socialContent";
 
 export default function SocialSecurity() {

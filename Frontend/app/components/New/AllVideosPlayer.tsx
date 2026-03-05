@@ -2,7 +2,7 @@
 import React, { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import VideoPlayerCard from "./VideoPlayerCard";
-import Pagination from "./Pagination";
+import Pagination from "@/app/components/Pagination";
 
 type Video = {
   id: string;

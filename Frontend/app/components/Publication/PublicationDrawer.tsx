@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import ConfirmDialog from "./ConfirmDialog";
+import ConfirmDialog from "@/app/components/ConfirmDialog";
 import { useTranslations } from "next-intl";
 import { getCategoryBadgeClasses } from "@/app/lib/categoryColors";
 

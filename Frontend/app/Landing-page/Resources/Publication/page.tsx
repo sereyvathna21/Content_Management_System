@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
-import Header from "@/app/components/Header";
-import Navigation from "@/app/components/Navigation";
-import Footer from "@/app/components/Footer";
+import Header from "@/app/components/Home/Header";
+import Navigation from "@/app/components/Home/Navigation";
+import Footer from "@/app/components/Home/Footer";
 import Pagination from "@/app/components/Pagination";
-import PublicationCard from "@/app/components/PublicationCard";
+import PublicationCard from "@/app/components/Publication/PublicationCard";
 import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
 import HeroCover from "@/app/components/HeroCover";
@@ -14,7 +14,7 @@ import enMessages from "@/messages/en.json";
 import khMessages from "@/messages/kh.json";
 
 const PublicationDrawerWrapper = dynamic(
-  () => import("@/app/components/PublicationDrawer"),
+  () => import("@/app/components/Publication/PublicationDrawer"),
   {
     ssr: false,
   },
