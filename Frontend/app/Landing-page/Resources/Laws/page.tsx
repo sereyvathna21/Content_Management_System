@@ -1,0 +1,354 @@
+"use client";
+
+import React, { useMemo, useState, useEffect } from "react";
+import Header from "@/app/components/Header";
+import Navigation from "@/app/components/Navigation";
+import Footer from "@/app/components/Footer";
+import LawCard from "@/app/components/LawCard";
+import HeroCover from "@/app/components/HeroCover";
+import Pagination from "@/app/components/Pagination";
+import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
+import { matchesSearch } from "@/app/lib/searchUtils";
+import ListSkeleton from "@/app/components/ListSkeleton";
+
+const LawDrawerWrapper = dynamic(() => import("@/app/components/LawDrawer"), {
+  ssr: false,
+});
+
+type LawItem = {
+  id: string;
+  title: string;
+  description?: string;
+  category: string;
+  date?: string;
+  pdf: string;
+};
+
+const SAMPLE_LAWS: LawItem[] = [
+  {
+    id: "1",
+    title: "National Health Act",
+    description: "A comprehensive health regulation framework",
+    category: "Royal Degree",
+    date: "2020-05-10",
+    pdf: "/laws/sample.pdf",
+  },
+  {
+    id: "2",
+    title: "Environmental Regulations",
+    description: "Guidelines for environmental protection and sustainability",
+    category: "Sub-Degree",
+    date: "2019-07-21",
+    pdf: "/laws/sample.pdf",
+  },
+  {
+    id: "3",
+    title: "Education Policy Update",
+    description: "Updated policies for the education sector",
+    category: "Prakas",
+    date: "2021-03-15",
+    pdf: "/laws/sample.pdf",
+  },
+  {
+    id: "4",
+    title: "Public Safety Notice",
+    description: "Important safety guidelines for public awareness",
+    category: "Decision and Guideline",
+    date: "2022-11-02",
+    pdf: "/laws/sample.pdf",
+  },
+];
+
+export default function Laws() {
+  const t = useTranslations("LawsPage");
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+  const [selectedLaw, setSelectedLaw] = useState<LawItem | null>(null);
+
+  const categoryLabels = useMemo(
+    () => ["All", ...Array.from(new Set(SAMPLE_LAWS.map((l) => l.category)))],
+    [],
+  );
+
+  const tabs = categoryLabels.map((label) => ({
+    key: label.toLowerCase().replace(/\s+/g, "-"),
+    label,
+  }));
+
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const filtered = useMemo(() => {
+    const q = (searchQuery || "").trim();
+    const getTitle = (it: LawItem) => {
+      const tr = t(`content.items.${it.id}.title`);
+      return tr && !tr.startsWith("content.items") ? tr : it.title;
+    };
+    const getCategoryLabel = (it: LawItem) => {
+      const tr = t(`categoryLabels.${it.category}`);
+      return tr && !tr.startsWith("categoryLabels") ? tr : it.category;
+    };
+
+    return SAMPLE_LAWS.filter((item) => {
+      if (
+        activeTab !== "all" &&
+        item.category.toLowerCase().replace(/\s+/g, "-") !== activeTab
+      )
+        return false;
+      if (!q) return true;
+      return (
+        matchesSearch(getTitle(item), q) ||
+        matchesSearch(getCategoryLabel(item), q)
+      );
+    });
+  }, [activeTab, searchQuery, t]);
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [mounted, setMounted] = useState(false);
+  const pageSize = 9;
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // reset to first page when filters change
+    setCurrentPage(1);
+  }, [searchQuery, activeTab]);
+
+  // clamp currentPage if filtered length shrinks
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+
+  const pageItems = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, currentPage]);
+
+  // Show loading skeleton while mounting
+  if (!mounted) {
+    return (
+      <>
+        <Header />
+        <Navigation />
+        <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
+        <div className="min-h-screen bg-white">
+          <div className="relative w-full">
+            <div
+              className="w-full h-64 bg-gray-100 animate-pulse"
+              style={{ animationDuration: "1.5s" }}
+            />
+          </div>
+          <div className="min-h-screen bg-gray-50/50">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="max-w-6xl mx-auto">
+                <ListSkeleton count={9} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Header />
+      <Navigation />
+
+      <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
+
+      <div className="min-h-screen bg-white">
+        <div className="relative w-full animate-fade-in overflow-hidden">
+          <HeroCover
+            image="/hero1.svg"
+            title={t("hero.title")}
+            subtitle={t("hero.subtitle")}
+          />
+        </div>
+
+        <div className="min-h-screen bg-gray-50/50 animate-fade-in-up [animation-delay:0.9s] opacity-0">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-6xl mx-auto">
+              {/* Control Bar */}
+              <div className="mb-6">
+                <div className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                    <div className="flex-1 w-full sm:w-auto">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3 sm:hidden">
+                        {t("control.filterByCategory")}
+                      </h3>
+
+                      {/* Desktop Category Tabs */}
+                      <div className="hidden sm:flex items-center gap-2 flex-wrap">
+                        {tabs.map((tab) => {
+                          const active = tab.key === activeTab;
+                          return (
+                            <button
+                              key={tab.key}
+                              onClick={() => setActiveTab(tab.key)}
+                              className={`px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-200 transform ${
+                                active
+                                  ? "bg-primary text-white border-primary shadow-lg scale-105"
+                                  : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:scale-105"
+                              }`}
+                            >
+                              {t(`categoryLabels.${tab.label}`)}
+                              {active && (
+                                <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs bg-white/20 rounded-full">
+                                  ✓
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Mobile Category Dropdown */}
+                      <div className="block sm:hidden">
+                        <div className="relative">
+                          <select
+                            value={activeTab}
+                            onChange={(e) => setActiveTab(e.target.value)}
+                            className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 appearance-none cursor-pointer hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white"
+                          >
+                            {tabs.map((tab) => (
+                              <option key={tab.key} value={tab.key}>
+                                {t(`categoryLabels.${tab.label}`)}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                            <svg
+                              className="w-5 h-5 text-gray-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Search */}
+                    <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto sm:flex-shrink-0">
+                      <div className="relative flex-1 sm:flex-initial sm:w-80">
+                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                          <svg
+                            className="h-5 w-5 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                            />
+                          </svg>
+                        </div>
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder={t("control.searchPlaceholder")}
+                          className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-primary rounded-xl text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition-all duration-200"
+                        />
+                        {searchQuery && (
+                          <button
+                            onClick={() => setSearchQuery("")}
+                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {pageItems.map((law, i) => (
+                  <div
+                    key={law.id}
+                    className="animate-slide-right-fade opacity-0"
+                    style={{ animationDelay: `${0.9 + i * 0.06}s` }}
+                  >
+                    <LawCard
+                      id={law.id}
+                      title={law.title}
+                      description={law.description}
+                      category={law.category}
+                      date={law.date}
+                      pdf={law.pdf}
+                      onOpen={() => {
+                        if (window.innerWidth < 640 && law.pdf) {
+                          window.open(law.pdf, "_blank", "noopener,noreferrer");
+                        } else {
+                          setSelectedLaw(law);
+                          setDrawerOpen(true);
+                        }
+                      }}
+                    />
+                  </div>
+                ))}
+                {filtered.length === 0 && (
+                  <div className="col-span-full text-center text-gray-500">
+                    {t("noResults")}
+                  </div>
+                )}
+              </div>
+              {/* Pagination */}
+              <div className="mt-6 mb-4 flex justify-center sm:justify-end animate-fade-in-up">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(p) => setCurrentPage(p)}
+                />
+              </div>
+              {selectedLaw && (
+                <React.Suspense fallback={null}>
+                  <LawDrawerWrapper
+                    law={selectedLaw}
+                    open={drawerOpen}
+                    onClose={() => {
+                      setDrawerOpen(false);
+                      setSelectedLaw(null);
+                    }}
+                  />
+                </React.Suspense>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+    </>
+  );
+}

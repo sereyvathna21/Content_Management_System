@@ -1,0 +1,55 @@
+## Ignore build outputs
+/bin/
+/obj/
+**/bin/
+**/obj/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Rider
+.idea/
+
+## VS Code
+.vscode/
+
+## .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## NuGet
+*.nupkg
+.nuget/packages/
+
+## Logs
+*.log
+logs/
+
+## OS files
+.DS_Store
+Thumbs.db
+
+## Local config / secrets
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+.env
+.env.*
+
+## Databases
+*.db
+*.sqlite
+*.db-journal
+
+## Publish output
+publish/
+wwwroot/
+
+## Misc
+*.iml
+/.idea/
