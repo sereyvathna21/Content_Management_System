@@ -1,3 +1,5 @@
+## Workspace root .gitignore is present at the project root; keep any project-specific exceptions below.
+
 ## Ignore build outputs
 /bin/
 /obj/

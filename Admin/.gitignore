@@ -1,3 +1,5 @@
+# Workspace root .gitignore is present at the project root; keep any project-specific exceptions below.
+
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
