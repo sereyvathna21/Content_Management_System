@@ -61,6 +61,33 @@ const navItems: NavItem[] = [
       { name: "404 Error", path: "/error-404", pro: false },
     ],
   },
+   {
+    icon: <PlugInIcon />,
+    name: "Resource",
+    subItems: [{ name: "Law", path: "/Laws", pro: false },
+      { name: "Publication", path: "/Publications", pro: false },
+      { name: "Social", path: "/Socials", pro: false },
+    ],
+  },
+   {
+    icon: <PlugInIcon />,
+    name: "New",
+    subItems: [{ name: "New", path: "/News", pro: false },
+      { name: "Video", path: "/Videos", pro: false }
+    ],
+  },
+   {
+    icon: <PlugInIcon />,
+    name: "Contact",
+    path: "/Contacts",
+  },
+   {
+    icon: <PlugInIcon />,
+    name: "About-us",
+    path: "/about-us",
+  },
+ 
+  
 ];
 
 const othersItems: NavItem[] = [
@@ -84,14 +111,22 @@ const othersItems: NavItem[] = [
       { name: "Videos", path: "/videos", pro: false },
     ],
   },
+   {
+    icon: <PlugInIcon />,
+    name: "Audit Log",
+    path: "/audit",
+  },
   {
     icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
-    ],
+    name: "Role Permission",
+    path: "/permission",
   },
+  {
+    icon: <PlugInIcon />,
+    name: "User Management",
+    path: "/user",
+  },
+
 ];
 
 const AppSidebar: React.FC = () => {

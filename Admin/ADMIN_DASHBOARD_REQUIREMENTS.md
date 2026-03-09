@@ -1,144 +1,115 @@
-# Admin Dashboard Requirements — NSPC CMS
+# Admin Dashboard CMS — Implementation Plan
 
-This document describes the recommended admin dashboard functions and requirements inferred from the Frontend and Admin code in this repository. Use this as a specification for implementing the Admin backend, API endpoints, and UI screens.
+This document lists a concrete, step-by-step plan to build an admin dashboard CMS for the Frontend landing site. Each top-level step includes practical sub-steps, recommended tools, and commands where useful.
 
----
+## Overview
 
-## 1 — Summary
+- Goal: Provide a production-ready CMS admin for the existing Frontend (content types: news, publications, laws, resources, partners, goals, images, translations, pages).
+- Approach: Keep frontend unchanged where possible; expose content via a headless API (either self-hosted or managed) and build an admin UI that uses that API.
 
-- Purpose: allow administrators and editors to manage content published on the public site (publications, laws, news, videos, social content), manage users and roles, moderate content, export reports, and configure site settings and translations.
-- Scope: CRUD for content types visible in the Frontend, media management, user/role management, analytics & exports, i18n support, and operational features (audit logs, backups, scheduling).
+## Prerequisites
 
-## 2 — High-level Admin Functions
+- Repository: `Frontend/` (landing site) and `Admin/` (dashboard). Backend folder exists if you prefer a custom .NET backend (`Backend/`).
+- Dev tools: Node.js, npm/yarn, Docker (optional), an S3-compatible bucket for media (or use local storage during development).
 
-- Authentication & Authorization
-  - Sign in/out, session management, JWT or cookie-based tokens.
-  - Role-based access: Admin, Editor, Moderator, Viewer.
-  - Per-route and per-action permission checks.
+## Step-by-step Plan
 
-- User & Role Management
-  - List users, search, filter, sort, paginate.
-  - Create/edit/delete user accounts and assign roles.
-  - Reset password, invite links, last-login and activity metadata.
+1. Define content models (1–2 days)
+   - Inventory frontend content used by pages: `News`, `Publication`, `Law`, `Resource`, `Partner`, `Goal`, `Page`, `Image`, `Event`.
+   - For each model define fields, types, relations, and i18n variants (e.g., `title`, `slug`, `summary`, `body`, `status`, `publishedAt`, `author`, `locale`, `media[]`).
+   - Output: JSON/YAML spec of models (save as `docs/content-models.md`).
 
-- Content Management (for each content type below)
-  - Create, Read, Update, Delete (CRUD) operations.
-  - Drafts, scheduled publish/unpublish dates, and versioning or simple revision history.
-  - Bulk actions (publish/unpublish/delete), multi-select exports.
-  - Rich text editing and attachments (PDFs, images, video links).
+2. Choose backend approach (few hours)
+   - Options:
+     - Managed Headless CMS (fast): Contentful, Sanity, Strapi Cloud, or Netlify CMS.
+     - Self-hosted Headless (flexible): Strapi (Node) or a custom .NET Web API using `Backend/` for deeper integration.
+   - Recommendation: If you want minimal infra and quick UI, use Strapi (self-hosted) or Sanity (hosted). If you already use .NET backend and prefer one stack, extend `Backend/` with CMS endpoints.
 
-Content types inferred from Frontend:
-  - Publications (PDFs, authors, publish date, categories)
-  - Laws / Legal resources (PDF, category, date, tags)
-  - News / Articles (title, excerpt, body, image, category, date)
-  - Videos / Multimedia (title, url/embed, thumbnail, date)
-  - Social Content / Pages (about, governance, sections with i18n)
+3. Scaffold backend & admin APIs (1–3 days)
+   - If Strapi: initialize and import models from step 1. If .NET: scaffold controllers, DTOs, EF models.
+   - Implement endpoints: list, get, create, update, delete for each content type; search and pagination; publish/unpublish endpoints.
+   - Secure endpoints with JWT / cookie auth.
+   - Example (Strapi quick start):
+     ```bash
+     npx create-strapi-app cms --quickstart
+     # then create content-types via the Strapi admin UI or import JSON models
+     ```
 
-- Media Management
-  - Upload, store, and serve media (images, PDFs, video thumbnails).
-  - Replace or remove files, generate thumbnails, size limits.
-  - File browser with search and usage references.
+4. Implement authentication & RBAC (1–2 days)
+   - Admin UI auth: use JWT or session-based sign-in. If using Next.js for admin, implement sign-in page with `next-auth` or custom JWT flow.
+   - RBAC roles: `admin`, `editor`, `author`, `viewer` — map to API permissions.
+   - If using Strapi, configure Roles & Permissions in Strapi admin.
 
-- Taxonomy & Metadata
-  - Categories, tags, and custom fields for content filtering.
-  - Manage display order and grouping used by Frontend components.
+5. Media management (1–2 days)
+   - Choose storage: S3 (recommended) or Strapi local during development.
+   - Implement upload endpoint and return media URLs. Add image resizing/optimization if needed (Thumbor, Cloudinary, or Next.js Image on fetch).
 
-- Search & Indexing
-  - Admin-side search for content and users, leverage existing search utilities.
-  - Re-indexing trigger if a search index (e.g., Elastic, Algolia) used.
+6. Rich text editor + structured content (1–3 days)
+   - Integrate an editor in admin UI: TipTap (rich + extensible) or ProseMirror. If you use Sanity, use its Portable Text.
+   - Support embedding media, code blocks, and tables.
 
-- Export & Reporting
-  - CSV/PDF export for selected items (see `ExportBar.tsx`).
-  - Basic analytics dashboards: counts, recent activity, content metrics.
+7. Build Admin UI (2–5 days)
+   - Reuse `Admin/` template components and Tailwind styles. Pages to build:
+     - Dashboard (overview, stats)
+     - Content lists (for each model) with filtering & pagination
+     - Content editors (form pages) with preview and media upload
+     - Site settings, i18n management, user management
+   - Map fields from content models to forms; validate inputs and show inline validation.
+   - Example: fetch list
+     ```ts
+     // admin example: fetch posts
+     const res = await fetch('/api/cms/news?limit=20');
+     const data = await res.json();
+     ```
 
-- Moderation & Workflow
-  - Content approval flow (Draft → Review → Published).
-  - Comment or feedback moderation (if comments exist or planned).
+8. Live preview & content staging (1–3 days)
+   - Add a preview endpoint in the frontend that can render unpublished content via a secure preview token.
+   - Implement a `Preview` button in the admin editor that opens the frontend with the preview token.
 
-- Audit Logs & Activity
-  - Log create/update/delete actions with user, timestamp, and diff summary.
+9. i18n / localization (1–2 days)
+   - Reuse `messages/en.json` and `messages/kh.json` structure. Content models should include `locale` or localized fields.
+   - Add locale switcher in admin and per-locale content editing.
 
-- Settings & Configuration
-  - Site settings (site title, default language), social links, contact info.
-  - i18n strings management for `en` and `kh` used by Frontend.
+10. Data sync & migration (1–2 days)
+   - If you already have content, create import scripts to migrate into the CMS (CSV/JSON importers).
 
-## 3 — Suggested API Endpoints (REST-style)
+11. Charts, analytics, and activity logs (1–3 days)
+   - Add endpoints to fetch metrics required by the dashboard (views, signups, content counts). Use existing chart components in `Admin/src/components/charts`.
+   - Add audit log entries for content changes.
 
-- Auth
-  - POST `/api/admin/auth/login`
-  - POST `/api/admin/auth/logout`
-  - GET `/api/admin/auth/me`
+12. Testing, CI, and deployment (2–4 days)
+   - Add unit/integration tests for backend APIs and admin UI critical flows.
+   - Add CI pipeline to run tests and build (GitHub Actions example).
+   - Deploy backend (Heroku/GCP/Azure/DigitalOcean) and connect media bucket. Deploy admin and frontend (Vercel recommended for Next.js frontend).
+   - Example deploy preview command (frontend):
+     ```bash
+     npm run build
+     npm run start
+     ```
 
-- Users
-  - GET `/api/admin/users` (list, filter, paginate)
-  - POST `/api/admin/users` (create)
-  - GET `/api/admin/users/:id`
-  - PUT `/api/admin/users/:id` (update)
-  - DELETE `/api/admin/users/:id`
+13. Documentation & handoff (1 day)
+   - Write admin user docs: creating content, approving/publishing, media upload, preview flow.
+   - Developer docs: how to run locally, add content-types, and deploy.
 
-- Publications / Laws / News / Videos
-  - GET `/api/admin/{type}`
-  - POST `/api/admin/{type}`
-  - GET `/api/admin/{type}/:id`
-  - PUT `/api/admin/{type}/:id`
-  - DELETE `/api/admin/{type}/:id`
-  - POST `/api/admin/{type}/bulk` (bulk actions)
+## Suggested Minimal Implementation Path (fast MVP — ~1 week)
 
-- Media
-  - POST `/api/admin/media/upload`
-  - GET `/api/admin/media` (list)
-  - DELETE `/api/admin/media/:id`
+1. Use Strapi or Sanity for backend (fast model creation). 2. Reuse `Admin/` UI to wire simple CRUD pages. 3. Add S3 for media. 4. Add preview and i18n later.
 
-- Settings & I18n
-  - GET/PUT `/api/admin/settings`
-  - GET/PUT `/api/admin/i18n/:locale` (manage translations)
+## Suggested Full Implementation Path (production-ready)
 
-- Exports & Reports
-  - POST `/api/admin/export` (request CSV/PDF)
+1. Custom .NET backend if you want full control and to consolidate with `Backend/`. 2. Implement RBAC, audit logs, tests, and CI. 3. Harden security and add backups for media/content.
 
-## 4 — UI Screens & Components (Admin)
+## Files to add/update
 
-- Login screen and session timeout handling.
-- Dashboard overview: metrics widgets (counts, recent items, pending review).
-- Content list pages per content type with search, filters, sort, pagination, multi-select and export (use `SearchBar`, `SortControl`, `Pagination` patterns present in Frontend).
-- Content editor/page: form with fields, WYSIWYG or markdown, file attachments, preview, save draft, schedule publish.
-- Media library with upload and file details.
-- User & role management UI.
-- Settings and translation editor.
-- Confirmation dialogs for destructive actions (reuse `ConfirmDialog` component pattern).
+- `docs/content-models.md` — content model definitions
+- `Admin/src/pages/*` or `Admin/src/app/*` — admin UI pages
+- `Backend/Controllers/Cms*Controller.cs` (if custom .NET) — CMS API endpoints
+- `infra/` — deployment manifests (optional)
 
-## 5 — Data Model Notes (high level)
+## Next steps I can take now
 
-- Shared fields across content types: `id`, `title`, `slug`, `excerpt`, `body`, `images`, `files`, `category`, `tags`, `authorId`, `createdAt`, `updatedAt`, `publishedAt`, `status` (`draft|published|archived`).
-- i18n: `title`, `excerpt`, `body`, and other display fields must support `en` and `kh`.
+- Generate `docs/content-models.md` from the `Frontend/` content usage.
+- Scaffold a Strapi instance with the initial content models.
+- Scaffold admin list and editor pages wiring to a chosen CMS API.
 
-## 6 — Non-functional Requirements
-
-- Authentication: token expiration & refresh, secure cookie or secure storage.
-- Performance: server-side pagination for lists, efficient media delivery (CDN recommended).
-- Security: RBAC, rate-limiting on admin APIs, input validation and file-type restrictions.
-- Backups: export and backup routines for content and media.
-
-## 7 — Acceptance Criteria (examples)
-
-- Admin user can create, edit, and publish a `Law` with PDF attachment and have it appear on the public `Laws` page.
-- Editors can save drafts and schedule publish dates; scheduled items become public at the correct time.
-- Admin can bulk-export selected `Publications` to PDF/CSV as expected by `ExportBar` behavior.
-
-## 8 — Next Implementation Steps
-
-1. Define database schema for content types (tables/collections) and implement API routes listed above.
-2. Implement auth with RBAC and protect all admin APIs.
-3. Build Admin UI pages referencing components in `Admin/src` and reuse Frontend patterns for search/pagination.
-4. Add media storage (S3 or local + CDN) and implement file upload endpoint.
-5. Implement audit logs and reporting endpoints.
-
----
-
-If you'd like, I can:
-
-- generate OpenAPI / Swagger example for the endpoints listed above,
-- scaffold the admin API controllers for one content type (e.g., `laws`), or
-- scaffold the React admin pages (list + editor) and wire them to the existing `api.ts` client.
-
-Tell me which next step you prefer and I'll proceed.
+Pick one of the next steps above and I will start implementing it.
