@@ -11,7 +11,7 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
 
 export default function BarChartOne() {
   const options: ApexOptions = {
-    colors: ["#465fff"],
+    colors: ["#4CAF4F"],
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "bar",

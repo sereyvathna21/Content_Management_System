@@ -44,7 +44,7 @@ export default function StatisticsChart() {
       position: "top",
       horizontalAlign: "left",
     },
-    colors: ["#465FFF", "#9CB9FF"], // Define line colors
+    colors: ["#4CAF4F", "#9CB9FF"], // Define line colors (primary first)
     chart: {
       fontFamily: "Outfit, sans-serif",
       height: 310,
