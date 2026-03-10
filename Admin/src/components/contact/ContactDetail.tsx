@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import type { Contact } from "../../hooks/useContacts";
-import ComponentCard from "../common/ComponentCard";
+import { useTranslations } from "next-intl";
 
 type Props = {
   contact: Contact;
@@ -10,6 +10,7 @@ type Props = {
 };
 
 export default function ContactDetail({ contact, onClose, onMarkRead }: Props) {
+  const t = useTranslations("ContactPage");
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
       <div className="absolute inset-0 bg-black opacity-40" onClick={onClose} />
@@ -18,7 +19,7 @@ export default function ContactDetail({ contact, onClose, onMarkRead }: Props) {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{contact.subject}</h2>
-              <p className="text-sm text-gray-500">From {contact.name} — {contact.email}</p>
+              <p className="text-sm text-gray-500">{t("from")} {contact.name} — {contact.email}</p>
             </div>
             <div className="text-sm text-gray-500">{new Date(contact.createdAt).toLocaleString()}</div>
           </div>
@@ -27,16 +28,16 @@ export default function ContactDetail({ contact, onClose, onMarkRead }: Props) {
 
           <div className="flex flex-col sm:flex-row justify-end items-center gap-3 w-full">
             <a className="text-sm text-blue-light-500 hover:underline w-full sm:w-auto text-center" href={`mailto:${contact.email}`}>
-              Reply via email
+              {t("replyViaEmail")}
             </a>
             <button
               className="h-9 px-4 rounded-lg font-medium text-primary bg-primary/10 hover:bg-primary/20 text-sm w-full sm:w-auto"
               onClick={onMarkRead}
             >
-              {contact.read ? "Mark Unread" : "Mark Read"}
+              {contact.read ? t("markUnread") : t("markRead")}
             </button>
             <button className="h-9 px-4 rounded-lg font-medium text-shadow-black bg-white border border-primary hover:bg-primary hover:text-white text-sm w-full sm:w-auto" onClick={onClose}>
-              Close
+              {t("close")}
             </button>
           </div>
         </div>

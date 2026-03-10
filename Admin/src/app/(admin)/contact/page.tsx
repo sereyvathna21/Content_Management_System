@@ -6,8 +6,12 @@ import ContactDetail from "../../../components/contact/ContactDetail";
 import { useContacts } from "../../../hooks/useContacts";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Pagination from "../../../components/tables/Pagination";
+import { useTranslations } from "next-intl";
+
+
 
 export default function ContactPage() {
+  const t = useTranslations("ContactPage");
   const {
     contacts,
     loading,
@@ -19,6 +23,8 @@ export default function ContactPage() {
     filterContacts,
     setStatusFilter,
     statusFilter,
+    clearFilters,
+    exportCSV,
     page,
     totalPages,
     setPage,
@@ -42,16 +48,18 @@ export default function ContactPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl text-primary font-semibold mb-4">Contact Feedbacks</h1>
+      <div className="flex items-start justify-between">
+        <h1 className="text-3xl text-primary font-semibold mb-4">{t("title")}</h1>
+      </div>
 
-      <ComponentCard title={`Messages (${totalCount})`} desc="Manage contact form submissions">
+      <ComponentCard title={`${t("messagesTitle")} (${totalCount})`} desc={t("messagesDesc")}>
         <div>
           <div className="flex items-center justify-between">
            
           </div>
 
           <div className="mt-4 mb-4">
-            <ContactFilters value={query} onSearch={onSearch} status={statusFilter} onStatusChange={onStatusChange} onExport={() => exports(contacts)} />
+            <ContactFilters value={query} onSearch={onSearch} status={statusFilter} onStatusChange={onStatusChange} onExport={() => exportCSV && exportCSV(contacts)} />
           </div>
 
           <ContactTable
@@ -63,8 +71,11 @@ export default function ContactPage() {
             query={query}
             onClear={() => {
               setQuery("");
-              filterContacts("");
-              setStatusFilter("all");
+              if (clearFilters) clearFilters();
+              else {
+                filterContacts("");
+                setStatusFilter("all");
+              }
             }}
           />
           {totalPages > 1 && (

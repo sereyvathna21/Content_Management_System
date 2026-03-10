@@ -70,6 +70,12 @@ export function useContacts() {
         applyFilters(q, undefined, 1);
     };
 
+    const clearFilters = () => {
+        setQuery("");
+        setStatusFilterState("all");
+        applyFilters("", "all", 1);
+    };
+
     const setStatusFilter = (status: "all" | "read" | "unread") => {
         setStatusFilterInternal(status);
         applyFilters(undefined, status, 1);
@@ -160,5 +166,6 @@ export function useContacts() {
         totalCount,
         setPage: setPageInternal,
         setPageSize: setPageSizeInternal,
+        clearFilters,
     } as const;
 }

@@ -2,6 +2,7 @@
 import React from "react";
 import { Modal } from "../ui/modal";
 import { useModal } from "../../hooks/useModal";
+import { useTranslations } from "next-intl";
 
 type Props = {
   value: string;
@@ -14,6 +15,7 @@ type Props = {
 
 export default function ContactFilters({value, onSearch, status = "all", onStatusChange,  onExport  }: Props) {
   const { isOpen, openModal, closeModal } = useModal();
+  const t = useTranslations("ContactPage");
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-3 sm:gap-0">
@@ -29,7 +31,7 @@ export default function ContactFilters({value, onSearch, status = "all", onStatu
                 : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
           >
-            All
+            {t("status.all")}
           </button>
 
           <button
@@ -42,7 +44,7 @@ export default function ContactFilters({value, onSearch, status = "all", onStatu
                 : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
           >
-            Unread
+            {t("status.unread")}
           </button>
 
           <button
@@ -55,18 +57,18 @@ export default function ContactFilters({value, onSearch, status = "all", onStatu
                 : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
             }`}
           >
-            Read
+            {t("status.read")}
           </button>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
         <input
-          aria-label="Search contacts"
+          aria-label={t("searchAria")}
           className={`w-full sm:w-64 h-9 px-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 text-sm ${
             value ? "border-gray-300" : "border-gray-200"
           }`}
-          placeholder="Search by name, email or subject"
+          placeholder={t("searchPlaceholder")}
           value={value}
           onChange={(e) => onSearch(e.target.value)}
         />
@@ -75,15 +77,15 @@ export default function ContactFilters({value, onSearch, status = "all", onStatu
           className="h-9 px-4 ml-0 sm:ml-2 rounded-lg font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200 shadow-md text-sm w-full sm:w-auto"
           onClick={() => openModal()}
         >
-          Export
+          {t("exportButton")}
         </button>
 
         <Modal isOpen={isOpen} onClose={closeModal} className="max-w-md p-6">
           <div>
-            <h3 className="text-lg font-semibold mb-2">Confirm Export</h3>
-            <p className="text-sm text-gray-600 mb-4">Export visible messages to CSV? This will download the currently visible rows.</p>
+            <h3 className="text-lg font-semibold mb-2">{t("exportConfirmTitle")}</h3>
+            <p className="text-sm text-gray-600 mb-4">{t("exportConfirmText")}</p>
             <div className="flex justify-end gap-3">
-              <button className="h-9 px-4 rounded-lg font-medium bg-white border border-gray-200" onClick={closeModal}>Cancel</button>
+              <button className="h-9 px-4 rounded-lg font-medium bg-white border border-gray-200" onClick={closeModal}>{t("cancel")}</button>
               <button
                 className="h-9 px-4 rounded-lg font-semibold text-white bg-primary hover:bg-primary/90"
                 onClick={() => {
@@ -91,7 +93,7 @@ export default function ContactFilters({value, onSearch, status = "all", onStatu
                   closeModal();
                 }}
               >
-                Confirm
+                {t("confirm")}
               </button>
             </div>
           </div>

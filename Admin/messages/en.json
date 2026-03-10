@@ -1,19 +1,45 @@
 {
-  "HomePage": {
-    "title": "Hello world!"
-  },
-  "AboutPage": {
-    "title": "What is National Social Protection Council?",
-    "ministerTitle": "A word from our Minister's",
-    "description": "The National Social Protection Council (NSPC) is a governmental body responsible for formulating and implementing social protection policies and programs in Cambodia.​​​​​​​ Established to address the needs of vulnerable populations, the NSPC aims to enhance social welfare, reduce poverty, and promote inclusive development across the country. The council collaborates with various stakeholders, including government agencies, non-governmental organizations, and international partners, to design and execute initiatives that provide social safety nets, improve access to essential services, and support economic empowerment for disadvantaged groups. Through its efforts, the NSPC plays a crucial role in fostering social cohesion and ensuring that all citizens have the opportunity to lead dignified and productive lives."
-  },
-  "VisionPage": {
-    "title": "Our Vision",
-    "paragraph": "NSPC envisions a Cambodia where every person enjoys dignity, social security and opportunity. We strive to build resilient communities through inclusive policies and strong partnerships.",
-    "bullets": {
-      "1": "Dignified social protection for all",
-      "2": "Resilient households and communities",
-      "3": "Equitable access to essential services"
-    }
+  "ContactPage": {
+    "title": "Contact Feedbacks",
+    "messagesTitle": "Messages",
+    "messagesDesc": "Manage contact form submissions",
+    "searchPlaceholder": "Search by name, email or subject",
+    "searchAria": "Search contacts",
+    "exportButton": "Export",
+    "exportConfirmTitle": "Confirm Export",
+    "exportConfirmText": "Export visible messages to CSV? This will download the currently visible rows.",
+    "confirmDeleteTitle": "Confirm delete",
+    "confirmDeleteText": "Are you sure you want to delete this message? This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "delete": "Delete",
+    "clearFilters": "Clear filters",
+    "noResultsFor": "No results for \"{query}\"",
+    "tryDifferentSearch": "Try a different search term or clear filters.",
+    "noContactsFound": "No contacts found",
+    "tryAdjustFilters": "Try adjusting filters or search terms to find messages.",
+    "from": "From",
+    "replyViaEmail": "Reply via email",
+    "markRead": "Mark Read",
+    "markUnread": "Mark Unread",
+    "loading": "Loading...",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "subject": "Subject",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "viewMessage": "View message",
+    "markAsRead": "Mark as read",
+    "markAsUnread": "Mark as unread",
+    "status": {
+      "all": "All",
+      "read": "Read",
+      "unread": "Unread"
+    },
+    "deleteMessage": "Delete message"
   }
 }
