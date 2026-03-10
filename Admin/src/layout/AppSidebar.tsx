@@ -79,7 +79,7 @@ const navItems: NavItem[] = [
    {
     icon: <PlugInIcon />,
     name: "Contact",
-    path: "/Contacts",
+    path: "/contact",
   },
    {
     icon: <PlugInIcon />,
