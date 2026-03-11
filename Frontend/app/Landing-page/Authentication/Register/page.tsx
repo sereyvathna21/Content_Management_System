@@ -242,7 +242,7 @@ export default function Register() {
                   {t("success.message")}
                 </p>
                 <Link
-                  href="/Landing-page/Login"
+                  href="/Landing-page/Authentication"
                   className="inline-block w-full bg-primary text-white font-semibold rounded-xl text-center hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3"
                 >
                   {t("success.goToSignIn")}
@@ -503,7 +503,7 @@ export default function Register() {
                   <p className="text-center text-xs sm:text-sm lg:text-gray-600 text-white/90 animate-[fadeIn_0.6s_ease-out_0.9s_both]">
                     {t("alreadyHaveAccount")}{" "}
                     <Link
-                      href="/Landing-page/Login"
+                      href="/Landing-page/Authentication/Login"
                       className="font-semibold text-white lg:text-primary hover:text-primary/80 transition-colors"
                     >
                       {t("signInLink")}

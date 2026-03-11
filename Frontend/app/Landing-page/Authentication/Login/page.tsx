@@ -249,7 +249,7 @@ export default function Login() {
                   </label>
                 </div>
                 <Link
-                  href="/Landing-page/Login/Forgetpassword"
+                  href="/Landing-page/Authentication/Forgetpassword"
                   className="font-medium text-white lg:text-primary hover:text-primary/80 transition-colors"
                 >
                   {t("forgotPassword")}
@@ -267,7 +267,7 @@ export default function Login() {
               <p className="text-center text-xs sm:text-sm lg:text-gray-600 text-white/90 animate-[fadeIn_0.6s_ease-out_1s_both]">
                 {t("noAccount")}{" "}
                 <Link
-                  href="/Landing-page/Login/Register"
+                  href="/Landing-page/Authentication/Register"
                   className="font-semibold text-white lg:text-primary hover:text-primary/80 transition-colors"
                 >
                   {t("registerLink")}
