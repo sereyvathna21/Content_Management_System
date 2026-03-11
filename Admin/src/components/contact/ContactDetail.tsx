@@ -2,6 +2,7 @@
 import React from "react";
 import type { Contact } from "../../hooks/useContacts";
 import { useTranslations } from "next-intl";
+import { Modal } from "@/components/ui/modal";
 
 type Props = {
   contact: Contact;
@@ -11,11 +12,11 @@ type Props = {
 
 export default function ContactDetail({ contact, onClose, onMarkRead }: Props) {
   const t = useTranslations("ContactPage");
+
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-      <div className="absolute inset-0 bg-black opacity-40" onClick={onClose} />
-      <div className="w-full sm:w-11/12 max-w-2xl relative z-10 px-0">
-        <div className="bg-white p-3 sm:p-5 md:p-6 rounded-lg shadow-md animate-fade-in-up max-h-[90vh] overflow-y-auto">
+    <Modal isOpen={true} onClose={onClose} className="max-w-2xl p-4" backdropClassName="fixed inset-0 h-full w-full bg-black/40 backdrop-blur-sm">
+      <div className="w-full px-0">
+       
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{contact.subject}</h2>
@@ -41,7 +42,7 @@ export default function ContactDetail({ contact, onClose, onMarkRead }: Props) {
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      
+    </Modal>
   );
 }

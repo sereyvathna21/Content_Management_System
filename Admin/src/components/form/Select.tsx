@@ -1,4 +1,8 @@
-import React, { useState } from "react";
+"use client";
+
+import React, { Fragment, useEffect, useState } from "react";
+import { Menu, Transition } from "@headlessui/react";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
 
 interface Option {
   value: string;
@@ -11,6 +15,7 @@ interface SelectProps {
   onChange: (value: string) => void;
   className?: string;
   defaultValue?: string;
+  value?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -19,45 +24,61 @@ const Select: React.FC<SelectProps> = ({
   onChange,
   className = "",
   defaultValue = "",
+  value,
 }) => {
-  // Manage the selected value
-  const [selectedValue, setSelectedValue] = useState<string>(defaultValue);
+  const [selectedValue, setSelectedValue] = useState<string>(value ?? defaultValue ?? "");
 
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    setSelectedValue(value);
-    onChange(value); // Trigger parent handler
-  };
+  useEffect(() => {
+    if (value !== undefined) setSelectedValue(value);
+  }, [value]);
+
+  const selectedLabel = options.find((o) => o.value === selectedValue)?.label || "";
+
+  function handleSelect(val: string) {
+    setSelectedValue(val);
+    onChange(val);
+  }
 
   return (
-    <select
-      className={`h-11 w-full appearance-none rounded-lg border border-gray-300  px-4 py-2.5 pr-11 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 ${
-        selectedValue
-          ? "text-gray-800 dark:text-white/90"
-          : "text-gray-400 dark:text-gray-400"
-      } ${className}`}
-      value={selectedValue}
-      onChange={handleChange}
-    >
-      {/* Placeholder option */}
-      <option
-        value=""
-        disabled
-        className="text-gray-700 dark:bg-gray-900 dark:text-gray-400"
+    <Menu as="div" className={`relative w-full ${className}`}>
+      <Menu.Button
+        className="inline-flex w-full justify-between items-center gap-x-2 rounded-lg bg-white/60 dark:bg-gray-900 px-4 py-2 text-sm text-gray-800 dark:text-white shadow-sm hover:bg-primary/5 transition border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-3 focus:ring-primary/20"
       >
-        {placeholder}
-      </option>
-      {/* Map over options */}
-      {options.map((option) => (
-        <option
-          key={option.value}
-          value={option.value}
-          className="text-gray-700 dark:bg-gray-900 dark:text-gray-400"
-        >
-          {option.label}
-        </option>
-      ))}
-    </select>
+        <span className={`${selectedLabel ? "text-primary" : "text-gray-500"}`}>
+          {selectedLabel || placeholder}
+        </span>
+        <ChevronDownIcon className="-mr-1 h-5 w-5 text-primary" aria-hidden />
+      </Menu.Button>
+
+      <Transition
+        as={Fragment}
+        enter="transition ease-out duration-100"
+        enterFrom="transform opacity-0 scale-95"
+        enterTo="transform opacity-100 scale-100"
+        leave="transition ease-in duration-75"
+        leaveFrom="transform opacity-100 scale-100"
+        leaveTo="transform opacity-0 scale-95"
+      >
+        <Menu.Items className="absolute right-0 z-10 mt-2 w-full origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black/5 focus:outline-none">
+          <div className="py-1">
+            {options.map((opt) => (
+              <Menu.Item key={opt.value}>
+                {({ active }) => (
+                  <button
+                    onClick={() => handleSelect(opt.value)}
+                    className={`block w-full text-left px-4 py-2 text-sm transition ${
+                      active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                )}
+              </Menu.Item>
+            ))}
+          </div>
+        </Menu.Items>
+      </Transition>
+    </Menu>
   );
 };
 

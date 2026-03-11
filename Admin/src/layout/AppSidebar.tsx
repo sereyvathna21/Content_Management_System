@@ -124,7 +124,7 @@ const othersItems: NavItem[] = [
   {
     icon: <PlugInIcon />,
     name: "User Management",
-    path: "/user",
+    path: "/users",
   },
 
 ];
@@ -348,16 +348,16 @@ const AppSidebar: React.FC = () => {
             <>
               <Image
                 className="dark:hidden"
-                src="/images/favicon.svg"
+                src="/images/logo.svg"
                 alt="Logo"
-                width={90}
+                width={200}
                 height={40}
               />
               <Image
                 className="hidden dark:block"
-                src="/images/favicon.svg"
+                src="/images/logo.svg"
                 alt="Logo"
-                width={90}
+                width={200}
                 height={40}
               />
             </>
@@ -365,8 +365,8 @@ const AppSidebar: React.FC = () => {
             <Image
               src="/images/favicon.svg"
               alt="Logo"
-              width={32}
-              height={32}
+              width={100}
+              height={40}
             />
           )}
         </Link>
