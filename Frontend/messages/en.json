@@ -568,8 +568,8 @@
         "agreeToTermsRequired": "You must agree to the terms and privacy policy"
       },
       "success": {
-        "title": "Account Created!",
-        "message": "Your account has been successfully created. You can now sign in.",
+        "title": "Check Your Email!",
+        "message": "Your account has been created. Please check your inbox and click the verification link to activate your account before signing in.",
         "goToSignIn": "Go to Sign In"
       }
     }

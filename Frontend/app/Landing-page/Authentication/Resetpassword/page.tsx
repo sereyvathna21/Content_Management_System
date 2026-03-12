@@ -24,9 +24,10 @@ export default function ResetPassword() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [token, setToken] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   useEffect(() => {
-    const resetToken = searchParams.get("token");
-    setToken(resetToken);
+    setToken(searchParams.get("token"));
+    setEmail(searchParams.get("email"));
   }, [searchParams]);
 
   const calculatePasswordStrength = (password: string): number => {
@@ -112,11 +113,27 @@ export default function ResetPassword() {
     setIsSubmitting(true);
 
     try {
-      // Add your password reset logic here
-      console.log("Reset password with token:", token);
-      console.log("New password:", formData.password);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5001"}/api/auth/reset-password`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            token,
+            newPassword: formData.password,
+          }),
+        },
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        const msg =
+          data?.message ??
+          (data?.errors as string[])?.join(", ") ??
+          t("errors.resetError");
+        setErrors({ password: "", confirmPassword: msg });
+        return;
+      }
       setIsSuccess(true);
     } catch (error) {
       console.error("Password reset error:", error);

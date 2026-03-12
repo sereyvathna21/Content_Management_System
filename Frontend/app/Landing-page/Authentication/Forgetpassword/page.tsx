@@ -34,10 +34,18 @@ export default function ForgotPassword() {
     setIsSubmitting(true);
 
     try {
-      // Add your password reset logic here
-      console.log("Reset password for:", email);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5001"}/api/auth/forgot-password`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        },
+      );
+      if (!res.ok) {
+        setError(t("errors.sendError"));
+        return;
+      }
       setIsSuccess(true);
     } catch (error) {
       console.error("Password reset error:", error);

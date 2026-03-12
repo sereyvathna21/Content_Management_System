@@ -28,6 +28,11 @@ artifacts/
 *.nupkg
 .nuget/packages/
 
+## Local secrets — never commit
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+
 ## Logs
 *.log
 logs/

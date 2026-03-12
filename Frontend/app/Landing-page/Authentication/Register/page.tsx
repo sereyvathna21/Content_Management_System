@@ -129,11 +129,34 @@ export default function Register() {
     if (!validateForm()) return;
     setIsSubmitting(true);
     try {
-      // Replace with: await api.post('/auth/register', formData)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5001"}/api/auth/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName: formData.fullName,
+            email: formData.email,
+            password: formData.password,
+          }),
+        },
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        const msg =
+          data?.message ??
+          (data?.errors as string[])?.join(", ") ??
+          "Registration failed. Please try again.";
+        setErrors((prev) => ({ ...prev, email: msg }));
+        return;
+      }
       setRegistered(true);
     } catch (error) {
       console.error("Register error:", error);
+      setErrors((prev) => ({
+        ...prev,
+        email: "Something went wrong. Please try again.",
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -242,7 +265,7 @@ export default function Register() {
                   {t("success.message")}
                 </p>
                 <Link
-                  href="/Landing-page/Authentication"
+                  href="/Landing-page/Authentication/Login"
                   className="inline-block w-full bg-primary text-white font-semibold rounded-xl text-center hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3"
                 >
                   {t("success.goToSignIn")}
