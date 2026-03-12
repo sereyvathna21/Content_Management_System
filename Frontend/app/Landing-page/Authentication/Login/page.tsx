@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import TopNav from "@/app/components/Home/TopNav";
 
@@ -86,7 +86,24 @@ export default function Login() {
       if (result?.error) {
         setServerError("Invalid email or password, or email not yet verified.");
       } else {
-        router.push("/Landing-page/Home");
+        // After sign in, read session to determine role-based redirect
+        try {
+          const session = await getSession();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const roles = (session as any)?.user?.roles || [];
+          const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL ?? "/admin";
+          if (
+            Array.isArray(roles) &&
+            roles.some((r: string) => /admin/i.test(r))
+          ) {
+            router.push(adminUrl);
+          } else {
+            router.push("/Landing-page/Home");
+          }
+        } catch (err) {
+          // Fallback to home if session check fails
+          router.push("/Landing-page/Home");
+        }
       }
     } catch (error) {
       console.error("Login error:", error);

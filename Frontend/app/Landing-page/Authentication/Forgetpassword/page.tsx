@@ -3,10 +3,12 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import TopNav from "@/app/components/Home/TopNav";
 
 export default function ForgotPassword() {
   const t = useTranslations("LoginPage.forgotPassword");
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,13 +45,29 @@ export default function ForgotPassword() {
         },
       );
       if (!res.ok) {
-        setError(t("errors.sendError"));
+        let bodyText = "";
+        try {
+          bodyText = await res.text();
+        } catch (e) {
+          bodyText = res.statusText || "Unknown error";
+        }
+        console.error("Forgot-password failed:", res.status, bodyText);
+        setError(`${t("errors.sendError")} (${res.status} ${bodyText})`);
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (data.needsVerification) {
+        // Account exists but email not yet confirmed — send OTP and redirect to verify page
+        router.push(
+          `/Landing-page/Authentication/VerifyEmail?email=${encodeURIComponent(email)}`,
+        );
         return;
       }
       setIsSuccess(true);
-    } catch (error) {
-      console.error("Password reset error:", error);
-      setError(t("errors.sendError"));
+    } catch (err: any) {
+      console.error("Password reset error:", err);
+      const msg = err?.message ?? String(err);
+      setError(`${t("errors.sendError")} (${msg})`);
     } finally {
       setIsSubmitting(false);
     }
@@ -250,7 +268,7 @@ export default function ForgotPassword() {
                   </button>
 
                   <Link
-                    href="/Landing-page/Authentication"
+                    href="/Landing-page/Authentication/Login"
                     className="w-full inline-block text-center bg-white text-white lg:text-primary border-2 border-primary font-semibold rounded-xl hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-sm hover:shadow-md text-fluid-base"
                     style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
                   >

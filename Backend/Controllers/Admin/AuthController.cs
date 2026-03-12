@@ -192,14 +192,31 @@ namespace Backend.Controllers.Admin
         {
             // Always return OK to prevent email enumeration
             var user = await _userManager.FindByEmailAsync(dto.Email);
-            if (user == null || !user.EmailConfirmed)
+            if (user == null)
                 return Ok(new { message = "If an account exists for that email, a reset link has been sent." });
 
+            // Account exists but email not yet confirmed — resend OTP so the user
+            // can verify first, then reset their password.
+            if (!user.EmailConfirmed)
+            {
+                var otp = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString("D6");
+                var otpHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(otp)));
+                var expiry = DateTime.UtcNow.AddMinutes(10).ToString("o");
+                await _userManager.SetAuthenticationTokenAsync(user, "EmailOTP", "otp", $"{otpHash}|{expiry}|0");
+                try { await _emailService.SendOtpEmailAsync(user.Email!, otp); }
+                catch (Exception ex) { _logger.LogWarning(ex, "Failed to resend OTP email to {Email}", user.Email); }
+                return Ok(new { message = "If an account exists for that email, a reset link has been sent.", needsVerification = true });
+            }
+
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            // Encode as Base64URL (no +, /, = chars) so it survives email clients
+            // that decode %2B → + before opening the browser link.
+            var safeToken = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(
+                System.Text.Encoding.UTF8.GetBytes(token));
             var frontendBase = _config["Frontend:BaseUrl"];
             var resetUrl = $"{frontendBase}/Landing-page/Authentication/Resetpassword" +
                            $"?email={Uri.EscapeDataString(user.Email!)}" +
-                           $"&token={Uri.EscapeDataString(token)}";
+                           $"&token={safeToken}";
 
             try
             {
@@ -222,7 +239,19 @@ namespace Backend.Controllers.Admin
             if (user == null)
                 return BadRequest(new { message = "Invalid request." });
 
-            var result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.NewPassword);
+            // Token may be plain or Base64URL-encoded (new format). Try decoding first.
+            string decodedToken;
+            try
+            {
+                decodedToken = System.Text.Encoding.UTF8.GetString(
+                    Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(dto.Token));
+            }
+            catch
+            {
+                decodedToken = dto.Token; // fallback: already plain token
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
             if (!result.Succeeded)
                 return BadRequest(new { errors = result.Errors.Select(e => e.Description) });
 

@@ -57,11 +57,25 @@ builder.Services.AddAuthorization();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
-        policy.WithOrigins(
-                builder.Configuration["Frontend:BaseUrl"] ?? "http://localhost:3000")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials());
+    {
+        var allowedOrigins = builder.Configuration
+            .GetSection("Frontend:AllowedOrigins")
+            .Get<string[]>();
+
+        if (allowedOrigins == null || allowedOrigins.Length == 0)
+        {
+            allowedOrigins =
+            [
+                builder.Configuration["Frontend:BaseUrl"] ?? "http://localhost:3000",
+                "http://localhost:3001",
+            ];
+        }
+
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
 });
 
 // ── Application Services ──────────────────────────────────────────────────────
