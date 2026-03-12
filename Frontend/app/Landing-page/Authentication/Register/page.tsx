@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import TopNav from "@/app/components/Home/TopNav";
 
@@ -57,10 +58,10 @@ export default function Register() {
     agreeToTerms: "",
   });
 
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [registered, setRegistered] = useState(false);
 
   const validateEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -150,7 +151,9 @@ export default function Register() {
         setErrors((prev) => ({ ...prev, email: msg }));
         return;
       }
-      setRegistered(true);
+      router.push(
+        `/Landing-page/Authentication/VerifyEmail?email=${encodeURIComponent(formData.email)}`,
+      );
     } catch (error) {
       console.error("Register error:", error);
       setErrors((prev) => ({
@@ -238,303 +241,266 @@ export default function Register() {
               </div>
             </div>
 
-            {registered ? (
-              /* ── Success state ── */
-              <div className="text-center mt-6 animate-[fadeIn_0.6s_ease-out_both]">
-                <div className="flex justify-center mb-4">
-                  <div className="bg-green-100 rounded-full p-4">
-                    <svg
-                      className="h-12 w-12 text-green-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <h2 className="font-bold text-white lg:text-gray-900 text-xl sm:text-2xl mb-2">
-                  {t("success.title")}
-                </h2>
-                <p className="text-white/90 lg:text-gray-600 text-sm sm:text-base mb-6">
-                  {t("success.message")}
-                </p>
-                <Link
-                  href="/Landing-page/Authentication/Login"
-                  className="inline-block w-full bg-primary text-white font-semibold rounded-xl text-center hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3"
-                >
-                  {t("success.goToSignIn")}
-                </Link>
-              </div>
-            ) : (
-              /* ── Registration form ── */
-              <>
-                <h1 className="font-bold lg:text-gray-900 text-white text-center text-xl sm:text-2xl md:text-3xl mb-2 mt-4 animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-                  {t("title")}
-                </h1>
-                <p className="lg:text-gray-600 text-white/90 text-center text-sm sm:text-base mb-6 sm:mb-8 animate-[fadeIn_0.8s_ease-out_0.4s_both]">
-                  {t("subtitle")}
-                </p>
+            {/* ── Registration form ── */}
+            <>
+              <h1 className="font-bold lg:text-gray-900 text-white text-center text-xl sm:text-2xl md:text-3xl mb-2 mt-4 animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+                {t("title")}
+              </h1>
+              <p className="lg:text-gray-600 text-white/90 text-center text-sm sm:text-base mb-6 sm:mb-8 animate-[fadeIn_0.8s_ease-out_0.4s_both]">
+                {t("subtitle")}
+              </p>
 
-                <form
-                  onSubmit={handleSubmit}
-                  noValidate
-                  className="space-y-4 sm:space-y-5 animate-[fadeInUp_0.8s_ease-out_0.5s_both]"
-                >
-                  {/* Full Name */}
-                  <div className="animate-[slideInLeft_0.6s_ease-out_0.55s_both]">
-                    <label
-                      htmlFor="fullName"
-                      className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
-                    >
-                      {t("fullNameLabel")}
-                    </label>
-                    <input
-                      type="text"
-                      id="fullName"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleChange}
-                      placeholder={t("fullNamePlaceholder")}
-                      autoComplete="name"
-                      aria-invalid={!!errors.fullName}
-                      aria-describedby={
-                        errors.fullName ? "fullName-error" : undefined
-                      }
-                      className={inputClass(!!errors.fullName)}
-                    />
-                    {errors.fullName && (
-                      <p
-                        id="fullName-error"
-                        role="alert"
-                        className="mt-1 text-red-500 text-xs sm:text-sm"
-                      >
-                        {errors.fullName}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Email */}
-                  <div className="animate-[slideInLeft_0.6s_ease-out_0.6s_both]">
-                    <label
-                      htmlFor="email"
-                      className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
-                    >
-                      {t("emailLabel")}
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder={t("emailPlaceholder")}
-                      autoComplete="email"
-                      aria-invalid={!!errors.email}
-                      aria-describedby={
-                        errors.email ? "email-error" : undefined
-                      }
-                      className={inputClass(!!errors.email)}
-                    />
-                    {errors.email && (
-                      <p
-                        id="email-error"
-                        role="alert"
-                        className="mt-1 text-red-500 text-xs sm:text-sm"
-                      >
-                        {errors.email}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Password */}
-                  <div className="animate-[slideInLeft_0.6s_ease-out_0.65s_both]">
-                    <label
-                      htmlFor="password"
-                      className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
-                    >
-                      {t("passwordLabel")}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder={t("passwordPlaceholder")}
-                        autoComplete="new-password"
-                        aria-invalid={!!errors.password}
-                        aria-describedby={
-                          errors.password ? "password-error" : undefined
-                        }
-                        className={`${inputClass(!!errors.password)} pr-10 sm:pr-12`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1 transition-colors"
-                        aria-label={
-                          showPassword ? t("hidePassword") : t("showPassword")
-                        }
-                      >
-                        <EyeIcon open={showPassword} />
-                      </button>
-                    </div>
-
-                    {/* Password strength bar */}
-                    {formData.password && (
-                      <div className="mt-2">
-                        <div className="flex gap-1 mb-1">
-                          {[1, 2, 3, 4].map((step) => (
-                            <div
-                              key={step}
-                              className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
-                                strength.score >= step
-                                  ? strength.color
-                                  : "bg-gray-200"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          {t(`strength.${strength.label}`)}
-                        </p>
-                      </div>
-                    )}
-
-                    {errors.password && (
-                      <p
-                        id="password-error"
-                        role="alert"
-                        className="mt-1 text-red-500 text-xs sm:text-sm"
-                      >
-                        {errors.password}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Confirm Password */}
-                  <div className="animate-[slideInLeft_0.6s_ease-out_0.7s_both]">
-                    <label
-                      htmlFor="confirmPassword"
-                      className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
-                    >
-                      {t("confirmPasswordLabel")}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        id="confirmPassword"
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        placeholder={t("confirmPasswordPlaceholder")}
-                        autoComplete="new-password"
-                        aria-invalid={!!errors.confirmPassword}
-                        aria-describedby={
-                          errors.confirmPassword
-                            ? "confirmPassword-error"
-                            : undefined
-                        }
-                        className={`${inputClass(!!errors.confirmPassword)} pr-10 sm:pr-12`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowConfirmPassword((v) => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1 transition-colors"
-                        aria-label={
-                          showConfirmPassword
-                            ? t("hidePassword")
-                            : t("showPassword")
-                        }
-                      >
-                        <EyeIcon open={showConfirmPassword} />
-                      </button>
-                    </div>
-                    {errors.confirmPassword && (
-                      <p
-                        id="confirmPassword-error"
-                        role="alert"
-                        className="mt-1 text-red-500 text-xs sm:text-sm"
-                      >
-                        {errors.confirmPassword}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Terms & Conditions */}
-                  <div className="animate-[fadeIn_0.6s_ease-out_0.75s_both]">
-                    <div className="flex items-start gap-2">
-                      <input
-                        id="agreeToTerms"
-                        name="agreeToTerms"
-                        type="checkbox"
-                        checked={formData.agreeToTerms}
-                        onChange={handleChange}
-                        className="mt-0.5 h-4 w-4 border-primary rounded text-primary focus:ring-primary flex-shrink-0"
-                      />
-                      <label
-                        htmlFor="agreeToTerms"
-                        className="text-xs sm:text-sm lg:text-gray-700 text-white"
-                      >
-                        {t("agreeToTerms.prefix")}{" "}
-                        <Link
-                          href="/Landing-page/Terms"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium text-white lg:text-primary hover:text-primary/80 underline transition-colors"
-                        >
-                          {t("agreeToTerms.terms")}
-                        </Link>{" "}
-                        {t("agreeToTerms.and")}{" "}
-                        <Link
-                          href="/Landing-page/Privacy"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium text-white lg:text-primary hover:text-primary/80 underline transition-colors"
-                        >
-                          {t("agreeToTerms.privacy")}
-                        </Link>
-                      </label>
-                    </div>
-                    {errors.agreeToTerms && (
-                      <p
-                        role="alert"
-                        className="mt-1 text-red-500 text-xs sm:text-sm"
-                      >
-                        {errors.agreeToTerms}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Submit */}
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3 animate-[slideInUp_0.6s_ease-out_0.85s_both]"
+              <form
+                onSubmit={handleSubmit}
+                noValidate
+                className="space-y-4 sm:space-y-5 animate-[fadeInUp_0.8s_ease-out_0.5s_both]"
+              >
+                {/* Full Name */}
+                <div className="animate-[slideInLeft_0.6s_ease-out_0.55s_both]">
+                  <label
+                    htmlFor="fullName"
+                    className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
                   >
-                    {isSubmitting ? t("registering") : t("registerButton")}
-                  </button>
-
-                  {/* Sign in link */}
-                  <p className="text-center text-xs sm:text-sm lg:text-gray-600 text-white/90 animate-[fadeIn_0.6s_ease-out_0.9s_both]">
-                    {t("alreadyHaveAccount")}{" "}
-                    <Link
-                      href="/Landing-page/Authentication/Login"
-                      className="font-semibold text-white lg:text-primary hover:text-primary/80 transition-colors"
+                    {t("fullNameLabel")}
+                  </label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    placeholder={t("fullNamePlaceholder")}
+                    autoComplete="name"
+                    aria-invalid={!!errors.fullName}
+                    aria-describedby={
+                      errors.fullName ? "fullName-error" : undefined
+                    }
+                    className={inputClass(!!errors.fullName)}
+                  />
+                  {errors.fullName && (
+                    <p
+                      id="fullName-error"
+                      role="alert"
+                      className="mt-1 text-red-500 text-xs sm:text-sm"
                     >
-                      {t("signInLink")}
-                    </Link>
-                  </p>
-                </form>
-              </>
-            )}
+                      {errors.fullName}
+                    </p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div className="animate-[slideInLeft_0.6s_ease-out_0.6s_both]">
+                  <label
+                    htmlFor="email"
+                    className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
+                  >
+                    {t("emailLabel")}
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder={t("emailPlaceholder")}
+                    autoComplete="email"
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? "email-error" : undefined}
+                    className={inputClass(!!errors.email)}
+                  />
+                  {errors.email && (
+                    <p
+                      id="email-error"
+                      role="alert"
+                      className="mt-1 text-red-500 text-xs sm:text-sm"
+                    >
+                      {errors.email}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div className="animate-[slideInLeft_0.6s_ease-out_0.65s_both]">
+                  <label
+                    htmlFor="password"
+                    className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
+                  >
+                    {t("passwordLabel")}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder={t("passwordPlaceholder")}
+                      autoComplete="new-password"
+                      aria-invalid={!!errors.password}
+                      aria-describedby={
+                        errors.password ? "password-error" : undefined
+                      }
+                      className={`${inputClass(!!errors.password)} pr-10 sm:pr-12`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1 transition-colors"
+                      aria-label={
+                        showPassword ? t("hidePassword") : t("showPassword")
+                      }
+                    >
+                      <EyeIcon open={showPassword} />
+                    </button>
+                  </div>
+
+                  {/* Password strength bar */}
+                  {formData.password && (
+                    <div className="mt-2">
+                      <div className="flex gap-1 mb-1">
+                        {[1, 2, 3, 4].map((step) => (
+                          <div
+                            key={step}
+                            className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
+                              strength.score >= step
+                                ? strength.color
+                                : "bg-gray-200"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {t(`strength.${strength.label}`)}
+                      </p>
+                    </div>
+                  )}
+
+                  {errors.password && (
+                    <p
+                      id="password-error"
+                      role="alert"
+                      className="mt-1 text-red-500 text-xs sm:text-sm"
+                    >
+                      {errors.password}
+                    </p>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
+                <div className="animate-[slideInLeft_0.6s_ease-out_0.7s_both]">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
+                  >
+                    {t("confirmPasswordLabel")}
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder={t("confirmPasswordPlaceholder")}
+                      autoComplete="new-password"
+                      aria-invalid={!!errors.confirmPassword}
+                      aria-describedby={
+                        errors.confirmPassword
+                          ? "confirmPassword-error"
+                          : undefined
+                      }
+                      className={`${inputClass(!!errors.confirmPassword)} pr-10 sm:pr-12`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1 transition-colors"
+                      aria-label={
+                        showConfirmPassword
+                          ? t("hidePassword")
+                          : t("showPassword")
+                      }
+                    >
+                      <EyeIcon open={showConfirmPassword} />
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p
+                      id="confirmPassword-error"
+                      role="alert"
+                      className="mt-1 text-red-500 text-xs sm:text-sm"
+                    >
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+
+                {/* Terms & Conditions */}
+                <div className="animate-[fadeIn_0.6s_ease-out_0.75s_both]">
+                  <div className="flex items-start gap-2">
+                    <input
+                      id="agreeToTerms"
+                      name="agreeToTerms"
+                      type="checkbox"
+                      checked={formData.agreeToTerms}
+                      onChange={handleChange}
+                      className="mt-0.5 h-4 w-4 border-primary rounded text-primary focus:ring-primary flex-shrink-0"
+                    />
+                    <label
+                      htmlFor="agreeToTerms"
+                      className="text-xs sm:text-sm lg:text-gray-700 text-white"
+                    >
+                      {t("agreeToTerms.prefix")}{" "}
+                      <Link
+                        href="/Landing-page/Terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-white lg:text-primary hover:text-primary/80 underline transition-colors"
+                      >
+                        {t("agreeToTerms.terms")}
+                      </Link>{" "}
+                      {t("agreeToTerms.and")}{" "}
+                      <Link
+                        href="/Landing-page/Privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-white lg:text-primary hover:text-primary/80 underline transition-colors"
+                      >
+                        {t("agreeToTerms.privacy")}
+                      </Link>
+                    </label>
+                  </div>
+                  {errors.agreeToTerms && (
+                    <p
+                      role="alert"
+                      className="mt-1 text-red-500 text-xs sm:text-sm"
+                    >
+                      {errors.agreeToTerms}
+                    </p>
+                  )}
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3 animate-[slideInUp_0.6s_ease-out_0.85s_both]"
+                >
+                  {isSubmitting ? t("registering") : t("registerButton")}
+                </button>
+
+                {/* Sign in link */}
+                <p className="text-center text-xs sm:text-sm lg:text-gray-600 text-white/90 animate-[fadeIn_0.6s_ease-out_0.9s_both]">
+                  {t("alreadyHaveAccount")}{" "}
+                  <Link
+                    href="/Landing-page/Authentication/Login"
+                    className="font-semibold text-white lg:text-primary hover:text-primary/80 transition-colors"
+                  >
+                    {t("signInLink")}
+                  </Link>
+                </p>
+              </form>
+            </>
           </div>
         </div>
       </section>

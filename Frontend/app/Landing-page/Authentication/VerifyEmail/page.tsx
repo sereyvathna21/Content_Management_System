@@ -1,51 +1,119 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import TopNav from "@/app/components/Home/TopNav";
 
-type Status = "verifying" | "success" | "error";
+const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5001";
+const RESEND_COOLDOWN = 60;
 
 export default function VerifyEmail() {
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<Status>("verifying");
-  const [message, setMessage] = useState("");
+  const router = useRouter();
+  const email = searchParams.get("email") ?? "";
+
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [error, setError] = useState("");
+  const [resendMsg, setResendMsg] = useState("");
+  const [verified, setVerified] = useState(false);
+  const [locked, setLocked] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    const userId = searchParams.get("userId");
-    const token = searchParams.get("token");
+    if (cooldown <= 0) return;
+    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [cooldown]);
 
-    if (!userId || !token) {
-      setStatus("error");
-      setMessage("Invalid verification link. Please register again.");
+  const handleChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const next = [...otp];
+    next[index] = value.slice(-1);
+    setOtp(next);
+    setError("");
+    if (value && index < 5) inputRefs.current[index + 1]?.focus();
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0)
+      inputRefs.current[index - 1]?.focus();
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
+    const next = [...otp];
+    pasted.split("").forEach((ch, i) => {
+      next[i] = ch;
+    });
+    setOtp(next);
+    inputRefs.current[Math.min(pasted.length, 5)]?.focus();
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otp.join("");
+    if (code.length < 6) {
+      setError("Please enter the complete 6-digit code.");
       return;
     }
-
-    const verify = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:5001"}/api/auth/verify-email` +
-            `?userId=${encodeURIComponent(userId)}&token=${encodeURIComponent(token)}`,
-        );
-        const data = await res.json();
-        if (res.ok) {
-          setStatus("success");
-          setMessage(data.message ?? "Email verified successfully.");
+    setIsSubmitting(true);
+    setError("");
+    try {
+      const res = await fetch(`${BACKEND}/api/auth/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp: code }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setVerified(true);
+      } else {
+        setError(data.message ?? "Invalid code. Please try again.");
+        setOtp(["", "", "", "", "", ""]);
+        if (data.locked) {
+          setLocked(true);
         } else {
-          setStatus("error");
-          setMessage(
-            data.message ?? "Verification failed. The link may have expired.",
-          );
+          inputRefs.current[0]?.focus();
         }
-      } catch {
-        setStatus("error");
-        setMessage("Something went wrong. Please try again.");
       }
-    };
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    verify();
-  }, [searchParams]);
+  const handleResend = async () => {
+    setIsResending(true);
+    setResendMsg("");
+    setError("");
+    try {
+      await fetch(`${BACKEND}/api/auth/resend-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      setResendMsg("A new code has been sent to your email.");
+      setOtp(["", "", "", "", "", ""]);
+      setLocked(false);
+      setError("");
+      setCooldown(RESEND_COOLDOWN);
+      inputRefs.current[0]?.focus();
+    } catch {
+      setResendMsg("Failed to resend. Please try again.");
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   return (
     <div>
@@ -73,40 +141,8 @@ export default function VerifyEmail() {
               </div>
             </div>
 
-            {status === "verifying" && (
-              <div className="animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-                <div className="flex justify-center mb-4">
-                  <svg
-                    className="animate-spin h-12 w-12 text-primary"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8H4z"
-                    />
-                  </svg>
-                </div>
-                <h1 className="font-bold lg:text-gray-900 text-white text-2xl sm:text-3xl mb-2">
-                  Verifying your email...
-                </h1>
-                <p className="lg:text-gray-600 text-white/90 text-sm sm:text-base">
-                  Please wait a moment.
-                </p>
-              </div>
-            )}
-
-            {status === "success" && (
-              <div className="animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+            {verified ? (
+              <div className="animate-[fadeIn_0.8s_ease-out_both]">
                 <div className="flex justify-center mb-4">
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                     <svg
@@ -128,7 +164,7 @@ export default function VerifyEmail() {
                   Email Verified!
                 </h1>
                 <p className="lg:text-gray-600 text-white/90 text-sm sm:text-base mb-6">
-                  {message}
+                  Your account is now active. You can sign in.
                 </p>
                 <Link
                   href="/Landing-page/Authentication/Login"
@@ -137,14 +173,12 @@ export default function VerifyEmail() {
                   Sign In
                 </Link>
               </div>
-            )}
-
-            {status === "error" && (
+            ) : (
               <div className="animate-[fadeIn_0.8s_ease-out_0.2s_both]">
                 <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
                     <svg
-                      className="w-8 h-8 text-red-600"
+                      className="w-8 h-8 text-blue-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -153,23 +187,80 @@ export default function VerifyEmail() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                       />
                     </svg>
                   </div>
                 </div>
                 <h1 className="font-bold lg:text-gray-900 text-white text-2xl sm:text-3xl mb-2">
-                  Verification Failed
+                  Check Your Email
                 </h1>
-                <p className="lg:text-gray-600 text-white/90 text-sm sm:text-base mb-6">
-                  {message}
+                <p className="lg:text-gray-600 text-white/90 text-sm sm:text-base mb-1">
+                  We sent a 6-digit code to
                 </p>
-                <Link
-                  href="/Landing-page/Authentication/Register"
-                  className="inline-block bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 transition-all duration-200 shadow-lg hover:shadow-xl px-8 py-3"
-                >
-                  Register Again
-                </Link>
+                <p className="font-semibold lg:text-gray-900 text-white text-sm sm:text-base mb-6 break-all">
+                  {email}
+                </p>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* OTP inputs */}
+                  <div
+                    className="flex justify-center gap-2 sm:gap-3"
+                    onPaste={handlePaste}
+                  >
+                    {otp.map((digit, i) => (
+                      <input
+                        key={i}
+                        ref={(el) => {
+                          inputRefs.current[i] = el;
+                        }}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleChange(i, e.target.value)}
+                        onKeyDown={(e) => handleKeyDown(i, e)}
+                        disabled={locked}
+                        className={`w-11 h-14 sm:w-12 sm:h-16 text-center text-xl font-bold text-gray-900 bg-white border-2 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed ${
+                          error
+                            ? "border-red-400"
+                            : digit
+                              ? "border-primary"
+                              : "border-gray-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+                  {resendMsg && (
+                    <p className="text-green-600 text-sm">{resendMsg}</p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || locked}
+                    className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed py-3 text-sm sm:text-base"
+                  >
+                    {isSubmitting ? "Verifying..." : "Verify Email"}
+                  </button>
+
+                  <p className="lg:text-gray-600 text-white/90 text-sm">
+                    Didn&apos;t receive the code?{" "}
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={isResending || cooldown > 0}
+                      className="font-semibold text-white lg:text-primary hover:text-primary/80 transition-colors disabled:opacity-50"
+                    >
+                      {isResending
+                        ? "Sending..."
+                        : cooldown > 0
+                          ? `Resend in ${cooldown}s`
+                          : "Resend Code"}
+                    </button>
+                  </p>
+                </form>
               </div>
             )}
           </div>

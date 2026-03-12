@@ -569,7 +569,7 @@
       },
       "success": {
         "title": "Check Your Email!",
-        "message": "Your account has been created. Please check your inbox and click the verification link to activate your account before signing in.",
+        "message": "Your account has been created. Please check your inbox for a 6-digit verification code and enter it to activate your account.",
         "goToSignIn": "Go to Sign In"
       }
     }

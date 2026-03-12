@@ -1,4 +1,7 @@
+using System.Security.Cryptography;
+using System.Text;
 using Backend.Models;
+using Backend.Models.Dtos;
 using Backend.Services;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Mvc;
@@ -14,26 +17,21 @@ namespace Backend.Controllers.Admin
         private readonly JwtService _jwtService;
         private readonly EmailService _emailService;
         private readonly IConfiguration _config;
+        private readonly ILogger<AuthController> _logger;
 
         public AuthController(
             UserManager<AppUser> userManager,
             JwtService jwtService,
             EmailService emailService,
-            IConfiguration config)
+            IConfiguration config,
+            ILogger<AuthController> logger)
         {
             _userManager = userManager;
             _jwtService = jwtService;
             _emailService = emailService;
             _config = config;
+            _logger = logger;
         }
-
-        // ── DTOs ──────────────────────────────────────────────────────────────
-
-        public record RegisterDto(string FullName, string Email, string Password);
-        public record LoginDto(string Email, string Password);
-        public record ForgotPasswordDto(string Email);
-        public record ResetPasswordDto(string Email, string Token, string NewPassword);
-        public record GoogleAuthDto(string IdToken);
 
         // ── Register ─────────────────────────────────────────────────────────
 
@@ -62,25 +60,24 @@ namespace Backend.Controllers.Admin
                 return StatusCode(500, new { message = "Failed to assign user role. Please try again." });
             }
 
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var frontendBase = _config["Frontend:BaseUrl"];
-            var verifyUrl = $"{frontendBase}/Landing-page/Authentication/VerifyEmail" +
-                            $"?userId={Uri.EscapeDataString(user.Id)}" +
-                            $"&token={Uri.EscapeDataString(token)}";
+            // Generate 6-digit OTP, hash it, and store hash with expiry + attempt count
+            var otp = RandomNumberGenerator.GetInt32(100000, 1000000).ToString("D6");
+            var otpHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(otp)));
+            var expiry = DateTime.UtcNow.AddMinutes(10).ToString("o");
+            await _userManager.SetAuthenticationTokenAsync(user, "EmailOTP", "otp", $"{otpHash}|{expiry}|0");
 
             string emailWarning = "";
             try
             {
-                await _emailService.SendVerificationEmailAsync(user.Email, verifyUrl);
+                await _emailService.SendOtpEmailAsync(user.Email!, otp);
             }
             catch (Exception ex)
             {
-                // Email is not critical — account was created. Log and surface a warning.
-                Console.Error.WriteLine($"[EmailService] Failed to send verification email: {ex.Message}");
-                emailWarning = " (Note: verification email could not be sent — check SMTP settings.)";
+                _logger.LogWarning(ex, "Failed to send OTP email to {Email}", user.Email);
+                emailWarning = " (Note: OTP email could not be sent — check SMTP settings.)";
             }
 
-            return Ok(new { message = $"Registration successful. Please check your email to verify your account.{emailWarning}" });
+            return Ok(new { message = $"Registration successful. Please check your email for a 6-digit verification code.{emailWarning}" });
         }
 
         // ── Login ─────────────────────────────────────────────────────────────
@@ -112,22 +109,80 @@ namespace Backend.Controllers.Admin
             });
         }
 
-        // ── Verify Email ──────────────────────────────────────────────────────
+        // ── Verify Email OTP ───────────────────────────────────────────────────
 
-        [HttpGet("verify-email")]
-        public async Task<IActionResult> VerifyEmail(
-            [FromQuery] string userId,
-            [FromQuery] string token)
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpDto dto)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
-                return BadRequest(new { message = "Invalid verification link." });
+                return BadRequest(new { message = "Invalid request." });
 
-            var result = await _userManager.ConfirmEmailAsync(user, token);
-            if (!result.Succeeded)
-                return BadRequest(new { message = "Email verification failed. The link may have expired." });
+            if (user.EmailConfirmed)
+                return BadRequest(new { message = "Email is already verified." });
+
+            var storedValue = await _userManager.GetAuthenticationTokenAsync(user, "EmailOTP", "otp");
+            if (storedValue == null)
+                return BadRequest(new { message = "No OTP found. Please request a new one." });
+
+            var parts = storedValue.Split('|');
+            var storedHash = parts[0];
+            var expiry = parts.Length > 1 ? DateTime.Parse(parts[1], null, System.Globalization.DateTimeStyles.RoundtripKind) : DateTime.MinValue;
+            var attempts = parts.Length > 2 ? int.Parse(parts[2]) : 0;
+
+            if (DateTime.UtcNow > expiry)
+            {
+                await _userManager.RemoveAuthenticationTokenAsync(user, "EmailOTP", "otp");
+                return BadRequest(new { message = "OTP has expired. Please request a new one." });
+            }
+
+            var incomingHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dto.Otp)));
+            if (!CryptographicOperations.FixedTimeEquals(
+                    Convert.FromHexString(storedHash),
+                    Convert.FromHexString(incomingHash)))
+            {
+                attempts++;
+                if (attempts >= 3)
+                {
+                    await _userManager.RemoveAuthenticationTokenAsync(user, "EmailOTP", "otp");
+                    return BadRequest(new { message = "Too many incorrect attempts. Please request a new code.", locked = true });
+                }
+                await _userManager.SetAuthenticationTokenAsync(user, "EmailOTP", "otp", $"{storedHash}|{expiry.ToString("o")}|{attempts}");
+                return BadRequest(new { message = $"Invalid OTP. {3 - attempts} attempt{(3 - attempts == 1 ? "" : "s")} remaining." });
+            }
+
+            // Confirm email directly
+            user.EmailConfirmed = true;
+            await _userManager.UpdateAsync(user);
+            await _userManager.RemoveAuthenticationTokenAsync(user, "EmailOTP", "otp");
 
             return Ok(new { message = "Email verified successfully. You can now sign in." });
+        }
+
+        // ── Resend OTP ─────────────────────────────────────────────────────────
+
+        [HttpPost("resend-otp")]
+        public async Task<IActionResult> ResendOtp([FromBody] ResendOtpDto dto)
+        {
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null || user.EmailConfirmed)
+                return Ok(new { message = "If the account exists and is unverified, a new code has been sent." });
+
+            var otp = RandomNumberGenerator.GetInt32(100000, 1000000).ToString("D6");
+            var otpHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(otp)));
+            var expiry = DateTime.UtcNow.AddMinutes(10).ToString("o");
+            await _userManager.SetAuthenticationTokenAsync(user, "EmailOTP", "otp", $"{otpHash}|{expiry}|0");
+
+            try
+            {
+                await _emailService.SendOtpEmailAsync(user.Email!, otp);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to resend OTP email to {Email}", user.Email);
+            }
+
+            return Ok(new { message = "A new verification code has been sent to your email." });
         }
 
         // ── Forgot Password ───────────────────────────────────────────────────
@@ -152,7 +207,7 @@ namespace Backend.Controllers.Admin
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"[EmailService] Failed to send password reset email: {ex.Message}");
+                _logger.LogWarning(ex, "Failed to send password reset email to {Email}", user.Email);
             }
 
             return Ok(new { message = "If an account exists for that email, a reset link has been sent." });
