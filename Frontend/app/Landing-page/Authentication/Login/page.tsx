@@ -4,13 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { signIn, getSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import TopNav from "@/app/components/Home/TopNav";
 
 export default function Login() {
   const t = useTranslations("LoginPage.signIn");
   const tc = useTranslations("Common");
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -23,6 +24,16 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const navigateTo = (target: string) => {
+    // Use full-page navigation for cross-origin redirects (e.g. frontend -> admin app).
+    if (/^https?:\/\//i.test(target)) {
+      window.location.assign(target);
+      return;
+    }
+
+    router.push(target);
+  };
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -81,6 +92,7 @@ export default function Login() {
         email: formData.email,
         password: formData.password,
         redirect: false,
+        callbackUrl: searchParams.get("callbackUrl") ?? undefined,
       });
 
       if (result?.error) {
@@ -92,17 +104,34 @@ export default function Login() {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const roles = (session as any)?.user?.roles || [];
           const adminUrl = process.env.NEXT_PUBLIC_ADMIN_URL ?? "/admin";
+          const callbackUrl = searchParams.get("callbackUrl");
+          const isAdminCallback = (() => {
+            if (typeof callbackUrl !== "string" || callbackUrl.length === 0) {
+              return false;
+            }
+
+            if (callbackUrl.startsWith("/admin")) {
+              return true;
+            }
+
+            try {
+              const adminOrigin = new URL(adminUrl).origin;
+              return new URL(callbackUrl).origin === adminOrigin;
+            } catch {
+              return false;
+            }
+          })();
           if (
             Array.isArray(roles) &&
             roles.some((r: string) => /admin/i.test(r))
           ) {
-            router.push(adminUrl);
+            navigateTo(isAdminCallback ? callbackUrl! : adminUrl);
           } else {
-            router.push("/Landing-page/Home");
+            navigateTo("/Landing-page/Home");
           }
         } catch (err) {
           // Fallback to home if session check fails
-          router.push("/Landing-page/Home");
+          navigateTo("/Landing-page/Home");
         }
       }
     } catch (error) {

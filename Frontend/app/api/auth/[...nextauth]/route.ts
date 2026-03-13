@@ -4,6 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import type { NextAuthOptions } from "next-auth";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:5001";
+const cookieDomain = process.env.NEXTAUTH_COOKIE_DOMAIN;
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -96,6 +97,41 @@ export const authOptions: NextAuthOptions = {
     },
 
     session: { strategy: "jwt" },
+    ...(cookieDomain
+        ? {
+            cookies: {
+                sessionToken: {
+                    name: "next-auth.session-token",
+                    options: {
+                        httpOnly: true,
+                        sameSite: "lax",
+                        path: "/",
+                        secure: process.env.NODE_ENV === "production",
+                        domain: cookieDomain,
+                    },
+                },
+                callbackUrl: {
+                    name: "next-auth.callback-url",
+                    options: {
+                        sameSite: "lax",
+                        path: "/",
+                        secure: process.env.NODE_ENV === "production",
+                        domain: cookieDomain,
+                    },
+                },
+                csrfToken: {
+                    name: "next-auth.csrf-token",
+                    options: {
+                        httpOnly: true,
+                        sameSite: "lax",
+                        path: "/",
+                        secure: process.env.NODE_ENV === "production",
+                        domain: cookieDomain,
+                    },
+                },
+            },
+        }
+        : {}),
 };
 
 const handler = NextAuth(authOptions);

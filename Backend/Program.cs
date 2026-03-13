@@ -100,6 +100,52 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// ── Seed Admin Account ────────────────────────────────────────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+    var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+
+    var adminEmail = config["Seed:AdminEmail"] ?? "admin@nspc.gov.kh";
+    var adminPassword = config["Seed:AdminPassword"] ?? "Admin@123456";
+    var adminName = config["Seed:AdminName"] ?? "System Administrator";
+
+    var existingAdmin = await userManager.FindByEmailAsync(adminEmail);
+    if (existingAdmin == null)
+    {
+        var admin = new AppUser
+        {
+            UserName = adminEmail,
+            Email = adminEmail,
+            DisplayName = adminName,
+            EmailConfirmed = true,
+        };
+
+        var result = await userManager.CreateAsync(admin, adminPassword);
+        if (result.Succeeded)
+            await userManager.AddToRoleAsync(admin, "Admin");
+    }
+    else
+    {
+        // Ensure seeded admin remains usable in local/dev even if account existed earlier.
+        if (!existingAdmin.EmailConfirmed)
+        {
+            existingAdmin.EmailConfirmed = true;
+            await userManager.UpdateAsync(existingAdmin);
+        }
+
+        if (!await userManager.IsInRoleAsync(existingAdmin, "Admin"))
+            await userManager.AddToRoleAsync(existingAdmin, "Admin");
+
+        if (app.Environment.IsDevelopment())
+        {
+            var removePasswordResult = await userManager.RemovePasswordAsync(existingAdmin);
+            if (removePasswordResult.Succeeded)
+                await userManager.AddPasswordAsync(existingAdmin, adminPassword);
+        }
+    }
+}
+
 // Always return JSON for unhandled exceptions — never plain text
 app.UseExceptionHandler(errApp => errApp.Run(async ctx =>
 {
