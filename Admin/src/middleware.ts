@@ -15,18 +15,19 @@ function getFrontendLoginUrl(request: NextRequest): URL {
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  // Skip middleware for Next.js internals and auth API routes
   if (pathname.startsWith("/_next") || pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
 
+  // Try the default cookie name first; fall back to the __Secure- prefix
+  // used by next-auth in HTTPS environments so both dev and prod are covered.
+  const secret = process.env.NEXTAUTH_SECRET;
   const token =
+    (await getToken({ req: request, secret })) ??
     (await getToken({
       req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    })) ||
-    (await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
+      secret,
       cookieName: "__Secure-next-auth.session-token",
     }));
 
@@ -53,5 +54,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // Run middleware only on page/API routes — exclude all static assets,
+  // Next.js internals, and common public-folder file extensions so that
+  // image/font/icon requests are never delayed by auth checks.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot|otf|map)$).*)",
+  ],
 };
