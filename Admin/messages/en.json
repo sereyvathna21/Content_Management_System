@@ -41,5 +41,140 @@
       "unread": "Unread"
     },
     "deleteMessage": "Delete message"
+  },
+   "LoginPage": {
+    "signIn": {
+      "title": "Sign In",
+      "subtitle": "Enter your credentials to access your account",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "signInButton": "Sign In",
+      "signingIn": "Signing In...",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Create one",
+      "backToHome": "Back to Home",
+      "switchLanguage": "Switch Language",
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Password must be at least 8 characters"
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot Password?",
+      "subtitle": "No worries! Enter your email and we'll send you reset instructions",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "name@example.com",
+      "sendButton": "Send Reset Link",
+      "sending": "Sending...",
+      "backToSignIn": "Back to Sign In",
+      "success": {
+        "title": "Check Your Email",
+        "message": "We've sent password reset instructions to",
+        "tryAnotherEmail": "Try Another Email",
+        "backToSignIn": "Back to Sign In",
+        "didntReceive": "Didn't receive the email? Check your spam folder or try another email"
+      },
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "sendError": "Something went wrong. Please try again."
+      }
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "subtitle": "Create a strong password to secure your account",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm new password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "resetButton": "Reset Password",
+      "resetting": "Resetting...",
+      "strength": {
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong",
+        "veryStrong": "Very Strong"
+      },
+      "requirements": {
+        "title": "Password must contain:",
+        "minLength": "At least 8 characters",
+        "upperLower": "Uppercase and lowercase letters",
+        "number": "At least one number",
+        "special": "At least one special character (!@#$%^&*)"
+      },
+      "errors": {
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Password must be at least 8 characters",
+        "passwordUpperLower": "Password must contain both uppercase and lowercase letters",
+        "passwordNumber": "Password must contain at least one number",
+        "passwordSpecial": "Password must contain at least one special character",
+        "confirmRequired": "Please confirm your password",
+        "confirmMismatch": "Passwords do not match",
+        "resetError": "Something went wrong. Please try again."
+      },
+      "success": {
+        "title": "Password Reset Successful!",
+        "message": "Your password has been successfully reset. You can now sign in with your new password.",
+        "goToSignIn": "Go to Sign In"
+      }
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Join NSPC and be part of our community",
+      "fullNameLabel": "Full Name",
+      "fullNamePlaceholder": "Enter your full name",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "name@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Create a password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Repeat your password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "agreeToTerms": {
+        "prefix": "I agree to the",
+        "terms": "Terms of Service",
+        "and": "and",
+        "privacy": "Privacy Policy"
+      },
+      "registerButton": "Create Account",
+      "registering": "Creating Account...",
+      "alreadyHaveAccount": "Already have an account?",
+      "signInLink": "Sign In",
+      "strength": {
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong",
+        "veryStrong": "Very Strong"
+      },
+      "errors": {
+        "fullNameRequired": "Full name is required",
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "passwordRequired": "Password is required",
+        "passwordMinLength": "Password must be at least 8 characters",
+        "passwordUpperLower": "Password must contain both uppercase and lowercase letters",
+        "passwordNumber": "Password must contain at least one number",
+        "passwordSpecial": "Password must contain at least one special character",
+        "confirmRequired": "Please confirm your password",
+        "confirmMismatch": "Passwords do not match",
+        "agreeToTermsRequired": "You must agree to the terms and privacy policy"
+      },
+      "success": {
+        "title": "Account Created!",
+        "message": "Your account has been successfully created. You can now sign in.",
+        "goToSignIn": "Go to Sign In"
+      }
+    }
   }
 }

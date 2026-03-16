@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
-import TopNav from "@/app/components/Home/TopNav";
+import TopNav from "@/components/TopNav";
 import { useSearchParams } from "next/navigation";
 
 export default function ResetPassword() {

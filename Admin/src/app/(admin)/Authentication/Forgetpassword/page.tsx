@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import TopNav from "@/app/components/Home/TopNav";
+import TopNav from "@/components/TopNav";
 
 export default function ForgotPassword() {
   const t = useTranslations("LoginPage.forgotPassword");
