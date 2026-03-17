@@ -10,6 +10,7 @@ namespace Backend.Models
         public bool IsEmailVerified { get; set; }
         public string? OtpCode { get; set; }
         public DateTime? OtpExpiresAt { get; set; }
+        public int OtpAttempts { get; set; } = 0;
         public string? PasswordResetToken { get; set; }
         public DateTime? PasswordResetTokenExpiresAt { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

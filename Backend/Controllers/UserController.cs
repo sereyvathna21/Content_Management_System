@@ -44,7 +44,8 @@ namespace Backend.Controllers
                 Email = request.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 OtpCode = otp,
-                OtpExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes)
+                OtpExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes),
+                OtpAttempts = 0
             };
 
             _db.Users.Add(user);
@@ -59,6 +60,8 @@ namespace Backend.Controllers
         [HttpPost("verify-email")]
         public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
         {
+            const int maxAttempts = 5;
+
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
             if (user == null)
                 return NotFound(new MessageResponse { Message = "User not found." });
@@ -66,15 +69,57 @@ namespace Backend.Controllers
             if (user.IsEmailVerified)
                 return BadRequest(new MessageResponse { Message = "Email is already verified." });
 
-            if (user.OtpCode != request.Code || user.OtpExpiresAt < DateTime.UtcNow)
-                return BadRequest(new MessageResponse { Message = "Invalid or expired verification code." });
+            if (user.OtpCode == null || user.OtpExpiresAt < DateTime.UtcNow)
+                return BadRequest(new MessageResponse { Message = "Verification code has expired. Please request a new one." });
+
+            if (user.OtpAttempts >= maxAttempts)
+            {
+                user.OtpCode = null;
+                user.OtpExpiresAt = null;
+                user.OtpAttempts = 0;
+                await _db.SaveChangesAsync();
+                return BadRequest(new MessageResponse { Message = "Too many failed attempts. Please request a new verification code." });
+            }
+
+            if (user.OtpCode != request.Code)
+            {
+                user.OtpAttempts++;
+                await _db.SaveChangesAsync();
+                var remaining = maxAttempts - user.OtpAttempts;
+                return BadRequest(new MessageResponse { Message = $"Invalid verification code. {remaining} attempt(s) remaining." });
+            }
 
             user.IsEmailVerified = true;
             user.OtpCode = null;
             user.OtpExpiresAt = null;
+            user.OtpAttempts = 0;
             await _db.SaveChangesAsync();
 
             return Ok(new MessageResponse { Message = "Email verified successfully. You can now log in." });
+        }
+
+        // POST /api/user/resend-otp
+        [HttpPost("resend-otp")]
+        public async Task<IActionResult> ResendOtp([FromBody] ForgotPasswordRequest request)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (user == null)
+                return NotFound(new MessageResponse { Message = "User not found." });
+
+            if (user.IsEmailVerified)
+                return BadRequest(new MessageResponse { Message = "Email is already verified." });
+
+            var otp = GenerateOtp();
+            var expiryMinutes = int.Parse(_config["App:OtpExpiryMinutes"] ?? "10");
+
+            user.OtpCode = otp;
+            user.OtpExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);
+            user.OtpAttempts = 0;
+            await _db.SaveChangesAsync();
+
+            await _email.SendOtpAsync(user.Email, otp, "Verify Your Email");
+
+            return Ok(new MessageResponse { Message = "A new verification code has been sent to your email." });
         }
 
         // POST /api/user/forgot-password

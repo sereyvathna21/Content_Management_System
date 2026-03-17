@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -56,6 +56,18 @@ export default function Register() {
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
+
+  useEffect(() => {
+    if (otpSent) setResendCooldown(60);
+  }, [otpSent]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -130,6 +142,29 @@ export default function Register() {
       setOtpError("An error occurred. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setIsResending(true);
+    setOtpError("");
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/user/resend-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setOtpError(data.message || "Failed to resend code.");
+      } else {
+        setOtp("");
+        setResendCooldown(60);
+      }
+    } catch {
+      setOtpError("An error occurred. Please try again.");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -210,6 +245,22 @@ export default function Register() {
                         className={inputClass(!!otpError)}
                       />
                       {otpError && <p role="alert" className="mt-1 text-red-500 text-xs sm:text-sm">{otpError}</p>}
+                      <div className="mt-3 text-right">
+                        {resendCooldown > 0 ? (
+                          <p className="text-xs sm:text-sm lg:text-gray-500 text-white/70">
+                            Resend code in {resendCooldown}s
+                          </p>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={handleResendOtp}
+                            disabled={isResending}
+                            className="text-xs sm:text-sm font-medium text-white lg:text-primary hover:text-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isResending ? "Sending..." : "Resend Code"}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <>
