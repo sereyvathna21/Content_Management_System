@@ -8,11 +8,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Button from "@/components/ui/button/Button";
-import UserForm from "@/components/user-management/UserForm";
 import Image from "next/image";
 import ComponentCard from "@/components/common/ComponentCard";
 import Tooltip from "@/components/ui/Tooltip";
 import { Modal } from "@/components/ui/modal";
+import CreateUserForm from "@/components/user-management/CreateUserForm";
+import EditUserForm from "@/components/user-management/EditUserForm";
 
 type User = {
   id: string;
@@ -159,7 +160,7 @@ export default function UsersPage() {
                             <div className="w-10 h-10 overflow-hidden rounded-full">
                               {(() => {
                                 const src = (u.avatar || "").toString().trim();
-                                if (!src) return <Image width={40} height={40} src="/images/user/user-17.jpg" alt={u.name} />;
+                                if (!src) return <Image width={40} height={40} src="/images/user/owner.jpg" alt={u.name} />;
                                 if (src.startsWith("data:") || src.startsWith("blob:")) {
                                   // eslint-disable-next-line @next/next/no-img-element
                                   return <img src={src} alt={u.name} className="w-full h-full object-cover" />;
@@ -238,27 +239,65 @@ export default function UsersPage() {
       </ComponentCard>
 
       {/* Confirm block/unblock modal */}
-      <Modal isOpen={confirmOpen} onClose={() => { setConfirmOpen(false); setPendingBlockId(null); }} className="max-w-sm p-6">
-        <div>
-          <h3 className="text-lg font-semibold mb-2">{pendingBlockId && users.find(u => u.id === pendingBlockId)?.blocked ? "Unblock user" : "Block user"}</h3>
-          <p className="text-sm text-gray-600 mb-4">Are you sure you want to {pendingBlockId && users.find(u => u.id === pendingBlockId)?.blocked ? "unblock" : "block"} this user?</p>
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" size="sm" onClick={() => { setConfirmOpen(false); setPendingBlockId(null); }}>Cancel</Button>
-            <Button size="sm" onClick={handleBlockConfirmed}>Confirm</Button>
-          </div>
+      <Modal
+        isOpen={confirmOpen}
+        onClose={() => {
+          setConfirmOpen(false);
+          setPendingBlockId(null);
+        }}
+        className="max-w-xl p-6"
+        backdropClassName="fixed inset-0 h-full w-full bg-gray-400/30 backdrop-blur-sm"
+      >
+        <div className="mb-3">
+          <h3 className="text-lg font-semibold text-primary">
+            {pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked
+              ? "Unblock user"
+              : "Block user"}
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Are you sure you want to {pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked
+              ? "unblock"
+              : "block"} this user?
+          </p>
+        </div>
+
+        <div className="flex items-center justify-end gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setConfirmOpen(false);
+              setPendingBlockId(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleBlockConfirmed}
+            className="bg-red-600 text-white hover:bg-red-700"
+          >
+            Confirm
+          </Button>
         </div>
       </Modal>
 
-      <UserForm
-        open={formOpen}
+      {/* Create User Form */}
+      <CreateUserForm
+        open={formOpen && !editing}
         onClose={() => setFormOpen(false)}
-        initial={
-          editing
-            ? { id: editing.id, name: editing.name, email: editing.email, role: editing.role, password: editing.password, passwordSet: !!editing.passwordSet, avatar: editing.avatar }
-            : undefined
-        }
         onSave={handleSave}
       />
+
+      {/* Edit User Form */}
+      {editing && (
+        <EditUserForm
+          open={formOpen && !!editing}
+          onClose={() => setFormOpen(false)}
+          initial={editing}
+          onSave={handleSave}
+        />
+      )}
 
       <Modal isOpen={viewOpen} onClose={() => setViewOpen(false)} className="max-w-md p-6">
         {selectedUser && (
