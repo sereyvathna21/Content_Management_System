@@ -15,9 +15,12 @@ export default function Login() {
   const [errors, setErrors] = useState({
     email: "",
     password: "",
+    otp: "", // Ensure otp is included in the errors object
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,6 +31,7 @@ export default function Login() {
     const newErrors = {
       email: "",
       password: "",
+      otp: "", // Ensure otp is included in the errors object
     };
 
     if (!formData.email.trim()) {
@@ -43,7 +47,7 @@ export default function Login() {
     }
 
     setErrors(newErrors);
-    return !newErrors.email && !newErrors.password;
+    return !newErrors.email && !newErrors.password && !newErrors.otp;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,6 +86,60 @@ export default function Login() {
     }
   };
 
+  const handleSendOtp = async () => {
+    if (!validateEmail(formData.email)) {
+      setErrors({ ...errors, email: t("errors.emailInvalid") });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const response = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      if (response.ok) {
+        setOtpSent(true);
+        alert("OTP sent to your email.");
+      } else {
+        const data = await response.json();
+        alert(data.message || "Failed to send OTP.");
+      }
+    } catch (error) {
+      alert("An error occurred while sending OTP.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      setIsSubmitting(true);
+      const response = await fetch("/api/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email, code: otp }),
+      });
+
+      if (response.ok) {
+        alert("OTP verified successfully.");
+      } else {
+        const data = await response.json();
+        alert(data.message || "Failed to verify OTP.");
+      }
+    } catch (error) {
+      alert("An error occurred while verifying OTP.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOtp(e.target.value); // Correctly handle OTP input change
+  };
+
   return (
     <div>
       <section className="min-h-screen flex items-stretch">
@@ -101,7 +159,7 @@ export default function Login() {
             <div className="flex justify-center animate-[fadeInDown_0.6s_ease-out_0.2s_both]">
               <div className="bg-white p-4 rounded-2xl shadow-lg hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/favicon.svg"
+                  src="/images/favicon.svg"
                   alt="Logo"
                   width={96}
                   height={96}
@@ -110,7 +168,7 @@ export default function Login() {
               </div>
             </div>
 
-            <h1 className="font-bold lg:text-gray-900 text-white text-center text-xl sm:text-2xl md:text-3xl mb-2 animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+            <h1 className="font-bold lg:text-gray-900 text-white text-center text-xl sm:text-2xl md:text-3xl mb-2 mt-4 animate-[fadeIn_0.8s_ease-out_0.2s_both]">
               {t("title")}
             </h1>
             <p className="lg:text-gray-600 text-white/90 text-center text-sm sm:text-base mb-6 sm:mb-8 animate-[fadeIn_0.8s_ease-out_0.4s_both]">
@@ -118,8 +176,12 @@ export default function Login() {
             </p>
 
             <form
-              onSubmit={handleSubmit}
-              className="space-y-4 sm:space-y-5 animate-[fadeInUp_0.8s_ease-out_0.5s_both]"
+              noValidate
+              className="space-y-4 sm:space-y-5"
+              onSubmit={(e) => {
+                e.preventDefault();
+                otpSent ? handleVerifyOtp() : handleSendOtp();
+              }}
             >
               <div className="animate-[slideInLeft_0.6s_ease-out_0.6s_both]">
                 <label
@@ -153,87 +215,42 @@ export default function Login() {
                 )}
               </div>
 
-              <div className="animate-[slideInLeft_0.6s_ease-out_0.7s_both]">
-                <label
-                  htmlFor="password"
-                  className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
-                >
-                  {t("passwordLabel")}
-                </label>
-                <div className="relative">
+              {!otpSent && (
+                <div className="animate-[slideInLeft_0.6s_ease-out_0.7s_both]">
+                  <label
+                    htmlFor="password"
+                    className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
+                  >
+                    {t("passwordLabel")}
+                  </label>
                   <input
-                    className={`block w-full text-gray-900 bg-white border-2 ${
-                      errors.password ? "border-red-500" : "border-gray-300"
-                    } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-sm sm:text-base outline-none px-3 py-2.5 sm:px-4 sm:py-3 pr-10 sm:pr-12`}
-                    type={showPassword ? "text" : "password"}
-                    name="password"
+                    type="password"
                     id="password"
+                    name="password"
                     value={formData.password}
                     onChange={handleChange}
                     placeholder={t("passwordPlaceholder")}
                     autoComplete="current-password"
                     aria-invalid={!!errors.password}
-                    aria-describedby={
-                      errors.password ? "password-error" : undefined
-                    }
+                    aria-describedby={errors.password ? "password-error" : undefined}
+                    className={`block w-full text-gray-900 bg-white border-2 ${
+                      errors.password ? "border-red-500" : "border-gray-300"
+                    } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-sm sm:text-base outline-none px-3 py-2.5 sm:px-4 sm:py-3`}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary rounded p-1 transition-colors"
-                    aria-label={
-                      showPassword ? t("hidePassword") : t("showPassword")
-                    }
-                  >
-                    {showPassword ? (
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        className="h-5 w-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                    )}
-                  </button>
+                  {errors.password && (
+                    <p
+                      id="password-error"
+                      role="alert"
+                      className="mt-1 text-red-500 text-xs sm:text-sm"
+                    >
+                      {errors.password}
+                    </p>
+                  )}
                 </div>
-                {errors.password && (
-                  <p
-                    id="password-error"
-                    role="alert"
-                    className="mt-1 text-red-500 text-xs sm:text-sm"
-                  >
-                    {errors.password}
-                  </p>
-                )}
-              </div>
+              )}
 
-              <div className="flex items-center justify-between text-xs sm:text-sm animate-[fadeIn_0.6s_ease-out_0.8s_both]">
+              
+              <div className="flex items-center justify-between text-xs sm:text-sm animate-[fadeIn_0.6s_ease-out_0.8s_both] py-4">
                 <div className="flex items-center">
                   <input
                     id="remember-me"
@@ -249,7 +266,7 @@ export default function Login() {
                   </label>
                 </div>
                 <Link
-                  href="/Landing-page/Authentication/Forgetpassword"
+                  href="/Authentication/Forgetpassword"
                   className="font-medium text-white lg:text-primary hover:text-primary/80 transition-colors"
                 >
                   {t("forgotPassword")}
@@ -267,13 +284,17 @@ export default function Login() {
               <p className="text-center text-xs sm:text-sm lg:text-gray-600 text-white/90 animate-[fadeIn_0.6s_ease-out_1s_both]">
                 {t("noAccount")}{" "}
                 <Link
-                  href="/Landing-page/Authentication/Register"
+                  href="/Authentication/Register"
                   className="font-semibold text-white lg:text-primary hover:text-primary/80 transition-colors"
                 >
                   {t("registerLink")}
                 </Link>
               </p>
             </form>
+
+            <div className="mt-4">
+              {/* Removed OTP button */}
+            </div>
           </div>
         </div>
       </section>

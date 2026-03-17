@@ -1,11 +1,12 @@
 @import 'tailwindcss';
 
+
 @custom-variant dark (&:is(.dark *));
 
 @theme {
   --font-*: initial;
-  --font-outfit: Outfit, sans-serif;
-  --font-family-km: "Noto Sans Khmer";
+  --font-outfit: var(--font-outfit-sans), sans-serif;
+  --font-family-km: var(--font-noto-khmer), sans-serif;
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;

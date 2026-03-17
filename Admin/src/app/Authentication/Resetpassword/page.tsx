@@ -129,74 +129,92 @@ export default function ResetPassword() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!formData.password || !formData.confirmPassword) {
+      setErrors({
+        password: t("errors.passwordRequired"),
+        confirmPassword: t("errors.confirmPasswordRequired"),
+      });
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setErrors({
+        password: "",
+        confirmPassword: t("errors.passwordMismatch"),
+      });
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const response = await fetch("/api/user/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: searchParams.get("email"),
+          otp: searchParams.get("otp"),
+          newPassword: formData.password,
+        }),
+      });
+
+      if (response.ok) {
+        setIsSuccess(true);
+        alert("Password reset successfully. You can now log in.");
+      } else {
+        const data = await response.json();
+        alert(data.message || "Failed to reset password.");
+      }
+    } catch (error) {
+      alert("An error occurred while resetting password.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div>
       <section className="min-h-screen flex items-stretch">
         <TopNav />
         <div
-          className="hidden lg:flex lg:w-1/2 bg-cover relative items-center justify-center"
-          style={{
-            backgroundImage: "url(/login.svg)",
-            padding: "clamp(2rem, 5vw, 3rem)",
-          }}
+          className="hidden lg:flex lg:w-1/2 bg-cover relative items-center justify-center p-8 md:p-12"
+          style={{ backgroundImage: "url(/login.svg)" }}
         ></div>
-        <div
-          className="bg-white lg:w-1/2 w-full flex items-center justify-center z-0 relative border-t border-primary lg:border-l"
-          style={{
-            padding: "clamp(1.5rem, 5vw, 4rem) clamp(1.5rem, 5vw, 4rem)",
-          }}
-        >
+        <div className="bg-white lg:w-1/2 w-full flex items-center justify-center z-0 relative border-t border-primary lg:border-l px-6 py-8 sm:px-8 sm:py-10 md:px-12 md:py-14 lg:px-16 lg:py-16">
           <div
             className="absolute lg:hidden inset-0 z-0 bg-cover bg-center"
             style={{ backgroundImage: "url(/login.svg)" }}
-          >
-            <div className="absolute inset-0 bg-black/40"></div>
-          </div>
+          ></div>
           <div className="w-full max-w-md z-20">
-            <div className="flex justify-center animate-[fadeInDown_0.6s_ease-out]">
+            <div className="flex justify-center animate-[fadeInDown_0.6s_ease-out_0.2s_both]">
               <div className="bg-white p-4 rounded-2xl shadow-lg hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/favicon.svg"
+                  src="/images/favicon.svg"
                   alt="Logo"
                   width={96}
                   height={96}
-                  style={{
-                    width: "clamp(5rem, 10vw, 6rem)",
-                    height: "clamp(5rem, 10vw, 6rem)",
-                  }}
+                  className="w-20 h-20 sm:w-24 sm:h-24"
                 />
               </div>
             </div>
 
             {!isSuccess ? (
               <>
-                <h1
-                  className="font-bold lg:text-gray-900 text-white text-center text-fluid-3xl animate-[fadeIn_0.8s_ease-out_0.2s_both]"
-                  style={{ marginBottom: "clamp(0.5rem, 2vw, 0.5rem)" }}
-                >
+                <h1 className="font-bold lg:text-gray-900 text-white text-center text-xl sm:text-2xl md:text-3xl mb-2 mt-4 animate-[fadeIn_0.8s_ease-out_0.2s_both]">
                   {t("title")}
                 </h1>
-                <p
-                  className="lg:text-gray-600 text-white/90 text-center text-fluid-base animate-[fadeIn_0.8s_ease-out_0.4s_both]"
-                  style={{ marginBottom: "clamp(1.5rem, 4vw, 2rem)" }}
-                >
+                <p className="lg:text-gray-600 text-white/90 text-center text-sm sm:text-base mb-6 sm:mb-8 animate-[fadeIn_0.8s_ease-out_0.4s_both]">
                   {t("subtitle")}
                 </p>
 
                 <form
                   onSubmit={handleSubmit}
-                  className="animate-[fadeInUp_0.8s_ease-out_0.5s_both]"
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "clamp(1rem, 3vw, 1.25rem)",
-                  }}
+                  className="space-y-4 sm:space-y-5 animate-[fadeInUp_0.8s_ease-out_0.5s_both]"
                 >
                   <div className="animate-[slideInLeft_0.6s_ease-out_0.6s_both]">
                     <label
                       htmlFor="password"
-                      className="block font-medium lg:text-gray-700 text-white text-fluid-sm"
-                      style={{ marginBottom: "clamp(0.375rem, 1.5vw, 0.5rem)" }}
+                      className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
                     >
                       {t("newPasswordLabel")}
                     </label>
@@ -204,12 +222,7 @@ export default function ResetPassword() {
                       <input
                         className={`block w-full text-gray-900 bg-white border-2 ${
                           errors.password ? "border-red-500" : "border-gray-300"
-                        } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-fluid-base outline-none`}
-                        style={{
-                          padding:
-                            "clamp(0.75rem, 2vw, 0.875rem) clamp(0.875rem, 2.5vw, 1rem)",
-                          paddingRight: "clamp(2.5rem, 6vw, 3rem)",
-                        }}
+                        } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-sm sm:text-base outline-none px-3 py-2.5 sm:px-4 sm:py-3 pr-10 sm:pr-12`}
                         type={showPassword ? "text" : "password"}
                         name="password"
                         id="password"
@@ -284,7 +297,7 @@ export default function ResetPassword() {
                           ))}
                         </div>
                         <p
-                          className={`text-fluid-xs font-medium ${
+                          className={`text-xs font-medium ${
                             passwordStrength <= 2
                               ? "text-red-500"
                               : passwordStrength <= 3
@@ -301,7 +314,7 @@ export default function ResetPassword() {
                       <p
                         id="password-error"
                         role="alert"
-                        className="mt-1 text-red-500 text-fluid-sm"
+                        className="mt-1 text-red-500 text-xs sm:text-sm"
                       >
                         {errors.password}
                       </p>
@@ -311,8 +324,7 @@ export default function ResetPassword() {
                   <div className="animate-[slideInLeft_0.6s_ease-out_0.7s_both]">
                     <label
                       htmlFor="confirmPassword"
-                      className="block font-medium lg:text-gray-700 text-white text-fluid-sm"
-                      style={{ marginBottom: "clamp(0.375rem, 1.5vw, 0.5rem)" }}
+                      className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2"
                     >
                       {t("confirmPasswordLabel")}
                     </label>
@@ -322,12 +334,7 @@ export default function ResetPassword() {
                           errors.confirmPassword
                             ? "border-red-500"
                             : "border-gray-300"
-                        } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-fluid-base outline-none`}
-                        style={{
-                          padding:
-                            "clamp(0.75rem, 2vw, 0.875rem) clamp(0.875rem, 2.5vw, 1rem)",
-                          paddingRight: "clamp(2.5rem, 6vw, 3rem)",
-                        }}
+                        } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-sm sm:text-base outline-none px-3 py-2.5 sm:px-4 sm:py-3 pr-10 sm:pr-12`}
                         type={showConfirmPassword ? "text" : "password"}
                         name="confirmPassword"
                         id="confirmPassword"
@@ -395,7 +402,7 @@ export default function ResetPassword() {
                       <p
                         id="confirm-password-error"
                         role="alert"
-                        className="mt-1 text-red-500 text-fluid-sm"
+                        className="mt-1 text-red-500 text-xs sm:text-sm"
                       >
                         {errors.confirmPassword}
                       </p>
@@ -404,19 +411,12 @@ export default function ResetPassword() {
 
                   {/* Password Requirements */}
                   <div className="bg-primary/5 rounded-lg p-3 animate-[fadeIn_0.6s_ease-out_0.8s_both]">
-                    <p className="font-medium lg:text-gray-900 text-white text-fluid-sm mb-2">
+                    <p className="font-medium lg:text-gray-900 text-white text-xs sm:text-sm mb-2">
                       {t("requirements.title")}
                     </p>
-                    <ul
-                      className="space-y-1"
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "clamp(0.25rem, 1vw, 0.375rem)",
-                      }}
-                    >
+                    <ul className="space-y-1">
                       <li
-                        className={`flex items-center gap-2 text-fluid-xs ${
+                        className={`flex items-center gap-2 text-xs ${
                           formData.password.length >= 8
                             ? "text-green-600"
                             : "lg:text-gray-600 text-white/80"
@@ -438,7 +438,7 @@ export default function ResetPassword() {
                         {t("requirements.minLength")}
                       </li>
                       <li
-                        className={`flex items-center gap-2 text-fluid-xs ${
+                        className={`flex items-center gap-2 text-xs ${
                           /(?=.*[a-z])(?=.*[A-Z])/.test(formData.password)
                             ? "text-green-600"
                             : "lg:text-gray-600 text-white/80"
@@ -460,7 +460,7 @@ export default function ResetPassword() {
                         {t("requirements.upperLower")}
                       </li>
                       <li
-                        className={`flex items-center gap-2 text-fluid-xs ${
+                        className={`flex items-center gap-2 text-xs ${
                           /(?=.*\d)/.test(formData.password)
                             ? "text-green-600"
                             : "lg:text-gray-600 text-white/80"
@@ -482,7 +482,7 @@ export default function ResetPassword() {
                         {t("requirements.number")}
                       </li>
                       <li
-                        className={`flex items-center gap-2 text-fluid-xs ${
+                        className={`flex items-center gap-2 text-xs ${
                           /(?=.*[!@#$%^&*(),.?":{}|<>])/.test(formData.password)
                             ? "text-green-600"
                             : "lg:text-gray-600 text-white/80"
@@ -509,8 +509,7 @@ export default function ResetPassword() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-fluid-base animate-[slideInUp_0.6s_ease-out_0.9s_both]"
-                    style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
+                    className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3 animate-[slideInUp_0.6s_ease-out_0.9s_both]"
                   >
                     {isSubmitting ? t("resetting") : t("resetButton")}
                   </button>
@@ -536,23 +535,16 @@ export default function ResetPassword() {
                   </div>
                 </div>
 
-                <h1
-                  className="font-bold lg:text-gray-900 text-white text-center text-fluid-3xl"
-                  style={{ marginBottom: "clamp(0.5rem, 2vw, 0.5rem)" }}
-                >
+                <h1 className="font-bold lg:text-gray-900 text-white text-center text-xl sm:text-2xl md:text-3xl mb-2 mt-4">
                   {t("success.title")}
                 </h1>
-                <p
-                  className="lg:text-gray-600 text-white/90 text-center text-fluid-base"
-                  style={{ marginBottom: "clamp(1.5rem, 4vw, 2rem)" }}
-                >
+                <p className="lg:text-gray-600 text-white/90 text-center text-sm sm:text-base mb-6 sm:mb-8">
                   {t("success.message")}
                 </p>
 
                 <Link
-                  href="/Landing-page/Authentication/Login"
-                  className="w-full inline-block text-center bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-fluid-base"
-                  style={{ padding: "clamp(0.75rem, 2.5vw, 0.875rem)" }}
+                  href="/Authentication/Login"
+                  className="w-full inline-block text-center bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3"
                 >
                   {t("success.goToSignIn")}
                 </Link>

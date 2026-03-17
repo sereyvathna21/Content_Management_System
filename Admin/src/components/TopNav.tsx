@@ -35,7 +35,7 @@ export default function TopNav() {
       <div className="max-w-7xl mx-auto px-6 sm:px-8">
         <div className="flex justify-end  gap-4">
           {/* Back to Home Button */}
-          <Link
+          {/* <Link
             href="/Landing-page/Home"
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg  backdrop-blur-sm  md:text-primary lg:text-primary sm:text-black text-black transition-all duration-200 text-sm font-medium"
           >
@@ -53,7 +53,7 @@ export default function TopNav() {
               />
             </svg>
             <span>{t("backToHome")}</span>
-          </Link>
+          </Link> */}
 
           {/* Language Switch Button */}
           <div className="relative" ref={dropdownRef}>
