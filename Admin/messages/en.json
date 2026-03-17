@@ -131,8 +131,8 @@
     "register": {
       "title": "Create Account",
       "subtitle": "Join NSPC and be part of our community",
-      "fullNameLabel": "Full Name",
-      "fullNamePlaceholder": "Enter your full name",
+      "fullNameLabel": "Username",
+      "fullNamePlaceholder": "Enter your Username",
       "emailLabel": "Email Address",
       "emailPlaceholder": "name@example.com",
       "passwordLabel": "Password",

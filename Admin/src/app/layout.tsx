@@ -5,6 +5,7 @@ import { SidebarProvider } from '@/context/SidebarContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import SessionProviderWrapper from '@/components/auth/SessionProviderWrapper';
 
 const roboto = Roboto({
   
@@ -27,11 +28,13 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={`${roboto.variable} ${notoSansKhmer.variable}`}>
       <body className="dark:bg-gray-900">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <ThemeProvider>
-            <SidebarProvider>{children}</SidebarProvider>
-          </ThemeProvider>
-        </NextIntlClientProvider>
+        <SessionProviderWrapper>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <ThemeProvider>
+              <SidebarProvider>{children}</SidebarProvider>
+            </ThemeProvider>
+          </NextIntlClientProvider>
+        </SessionProviderWrapper>
       </body>
     </html>
   );

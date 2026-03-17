@@ -1,49 +1,72 @@
-using Microsoft.EntityFrameworkCore;
+using System.Text;
 using Backend.Data;
 using Backend.Services;
-using Backend.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ---------- Database ----------
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add controllers (API endpoints) so the app has routes to serve
-builder.Services.AddControllers();
-
-// builder.Services.AddApplicationServices(builder.Configuration); // if you have an extension
-// Register EmailService
+// ---------- Services ----------
 builder.Services.AddScoped<EmailService>();
 
-// Register BCrypt for password hashing
-builder.Services.AddScoped<BCrypt.Net.BCrypt>();
+// ---------- JWT Authentication ----------
+var jwtSecret = builder.Configuration["Jwt:Secret"]!;
+var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
+var jwtAudience = builder.Configuration["Jwt:Audience"]!;
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// ---------- CORS ----------
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(
+                builder.Configuration["App:FrontendUrl"] ?? "http://localhost:3000"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
+// ---------- Controllers & OpenAPI ----------
+builder.Services.AddControllers();
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Configure minimal request pipeline and map controllers
+// ---------- Middleware pipeline ----------
 if (app.Environment.IsDevelopment())
 {
-    app.UseDeveloperExceptionPage();
+    app.MapOpenApi();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "NSPC CMS API v1"));
 }
 
+app.UseCors("AllowFrontend");
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
-
-// Seed admin user
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    if (!context.Users.Any(u => u.Email == "admin21@gmail.com"))
-    {
-        context.Users.Add(new User
-        {
-            Email = "admin21@gmail.com",
-            Password = BCrypt.Net.BCrypt.HashPassword("Admin@21"),
-            IsEmailVerified = true
-        });
-        context.SaveChanges();
-    }
-}
-
 app.Run();
