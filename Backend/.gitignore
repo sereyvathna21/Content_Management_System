@@ -37,6 +37,7 @@ logs/
 Thumbs.db
 
 ## Local config / secrets
+appsettings.json
 appsettings.Development.json
 appsettings.Local.json
 secrets.json

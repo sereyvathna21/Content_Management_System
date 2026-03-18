@@ -176,5 +176,12 @@
         "goToSignIn": "Go to Sign In"
       }
     }
+  },
+  "Common": {
+    "nav": {
+      "selectLanguage": "Select Language",
+      "eng": "English",
+      "kh": "Khmer"
+    }
   }
 }

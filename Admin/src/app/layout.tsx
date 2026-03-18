@@ -7,6 +7,13 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import SessionProviderWrapper from '@/components/auth/SessionProviderWrapper';
 
+export const metadata = {
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
+};
 const roboto = Roboto({
   
   variable: "--font-outfit-sans",
