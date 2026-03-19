@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Tooltip from "@/components/ui/Tooltip";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,30 +28,31 @@ type Props = {
 };
 
 export default function UserTable({ loading, users, query, onOpen, onEdit, onBlockRequest, onClear }: Props) {
+  const t = useTranslations();
   // delegate confirmation to parent; remove local confirm modal
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>{t("UserTable.loading")}</div>;
 
   if (!loading && users.length === 0) {
     return (
-      <div className="py-12 text-center text-gray-500">
+          <div className="py-12 text-center text-gray-500">
         {query ? (
           <>
-            <p className="text-lg font-medium">No users found for "{query}"</p>
-            <p className="mt-2 text-sm">Try a different search term or clear filters.</p>
+            <p className="text-lg font-medium">{t("UserTable.noUsersForQuery", { query })}</p>
+            <p className="mt-2 text-sm">{t("UserTable.tryDifferent")}</p>
             <div className="mt-4 flex justify-center">
               <button
                 className="h-9 px-4 rounded-lg font-semibold bg-primary text-white hover:bg-primary/90"
                 onClick={() => onClear && onClear()}
               >
-                Clear
+                {t("UserTable.clear")}
               </button>
             </div>
           </>
         ) : (
           <>
-            <p className="text-lg font-medium">No users found</p>
-            <p className="mt-2 text-sm">Try adjusting your search or create a user.</p>
+            <p className="text-lg font-medium">{t("UserTable.noUsersTitle")}</p>
+            <p className="mt-2 text-sm">{t("UserTable.tryAdjust")}</p>
           </>
         )}
       </div>
@@ -64,11 +66,11 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
           <Table>
             <TableHeader className="border-b border-gray-100 dark:border-white/5">
               <TableRow>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">User</TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">Email</TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">Password</TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">Role</TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">Actions</TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">{t("UserTable.headers.user")}</TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">{t("UserTable.headers.email")}</TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">{t("UserTable.headers.password")}</TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">{t("UserTable.headers.role")}</TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">{t("UserTable.headers.actions")}</TableCell>
               </TableRow>
             </TableHeader>
 
@@ -113,11 +115,11 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
 
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
                     <span
-                      aria-label={u.passwordSet ? "Password set" : "Password not set"}
-                      title={u.passwordSet ? "Password set" : "Password not set"}
+                      aria-label={u.passwordSet ? t("UserTable.passwordSet") : t("UserTable.passwordNotSet")}
+                      title={u.passwordSet ? t("UserTable.passwordSet") : t("UserTable.passwordNotSet")}
                       className={`inline-block px-2 py-0.5 rounded text-theme-xs ${u.passwordSet ? "bg-green-100 text-green-700" : "bg-red-50 text-red-600"}`}
                     >
-                      {u.passwordSet ? "Set" : "Not set"}
+                      {u.passwordSet ? t("UserTable.passwordSet") : t("UserTable.passwordNotSet")}
                     </span>
                   </TableCell>
 
@@ -125,11 +127,11 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
 
                   <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
                     <div className="flex items-center gap-2">
-                      <Tooltip label="Edit">
+                      <Tooltip label={t("UserTable.tooltips.edit")}>
                         <button
                           onClick={() => onEdit(u)}
-                          title="Edit"
-                          aria-label="Edit"
+                          title={t("UserTable.tooltips.edit")}
+                          aria-label={t("UserTable.tooltips.edit")}
                           className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/10 transition text-sky-500 dark:text-sky-400"
                         >
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -139,12 +141,12 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                         </button>
                       </Tooltip>
 
-                        <Tooltip label={u.blocked ? "Unblock user" : "Block user"}>
+                        <Tooltip label={u.blocked ? t("UserTable.tooltips.unblock") : t("UserTable.tooltips.block")}>
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); onBlockRequest(u.id); }}
-                          title={u.blocked ? "Unblock user" : "Block user"}
-                          aria-label={u.blocked ? "Unblock user" : "Block user"}
+                          title={u.blocked ? t("UserTable.tooltips.unblock") : t("UserTable.tooltips.block")}
+                          aria-label={u.blocked ? t("UserTable.tooltips.unblock") : t("UserTable.tooltips.block")}
                           className={`inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-white/3 transition ${u.blocked ? "text-green-600" : "text-red-600"}`}
                         >
                           {u.blocked ? (

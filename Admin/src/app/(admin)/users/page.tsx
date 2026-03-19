@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import Button from "@/components/ui/button/Button";
 import ComponentCard from "@/components/common/ComponentCard";
 import UserTable from "@/components/user-management/UserTable";
@@ -23,6 +24,7 @@ const initialUsers: User[] = [];
 
 
 export default function UsersPage() {
+  const t = useTranslations();
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [query, setQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
@@ -213,16 +215,16 @@ export default function UsersPage() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-start justify-between">
-        <h1 className="text-3xl text-primary font-semibold mb-4">User Management</h1>
+        <h1 className="text-3xl text-primary font-semibold mb-4">{t("UsersPage.title")}</h1>
       </div>
 
-      <ComponentCard title="Users" desc="Manage your users" className="mt-2">
+      <ComponentCard title={t("UsersPage.card.title")} desc={t("UsersPage.card.desc")} className="mt-2">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
           <div />
 
           <div className="flex flex-col sm:flex-row items-center justify-end gap-2 w-full">
             <input
-              placeholder="Search users"
+              placeholder={t("UsersPage.searchPlaceholder")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               aria-label="Search users"
@@ -235,7 +237,7 @@ export default function UsersPage() {
               onClick={handleCreate}
               className="h-9 px-4 rounded-lg font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200 shadow-md text-sm w-full sm:w-auto sm:ml-2"
             >
-              Create User
+              {t("UsersPage.createButton")}
             </Button>
           </div>
         </div>
@@ -266,13 +268,13 @@ export default function UsersPage() {
         <div className="mb-3">
           <h3 className="text-lg font-semibold text-primary">
             {pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked
-              ? "Unblock user"
-              : "Block user"}
+              ? t("UsersPage.unblock")
+              : t("UsersPage.block")}
           </h3>
           <p className="text-sm text-gray-500 mb-4">
-            Are you sure you want to {pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked
-              ? "unblock"
-              : "block"} this user?
+            {t("UsersPage.confirmText", {
+              action: pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked ? t("UsersPage.unblock") : t("UsersPage.block"),
+            })}
           </p>
         </div>
 
@@ -285,14 +287,14 @@ export default function UsersPage() {
               setPendingBlockId(null);
             }}
           >
-            Cancel
+            {t("UsersPage.cancel")}
           </Button>
           <Button
             size="sm"
             onClick={handleBlockConfirmed}
             className="bg-red-600 text-white hover:bg-red-700"
           >
-            Confirm
+            {t("UsersPage.confirm")}
           </Button>
         </div>
       </Modal>
@@ -321,8 +323,8 @@ export default function UsersPage() {
           <div>
             <h3 className="text-lg font-semibold mb-2">{selectedUser.name}</h3>
             <p className="text-sm text-gray-600">{selectedUser.email}</p>
-            <p className="mt-2 text-sm">Role: {selectedUser.role}</p>
-            <p className="mt-1 text-sm">Blocked: {selectedUser.blocked ? "Yes" : "No"}</p>
+            <p className="mt-2 text-sm">{t("UsersPage.roleLabel")} {selectedUser.role}</p>
+            <p className="mt-1 text-sm">{t("UsersPage.blockedLabel")} {selectedUser.blocked ? t("UsersPage.yes") : t("UsersPage.no")}</p>
           </div>
         )}
       </Modal>

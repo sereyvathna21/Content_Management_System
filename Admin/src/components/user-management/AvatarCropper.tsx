@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import Cropper from "react-easy-crop";
 
 interface Props {
@@ -41,6 +42,7 @@ function getCroppedImg(imageSrc: string, crop: { x: number; y: number }, zoom: n
 }
 
 export default function AvatarCropper({ imageSrc, onCancel, onComplete }: Props) {
+  const t = useTranslations();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
@@ -87,10 +89,10 @@ export default function AvatarCropper({ imageSrc, onCancel, onComplete }: Props)
 
       <div className="flex justify-end gap-3 mt-3">
         <button type="button" className="px-3 py-1 rounded-md border" onClick={onCancel}>
-          Cancel
+          {t("UserForm.cancel")}
         </button>
         <button type="button" className="px-3 py-1 rounded-md bg-primary text-white" onClick={handleCrop}>
-          Crop
+          {t("UserForm.crop")}
         </button>
       </div>
     </div>

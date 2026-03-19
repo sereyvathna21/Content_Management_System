@@ -1,6 +1,7 @@
 // CreateUserForm.tsx
 "use client";
 import React, { useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Modal } from "@/components/ui/modal";
 import Input from "@/components/form/input/InputField";
 import PasswordInput from "@/components/form/PasswordInput";
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function CreateUserForm({ open, onClose, onSave }: Props) {
+  const t = useTranslations();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("editor");
@@ -38,11 +40,11 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
   function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
     if (!email || !name || !password) {
-      setError("All fields are required.");
+      setError(t("UserForm.allFieldsRequired"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(t("UserForm.passwordsMismatch"));
       return;
     }
     onSave({ name, email, role, password, avatar: avatarPreview ?? undefined });
@@ -77,8 +79,8 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
   return (
     <Modal isOpen={open} onClose={onClose} className="max-w-xl p-6" backdropClassName="fixed inset-0 h-full w-full bg-gray-400/30 backdrop-blur-sm">
       <div className="mb-3">
-        <h3 className="text-lg font-semibold text-primary">Create User</h3>
-        <p className="text-sm text-gray-500">Add user details below.</p>
+        <h3 className="text-lg font-semibold text-primary">{t("UserForm.createTitle")}</h3>
+        <p className="text-sm text-gray-500">{t("UserForm.createSubtitle")}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,10 +108,10 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
                   return <Image src={src} alt="Avatar preview" width={96} height={96} className="w-full text-center h-full object-cover" />;
                 })()
               ) : (
-                <div className="text-gray-400">No avatar</div>
+                <div className="text-gray-400">{t("UserForm.noAvatar")}</div>
               )}
             </div>
-            <label className="mt-2 text-xs text-gray-500">Avatar (click image to upload)</label>
+            <label className="mt-2 text-xs text-gray-500">{t("UserForm.avatarLabel")}</label>
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className="sr-only" />
             {showCrop && cropSrc && (
               <div className="w-full mt-3">
@@ -120,32 +122,36 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
 
           <div className="md:col-span-2 space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
-              <Input placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.fullNameLabel")}</label>
+              <Input placeholder={t("UserForm.fullNamePlaceholder")} value={name} onChange={(e) => setName(e.target.value)} />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <Input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.emailLabel")}</label>
+              <Input type="email" placeholder={t("UserForm.emailPlaceholder")} value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.roleLabel")}</label>
               <Select
                 value={role}
                 onChange={(val) => setRole(val as string)}
-                options={[{ label: "Admin", value: "admin" }, { label: "Editor", value: "editor" }, { label: "Viewer", value: "viewer" }]}
+                options={[
+                  { label: t("UserForm.roleOptions.admin"), value: "admin" },
+                  { label: t("UserForm.roleOptions.editor"), value: "editor" },
+                  { label: t("UserForm.roleOptions.viewer"), value: "viewer" },
+                ]}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <PasswordInput placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.passwordLabel")}</label>
+              <PasswordInput placeholder={t("UserForm.passwordPlaceholder")} value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
-              <PasswordInput placeholder="Confirm password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.confirmPasswordLabel")}</label>
+              <PasswordInput placeholder={t("UserForm.confirmPasswordPlaceholder")} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
             </div>
 
             {error && <div className="text-sm text-red-600">{error}</div>}
@@ -153,8 +159,8 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
         </div>
 
         <div className="flex items-center justify-end gap-3">
-          <Button variant="outline" onClick={onClose} size="sm">Cancel</Button>
-          <Button size="sm" type="submit" className="bg-primary text-white hover:bg-primary/60">Save</Button>
+          <Button variant="outline" onClick={onClose} size="sm">{t("UserForm.cancel")}</Button>
+          <Button size="sm" type="submit" className="bg-primary text-white hover:bg-primary/60">{t("UserForm.save")}</Button>
         </div>
       </form>
     </Modal>

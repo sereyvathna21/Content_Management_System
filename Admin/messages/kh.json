@@ -185,4 +185,74 @@
       "kh": "ភាសាខ្មែរ"
     }
   }
+  ,
+  "UsersPage": {
+    "title": "គ្រប់គ្រងអ្នកប្រើប្រាស់",
+    "card": {
+      "title": "អ្នកប្រើប្រាស់",
+      "desc": "គ្រប់គ្រងអ្នកប្រើប្រាស់របស់អ្នក"
+    },
+    "searchPlaceholder": "ស្វែងរកអ្នកប្រើប្រាស់",
+    "createButton": "បង្កើតអ្នកប្រើប្រាស់",
+    "block": "ចាក់ទោស",
+    "unblock": "ដោះចាក់ទោស",
+    "confirm": "បញ្ជាក់",
+    "cancel": "បោះបង់",
+    "confirmText": "តើអ្នកប្រាកដថាចង់ {action} អ្នកប្រើប្រាស់នេះទេ?",
+    "roleLabel": "តួនាទី:",
+    "blockedLabel": "ត្រូវបានចាក់ទោស:",
+    "yes": "បាទ/ចាស",
+    "no": "ទេ"
+  }
+  ,
+  "UserForm": {
+    "createTitle": "បង្កើតអ្នកប្រើប្រាស់",
+    "createSubtitle": "បញ្ចូលពត៌មានអ្នកប្រើក្រោមនេះ។",
+    "editTitle": "កែប្រែអ្នកប្រើប្រាស់",
+    "editSubtitle": "បន្ទាប់បន្ថែមព័ត៌មានអ្នកប្រើប្រាស់។",
+    "avatarLabel": "Avatar (click image to upload)",
+    "noAvatar": "គ្មានរូបយូស",
+    "fullNameLabel": "ឈ្មោះពេញ",
+    "fullNamePlaceholder": "ឈ្មោះពេញ",
+    "emailLabel": "អ៊ីមែល",
+    "emailPlaceholder": "អ៊ីមែល",
+    "roleLabel": "តួនាទី",
+    "roleOptions": {
+      "admin": "Admin",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    },
+    "passwordLabel": "ពាក្យសម្ងាត់",
+    "passwordPlaceholder": "ពាក្យសម្ងាត់",
+    "confirmPasswordLabel": "បញ្ជាក់ពាក្យសម្ងាត់",
+    "confirmPasswordPlaceholder": "បញ្ជាក់ពាក្យសម្ងាត់",
+    "allFieldsRequired": "តម្រូវឱ្យមានទាំងអស់។",
+    "passwordsMismatch": "ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ",
+    "cancel": "បោះបង់",
+    "save": "រក្សាទុក",
+    "uploadAvatar": "ផ្ទុករូប",
+    "crop": "កាត់"
+  },
+  "UserTable": {
+    "loading": "កំពុងផ្ទុក...",
+    "noUsersTitle": "រកមិនឃើញអ្នកប្រើ",
+    "noUsersForQuery": "រកមិនឃើញអ្នកប្រើសម្រាប់ \"{query}\"",
+    "tryDifferent": "សាកល្បងពាក្យស្វែងរកផ្សេង ឬលុបតម្រង។",
+    "tryAdjust": "សាកល្បងកែសម្រួលការស្វែងរក ឬបង្កើតអ្នកប្រើថ្មី។",
+    "clear": "លុប",
+    "headers": {
+      "user": "អ្នកប្រើ",
+      "email": "អ៊ីមែល",
+      "password": "ពាក្យសម្ងាត់",
+      "role": "តួនាទី",
+      "actions": "សកម្មភាព"
+    },
+    "passwordSet": "បានកំណត់",
+    "passwordNotSet": "មិនទាន់កំណត់",
+    "tooltips": {
+      "edit": "កែប្រែ",
+      "block": "ចាក់ទោស",
+      "unblock": "ដោះចាក់ទោស"
+    }
+  }
 }

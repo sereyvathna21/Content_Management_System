@@ -131,8 +131,8 @@
     "register": {
       "title": "Create Account",
       "subtitle": "Join NSPC and be part of our community",
-      "fullNameLabel": "Username",
-      "fullNamePlaceholder": "Enter your Username",
+      "fullNameLabel": "Full name",
+      "fullNamePlaceholder": "Enter your Full name",
       "emailLabel": "Email Address",
       "emailPlaceholder": "name@example.com",
       "passwordLabel": "Password",
@@ -182,6 +182,76 @@
       "selectLanguage": "Select Language",
       "eng": "English",
       "kh": "Khmer"
+    }
+  }
+  ,
+  "UsersPage": {
+    "title": "User Management",
+    "card": {
+      "title": "Users",
+      "desc": "Manage your users"
+    },
+    "searchPlaceholder": "Search users",
+    "createButton": "Create User",
+    "block": "block",
+    "unblock": "unblock",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "confirmText": "Are you sure you want to {action} this user?",
+    "roleLabel": "Role:",
+    "blockedLabel": "Blocked:",
+    "yes": "Yes",
+    "no": "No"
+  }
+  ,
+  "UserForm": {
+    "createTitle": "Create User",
+    "createSubtitle": "Add user details below.",
+    "editTitle": "Edit User",
+    "editSubtitle": "Update user details below.",
+    "avatarLabel": "Avatar (click image to upload)",
+    "noAvatar": "No avatar",
+    "fullNameLabel": "Full name",
+    "fullNamePlaceholder": "Full name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Email",
+    "roleLabel": "Role",
+    "roleOptions": {
+      "admin": "Admin",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    },
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Password",
+    "confirmPasswordLabel": "Confirm password",
+    "confirmPasswordPlaceholder": "Confirm password",
+    "allFieldsRequired": "All fields are required.",
+    "passwordsMismatch": "Passwords do not match",
+    "cancel": "Cancel",
+    "save": "Save",
+    "uploadAvatar": "Upload avatar",
+    "crop": "Crop"
+  },
+  "UserTable": {
+    "loading": "Loading...",
+    "noUsersTitle": "No users found",
+    "noUsersForQuery": "No users found for \"{query}\"",
+    "tryDifferent": "Try a different search term or clear filters.",
+    "tryAdjust": "Try adjusting your search or create a user.",
+    "clear": "Clear",
+    "headers": {
+      "user": "User",
+      "email": "Email",
+      "password": "Password",
+      "role": "Role",
+      "actions": "Actions"
+    },
+    "passwordSet": "Set",
+    "passwordNotSet": "Not set",
+    "tooltips": {
+      "edit": "Edit",
+      "block": "Block user",
+      "unblock": "Unblock user"
     }
   }
 }
