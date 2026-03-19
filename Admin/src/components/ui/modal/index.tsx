@@ -57,16 +57,16 @@ export const Modal: React.FC<ModalProps> = ({
     : "relative w-full max-w-lg rounded-3xl bg-white dark:bg-gray-900 mx-auto";
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-99999 py-8 px-4">
+    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto z-99999 py-8 px-4">
       {!isFullscreen && (
         <div
-          className={backdropClassName ?? "fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]"}
+          className={(backdropClassName ?? "fixed inset-0 h-full w-full bg-gray-400/50 backdrop-blur-[32px]") + " z-99998"}
           onClick={onClose}
         ></div>
       )}
       <div
         ref={modalRef}
-        className={`${contentClasses} ${className || ""}`}
+        className={`${contentClasses} ${className || ""} z-100000`}
         onClick={(e) => e.stopPropagation()}
       >
         {showCloseButton && (

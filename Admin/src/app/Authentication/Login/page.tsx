@@ -7,6 +7,8 @@ import TopNav from "@/components/TopNav";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+
 export default function Login() {
   const t = useTranslations("LoginPage.signIn");
   const router = useRouter();
@@ -14,6 +16,7 @@ export default function Login() {
   const [errors, setErrors] = useState({ email: "", password: "", general: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const EyeIcon = ({ open }: { open: boolean }) =>
     open ? (
@@ -55,14 +58,32 @@ export default function Login() {
     setErrors((prev) => ({ ...prev, general: "" }));
 
     try {
+      // Pre-check with backend to surface errors client-side (avoids CallbackRouteError logs)
+      try {
+        const preRes = await fetch(`${BACKEND_URL}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: formData.email, password: formData.password }),
+        });
+        const preData = await preRes.json().catch(() => ({}));
+        if (!preRes.ok) {
+          setErrors((prev) => ({ ...prev, general: preData.message || "Invalid credentials." }));
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (preErr) {
+        // If pre-check fails (network), continue to signIn and let NextAuth handle it
+      }
+
       const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
+        remember: rememberMe,
         redirect: false,
       });
 
       if (result?.error) {
-        setErrors((prev) => ({ ...prev, general: "Invalid email or password." }));
+        setErrors((prev) => ({ ...prev, general: result.error as string }));
       } else {
         router.push("/");
         router.refresh();
@@ -178,6 +199,8 @@ export default function Login() {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                     className="h-4 w-4 border-primary rounded text-primary focus:ring-primary"
                   />
                   <label htmlFor="remember-me" className="ml-2 block lg:text-gray-700 text-white">

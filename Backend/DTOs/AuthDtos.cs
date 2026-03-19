@@ -19,6 +19,25 @@ namespace Backend.DTOs
         public string Password { get; set; } = string.Empty;
     }
 
+    public class CreateUserRequest
+    {
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string Role { get; set; } = "User";
+        public string? Avatar { get; set; }
+    }
+
+    public class UpdateUserRequest
+    {
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = "User";
+        public string? Avatar { get; set; }
+        public string? Password { get; set; }
+        public bool? IsBlocked { get; set; }
+    }
+
     public class VerifyEmailRequest
     {
         public string Email { get; set; } = string.Empty;
@@ -43,6 +62,9 @@ namespace Backend.DTOs
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
+        public string? Avatar { get; set; }
+        public bool IsBlocked { get; set; }
+        public bool PasswordSet { get; set; }
     }
 
     public class MessageResponse

@@ -1,16 +1,9 @@
 "use client";
-import React, { useMemo, useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
+import React, { useMemo, useState, useEffect } from "react";
 import Button from "@/components/ui/button/Button";
-import Image from "next/image";
 import ComponentCard from "@/components/common/ComponentCard";
-import Tooltip from "@/components/ui/Tooltip";
+import UserTable from "@/components/user-management/UserTable";
 import { Modal } from "@/components/ui/modal";
 import CreateUserForm from "@/components/user-management/CreateUserForm";
 import EditUserForm from "@/components/user-management/EditUserForm";
@@ -20,34 +13,14 @@ type User = {
   name: string;
   email: string;
   role: string;
-  password: string;
+  password?: string;
   passwordSet?: boolean;
   blocked?: boolean;
   avatar?: string;
 };
 
-const initialUsers: User[] = [
-  {
-    id: "1",
-    name: "Musharof Chowdhury",
-    email: "musharof@example.com",
-    password: "password123",
-    role: "admin",
-    passwordSet: true,
-    blocked: false,
-    avatar: "/images/user/owner.jpg",
-  },
-  {
-    id: "2",
-    name: "Jane Doe",
-    email: "jane@example.com",
-    password: "password12",
-    role: "editor",
-    passwordSet: true,
-    blocked: false,
-    avatar: "/images/user/user-18.jpg",
-  },
-];
+const initialUsers: User[] = [];
+
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>(initialUsers);
@@ -58,6 +31,42 @@ export default function UsersPage() {
   const [viewOpen, setViewOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingBlockId, setPendingBlockId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadUsers() {
+      setLoading(true);
+      try {
+        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+        const res = await fetch(`${BACKEND_URL}/api/user`);
+        if (!res.ok) {
+          console.error("Failed to fetch users", res.status);
+          return;
+        }
+        const data = await res.json();
+        const mapped: User[] = (data || []).map((u: any) => {
+          const rawAvatar = (u.avatar ?? "")?.toString().trim();
+          const avatar = rawAvatar && rawAvatar !== "null" && rawAvatar !== "undefined" ? rawAvatar : "/images/user/default-avatar.svg";
+          return {
+            id: String(u.id),
+            name: u.fullName || u.name || "",
+            email: u.email || "",
+            role: u.role || "",
+            passwordSet: !!u.passwordSet,
+            avatar: avatar,
+            blocked: u.isBlocked || false,
+          } as User;
+        });
+        setUsers(mapped);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadUsers();
+  }, []);
 
   const filtered = useMemo(() => {
     if (!query) return users;
@@ -71,21 +80,72 @@ export default function UsersPage() {
     setFormOpen(true);
   }
 
-  function handleSave(payload: any) {
-    if (payload.id) {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === payload.id
-            ? { ...u, ...payload, avatar: payload.avatar ?? u.avatar }
-            : u
-        )
-      );
-    } else {
-      const id = String(Date.now());
-      setUsers((prev) => [
-        { id, blocked: false, avatar: payload.avatar || "/images/user/user-17.jpg", ...payload },
-        ...prev,
-      ]);
+  async function handleSave(payload: any) {
+    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+    try {
+      if (payload.id) {
+        const res = await fetch(`${BACKEND_URL}/api/user/${payload.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName: payload.name,
+            email: payload.email,
+            role: payload.role,
+            avatar: payload.avatar,
+            password: payload.password,
+          }),
+        });
+
+        if (!res.ok) {
+          console.error("Failed to update user", res.status);
+          return;
+        }
+
+        const data = await res.json();
+        const updated: User = {
+          id: String(data.id),
+          name: data.fullName || payload.name || "",
+          email: data.email || payload.email || "",
+          role: data.role || payload.role || "",
+          avatar: data.avatar || payload.avatar || "/images/user/default-avatar.svg",
+          passwordSet: !!data.passwordSet,
+          blocked: payload.blocked ?? false,
+        };
+
+        setUsers((prev) => prev.map((u) => (u.id === payload.id ? updated : u)));
+      } else {
+        const res = await fetch(`${BACKEND_URL}/api/user`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fullName: payload.name,
+            email: payload.email,
+            role: payload.role,
+            password: payload.password,
+            avatar: payload.avatar,
+          }),
+        });
+
+        if (!res.ok) {
+          console.error("Failed to create user", res.status);
+          return;
+        }
+
+        const data = await res.json();
+        const created: User = {
+          id: String(data.id),
+          name: data.fullName || payload.name || "",
+          email: data.email || payload.email || "",
+          role: data.role || payload.role || "",
+          avatar: data.avatar || payload.avatar || "/images/user/default-avatar.svg",
+          passwordSet: !!data.passwordSet,
+          blocked: false,
+        };
+
+        setUsers((prev) => [created, ...prev]);
+      }
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -102,9 +162,52 @@ export default function UsersPage() {
   function handleBlockConfirmed() {
     const id = pendingBlockId;
     if (!id) return;
-    setUsers((prev) => prev.map((p) => (p.id === id ? { ...p, blocked: !p.blocked } : p)));
-    setPendingBlockId(null);
-    setConfirmOpen(false);
+
+    (async () => {
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+      try {
+        // find the user
+        const user = users.find((u) => u.id === id);
+        if (!user) return;
+        const updatedPayload = {
+          fullName: user.name,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar,
+          // toggle blocked flag
+          isBlocked: !user.blocked,
+        };
+
+        const res = await fetch(`${BACKEND_URL}/api/user/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(updatedPayload),
+        });
+
+        if (!res.ok) {
+          console.error("Failed to update user block status", res.status);
+          return;
+        }
+
+        const data = await res.json();
+        const updated: User = {
+          id: String(data.id),
+          name: data.fullName || user.name || "",
+          email: data.email || user.email || "",
+          role: data.role || user.role || "",
+          avatar: data.avatar || user.avatar || "/images/user/default-avatar.svg",
+          passwordSet: !!data.passwordSet,
+          blocked: data.isBlocked ?? !user.blocked,
+        };
+
+        setUsers((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setPendingBlockId(null);
+        setConfirmOpen(false);
+      }
+    })();
   }
 
   return (
@@ -138,103 +241,15 @@ export default function UsersPage() {
         </div>
 
         <div className="mt-4">
-          <div className="max-w-full overflow-x-auto">
-            <div className="min-w-0">
-              <Table>
-                <TableHeader className="border-b border-gray-100 dark:border-white/5">
-                  <TableRow>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">User</TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">Email</TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">Password</TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">Role</TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">Actions</TableCell>
-                  </TableRow>
-                </TableHeader>
-
-                <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
-                  {filtered.map((u) => (
-                    <TableRow key={u.id}>
-                      <TableCell className="px-5 py-3 sm:px-6 text-start">
-                        <button className="text-sm font-medium text-gray-800 dark:text-white/90" onClick={() => { setSelectedUser(u); setViewOpen(true); }}>
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 overflow-hidden rounded-full">
-                              {(() => {
-                                const src = (u.avatar || "").toString().trim();
-                                if (!src) return <Image width={40} height={40} src="/images/user/owner.jpg" alt={u.name} />;
-                                if (src.startsWith("data:") || src.startsWith("blob:")) {
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  return <img src={src} alt={u.name} className="w-full h-full object-cover" />;
-                                }
-                                return <Image width={40} height={40} src={src} alt={u.name} />;
-                              })()}
-                            </div>
-                            <div>{u.name}</div>
-                          </div>
-                        </button>
-                      </TableCell>
-
-                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">{u.email}</TableCell>
-
-                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                        <span
-                          aria-label={u.passwordSet ? "Password set" : "Password not set"}
-                          title={u.passwordSet ? "Password set" : "Password not set"}
-                          className={`inline-block px-2 py-0.5 rounded text-theme-xs ${u.passwordSet ? "bg-green-100 text-green-700" : "bg-red-50 text-red-600"}`}
-                        >
-                          {u.passwordSet ? "Set" : "Not set"}
-                        </span>
-                      </TableCell>
-
-                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">{u.role}</TableCell>
-
-                      <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
-                        <div className="flex items-center gap-2">
-                          {/* View button removed */}
-
-                          <Tooltip label="Edit">
-                            <button
-                              onClick={() => handleEdit(u)}
-                              title="Edit"
-                              aria-label="Edit"
-                              className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/10 transition text-sky-500 dark:text-sky-400"
-                            >
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            </button>
-                          </Tooltip>
-
-                          <Tooltip label={u.blocked ? "Unblock user" : "Block user"}>
-                            <button
-                              onClick={() => requestBlock(u.id)}
-                              title={u.blocked ? "Unblock user" : "Block user"}
-                              aria-label={u.blocked ? "Unblock user" : "Block user"}
-                              className={`inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-white/3 transition ${u.blocked ? "text-green-600" : "text-red-600"}`}
-                            >
-                              {u.blocked ? (
-                                // Locked padlock (blocked)
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                  <path d="M7 11V8a5 5 0 0110 0v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                  <rect x="3" y="11" width="18" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                              ) : (
-                                // Open padlock (unblocked)
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                  <path d="M16 11V8a4 4 0 10-8 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                  <rect x="3" y="11" width="18" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                              )}
-                            </button>
-                          </Tooltip>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+          <UserTable
+            loading={loading}
+            users={filtered}
+            query={query}
+            onOpen={(u) => { setSelectedUser(u); setViewOpen(true); }}
+            onEdit={handleEdit}
+            onBlockRequest={requestBlock}
+            onClear={() => setQuery("")}
+          />
         </div>
       </ComponentCard>
 
@@ -245,7 +260,7 @@ export default function UsersPage() {
           setConfirmOpen(false);
           setPendingBlockId(null);
         }}
-        className="max-w-xl p-6"
+        className="max-w-md p-4"
         backdropClassName="fixed inset-0 h-full w-full bg-gray-400/30 backdrop-blur-sm"
       >
         <div className="mb-3">
@@ -281,6 +296,8 @@ export default function UsersPage() {
           </Button>
         </div>
       </Modal>
+
+     
 
       {/* Create User Form */}
       <CreateUserForm

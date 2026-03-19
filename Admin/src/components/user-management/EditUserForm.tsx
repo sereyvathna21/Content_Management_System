@@ -29,7 +29,7 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
   const [name, setName] = useState(initial.name);
   const [email, setEmail] = useState(initial.email);
   const [role, setRole] = useState(initial.role);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(initial.avatar || "/images/user/user-17.jpg");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(initial.avatar || "/images/user/default-avatar.svg");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCrop, setShowCrop] = useState(false);
@@ -41,7 +41,7 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
     setName(initial.name);
     setEmail(initial.email);
     setRole(initial.role);
-    setAvatarPreview(initial.avatar || "/images/user/user-17.jpg");
+    setAvatarPreview(initial.avatar || "/images/user/default-avatar.svg");
   }, [initial]);
 
   function handleSubmit(e?: React.FormEvent) {
@@ -61,7 +61,7 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
       name,
       email,
       role,
-      avatar: avatarPreview,
+      avatar: avatarPreview ?? undefined,
       password: password || undefined, // Include password only if provided
     });
     onClose();

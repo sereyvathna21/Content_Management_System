@@ -30,7 +30,7 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>("/images/user/user-17.jpg");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>("/images/user/default-avatar.svg");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCrop, setShowCrop] = useState(false);
@@ -45,7 +45,7 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
       setError("Passwords do not match");
       return;
     }
-    onSave({ name, email, role, password, avatar: avatarPreview });
+    onSave({ name, email, role, password, avatar: avatarPreview ?? undefined });
     onClose();
   }
 

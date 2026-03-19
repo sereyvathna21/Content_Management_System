@@ -2,7 +2,7 @@ import Image from "next/image";
 import React from "react";
 
 interface AvatarProps {
-  src: string; // URL of the avatar image
+  src?: string | null; // URL of the avatar image (optional)
   alt?: string; // Alt text for the avatar
   size?: "xsmall" | "small" | "medium" | "large" | "xlarge" | "xxlarge"; // Avatar size
   status?: "online" | "offline" | "busy" | "none"; // Status indicator
@@ -38,14 +38,16 @@ const Avatar: React.FC<AvatarProps> = ({
   size = "medium",
   status = "none",
 }) => {
+  const imgSrc = src && src.length > 0 ? src : "/images/user/default-avatar.svg";
+
   return (
     <div className={`relative  rounded-full ${sizeClasses[size]}`}>
-      {/* Avatar Image */}
+      {/* Avatar Image (falls back to default SVG when src is missing) */}
       <Image
         width="0"
         height="0"
         sizes="100vw"
-        src={src}
+        src={imgSrc}
         alt={alt}
         className="object-cover w-full rounded-full"
       />

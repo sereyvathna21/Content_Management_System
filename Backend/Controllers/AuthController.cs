@@ -34,6 +34,9 @@ namespace Backend.Controllers
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 return Unauthorized(new MessageResponse { Message = "Invalid email or password." });
 
+            if (user.IsBlocked)
+                return Unauthorized(new MessageResponse { Message = "This account is blocked. Please contact an administrator." });
+
             if (!user.IsEmailVerified)
                 return Unauthorized(new MessageResponse { Message = "Please verify your email before logging in." });
 
@@ -46,7 +49,9 @@ namespace Backend.Controllers
                     Id = user.Id,
                     FullName = user.FullName,
                     Email = user.Email,
-                    Role = user.Role
+                    Role = user.Role,
+                    Avatar = user.Avatar,
+                    IsBlocked = user.IsBlocked,
                 }
             });
         }

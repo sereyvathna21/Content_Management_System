@@ -32,8 +32,14 @@ namespace Backend.Controllers
                 string.IsNullOrWhiteSpace(request.FullName))
                 return BadRequest(new MessageResponse { Message = "All fields are required." });
 
-            if (await _db.Users.AnyAsync(u => u.Email == request.Email))
+            var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (existing != null)
+            {
+                if (existing.IsBlocked)
+                    return Conflict(new MessageResponse { Message = "This account has been blocked. Please contact an administrator." });
+
                 return Conflict(new MessageResponse { Message = "An account with this email already exists." });
+            }
 
             var otp = GenerateOtp();
             var expiryMinutes = int.Parse(_config["App:OtpExpiryMinutes"] ?? "10");
@@ -157,6 +163,114 @@ namespace Backend.Controllers
             await _db.SaveChangesAsync();
 
             return Ok(new MessageResponse { Message = "Password has been reset successfully. You can now log in." });
+        }
+
+        // GET /api/user
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var users = await _db.Users
+                .Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    Role = u.Role,
+                    Avatar = u.Avatar,
+                    IsBlocked = u.IsBlocked,
+                    PasswordSet = !string.IsNullOrEmpty(u.Password)
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+
+        // POST /api/user
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Password) ||
+                string.IsNullOrWhiteSpace(request.FullName))
+                return BadRequest(new MessageResponse { Message = "All fields are required." });
+
+            var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            if (existing != null)
+            {
+                if (existing.IsBlocked)
+                    return Conflict(new MessageResponse { Message = "This account has been blocked. Please contact an administrator." });
+
+                return Conflict(new MessageResponse { Message = "An account with this email already exists." });
+            }
+
+            var user = new User
+            {
+                FullName = request.FullName,
+                Email = request.Email,
+                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Role = string.IsNullOrWhiteSpace(request.Role) ? "User" : request.Role,
+                Avatar = request.Avatar,
+                IsEmailVerified = true
+            };
+
+            _db.Users.Add(user);
+            await _db.SaveChangesAsync();
+
+            return Ok(new UserDto
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Role = user.Role,
+                Avatar = user.Avatar,
+                IsBlocked = user.IsBlocked,
+                PasswordSet = !string.IsNullOrEmpty(user.Password)
+            });
+        }
+
+        // PUT /api/user/{id}
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserRequest request)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                return NotFound(new MessageResponse { Message = "User not found." });
+
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.FullName))
+                return BadRequest(new MessageResponse { Message = "Full name and email are required." });
+
+            var emailExists = await _db.Users.AnyAsync(u => u.Email == request.Email && u.Id != id);
+            if (emailExists)
+                return Conflict(new MessageResponse { Message = "An account with this email already exists." });
+
+            // allow admin to set blocked flag via update
+            if (request.IsBlocked != null)
+            {
+                user.IsBlocked = request.IsBlocked.Value;
+            }
+
+            user.FullName = request.FullName;
+            user.Email = request.Email;
+            user.Role = string.IsNullOrWhiteSpace(request.Role) ? user.Role : request.Role;
+            user.Avatar = request.Avatar;
+
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            }
+
+            await _db.SaveChangesAsync();
+
+            return Ok(new UserDto
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                Role = user.Role,
+                Avatar = user.Avatar,
+                IsBlocked = user.IsBlocked,
+                PasswordSet = !string.IsNullOrEmpty(user.Password)
+            });
         }
 
         private static string GenerateOtp() =>
