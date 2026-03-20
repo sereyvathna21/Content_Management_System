@@ -25,6 +25,10 @@ async function run() {
   }
 
   // keep process alive
+  process.on("SIGINT", async () => {
+    await connection.stop();
+    process.exit(0);
+  });
 }
 
 run();

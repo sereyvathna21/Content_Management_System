@@ -253,5 +253,65 @@
       "block": "Block user",
       "unblock": "Unblock user"
     }
+  },
+  "LawsPage": {
+    "admin": {
+      "title": "Law Management",
+      "card": {
+        "title": "Laws",
+        "desc": "Manage laws and regulations with multi-language PDF support"
+      },
+      "searchPlaceholder": "Search laws...",
+      "filterByCategory": "Filter by category",
+      "createButton": "Create Law"
+    },
+    "form": {
+      "createTitle": "Create Law",
+      "editTitle": "Edit Law",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter law title",
+      "titleRequired": "Title is required",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Enter description (optional)",
+      "categoryLabel": "Category",
+      "categoryRequired": "Category is required",
+      "dateLabel": "Date",
+      "pdfSection": "PDF Documents (Multi-Language)",
+      "pdfUrlEnLabel": "PDF URL (English)",
+      "pdfUrlEnPlaceholder": "https://example.com/law-en.pdf",
+      "pdfUrlEnHint": "URL to the English version of the PDF document",
+      "pdfUrlKhLabel": "PDF URL (Khmer)",
+      "pdfUrlKhPlaceholder": "https://example.com/law-kh.pdf",
+      "pdfUrlKhHint": "URL to the Khmer version of the PDF document (optional)",
+      "pdfUrlRequired": "English PDF URL is required",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "table": {
+      "loading": "Loading...",
+      "noResultsFor": "No results for \"{query}\"",
+      "tryDifferentSearch": "Try a different search term or clear filters.",
+      "noLawsFound": "No laws found",
+      "tryAdjust": "Try adjusting your search or create a law.",
+      "clearFilters": "Clear filters",
+      "viewPdf": "View PDF",
+      "confirmDeleteTitle": "Confirm Delete",
+      "confirmDeleteText": "Are you sure you want to delete this law? This action cannot be undone.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "columns": {
+        "title": "Title",
+        "category": "Category",
+        "date": "Date",
+        "pdfEn": "PDF (English)",
+        "pdfKh": "PDF (Khmer)",
+        "actions": "Actions"
+      },
+      "tooltips": {
+        "edit": "Edit",
+        "delete": "Delete"
+      }
+    }
   }
 }

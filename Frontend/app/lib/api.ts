@@ -129,8 +129,8 @@ export const newsApi = {
 
 // Laws
 export const lawsApi = {
-  getAll: () => api.get<LawItem[]>("/api/laws"),
-  getById: (id: string) => api.get<LawItem>(`/api/laws/${id}`),
+  getAll: () => api.get<LawItem[]>("/api/law", { public: true }),
+  getById: (id: string) => api.get<LawItem>(`/api/law/${id}`, { public: true }),
 };
 
 // Publications
@@ -154,9 +154,13 @@ export interface NewsArticle {
 export interface LawItem {
   id: string;
   title: string;
+  description?: string;
   category: string;
-  url: string;
-  uploadDate?: string;
+  date?: string;
+  pdfUrl: string;
+  pdfUrlKh?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Publication {

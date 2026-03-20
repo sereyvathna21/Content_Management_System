@@ -254,5 +254,65 @@
       "block": "ចាក់ទោស",
       "unblock": "ដោះចាក់ទោស"
     }
+  },
+  "LawsPage": {
+    "admin": {
+      "title": "គ្រប់គ្រងច្បាប់",
+      "card": {
+        "title": "ច្បាប់",
+        "desc": "គ្រប់គ្រងច្បាប់ និងបទប្បញ្ញត្តិជាមួយការគាំទ្រ PDF ពហុភាសា"
+      },
+      "searchPlaceholder": "ស្វែងរកច្បាប់...",
+      "filterByCategory": "បោះបង់តាមប្រភេទ",
+      "createButton": "បង្កើតច្បាប់"
+    },
+    "form": {
+      "createTitle": "បង្កើតច្បាប់",
+      "editTitle": "កែប្រែច្បាប់",
+      "titleLabel": "ចំណងជើង",
+      "titlePlaceholder": "បញ្ចូលចំណងជើងច្បាប់",
+      "titleRequired": "ចំណងជើងចាំបាច់",
+      "descriptionLabel": "ការពិពណ៌នា",
+      "descriptionPlaceholder": "បញ្ចូលការពិពណ៌នា (ស្រេចចិត្ត)",
+      "categoryLabel": "ប្រភេទ",
+      "categoryRequired": "ប្រភេទចាំបាច់",
+      "dateLabel": "កាលបរិច្ឆេទ",
+      "pdfSection": "ឯកសារ PDF (ពហុភាសា)",
+      "pdfUrlEnLabel": "URL PDF (អង់គ្លេស)",
+      "pdfUrlEnPlaceholder": "https://example.com/law-en.pdf",
+      "pdfUrlEnHint": "URL ទៅកាន់ PDF ជាភាសាអង់គ្លេស",
+      "pdfUrlKhLabel": "URL PDF (ខ្មែរ)",
+      "pdfUrlKhPlaceholder": "https://example.com/law-kh.pdf",
+      "pdfUrlKhHint": "URL ទៅកាន់ PDF ជាភាសាខ្មែរ (ស្រេចចិត្ត)",
+      "pdfUrlRequired": "URL PDF ភាសាអង់គ្លេសចាំបាច់",
+      "cancel": "បោះបង់",
+      "save": "រក្សាទុក",
+      "saving": "កំពុងរក្សាទុក..."
+    },
+    "table": {
+      "loading": "កំពុងផ្ទុក...",
+      "noResultsFor": "គ្មានលទ្ធផលសម្រាប់ \"{query}\"",
+      "tryDifferentSearch": "សាកល្បងពាក្យស្វែងរកផ្សេង ឬលុបតម្រង។",
+      "noLawsFound": "រកមិនឃើញច្បាប់ទេ",
+      "tryAdjust": "សាកល្បងកែសម្រួលការស្វែងរក ឬបង្កើតច្បាប់ថ្មី។",
+      "clearFilters": "លុបតម្រង",
+      "viewPdf": "មើល PDF",
+      "confirmDeleteTitle": "បញ្ជាក់ការលុប",
+      "confirmDeleteText": "តើអ្នកប្រាកដថាអ្នកចង់លុបច្បាប់នេះទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+      "cancel": "បោះបង់",
+      "delete": "លុប",
+      "columns": {
+        "title": "ចំណងជើង",
+        "category": "ប្រភេទ",
+        "date": "កាលបរិច្ឆេទ",
+        "pdfEn": "PDF (អង់គ្លេស)",
+        "pdfKh": "PDF (ខ្មែរ)",
+        "actions": "សកម្មភាព"
+      },
+      "tooltips": {
+        "edit": "កែប្រែ",
+        "delete": "លុប"
+      }
+    }
   }
 }

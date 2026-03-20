@@ -12,6 +12,7 @@ namespace Backend.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Models.Contact> Contacts { get; set; }
+        public DbSet<Models.Law> Laws { get; set; }
 
         public override int SaveChanges()
         {
