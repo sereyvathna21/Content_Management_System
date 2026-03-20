@@ -14,6 +14,8 @@ type LawCardProps = {
   category: string;
   date?: string;
   pdf?: string;
+  pdfEn?: string;
+  pdfKh?: string;
   onOpen?: (law: LawCardProps) => void;
 };
 
@@ -24,6 +26,8 @@ export default function LawCard({
   category,
   date,
   pdf,
+  pdfEn,
+  pdfKh,
   onOpen,
 }: LawCardProps) {
   const t = useTranslations("LawsPage");
@@ -170,7 +174,7 @@ export default function LawCard({
           {onOpen ? (
             <button
               onClick={() =>
-                onOpen({ id, title, description, category, date, pdf })
+                onOpen({ id, title, description, category, date, pdf, pdfEn, pdfKh })
               }
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow hover:shadow-md transform transition hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
