@@ -37,6 +37,7 @@ export default function LawsPage() {
 
   useEffect(() => {
     loadLaws();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleCreate() {
