@@ -42,7 +42,7 @@
     },
     "deleteMessage": "Delete message"
   },
-   "LoginPage": {
+  "LoginPage": {
     "signIn": {
       "title": "Sign In",
       "subtitle": "Enter your credentials to access your account",
@@ -183,8 +183,7 @@
       "eng": "English",
       "kh": "Khmer"
     }
-  }
-  ,
+  },
   "UsersPage": {
     "title": "User Management",
     "card": {
@@ -202,8 +201,7 @@
     "blockedLabel": "Blocked:",
     "yes": "Yes",
     "no": "No"
-  }
-  ,
+  },
   "UserForm": {
     "createTitle": "Create User",
     "createSubtitle": "Add user details below.",
@@ -252,6 +250,64 @@
       "edit": "Edit",
       "block": "Block user",
       "unblock": "Unblock user"
+    }
+  },
+  "LawPage": {
+    "title": "Law Management",
+    "listTitle": "Laws",
+    "listDesc": "Manage legal documents with bilingual support (English & Khmer)",
+    "createTitle": "Create New Law",
+    "createDesc": "Add a new legal document with English and Khmer content",
+    "editTitle": "Edit Law",
+    "editDesc": "Update the legal document details and PDF files",
+    "searchPlaceholder": "Search by title or category...",
+    "loading": "Loading laws...",
+    "noResults": "No laws found",
+    "noPdf": "No PDF",
+    "published": "Published",
+    "draft": "Draft",
+    "currentPdf": "Current PDF",
+    "confirmDeleteTitle": "Confirm Delete",
+    "confirmDeleteText": "Are you sure you want to delete this law? This action cannot be undone.",
+    "fields": {
+      "titleEn": "Title (English)",
+      "titleKh": "Title (Khmer)",
+      "descriptionEn": "Description (English)",
+      "descriptionKh": "Description (Khmer)",
+      "category": "Category",
+      "date": "Publication Date",
+      "pdfEn": "PDF (English)",
+      "pdfKh": "PDF (Khmer)",
+      "isPublished": "Published"
+    },
+    "placeholders": {
+      "titleEn": "Enter English title...",
+      "titleKh": "Enter Khmer title...",
+      "descriptionEn": "Enter English description...",
+      "descriptionKh": "Enter Khmer description..."
+    },
+    "columns": {
+      "title": "Title",
+      "category": "Category",
+      "date": "Date",
+      "pdfs": "PDFs",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "actions": {
+      "create": "Add Law",
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "validation": {
+      "titleRequired": "At least one title (English or Khmer) is required.",
+      "categoryRequired": "Category is required."
+    },
+    "errors": {
+      "saveFailed": "Failed to save. Please try again."
     }
   }
 }

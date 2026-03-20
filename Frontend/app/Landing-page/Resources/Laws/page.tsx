@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import Header from "@/app/components/Home/Header";
 import Navigation from "@/app/components/Home/Navigation";
 import Footer from "@/app/components/Home/Footer";
@@ -8,7 +8,7 @@ import LawCard from "@/app/components/Law/LawCard";
 import HeroCover from "@/app/components/HeroCover";
 import Pagination from "@/app/components/Pagination";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { matchesSearch } from "@/app/lib/searchUtils";
 import ListSkeleton from "@/app/components/ListSkeleton";
 
@@ -22,52 +22,92 @@ type LawItem = {
   description?: string;
   category: string;
   date?: string;
-  pdf: string;
+  pdf?: string;
+  pdfEn?: string;
+  pdfKh?: string;
 };
 
-const SAMPLE_LAWS: LawItem[] = [
-  {
-    id: "1",
-    title: "National Health Act",
-    description: "A comprehensive health regulation framework",
-    category: "Royal Degree",
-    date: "2020-05-10",
-    pdf: "/laws/sample.pdf",
-  },
-  {
-    id: "2",
-    title: "Environmental Regulations",
-    description: "Guidelines for environmental protection and sustainability",
-    category: "Sub-Degree",
-    date: "2019-07-21",
-    pdf: "/laws/sample.pdf",
-  },
-  {
-    id: "3",
-    title: "Education Policy Update",
-    description: "Updated policies for the education sector",
-    category: "Prakas",
-    date: "2021-03-15",
-    pdf: "/laws/sample.pdf",
-  },
-  {
-    id: "4",
-    title: "Public Safety Notice",
-    description: "Important safety guidelines for public awareness",
-    category: "Decision and Guideline",
-    date: "2022-11-02",
-    pdf: "/laws/sample.pdf",
-  },
-];
+type ApiLaw = {
+  id: number;
+  titleEn: string;
+  titleKh: string;
+  descriptionEn?: string;
+  descriptionKh?: string;
+  category: string;
+  date?: string;
+  pdfEn?: string;
+  pdfKh?: string;
+  isPublished: boolean;
+  createdAt: string;
+};
+
+const getApiBase = (): string => {
+  if (typeof window === "undefined") {
+    return (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:5001";
+  }
+  const env = (process.env.NEXT_PUBLIC_API_URL as string) || "";
+  if (env) return env;
+  return window.location.protocol === "https:"
+    ? "https://localhost:7177"
+    : "http://localhost:5001";
+};
+
+const FALLBACK_LAWS: LawItem[] = [];
+
+function mapApiLaw(law: ApiLaw, locale: string): LawItem {
+  const isKh = locale === "kh";
+  return {
+    id: String(law.id),
+    title: isKh
+      ? law.titleKh || law.titleEn
+      : law.titleEn || law.titleKh,
+    description: isKh
+      ? law.descriptionKh || law.descriptionEn
+      : law.descriptionEn || law.descriptionKh,
+    category: law.category,
+    date: law.date,
+    pdf: isKh ? (law.pdfKh || law.pdfEn) : (law.pdfEn || law.pdfKh),
+    pdfEn: law.pdfEn,
+    pdfKh: law.pdfKh,
+  };
+}
+
 
 export default function Laws() {
   const t = useTranslations("LawsPage");
+  const locale = useLocale();
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [selectedLaw, setSelectedLaw] = useState<LawItem | null>(null);
 
+  // API data
+  const [apiLaws, setApiLaws] = useState<LawItem[]>(FALLBACK_LAWS);
+  const [apiLoading, setApiLoading] = useState(true);
+
+  const loadLaws = useCallback(async () => {
+    setApiLoading(true);
+    try {
+      const res = await fetch(
+        `${getApiBase()}/api/law?page=1&pageSize=500&published=true`
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const body: { items: ApiLaw[] } = await res.json();
+      setApiLaws((body.items || []).map((l) => mapApiLaw(l, locale)));
+    } catch {
+      setApiLaws(FALLBACK_LAWS);
+    } finally {
+      setApiLoading(false);
+    }
+  }, [locale]);
+
+  useEffect(() => {
+    loadLaws();
+  }, [loadLaws]);
+
+  const laws = apiLaws;
+
   const categoryLabels = useMemo(
-    () => ["All", ...Array.from(new Set(SAMPLE_LAWS.map((l) => l.category)))],
-    [],
+    () => ["All", ...Array.from(new Set(laws.map((l) => l.category)))],
+    [laws],
   );
 
   const tabs = categoryLabels.map((label) => ({
@@ -80,16 +120,12 @@ export default function Laws() {
 
   const filtered = useMemo(() => {
     const q = (searchQuery || "").trim();
-    const getTitle = (it: LawItem) => {
-      const tr = t(`content.items.${it.id}.title`);
-      return tr && !tr.startsWith("content.items") ? tr : it.title;
-    };
     const getCategoryLabel = (it: LawItem) => {
       const tr = t(`categoryLabels.${it.category}`);
       return tr && !tr.startsWith("categoryLabels") ? tr : it.category;
     };
 
-    return SAMPLE_LAWS.filter((item) => {
+    return laws.filter((item) => {
       if (
         activeTab !== "all" &&
         item.category.toLowerCase().replace(/\s+/g, "-") !== activeTab
@@ -97,11 +133,11 @@ export default function Laws() {
         return false;
       if (!q) return true;
       return (
-        matchesSearch(getTitle(item), q) ||
+        matchesSearch(item.title, q) ||
         matchesSearch(getCategoryLabel(item), q)
       );
     });
-  }, [activeTab, searchQuery, t]);
+  }, [activeTab, searchQuery, laws, t]);
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [mounted, setMounted] = useState(false);
@@ -127,8 +163,8 @@ export default function Laws() {
     return filtered.slice(start, start + pageSize);
   }, [filtered, currentPage]);
 
-  // Show loading skeleton while mounting
-  if (!mounted) {
+  // Show loading skeleton while mounting or fetching from API
+  if (!mounted || apiLoading) {
     return (
       <>
         <Header />
@@ -306,9 +342,12 @@ export default function Laws() {
                       category={law.category}
                       date={law.date}
                       pdf={law.pdf}
+                      pdfEn={law.pdfEn}
+                      pdfKh={law.pdfKh}
                       onOpen={() => {
-                        if (window.innerWidth < 640 && law.pdf) {
-                          window.open(law.pdf, "_blank", "noopener,noreferrer");
+                        const activePdf = law.pdf || law.pdfEn || law.pdfKh;
+                        if (window.innerWidth < 640 && activePdf) {
+                          window.open(activePdf, "_blank", "noopener,noreferrer");
                         } else {
                           setSelectedLaw(law);
                           setDrawerOpen(true);

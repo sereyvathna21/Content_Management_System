@@ -13,6 +13,8 @@ type LawItem = {
   category: string;
   date?: string;
   pdf?: string;
+  pdfEn?: string;
+  pdfKh?: string;
 };
 
 export default function LawDrawer({
@@ -49,7 +51,20 @@ export default function LawDrawer({
       ? translatedCategory
       : law.category;
 
-  const pdfUrl = law.pdf;
+  // Language switcher for PDF — if both EN and KH are available, show tabs
+  const hasBothPdfs = !!(law.pdfEn && law.pdfKh);
+  const [pdfLang, setPdfLang] = useState<"en" | "kh">(
+    law.pdfEn ? "en" : "kh"
+  );
+
+  // Reset language selection when the selected law changes
+  useEffect(() => {
+    setPdfLang(law.pdfEn ? "en" : "kh");
+  }, [law.id, law.pdfEn]);
+
+  const pdfUrl = hasBothPdfs
+    ? pdfLang === "en" ? law.pdfEn : law.pdfKh
+    : law.pdf || law.pdfEn || law.pdfKh;
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -175,6 +190,33 @@ export default function LawDrawer({
                 </span>
                 <span className="text-xs text-gray-500">·</span>
                 <span className="text-xs text-gray-500">{law.date}</span>
+                {hasBothPdfs && (
+                  <>
+                    <span className="text-xs text-gray-500">·</span>
+                    <div className="flex items-center rounded-full border border-gray-200 overflow-hidden">
+                      <button
+                        onClick={() => setPdfLang("en")}
+                        className={`px-2.5 py-0.5 text-xs font-semibold transition-colors ${
+                          pdfLang === "en"
+                            ? "bg-primary text-white"
+                            : "text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        EN
+                      </button>
+                      <button
+                        onClick={() => setPdfLang("kh")}
+                        className={`px-2.5 py-0.5 text-xs font-semibold transition-colors ${
+                          pdfLang === "kh"
+                            ? "bg-primary text-white"
+                            : "text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        ខ្មែរ
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
