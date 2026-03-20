@@ -16,6 +16,8 @@ namespace Backend.Models
 
         public string PdfUrl { get; set; } = string.Empty;
 
+        public string? PdfUrlKh { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }

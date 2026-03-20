@@ -8,9 +8,10 @@ import LawCard from "@/app/components/Law/LawCard";
 import HeroCover from "@/app/components/HeroCover";
 import Pagination from "@/app/components/Pagination";
 import dynamic from "next/dynamic";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { matchesSearch } from "@/app/lib/searchUtils";
 import ListSkeleton from "@/app/components/ListSkeleton";
+import { lawsApi, type LawItem as ApiLawItem } from "@/app/lib/api";
 
 const LawDrawerWrapper = dynamic(() => import("@/app/components/Law/LawDrawer"), {
   ssr: false,
@@ -25,49 +26,47 @@ type LawItem = {
   pdf: string;
 };
 
-const SAMPLE_LAWS: LawItem[] = [
-  {
-    id: "1",
-    title: "National Health Act",
-    description: "A comprehensive health regulation framework",
-    category: "Royal Degree",
-    date: "2020-05-10",
-    pdf: "/laws/sample.pdf",
-  },
-  {
-    id: "2",
-    title: "Environmental Regulations",
-    description: "Guidelines for environmental protection and sustainability",
-    category: "Sub-Degree",
-    date: "2019-07-21",
-    pdf: "/laws/sample.pdf",
-  },
-  {
-    id: "3",
-    title: "Education Policy Update",
-    description: "Updated policies for the education sector",
-    category: "Prakas",
-    date: "2021-03-15",
-    pdf: "/laws/sample.pdf",
-  },
-  {
-    id: "4",
-    title: "Public Safety Notice",
-    description: "Important safety guidelines for public awareness",
-    category: "Decision and Guideline",
-    date: "2022-11-02",
-    pdf: "/laws/sample.pdf",
-  },
-];
+function toPdfUrl(item: ApiLawItem, locale: string): string {
+  if (locale === "kh" && item.pdfUrlKh) return item.pdfUrlKh;
+  return item.pdfUrl ?? "";
+}
+
+function apiToLawItem(item: ApiLawItem, locale: string): LawItem {
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    category: item.category,
+    date: item.date ? item.date.split("T")[0] : undefined,
+    pdf: toPdfUrl(item, locale),
+  };
+}
 
 export default function Laws() {
   const t = useTranslations("LawsPage");
+  const locale = useLocale();
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
   const [selectedLaw, setSelectedLaw] = useState<LawItem | null>(null);
+  const [apiLaws, setApiLaws] = useState<ApiLawItem[]>([]);
+  const [apiLoading, setApiLoading] = useState(true);
+
+  useEffect(() => {
+    setApiLoading(true);
+    lawsApi
+      .getAll()
+      .then((data) => setApiLaws(data ?? []))
+      .catch(() => setApiLaws([]))
+      .finally(() => setApiLoading(false));
+  }, []);
+
+  const allLaws = useMemo(
+    () => apiLaws.map((item) => apiToLawItem(item, locale)),
+    [apiLaws, locale],
+  );
 
   const categoryLabels = useMemo(
-    () => ["All", ...Array.from(new Set(SAMPLE_LAWS.map((l) => l.category)))],
-    [],
+    () => ["All", ...Array.from(new Set(allLaws.map((l) => l.category)))],
+    [allLaws],
   );
 
   const tabs = categoryLabels.map((label) => ({
@@ -80,16 +79,12 @@ export default function Laws() {
 
   const filtered = useMemo(() => {
     const q = (searchQuery || "").trim();
-    const getTitle = (it: LawItem) => {
-      const tr = t(`content.items.${it.id}.title`);
-      return tr && !tr.startsWith("content.items") ? tr : it.title;
-    };
     const getCategoryLabel = (it: LawItem) => {
       const tr = t(`categoryLabels.${it.category}`);
       return tr && !tr.startsWith("categoryLabels") ? tr : it.category;
     };
 
-    return SAMPLE_LAWS.filter((item) => {
+    return allLaws.filter((item) => {
       if (
         activeTab !== "all" &&
         item.category.toLowerCase().replace(/\s+/g, "-") !== activeTab
@@ -97,11 +92,12 @@ export default function Laws() {
         return false;
       if (!q) return true;
       return (
-        matchesSearch(getTitle(item), q) ||
-        matchesSearch(getCategoryLabel(item), q)
+        matchesSearch(item.title, q) ||
+        matchesSearch(getCategoryLabel(item), q) ||
+        matchesSearch(item.description ?? "", q)
       );
     });
-  }, [activeTab, searchQuery, t]);
+  }, [activeTab, searchQuery, allLaws, t]);
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [mounted, setMounted] = useState(false);
@@ -127,8 +123,8 @@ export default function Laws() {
     return filtered.slice(start, start + pageSize);
   }, [filtered, currentPage]);
 
-  // Show loading skeleton while mounting
-  if (!mounted) {
+  // Show loading skeleton while mounting or loading from API
+  if (!mounted || apiLoading) {
     return (
       <>
         <Header />
@@ -319,7 +315,7 @@ export default function Laws() {
                 ))}
                 {filtered.length === 0 && (
                   <div className="col-span-full text-center text-gray-500">
-                    {t("noResults")}
+                    {t("card.noResults")}
                   </div>
                 )}
               </div>

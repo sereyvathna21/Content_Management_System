@@ -27,7 +27,7 @@ namespace Backend.Controllers
         {
             var items = await _db.Laws
                 .OrderByDescending(l => l.CreatedAt)
-                .Select(l => new LawDto(l.Id, l.Title, l.Description, l.Category, l.Date, l.PdfUrl, l.CreatedAt, l.UpdatedAt))
+                .Select(l => new LawDto(l.Id, l.Title, l.Description, l.Category, l.Date, l.PdfUrl, l.PdfUrlKh, l.CreatedAt, l.UpdatedAt))
                 .ToListAsync();
 
             return Ok(items);
@@ -38,7 +38,7 @@ namespace Backend.Controllers
         {
             var l = await _db.Laws.FindAsync(id);
             if (l == null) return NotFound();
-            return Ok(new LawDto(l.Id, l.Title, l.Description, l.Category, l.Date, l.PdfUrl, l.CreatedAt, l.UpdatedAt));
+            return Ok(new LawDto(l.Id, l.Title, l.Description, l.Category, l.Date, l.PdfUrl, l.PdfUrlKh, l.CreatedAt, l.UpdatedAt));
         }
 
         [HttpPost]
@@ -55,13 +55,14 @@ namespace Backend.Controllers
                 Category = dto.Category.Trim(),
                 Date = dto.Date,
                 PdfUrl = dto.PdfUrl?.Trim() ?? string.Empty,
+                PdfUrlKh = dto.PdfUrlKh?.Trim(),
                 CreatedAt = DateTime.UtcNow
             };
 
             _db.Laws.Add(law);
             await _db.SaveChangesAsync();
 
-            var result = new LawDto(law.Id, law.Title, law.Description, law.Category, law.Date, law.PdfUrl, law.CreatedAt, law.UpdatedAt);
+            var result = new LawDto(law.Id, law.Title, law.Description, law.Category, law.Date, law.PdfUrl, law.PdfUrlKh, law.CreatedAt, law.UpdatedAt);
             return CreatedAtAction(nameof(GetById), new { id = law.Id }, result);
         }
 
@@ -77,6 +78,7 @@ namespace Backend.Controllers
             law.Category = dto.Category.Trim();
             law.Date = dto.Date;
             law.PdfUrl = dto.PdfUrl?.Trim() ?? string.Empty;
+            law.PdfUrlKh = dto.PdfUrlKh?.Trim();
             law.UpdatedAt = DateTime.UtcNow;
 
             _db.Laws.Update(law);
