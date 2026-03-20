@@ -4,6 +4,7 @@ using Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Backend.Hubs;
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
@@ -38,13 +39,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// SignalR
+builder.Services.AddSignalR();
+
 // ---------- CORS ----------
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
+        // Allow common dev frontend origins (explicit list to support credentials)
         policy.WithOrigins(
-                builder.Configuration["App:FrontendUrl"] ?? "http://localhost:3000"
+                builder.Configuration["App:FrontendUrl"] ?? "http://localhost:3000",
+                "http://localhost:3001",
+                "https://localhost:3001",
+                "https://localhost:7177"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -69,4 +77,6 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+// map SignalR hubs
+app.MapHub<ContactHub>("/hubs/contact");
 app.Run();

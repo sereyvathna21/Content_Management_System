@@ -1,6 +1,40 @@
 "use client";
-import { useEffect, useState } from "react";
-import { mockContacts } from "../lib/mockContacts";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getSession } from "next-auth/react";
+import { getSignalRConnection } from "../lib/signalr";
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+const getDefaultApiBase = (): string => {
+    if (typeof window === "undefined") {
+        return (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:5001";
+    }
+    const env = (process.env.NEXT_PUBLIC_API_URL as string) || "";
+    if (env) return env;
+    return window.location.protocol === "https:"
+        ? "https://localhost:7177"
+        : "http://localhost:5001";
+};
+
+const API_BASE = getDefaultApiBase();
+
+const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    if (typeof window === "undefined") return {};
+    // Try to read access token from NextAuth session (stored in cookie)
+    try {
+        const session = await getSession();
+        const token = (session as any)?.accessToken ?? null;
+        return token ? { Authorization: `Bearer ${token}` } : {};
+    } catch {
+        return {};
+    }
+};
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 export type Contact = {
     id: string;
@@ -12,111 +46,282 @@ export type Contact = {
     read: boolean;
 };
 
+type StatusFilter = "all" | "read" | "unread";
+
+// ---------------------------------------------------------------------------
+// Raw mapper — keeps API shape separate from UI type
+// ---------------------------------------------------------------------------
+
+const toContact = (i: Record<string, unknown>): Contact => ({
+    id: String(i.id),
+    name: i.name as string,
+    email: i.email as string,
+    subject: i.subject as string,
+    message: i.message as string,
+    createdAt: i.createdAt as string,
+    read: Boolean(i.read),
+});
+
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
+
 export function useContacts() {
-    const [contacts, setContacts] = useState<Contact[]>([]);
+    // ── raw source of truth ──────────────────────────────────────────────
     const [all, setAll] = useState<Contact[]>([]);
-    const [query, setQuery] = useState<string>("");
-    const [statusFilter, setStatusFilterState] = useState<"all" | "read" | "unread">("all");
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [selected, setSelected] = useState<Contact | null>(null);
-    const [page, setPage] = useState<number>(1);
-    const [pageSize, setPageSize] = useState<number>(10);
-    const [filteredAll, setFilteredAll] = useState<Contact[]>([]);
+
+    // ── filter state ─────────────────────────────────────────────────────
+    const [query, setQuery] = useState<string>("");
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+    // ── pagination state ─────────────────────────────────────────────────
+    const [page, setPageState] = useState<number>(1);
+    const [pageSize, setPageSizeState] = useState<number>(10);
+
+    // ── derived: filtered list (no stale closures — always fresh) ────────
+    const filteredAll = useMemo<Contact[]>(() => {
+        let result = all;
+
+        if (query.trim()) {
+            const lower = query.toLowerCase();
+            result = result.filter((c) =>
+                `${c.name} ${c.email} ${c.subject}`.toLowerCase().includes(lower)
+            );
+        }
+
+        if (statusFilter !== "all") {
+            result = result.filter((c) =>
+                statusFilter === "read" ? c.read : !c.read
+            );
+        }
+
+        return result;
+    }, [all, query, statusFilter]);
+
+    // ── derived: current page slice ───────────────────────────────────────
+    const contacts = useMemo<Contact[]>(() => {
+        const start = (page - 1) * pageSize;
+        return filteredAll.slice(start, start + pageSize);
+    }, [filteredAll, page, pageSize]);
+
+    const totalCount = filteredAll.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+    // ── keep page in bounds when filters shrink the result set ────────────
+    useEffect(() => {
+        if (page > totalPages) {
+            setPageState(totalPages);
+        }
+    }, [page, totalPages]);
+
+    // ── keep selected contact in sync when `all` changes ─────────────────
+    useEffect(() => {
+        if (!selected) return;
+        const fresh = all.find((c) => c.id === selected.id);
+        if (fresh && fresh !== selected) setSelected(fresh);
+        if (!fresh) setSelected(null);
+    }, [all]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── SignalR: real-time events ─────────────────────────────────────────
+    // Handlers are stored in refs so they are never stale and don't need to
+    // be re-registered on every render.
+    const createdHandlerRef = useRef<((c: Record<string, unknown>) => void) | null>(null);
+    const deletedHandlerRef = useRef<((payload: Record<string, unknown>) => void) | null>(null);
+    const readHandlerRef = useRef<((payload: Record<string, unknown>) => void) | null>(null);
 
     useEffect(() => {
-        // nothing on mount by default; page will call loadContacts
+        if (typeof window === "undefined") return;
+
+        const hubUrl = `${API_BASE.replace(/\/$/, "")}/hubs/contact`;
+        let conn: Awaited<ReturnType<typeof getSignalRConnection>> | null = null;
+        let mounted = true;
+
+        const onCreated = (c: Record<string, unknown>) => {
+            const item = toContact(c);
+            console.info("[useContacts] ContactCreated:", item);
+            setAll((prev) => [item, ...prev]);
+        };
+
+        const onDeleted = (payload: Record<string, unknown>) => {
+            const id = String(payload.id ?? payload);
+            console.info("[useContacts] ContactDeleted:", id);
+            setAll((prev) => prev.filter((c) => c.id !== id));
+        };
+
+        const onReadToggled = (payload: Record<string, unknown>) => {
+            const id = String(payload.id);
+            const read = Boolean(payload.read);
+            console.info("[useContacts] ContactReadToggled:", id, read);
+            setAll((prev) =>
+                prev.map((c) => (c.id === id ? { ...c, read } : c))
+            );
+        };
+
+        createdHandlerRef.current = onCreated;
+        deletedHandlerRef.current = onDeleted;
+        readHandlerRef.current = onReadToggled;
+
+        (async () => {
+            try {
+                conn = await getSignalRConnection(hubUrl);
+                if (!mounted || !conn) return;
+                console.debug("[useContacts] SignalR connected:", hubUrl);
+                conn.on("ContactCreated", onCreated);
+                conn.on("ContactDeleted", onDeleted);
+                conn.on("ContactReadToggled", onReadToggled);
+            } catch (err) {
+                console.warn("[useContacts] SignalR connection failed:", err);
+            }
+        })();
+
+        return () => {
+            mounted = false;
+            if (conn) {
+                try {
+                    if (createdHandlerRef.current) conn.off("ContactCreated", createdHandlerRef.current);
+                    if (deletedHandlerRef.current) conn.off("ContactDeleted", deletedHandlerRef.current);
+                    if (readHandlerRef.current) conn.off("ContactReadToggled", readHandlerRef.current);
+                } catch {
+                    // ignore if already disconnected
+                }
+            }
+        };
+    }, []); // intentionally empty — runs once on mount
+
+    // ── API: load all contacts ────────────────────────────────────────────
+    const loadContacts = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/contact?page=1&pageSize=100`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const body: { items: Record<string, unknown>[] } = await res.json();
+            setAll((body.items || []).map(toContact));
+        } catch (err) {
+            console.error("[useContacts] loadContacts failed:", err);
+            // Surface the error to the caller — no mock fallback
+            throw err;
+        } finally {
+            setLoading(false);
+        }
     }, []);
 
-    const loadContacts = async () => {
-        setLoading(true);
-        // simulate fetch
-        await new Promise((r) => setTimeout(r, 200));
-        setAll(mockContacts);
-        setFilteredAll(mockContacts);
-        // paginate
-        const start = 0;
-        const end = pageSize;
-        setContacts(mockContacts.slice(start, end));
-        setLoading(false);
-    };
+    // ── API: toggle read ──────────────────────────────────────────────────
+    // Optimistic update first; if the API call fails we roll back.
+    // SignalR will also broadcast ContactReadToggled to all other clients.
+    const toggleRead = useCallback((id: string) => {
+        // Optimistic: flip immediately
+        setAll((prev) =>
+            prev.map((c) => (c.id === id ? { ...c, read: !c.read } : c))
+        );
 
-    const applyFilters = (q?: string, status?: "all" | "read" | "unread", pageOverride?: number) => {
-        const qVal = q !== undefined ? q : query;
-        const statusVal = status !== undefined ? status : statusFilter;
+        (async () => {
+            try {
+                const res = await fetch(`${API_BASE}/api/contact/${id}/toggle-read`, {
+                    method: "PUT",
+                    headers: await getAuthHeaders(),
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json: { read: boolean } = await res.json();
+                // Reconcile with server truth (handles race conditions)
+                setAll((prev) =>
+                    prev.map((c) => (c.id === id ? { ...c, read: json.read } : c))
+                );
+            } catch (err) {
+                console.warn("[useContacts] toggleRead failed — rolling back:", err);
+                // Roll back the optimistic flip
+                setAll((prev) =>
+                    prev.map((c) => (c.id === id ? { ...c, read: !c.read } : c))
+                );
+            }
+        })();
+    }, []);
 
-        let result = all.slice();
-        if (qVal) {
-            const lower = qVal.toLowerCase();
-            result = result.filter((c) => `${c.name} ${c.email} ${c.subject}`.toLowerCase().includes(lower));
-        }
+    // ── API: delete contact ───────────────────────────────────────────────
+    // Optimistic: remove from local state immediately; roll back on failure.
+    // SignalR will also broadcast ContactDeleted to all other clients.
+    const removeContact = useCallback((id: string) => {
+        // Snapshot for potential rollback
+        let snapshot: Contact[] = [];
+        setAll((prev) => {
+            snapshot = prev;
+            return prev.filter((c) => c.id !== id);
+        });
 
-        if (statusVal && statusVal !== "all") {
-            result = result.filter((c) => (statusVal === "read" ? c.read : !c.read));
-        }
+        (async () => {
+            try {
+                const res = await fetch(`${API_BASE}/api/contact/${id}`, {
+                    method: "DELETE",
+                    headers: await getAuthHeaders(),
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            } catch (err) {
+                console.warn("[useContacts] removeContact failed — rolling back:", err);
+                // Restore snapshot so the item reappears
+                setAll(snapshot);
+            }
+        })();
+    }, []);
 
-        setFilteredAll(result);
+    // ── select ────────────────────────────────────────────────────────────
+    const selectContact = useCallback(
+        (id: string | null) => {
+            if (!id) return setSelected(null);
+            setSelected(
+                contacts.find((c) => c.id === id) ??
+                all.find((c) => c.id === id) ??
+                null
+            );
+        },
+        [contacts, all]
+    );
 
-        // reset to page 1 on filter change unless pageOverride provided
-        const p = pageOverride ?? 1;
-        setPage(p);
-
-        const start = (p - 1) * pageSize;
-        const end = start + pageSize;
-        setContacts(result.slice(start, end));
-    };
-
-    const filterContacts = (q: string) => {
+    // ── filter helpers ────────────────────────────────────────────────────
+    const filterContacts = useCallback((q: string) => {
         setQuery(q);
-        applyFilters(q, undefined, 1);
-    };
+        setPageState(1); // reset to first page on new search
+    }, []);
 
-    const clearFilters = () => {
+    const setStatusFilterAndReset = useCallback((status: StatusFilter) => {
+        setStatusFilter(status);
+        setPageState(1);
+    }, []);
+
+    const clearFilters = useCallback(() => {
         setQuery("");
-        setStatusFilterState("all");
-        applyFilters("", "all", 1);
-    };
+        setStatusFilter("all");
+        setPageState(1);
+    }, []);
 
-    const setStatusFilter = (status: "all" | "read" | "unread") => {
-        setStatusFilterInternal(status);
-        applyFilters(undefined, status, 1);
-    };
+    // ── pagination ────────────────────────────────────────────────────────
+    const setPage = useCallback(
+        (p: number) => {
+            setPageState(Math.max(1, Math.min(p, totalPages)));
+        },
+        [totalPages]
+    );
 
-    // helper to avoid name clash with state setter
-    const setStatusFilterInternal = (s: "all" | "read" | "unread") => {
-        setStatusFilterState(s);
-    };
+    const setPageSize = useCallback((size: number) => {
+        setPageSizeState(size);
+        setPageState(1);
+    }, []);
 
-    const selectContact = (id: string | null) => {
-        if (!id) return setSelected(null);
-        const found = contacts.find((c) => c.id === id) ?? all.find((c) => c.id === id) ?? null;
-        setSelected(found || null);
-    };
-
-    const toggleRead = (id: string) => {
-        setAll((prev) => prev.map((p) => (p.id === id ? { ...p, read: !p.read } : p)));
-        // update filteredAll then re-paginate
-        setFilteredAll((prev) => prev.map((p) => (p.id === id ? { ...p, read: !p.read } : p)));
-        applyFilters(undefined, undefined, page);
-        if (selected && selected.id === id) setSelected({ ...selected, read: !selected.read });
-    };
-
-    const removeContact = (id: string) => {
-        setAll((prev) => prev.filter((p) => p.id !== id));
-        setFilteredAll((prev) => prev.filter((p) => p.id !== id));
-        applyFilters(undefined, undefined, page);
-        if (selected && selected.id === id) setSelected(null);
-    };
-
-    const exportCSV = (rows: Contact[]) => {
-        if (!rows || rows.length === 0) return;
-        const headers = ["id", "name", "email", "subject", "message", "createdAt", "read"];
-        const csv = [headers.join(",")]
-            .concat(
-                rows.map((r) =>
-                    [r.id, r.name, r.email, r.subject, r.message.replace(/\n/g, " "), r.createdAt, String(r.read)].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")
-                )
-            )
-            .join("\n");
+    // ── CSV export ────────────────────────────────────────────────────────
+    const exportCSV = useCallback((rows: Contact[]) => {
+        if (!rows.length) return;
+        const headers: (keyof Contact)[] = [
+            "id", "name", "email", "subject", "message", "createdAt", "read",
+        ];
+        const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+        const csv = [
+            headers.join(","),
+            ...rows.map((r) =>
+                headers
+                    .map((h) => escape(String(r[h]).replace(/\n/g, " ")))
+                    .join(",")
+            ),
+        ].join("\n");
 
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
@@ -125,47 +330,36 @@ export function useContacts() {
         a.download = `contacts-export-${Date.now()}.csv`;
         a.click();
         URL.revokeObjectURL(url);
-    };
+    }, []);
 
-    const totalCount = filteredAll.length;
-    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-
-    const setPageInternal = (p: number) => {
-        const newPage = Math.max(1, Math.min(p, totalPages));
-        setPage(newPage);
-        const start = (newPage - 1) * pageSize;
-        const end = start + pageSize;
-        setContacts(filteredAll.slice(start, end));
-    };
-
-    const setPageSizeInternal = (size: number) => {
-        setPageSize(size);
-        // reset to page 1
-        setPage(1);
-        const start = 0;
-        const end = size;
-        setContacts(filteredAll.slice(start, end));
-    };
-
+    // ── public API ────────────────────────────────────────────────────────
     return {
-        contacts,
+        // data
+        contacts,       // current page slice, always fresh
+        all,            // full unfiltered list (useful for stats)
         loading,
         selected,
+
+        // actions
         loadContacts,
         selectContact,
         toggleRead,
         removeContact,
         exportCSV,
+
+        // filters
+        query,
         filterContacts,
-        setStatusFilter,
         statusFilter,
+        setStatusFilter: setStatusFilterAndReset,
+        clearFilters,
+
         // pagination
         page,
         pageSize,
         totalPages,
         totalCount,
-        setPage: setPageInternal,
-        setPageSize: setPageSizeInternal,
-        clearFilters,
+        setPage,
+        setPageSize,
     } as const;
 }

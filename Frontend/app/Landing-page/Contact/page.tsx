@@ -11,6 +11,20 @@ import HeroCover from "@/app/components/HeroCover";
 export default function Contact() {
   const t = useTranslations("ContactPage");
 
+  const getDefaultApiBase = () => {
+    if (typeof window === "undefined")
+      return (
+        (process.env.NEXT_PUBLIC_API_URL as string) || "http://localhost:5001"
+      );
+    const env = (process.env.NEXT_PUBLIC_API_URL as string) || "";
+    if (env) return env;
+    return window.location.protocol === "https:"
+      ? "https://localhost:7177"
+      : "http://localhost:5001";
+  };
+
+  const API_BASE = getDefaultApiBase();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -127,16 +141,32 @@ export default function Contact() {
     }
 
     // Simulate form submission
-    setTimeout(() => {
-      setSubmitStatus({
-        type: "success",
-        message: t("form.successMessage"),
+    try {
+      const resp = await fetch(`${API_BASE}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-      setIsSubmitting(false);
+
+      if (!resp.ok) {
+        const errText = await resp.text();
+        setSubmitStatus({
+          type: "error",
+          message: errText || t("form.errorMessage"),
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      setSubmitStatus({ type: "success", message: t("form.successMessage") });
       setFormData({ name: "", email: "", subject: "", message: "" });
       setErrors({ name: "", email: "", subject: "", message: "" });
       setTouched({ name: false, email: false, subject: false, message: false });
-    }, 1000);
+    } catch (e) {
+      setSubmitStatus({ type: "error", message: t("form.errorMessage") });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
