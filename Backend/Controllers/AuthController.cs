@@ -1,89 +1,48 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-using Backend.Data;
 using Backend.DTOs;
-using Backend.Models;
+using Backend.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/auth")]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("Auth")]
     public class AuthController : ControllerBase
     {
-        private readonly ApplicationDbContext _db;
-        private readonly IConfiguration _config;
+        private readonly IAuthService _auth;
 
-        public AuthController(ApplicationDbContext db, IConfiguration config)
+        public AuthController(IAuthService auth)
         {
-            _db = db;
-            _config = config;
+            _auth = auth;
         }
 
-        // POST /api/auth/login
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-                return BadRequest(new MessageResponse { Message = "Email and password are required." });
-
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
-                return Unauthorized(new MessageResponse { Message = "Invalid email or password." });
-
-            if (user.IsBlocked)
-                return Unauthorized(new MessageResponse { Message = "This account is blocked. Please contact an administrator." });
-
-            if (!user.IsEmailVerified)
-                return Unauthorized(new MessageResponse { Message = "Please verify your email before logging in." });
-
-            var token = GenerateJwtToken(user);
-            return Ok(new LoginResponse
+            var result = await _auth.LoginAsync(request);
+            if (!result.Success)
             {
-                Token = token,
-                User = new UserDto
-                {
-                    Id = user.Id,
-                    FullName = user.FullName,
-                    Email = user.Email,
-                    Role = user.Role,
-                    Avatar = user.Avatar,
-                    IsBlocked = user.IsBlocked,
-                }
-            });
+                if (result.Message.Contains("blocked") || result.Message.Contains("verify") || result.Message.Contains("Invalid"))
+                    return Unauthorized(new MessageResponse { Message = result.Message });
+                
+                return BadRequest(new MessageResponse { Message = result.Message });
+            }
+
+            // The frontend should read this token and pass it via Authorization: Bearer
+            return Ok(result.Data);
         }
 
-        private string GenerateJwtToken(User user)
+        [HttpPost("logout")]
+        public IActionResult Logout()
         {
-            var secret = _config["Jwt:Secret"]!;
-            var issuer = _config["Jwt:Issuer"]!;
-            var audience = _config["Jwt:Audience"]!;
-            var expiryMinutes = int.Parse(_config["Jwt:ExpiryMinutes"] ?? "1440");
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
+            // Clear the cookie in case one existed previously
+            Response.Cookies.Delete("access_token", new CookieOptions
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("fullName", user.FullName),
-                new Claim(ClaimTypes.Role, user.Role),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: issuer,
-                audience: audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None
+            });
+            return Ok(new MessageResponse { Message = "Logged out successfully." });
         }
     }
 }

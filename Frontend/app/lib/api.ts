@@ -12,20 +12,7 @@
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
-// ─── Token helpers ────────────────────────────────────────────────────────────
 
-function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("access_token");
-}
-
-export function saveToken(token: string): void {
-  localStorage.setItem("access_token", token);
-}
-
-export function clearToken(): void {
-  localStorage.removeItem("access_token");
-}
 
 // ─── Core fetch wrapper ───────────────────────────────────────────────────────
 
@@ -47,16 +34,14 @@ async function request<T>(
     ...options.headers,
   };
 
-  if (!options.public) {
-    const token = getToken();
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-  }
+  // We no longer manually attach the Authorization header,
+  // as the browser will automatically send the HttpOnly cookie
+  // when credentials are included.
 
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
     headers,
+    credentials: options.public ? "same-origin" : "include",
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 

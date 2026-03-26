@@ -64,9 +64,10 @@ const navItems: NavItem[] = [
    {
     icon: <PlugInIcon />,
     name: "Resource",
-    subItems: [{ name: "Law", path: "/Laws", pro: false },
-      { name: "Publication", path: "/Publications", pro: false },
-      { name: "Social", path: "/Socials", pro: false },
+    subItems: [
+      { name: "Laws", path: "/laws", pro: false },
+      { name: "Publications", path: "/publications", pro: false },
+      { name: "Social", path: "/socials", pro: false },
     ],
   },
    {

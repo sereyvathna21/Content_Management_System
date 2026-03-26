@@ -1,283 +1,117 @@
-using System.Security.Cryptography;
-using Backend.Data;
 using Backend.DTOs;
-using Backend.Models;
 using Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/user")]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("Auth")]
     public class UserController : ControllerBase
     {
-        private readonly ApplicationDbContext _db;
-        private readonly EmailService _email;
-        private readonly IConfiguration _config;
+        private readonly IUserService _user;
 
-        public UserController(ApplicationDbContext db, EmailService email, IConfiguration config)
+        public UserController(IUserService user)
         {
-            _db = db;
-            _email = email;
-            _config = config;
+            _user = user;
         }
 
-        // POST /api/user/register
         [HttpPost("register")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email) ||
-                string.IsNullOrWhiteSpace(request.Password) ||
-                string.IsNullOrWhiteSpace(request.FullName))
-                return BadRequest(new MessageResponse { Message = "All fields are required." });
-
-            var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (existing != null)
+            var result = await _user.RegisterAsync(request);
+            if (!result.Success)
             {
-                if (existing.IsBlocked)
-                    return Conflict(new MessageResponse { Message = "This account has been blocked. Please contact an administrator." });
-
-                return Conflict(new MessageResponse { Message = "An account with this email already exists." });
+                if (result.Message.Contains("exists") || result.Message.Contains("blocked"))
+                    return Conflict(new MessageResponse { Message = result.Message });
+                
+                return BadRequest(new MessageResponse { Message = result.Message });
             }
-
-            var otp = GenerateOtp();
-            var expiryMinutes = int.Parse(_config["App:OtpExpiryMinutes"] ?? "10");
-
-            var user = new User
-            {
-                FullName = request.FullName,
-                Email = request.Email,
-                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                OtpCode = otp,
-                OtpExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes),
-                OtpAttempts = 0
-            };
-
-            _db.Users.Add(user);
-            await _db.SaveChangesAsync();
-
-            await _email.SendOtpAsync(user.Email, otp, "Verify Your Email");
-
-            return Ok(new MessageResponse { Message = "Registration successful. Please check your email for the verification code." });
+            return Ok(new MessageResponse { Message = result.Message });
         }
 
-        // POST /api/user/verify-email
         [HttpPost("verify-email")]
+        [AllowAnonymous]
         public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
         {
-            const int maxAttempts = 5;
-
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null)
-                return NotFound(new MessageResponse { Message = "User not found." });
-
-            if (user.IsEmailVerified)
-                return BadRequest(new MessageResponse { Message = "Email is already verified." });
-
-            if (user.OtpCode == null || user.OtpExpiresAt < DateTime.UtcNow)
-                return BadRequest(new MessageResponse { Message = "Verification code has expired. Please request a new one." });
-
-            if (user.OtpAttempts >= maxAttempts)
+            var result = await _user.VerifyEmailAsync(request);
+            if (!result.Success)
             {
-                user.OtpCode = null;
-                user.OtpExpiresAt = null;
-                user.OtpAttempts = 0;
-                await _db.SaveChangesAsync();
-                return BadRequest(new MessageResponse { Message = "Too many failed attempts. Please request a new verification code." });
+                if (result.Message.Contains("not found")) return NotFound(new MessageResponse { Message = result.Message });
+                return BadRequest(new MessageResponse { Message = result.Message });
             }
-
-            if (user.OtpCode != request.Code)
-            {
-                user.OtpAttempts++;
-                await _db.SaveChangesAsync();
-                var remaining = maxAttempts - user.OtpAttempts;
-                return BadRequest(new MessageResponse { Message = $"Invalid verification code. {remaining} attempt(s) remaining." });
-            }
-
-            user.IsEmailVerified = true;
-            user.OtpCode = null;
-            user.OtpExpiresAt = null;
-            user.OtpAttempts = 0;
-            await _db.SaveChangesAsync();
-
-            return Ok(new MessageResponse { Message = "Email verified successfully. You can now log in." });
+            return Ok(new MessageResponse { Message = result.Message });
         }
 
-        // POST /api/user/resend-otp
         [HttpPost("resend-otp")]
+        [AllowAnonymous]
         public async Task<IActionResult> ResendOtp([FromBody] ForgotPasswordRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null)
-                return NotFound(new MessageResponse { Message = "User not found." });
-
-            if (user.IsEmailVerified)
-                return BadRequest(new MessageResponse { Message = "Email is already verified." });
-
-            var otp = GenerateOtp();
-            var expiryMinutes = int.Parse(_config["App:OtpExpiryMinutes"] ?? "10");
-
-            user.OtpCode = otp;
-            user.OtpExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);
-            user.OtpAttempts = 0;
-            await _db.SaveChangesAsync();
-
-            await _email.SendOtpAsync(user.Email, otp, "Verify Your Email");
-
-            return Ok(new MessageResponse { Message = "A new verification code has been sent to your email." });
+            var result = await _user.ResendOtpAsync(request);
+            if (!result.Success)
+            {
+                if (result.Message.Contains("not found")) return NotFound(new MessageResponse { Message = result.Message });
+                return BadRequest(new MessageResponse { Message = result.Message });
+            }
+            return Ok(new MessageResponse { Message = result.Message });
         }
 
-        // POST /api/user/forgot-password
         [HttpPost("forgot-password")]
+        [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            // Always return OK to prevent email enumeration
-            if (user == null)
-                return Ok(new MessageResponse { Message = "If that email exists, a reset link has been sent." });
-
-            var token = GenerateSecureToken();
-            user.PasswordResetToken = token;
-            user.PasswordResetTokenExpiresAt = DateTime.UtcNow.AddMinutes(30);
-            await _db.SaveChangesAsync();
-
-            await _email.SendPasswordResetAsync(user.Email, token);
-
-            return Ok(new MessageResponse { Message = "If that email exists, a reset link has been sent." });
+            var result = await _user.ForgotPasswordAsync(request);
+            return Ok(new MessageResponse { Message = result.Message });
         }
 
-        // POST /api/user/reset-password
         [HttpPost("reset-password")]
+        [AllowAnonymous]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (user == null ||
-                user.PasswordResetToken != request.Token ||
-                user.PasswordResetTokenExpiresAt < DateTime.UtcNow)
-                return BadRequest(new MessageResponse { Message = "Invalid or expired reset token." });
-
-            user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-            user.PasswordResetToken = null;
-            user.PasswordResetTokenExpiresAt = null;
-            await _db.SaveChangesAsync();
-
-            return Ok(new MessageResponse { Message = "Password has been reset successfully. You can now log in." });
+            var result = await _user.ResetPasswordAsync(request);
+            if (!result.Success)
+                return BadRequest(new MessageResponse { Message = result.Message });
+                
+            return Ok(new MessageResponse { Message = result.Message });
         }
 
-        // GET /api/user
         [HttpGet]
+        [Authorize(Roles = "Admin,admin,SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {
-            var users = await _db.Users
-                .Select(u => new UserDto
-                {
-                    Id = u.Id,
-                    FullName = u.FullName,
-                    Email = u.Email,
-                    Role = u.Role,
-                    Avatar = u.Avatar,
-                    IsBlocked = u.IsBlocked,
-                    PasswordSet = !string.IsNullOrEmpty(u.Password)
-                })
-                .ToListAsync();
-
+            var users = await _user.GetAllUsersAsync();
             return Ok(users);
         }
 
-        // POST /api/user
         [HttpPost]
+        [Authorize(Roles = "Admin,admin,SuperAdmin")]
         public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Email) ||
-                string.IsNullOrWhiteSpace(request.Password) ||
-                string.IsNullOrWhiteSpace(request.FullName))
-                return BadRequest(new MessageResponse { Message = "All fields are required." });
-
-            var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-            if (existing != null)
+            var result = await _user.CreateUserAsync(request);
+            if (!result.Success)
             {
-                if (existing.IsBlocked)
-                    return Conflict(new MessageResponse { Message = "This account has been blocked. Please contact an administrator." });
-
-                return Conflict(new MessageResponse { Message = "An account with this email already exists." });
+                if (result.Message.Contains("exists") || result.Message.Contains("blocked"))
+                    return Conflict(new MessageResponse { Message = result.Message });
+                
+                return BadRequest(new MessageResponse { Message = result.Message });
             }
-
-            var user = new User
-            {
-                FullName = request.FullName,
-                Email = request.Email,
-                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                Role = string.IsNullOrWhiteSpace(request.Role) ? "User" : request.Role,
-                Avatar = request.Avatar,
-                IsEmailVerified = true
-            };
-
-            _db.Users.Add(user);
-            await _db.SaveChangesAsync();
-
-            return Ok(new UserDto
-            {
-                Id = user.Id,
-                FullName = user.FullName,
-                Email = user.Email,
-                Role = user.Role,
-                Avatar = user.Avatar,
-                IsBlocked = user.IsBlocked,
-                PasswordSet = !string.IsNullOrEmpty(user.Password)
-            });
+            return Ok(result.Data);
         }
 
-        // PUT /api/user/{id}
         [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin,admin,SuperAdmin")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUserRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
-            if (user == null)
-                return NotFound(new MessageResponse { Message = "User not found." });
-
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.FullName))
-                return BadRequest(new MessageResponse { Message = "Full name and email are required." });
-
-            var emailExists = await _db.Users.AnyAsync(u => u.Email == request.Email && u.Id != id);
-            if (emailExists)
-                return Conflict(new MessageResponse { Message = "An account with this email already exists." });
-
-            // allow admin to set blocked flag via update
-            if (request.IsBlocked != null)
+            var result = await _user.UpdateUserAsync(id, request);
+            if (!result.Success)
             {
-                user.IsBlocked = request.IsBlocked.Value;
+                if (result.Message.Contains("not found")) return NotFound(new MessageResponse { Message = result.Message });
+                if (result.Message.Contains("exists")) return Conflict(new MessageResponse { Message = result.Message });
+                return BadRequest(new MessageResponse { Message = result.Message });
             }
-
-            user.FullName = request.FullName;
-            user.Email = request.Email;
-            user.Role = string.IsNullOrWhiteSpace(request.Role) ? user.Role : request.Role;
-            user.Avatar = request.Avatar;
-
-            if (!string.IsNullOrWhiteSpace(request.Password))
-            {
-                user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
-            }
-
-            await _db.SaveChangesAsync();
-
-            return Ok(new UserDto
-            {
-                Id = user.Id,
-                FullName = user.FullName,
-                Email = user.Email,
-                Role = user.Role,
-                Avatar = user.Avatar,
-                IsBlocked = user.IsBlocked,
-                PasswordSet = !string.IsNullOrEmpty(user.Password)
-            });
+            return Ok(result.Data);
         }
-
-        private static string GenerateOtp() =>
-            Random.Shared.Next(100000, 999999).ToString();
-
-        private static string GenerateSecureToken() =>
-            Convert.ToBase64String(RandomNumberGenerator.GetBytes(64))
-                .Replace("+", "-").Replace("/", "_").Replace("=", "");
     }
 }

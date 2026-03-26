@@ -1,10 +1,15 @@
 using System.Text;
+using System.Threading.Tasks;
 using Backend.Data;
 using Backend.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using Backend.Hubs;
+using System.Threading.RateLimiting;
+
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
@@ -16,6 +21,31 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // ---------- Services ----------
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddAutoMapper(typeof(Program));
+
+// ---------- Rate Limiting ----------
+builder.Services.AddRateLimiter(options =>
+{
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter("Global",
+            partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 100,
+                QueueLimit = 0,
+                Window = TimeSpan.FromMinutes(1)
+            }));
+            
+    // Applying auth limiter for sensitive endpoints
+    options.AddFixedWindowLimiter("Auth", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 10;
+        opt.QueueLimit = 0;
+    });
+});
 
 // ---------- JWT Authentication ----------
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
@@ -33,8 +63,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            RoleClaimType = ClaimTypes.Role,
+            NameClaimType = ClaimTypes.Name
         };
+        // Explicitly unconfigured Custom cookie extraction to enforce Authorization: Bearer header to prevent CSRF.
     });
 
 builder.Services.AddAuthorization();
@@ -74,9 +107,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
+
+app.UseRateLimiter(); // Apply Rate limiting before authentication
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 // map SignalR hubs
-app.MapHub<ContactHub>("/hubs/contact");
+app.MapHub<ContactHub>("/Hubs/ContactHub");
 app.Run();

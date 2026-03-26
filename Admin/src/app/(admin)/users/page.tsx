@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import Button from "@/components/ui/button/Button";
 import ComponentCard from "@/components/common/ComponentCard";
 import UserTable from "@/components/user-management/UserTable";
@@ -25,6 +26,7 @@ const initialUsers: User[] = [];
 
 export default function UsersPage() {
   const t = useTranslations();
+  const { data: session, status } = useSession();
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [query, setQuery] = useState("");
   const [formOpen, setFormOpen] = useState(false);
@@ -36,11 +38,17 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (status === "loading" || !session?.accessToken) return;
+
     async function loadUsers() {
       setLoading(true);
       try {
         const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-        const res = await fetch(`${BACKEND_URL}/api/user`);
+        const res = await fetch(`${BACKEND_URL}/api/user`, {
+          headers: {
+            "Authorization": `Bearer ${session?.accessToken}`
+          }
+        });
         if (!res.ok) {
           console.error("Failed to fetch users", res.status);
           return;
@@ -68,7 +76,7 @@ export default function UsersPage() {
     }
 
     loadUsers();
-  }, []);
+  }, [session, status]);
 
   const filtered = useMemo(() => {
     if (!query) return users;
@@ -88,7 +96,10 @@ export default function UsersPage() {
       if (payload.id) {
         const res = await fetch(`${BACKEND_URL}/api/user/${payload.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.accessToken}`
+          },
           body: JSON.stringify({
             fullName: payload.name,
             email: payload.email,
@@ -118,7 +129,10 @@ export default function UsersPage() {
       } else {
         const res = await fetch(`${BACKEND_URL}/api/user`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.accessToken}`
+          },
           body: JSON.stringify({
             fullName: payload.name,
             email: payload.email,
@@ -182,7 +196,10 @@ export default function UsersPage() {
 
         const res = await fetch(`${BACKEND_URL}/api/user/${id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.accessToken}`
+          },
           body: JSON.stringify(updatedPayload),
         });
 

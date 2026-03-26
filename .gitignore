@@ -39,6 +39,7 @@ next-env.d.ts
 .env.local
 appsettings.Development.json
 appsettings.Local.json
+appsettings.json
 secrets.json
 
 # Logs
