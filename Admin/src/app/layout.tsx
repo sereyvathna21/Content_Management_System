@@ -15,12 +15,12 @@ export const metadata = {
   },
 };
 const roboto = Roboto({
-  
   variable: "--font-outfit-sans",
 });
 
 const notoSansKhmer = Noto_Sans_Khmer({
   subsets: ["khmer"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-noto-khmer",
 });
 

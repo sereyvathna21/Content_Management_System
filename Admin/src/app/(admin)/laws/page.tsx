@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -10,6 +10,7 @@ import LawEditForm from "@/components/laws/LawEditForm";
 import LawTable, { Law as LawType } from "@/components/laws/LawTable";
 import LawFilters from "@/components/laws/LawFilters";
 import { pickTranslation } from "@/lib/pickTranslation";
+import Pagination from "@/components/tables/Pagination";
 
 
 type LawTranslation = {
@@ -27,44 +28,74 @@ type Law = {
   translations: LawTranslation[];
 };
 
+function resolvePdfUrl(pdfUrl?: string) {
+  if (!pdfUrl) return null;
+  if (/^https?:\/\//i.test(pdfUrl)) return pdfUrl;
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+  return `${backendUrl}${pdfUrl.startsWith("/") ? "" : "/"}${pdfUrl}`;
+}
+
 export default function LawsPage() {
   const t = useTranslations();
   const { data: session, status } = useSession();
   const [laws, setLaws] = useState<Law[]>([]);
   const [loading, setLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedLaw, setSelectedLaw] = useState<LawType | null>(null);
   const [viewOpen, setViewOpen] = useState(false);
   const [editingLaw, setEditingLaw] = useState<LawType | null>(null);
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [page, setPage] = useState(1);
   const locale = useLocale();
+  const pageSize = 10;
 
-  async function load() {
+  const load = useCallback(async (signal?: AbortSignal) => {
     if (status === "loading" || !session?.accessToken) return;
     setLoading(true);
     try {
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+      });
+      if (query.trim()) params.set("q", query.trim());
+      if (categoryFilter !== "all") params.set("category", categoryFilter);
       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-      const res = await fetch(`${BACKEND_URL}/api/laws`, {
+      const res = await fetch(`${BACKEND_URL}/api/laws?${params.toString()}`, {
         headers: {
           "Authorization": `Bearer ${session.accessToken}`
-        }
+        },
+        signal
       });
       if (!res.ok) return;
       const data = await res.json();
-      setLaws((data.items || []).map((it: any) => ({ id: it.id, category: it.category, date: it.date, translations: it.translations || [] })));
+      if (signal?.aborted) return;
+      const items = data.items || [];
+      setLaws(items.map((it: any) => ({ id: it.id, category: it.category, date: it.date, translations: it.translations || [] })));
+      setTotalCount(Number(data.total ?? items.length));
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }
+  }, [categoryFilter, page, pageSize, query, session?.accessToken, status]);
 
-  useEffect(() => { load(); }, [session, status]);
+  useEffect(() => {
+    const controller = new AbortController();
+    load(controller.signal);
+    return () => controller.abort();
+  }, [load]);
 
   function handleCreated() {
     setCreateOpen(false);
     setEditingLaw(null);
+    if (page !== 1) {
+      setPage(1);
+      return;
+    }
     load();
   }
 
@@ -79,7 +110,8 @@ export default function LawsPage() {
   }
 
   async function handleDelete(id: string) {
-    if (status === "loading" || !session?.accessToken) return;
+    if (status === "loading" || !session?.accessToken || deletingId) return;
+    setDeletingId(id);
     try
     {
       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
@@ -94,6 +126,10 @@ export default function LawsPage() {
     {
       console.error(err);
     }
+    finally
+    {
+      setDeletingId(null);
+    }
   }
 
   const currentLocale = locale || "en";
@@ -101,32 +137,23 @@ export default function LawsPage() {
     ? pickTranslation(selectedLaw.translations, currentLocale, `Law #${selectedLaw.id}`)
     : null;
 
-  const categoryOptions = useMemo(() => ([
+  const categoryOptions = [
     { value: "all", label: t("LawsPage.filters.all") },
-    { value: "Civil Law", label: t("LawForm.categories.civilLaw") },
-    { value: "Criminal Law", label: t("LawForm.categories.criminalLaw") },
-    { value: "Administrative Law", label: t("LawForm.categories.administrativeLaw") },
-    { value: "Commercial Law", label: t("LawForm.categories.commercialLaw") },
-    { value: "Constitutional Law", label: t("LawForm.categories.constitutionalLaw") },
-  ]), [t]);
+    { value: "Royal Degree", label: t("LawsPage.filters.categories.royalDegree") },
+    { value: "Sub-Degree", label: t("LawsPage.filters.categories.subDegree") },
+    { value: "Prakas", label: t("LawsPage.filters.categories.prakas") },
+    { value: "Decision and Guideline", label: t("LawsPage.filters.categories.decisionAndGuideline") },
+  ];
 
-  const filteredLaws = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-    return laws.filter((law) => {
-      if (categoryFilter !== "all" && law.category !== categoryFilter) return false;
-      if (!normalizedQuery) return true;
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
-      const tr = pickTranslation(law.translations, currentLocale, "");
-      const haystack = [
-        tr.title,
-        tr.description ?? "",
-        law.category ?? "",
-      ].join(" ").toLowerCase();
-
-      return haystack.includes(normalizedQuery);
-    });
-  }, [laws, categoryFilter, query, currentLocale]);
+  useEffect(() => {
+    setPage(1);
+  }, [query, categoryFilter]);
 
   return (
     <div className="space-y-6 p-6">
@@ -143,9 +170,15 @@ export default function LawsPage() {
           <div className="mb-4">
             <LawFilters
               query={query}
-              onSearch={setQuery}
+              onSearch={(value) => {
+                setQuery(value);
+                setPage(1);
+              }}
               category={categoryFilter}
-              onCategoryChange={setCategoryFilter}
+              onCategoryChange={(value) => {
+                setCategoryFilter(value);
+                setPage(1);
+              }}
               categories={categoryOptions}
               action={
                 <button
@@ -165,16 +198,22 @@ export default function LawsPage() {
             <div className="grid grid-cols-1 gap-3">
               <LawTable
                 loading={loading}
-                laws={filteredLaws}
+                laws={laws}
                 query={query}
                 locale={currentLocale}
                 onOpen={(l) => { setSelectedLaw(l); setViewOpen(true); }}
                 onEdit={(l) => { setEditingLaw(l); setCreateOpen(true); }}
                 onDelete={handleDelete}
+                deletingId={deletingId}
                 onCreate={handleOpenCreate}
                 createLabel={t("LawsPage.create") || "New Law"}
                 showInlineCreate={false}
               />
+              {totalPages > 1 && (
+                <div className="mt-4 flex justify-end">
+                  <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+                </div>
+              )}
             </div>
             
           )}
@@ -192,23 +231,34 @@ export default function LawsPage() {
         )}
       </Modal>
 
-      <Modal isOpen={viewOpen} onClose={() => setViewOpen(false)} className="max-w-md p-6">
+      {/*For view both KH-ENG PDF*/}
+      
+      {/* <Modal isOpen={viewOpen} onClose={() => setViewOpen(false)} className="max-w-md p-6">
         {selectedLaw && selectedTranslation && (
           <div>
             <h3 className="text-lg font-semibold mb-2">{selectedTranslation.title}</h3>
             <p className="text-sm text-gray-600">{selectedLaw.category} • {selectedLaw.date}</p>
             <div className="mt-3 space-y-2">
-              {selectedLaw.translations.map((tr) => (
-                <div key={tr.language} className="p-2 border rounded">
-                  <div className="font-medium">{tr.language.toUpperCase()} — {tr.title}</div>
-                  {tr.description && <div className="text-sm text-gray-600">{tr.description}</div>}
-                  {tr.pdfUrl ? <a className="text-sm text-blue-600" href={tr.pdfUrl} target="_blank" rel="noreferrer">{t("LawsPage.viewPdf") || "View PDF"}</a> : <div className="text-sm text-gray-400">No PDF</div>}
-                </div>
-              ))}
+              {selectedLaw.translations.map((tr) => {
+                const pdfHref = resolvePdfUrl(tr.pdfUrl);
+                return (
+                  <div key={tr.language} className="p-2 border rounded">
+                    <div className="font-medium">{tr.language.toUpperCase()} — {tr.title}</div>
+                    {tr.description && <div className="text-sm text-gray-600">{tr.description}</div>}
+                    {pdfHref ? (
+                      <a className="text-sm text-red-600" href={pdfHref} target="_blank" rel="noreferrer">
+                        {t("LawsPage.viewPdf") || "View PDF"}
+                      </a>
+                    ) : (
+                      <div className="text-sm text-gray-400">No PDF</div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
-      </Modal>
+      </Modal> */}
     </div>
   );
 }

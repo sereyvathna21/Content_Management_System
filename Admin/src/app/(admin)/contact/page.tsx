@@ -16,7 +16,6 @@ export default function ContactPage() {
     contacts,
     loading,
     selected,
-    loadContacts,
     selectContact,
     toggleRead,
     removeContact,
@@ -32,10 +31,6 @@ export default function ContactPage() {
   } = useContacts();
 
   const [query, setQuery] = useState("");
-
-  React.useEffect(() => {
-    loadContacts();
-  }, []);
 
   const onSearch = (q: string) => {
     setQuery(q);

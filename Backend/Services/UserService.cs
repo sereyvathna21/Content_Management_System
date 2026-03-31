@@ -156,6 +156,30 @@ namespace Backend.Services
             return _mapper.Map<IEnumerable<UserDto>>(users);
         }
 
+        public async Task<(IEnumerable<UserDto> Items, int Total)> GetUsersAsync(int page, int pageSize, string? query)
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Max(1, pageSize);
+
+            var usersQuery = _db.Users.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var q = query.Trim().ToLower();
+                usersQuery = usersQuery.Where(u =>
+                    u.FullName.ToLower().Contains(q) ||
+                    u.Email.ToLower().Contains(q));
+            }
+
+            var total = await usersQuery.CountAsync();
+            var users = await usersQuery
+                .OrderByDescending(u => u.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (_mapper.Map<IEnumerable<UserDto>>(users), total);
+        }
+
         public async Task<(bool Success, string Message, UserDto? Data)> CreateUserAsync(CreateUserRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Email) ||

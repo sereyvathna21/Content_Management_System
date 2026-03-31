@@ -225,11 +225,10 @@
       "error": "Save failed. Please try again."
     },
     "categories": {
-      "civilLaw": "Civil Law",
-      "criminalLaw": "Criminal Law",
-      "administrativeLaw": "Administrative Law",
-      "commercialLaw": "Commercial Law",
-      "constitutionalLaw": "Constitutional Law"
+      "royalDegree": "Royal Degree",
+      "subDegree": "Sub-Degree",
+      "prakas": "Prakas",
+      "decisionAndGuideline": "Decision and Guideline"
     }
   }
   ,
@@ -241,7 +240,13 @@
     "searchAria": "Search laws",
     "filters": {
       "all": "All",
-      "aria": "Filter by category"
+      "aria": "Filter by category",
+      "categories": {
+        "royalDegree": "Royal Degree",
+        "subDegree": "Sub-Degree",
+        "prakas": "Prakas",
+        "decisionAndGuideline": "Decision and Guideline"
+      }
     },
     "card": {
       "title": "Laws",

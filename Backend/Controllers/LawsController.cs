@@ -21,14 +21,39 @@ namespace Backend.Controllers
             _env = env;
         }
 
+        private string? BuildPdfUrl(string? pdfUrl)
+        {
+            if (string.IsNullOrWhiteSpace(pdfUrl)) return null;
+            if (Uri.TryCreate(pdfUrl, UriKind.Absolute, out _)) return pdfUrl;
+            var baseUrl = $"{Request.Scheme}://{Request.Host.Value}";
+            return pdfUrl.StartsWith("/") ? baseUrl + pdfUrl : $"{baseUrl}/{pdfUrl}";
+        }
+
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> List([FromQuery] string lang = "en", [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        public async Task<IActionResult> List([FromQuery] string lang = "en", [FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? category = null, [FromQuery] string? q = null)
         {
             page = Math.Max(1, page);
+            pageSize = Math.Max(1, pageSize);
             try
             {
                 var query = _db.Laws.Include(l => l.Translations).AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(category))
+                {
+                    query = query.Where(l => l.Category == category);
+                }
+
+                if (!string.IsNullOrWhiteSpace(q))
+                {
+                    var qLower = q.Trim().ToLower();
+                    query = query.Where(l =>
+                        (l.Category ?? string.Empty).ToLower().Contains(qLower) ||
+                        l.Translations.Any(t =>
+                            (t.Title ?? string.Empty).ToLower().Contains(qLower) ||
+                            (t.Description ?? string.Empty).ToLower().Contains(qLower)
+                        ));
+                }
 
                 var total = await query.CountAsync();
 
@@ -49,7 +74,7 @@ namespace Backend.Controllers
                         Language = t.Language,
                         Title = t.Title,
                         Description = t.Description,
-                        PdfUrl = t.PdfUrl
+                        PdfUrl = BuildPdfUrl(t.PdfUrl)
                     }).ToList()
                 }).ToList();
 
@@ -79,7 +104,7 @@ namespace Backend.Controllers
                     Language = t.Language,
                     Title = t.Title,
                     Description = t.Description,
-                    PdfUrl = t.PdfUrl
+                    PdfUrl = BuildPdfUrl(t.PdfUrl)
                 }).ToList()
             };
 

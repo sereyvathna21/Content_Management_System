@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import Button from "@/components/ui/button/Button";
@@ -9,6 +9,7 @@ import UserTable from "@/components/user-management/UserTable";
 import { Modal } from "@/components/ui/modal";
 import CreateUserForm from "@/components/user-management/CreateUserForm";
 import EditUserForm from "@/components/user-management/EditUserForm";
+import Pagination from "@/components/tables/Pagination";
 
 type User = {
   id: string;
@@ -29,6 +30,8 @@ export default function UsersPage() {
   const { data: session, status } = useSession();
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<User | undefined>(undefined);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -36,54 +39,71 @@ export default function UsersPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingBlockId, setPendingBlockId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const pageSize = 10;
+
+  const loadUsers = useCallback(async (signal?: AbortSignal, overrides?: { page?: number; query?: string }) => {
+    if (status === "loading" || !session?.accessToken) return;
+    const currentPage = overrides?.page ?? page;
+    const currentQuery = (overrides?.query ?? query).trim();
+
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        pageSize: String(pageSize),
+      });
+      if (currentQuery) params.set("q", currentQuery);
+
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+      const res = await fetch(`${BACKEND_URL}/api/user?${params.toString()}`, {
+        headers: {
+          "Authorization": `Bearer ${session?.accessToken}`
+        },
+        signal
+      });
+      if (!res.ok) {
+        console.error("Failed to fetch users", res.status);
+        return;
+      }
+      const data = await res.json();
+      if (signal?.aborted) return;
+
+      const items = Array.isArray(data) ? data : (data.items || []);
+      const total = Array.isArray(data) ? items.length : Number(data.total ?? items.length);
+      const mapped: User[] = items.map((u: any) => {
+        const rawAvatar = (u.avatar ?? "")?.toString().trim();
+        const avatar = rawAvatar && rawAvatar !== "null" && rawAvatar !== "undefined" ? rawAvatar : "/images/user/default-avatar.svg";
+        return {
+          id: String(u.id),
+          name: u.fullName || u.name || "",
+          email: u.email || "",
+          role: u.role || "",
+          passwordSet: !!u.passwordSet,
+          avatar: avatar,
+          blocked: u.isBlocked || false,
+        } as User;
+      });
+      setUsers(mapped);
+      setTotalCount(total);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, pageSize, query, session?.accessToken, status]);
 
   useEffect(() => {
-    if (status === "loading" || !session?.accessToken) return;
+    const controller = new AbortController();
+    loadUsers(controller.signal);
+    return () => controller.abort();
+  }, [loadUsers]);
 
-    async function loadUsers() {
-      setLoading(true);
-      try {
-        const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-        const res = await fetch(`${BACKEND_URL}/api/user`, {
-          headers: {
-            "Authorization": `Bearer ${session?.accessToken}`
-          }
-        });
-        if (!res.ok) {
-          console.error("Failed to fetch users", res.status);
-          return;
-        }
-        const data = await res.json();
-        const mapped: User[] = (data || []).map((u: any) => {
-          const rawAvatar = (u.avatar ?? "")?.toString().trim();
-          const avatar = rawAvatar && rawAvatar !== "null" && rawAvatar !== "undefined" ? rawAvatar : "/images/user/default-avatar.svg";
-          return {
-            id: String(u.id),
-            name: u.fullName || u.name || "",
-            email: u.email || "",
-            role: u.role || "",
-            passwordSet: !!u.passwordSet,
-            avatar: avatar,
-            blocked: u.isBlocked || false,
-          } as User;
-        });
-        setUsers(mapped);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-    loadUsers();
-  }, [session, status]);
-
-  const filtered = useMemo(() => {
-    if (!query) return users;
-    return users.filter(
-      (u) => u.name.toLowerCase().includes(query.toLowerCase()) || u.email.toLowerCase().includes(query.toLowerCase())
-    );
-  }, [users, query]);
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
   function handleCreate() {
     setEditing(undefined);
@@ -114,18 +134,7 @@ export default function UsersPage() {
           return;
         }
 
-        const data = await res.json();
-        const updated: User = {
-          id: String(data.id),
-          name: data.fullName || payload.name || "",
-          email: data.email || payload.email || "",
-          role: data.role || payload.role || "",
-          avatar: data.avatar || payload.avatar || "/images/user/default-avatar.svg",
-          passwordSet: !!data.passwordSet,
-          blocked: payload.blocked ?? false,
-        };
-
-        setUsers((prev) => prev.map((u) => (u.id === payload.id ? updated : u)));
+        await loadUsers();
       } else {
         const res = await fetch(`${BACKEND_URL}/api/user`, {
           method: "POST",
@@ -147,18 +156,11 @@ export default function UsersPage() {
           return;
         }
 
-        const data = await res.json();
-        const created: User = {
-          id: String(data.id),
-          name: data.fullName || payload.name || "",
-          email: data.email || payload.email || "",
-          role: data.role || payload.role || "",
-          avatar: data.avatar || payload.avatar || "/images/user/default-avatar.svg",
-          passwordSet: !!data.passwordSet,
-          blocked: false,
-        };
-
-        setUsers((prev) => [created, ...prev]);
+        if (page !== 1) {
+          setPage(1);
+        } else {
+          await loadUsers();
+        }
       }
     } catch (err) {
       console.error(err);
@@ -243,7 +245,10 @@ export default function UsersPage() {
             <input
               placeholder={t("UsersPage.searchPlaceholder")}
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setPage(1);
+              }}
               aria-label="Search users"
               className={`w-full sm:w-64 h-9 px-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 text-sm ${
                 query ? "border-gray-300" : "border-gray-200"
@@ -262,13 +267,21 @@ export default function UsersPage() {
         <div className="mt-4">
           <UserTable
             loading={loading}
-            users={filtered}
+            users={users}
             query={query}
             onOpen={(u) => { setSelectedUser(u); setViewOpen(true); }}
             onEdit={handleEdit}
             onBlockRequest={requestBlock}
-            onClear={() => setQuery("")}
+            onClear={() => {
+              setQuery("");
+              setPage(1);
+            }}
           />
+          {totalPages > 1 && (
+            <div className="mt-4 flex justify-end">
+              <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+            </div>
+          )}
         </div>
       </ComponentCard>
 

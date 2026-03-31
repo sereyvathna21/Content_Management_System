@@ -29,7 +29,8 @@ type Props = {
   locale?: string;
   onOpen: (l: Law) => void;
   onEdit: (l: Law) => void;
-  onDelete?: (id: string) => void;
+  onDelete?: (id: string) => Promise<void> | void;
+  deletingId?: string | null;
   onCreate?: () => void;
   createLabel?: string;
   showInlineCreate?: boolean;
@@ -40,12 +41,14 @@ function formatCategory(category: string | undefined, t: ReturnType<typeof useTr
 
   const normalized = category
     .trim()
+    .replace(/[^A-Za-z0-9]+/g, " ")
     .split(/\s+/)
+    .filter(Boolean)
     .map((word) => word.toLowerCase())
     .map((word, idx) => (idx === 0 ? word : word.charAt(0).toUpperCase() + word.slice(1)))
     .join("");
 
-  const key = `LawForm.categories.${normalized}`;
+  const key = `LawsPage.filters.categories.${normalized}`;
   return t.has(key) ? t(key) : category;
 }
 
@@ -59,6 +62,13 @@ function formatDate(value: string | undefined, locale?: string) {
   });
 }
 
+function resolvePdfUrl(pdfUrl?: string) {
+  if (!pdfUrl) return null;
+  if (/^https?:\/\//i.test(pdfUrl)) return pdfUrl;
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+  return `${backendUrl}${pdfUrl.startsWith("/") ? "" : "/"}${pdfUrl}`;
+}
+
 export default React.memo(function LawTable({
   loading,
   laws,
@@ -67,6 +77,7 @@ export default React.memo(function LawTable({
   onOpen,
   onEdit,
   onDelete,
+  deletingId,
   onCreate,
   createLabel,
   showInlineCreate = true,
@@ -75,6 +86,7 @@ export default React.memo(function LawTable({
   const createText = createLabel ?? t("LawTable.create");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const isDeleting = Boolean(deletingId && deleteId && deletingId === deleteId);
 
   return (
     <>
@@ -128,22 +140,20 @@ export default React.memo(function LawTable({
               <Table>
                 <TableHeader className="border-b border-gray-100 dark:border-white/5">
                   <TableRow>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">
+                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                       {t("LawTable.headers.title")}
                     </TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">
+                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                       {t("LawTable.headers.category")}
                     </TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">
+                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                       {t("LawTable.headers.date")}
                     </TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">
+                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                       {t("LawTable.headers.pdf")}
                     </TableCell>
-                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400 whitespace-nowrap min-w-[150px]">
-                      <div className="flex items-center gap-3">
-                        <span>{t("LawTable.headers.actions")}</span>
-                      </div>
+                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                      {t("LawTable.headers.actions")}
                     </TableCell>
                   </TableRow>
                 </TableHeader>
@@ -151,6 +161,7 @@ export default React.memo(function LawTable({
                 <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
                   {laws.map((l) => {
                     const tr = pickTranslation(l.translations, locale, `Law #${l.id}`);
+                    const pdfHref = resolvePdfUrl(tr.pdfUrl);
                     return (
                       <TableRow key={l.id}>
                         <TableCell className="px-5 py-3 sm:px-6 text-start">
@@ -174,10 +185,10 @@ export default React.memo(function LawTable({
 
                         {/* ← this was the broken part, <a was missing */}
                         <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                          {tr.pdfUrl ? (
+                          {pdfHref ? (
                             <a
-                              className="text-sm text-blue-600 hover:underline"
-                              href={tr.pdfUrl}
+                              className="text-sm text-blue-500 hover:underline"
+                              href={pdfHref}
                               target="_blank"
                               rel="noreferrer"
                             >
@@ -188,7 +199,7 @@ export default React.memo(function LawTable({
                           )}
                         </TableCell>
 
-                        <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
+                        <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
                           <div className="flex items-center gap-2">
                             <Tooltip label={t("LawTable.tooltips.edit")}>
                               <button
@@ -212,7 +223,8 @@ export default React.memo(function LawTable({
                                   }}
                                   title={t("LawTable.tooltips.delete")}
                                   aria-label={t("LawTable.tooltips.delete")}
-                                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 transition"
+                                  disabled={Boolean(deletingId)}
+                                  className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50"}`}
                                 >
                                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                                     <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -245,17 +257,26 @@ export default React.memo(function LawTable({
             <button
               className="h-9 px-4 rounded-lg font-medium bg-white border border-gray-200"
               onClick={() => setIsDeleteOpen(false)}
+              disabled={isDeleting}
             >
               {t("LawTable.cancel")}
             </button>
             <button
-              className="h-9 px-4 rounded-lg font-semibold text-white bg-red-600 hover:bg-red-700"
-              onClick={() => {
-                if (deleteId) onDelete(deleteId);
+              className={`h-9 px-4 rounded-lg font-semibold text-white transition ${isDeleting ? "bg-red-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"}`}
+              disabled={isDeleting}
+              onClick={async () => {
+                if (!deleteId || !onDelete || isDeleting) return;
+                await onDelete(deleteId);
                 setIsDeleteOpen(false);
                 setDeleteId(null);
               }}
             >
+              {isDeleting && (
+                <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
+                  <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+                </svg>
+              )}
               {t("LawTable.delete")}
             </button>
           </div>

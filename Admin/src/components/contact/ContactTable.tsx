@@ -70,22 +70,22 @@ export default function ContactTable({
           <Table>
             <TableHeader className="border-b border-gray-100 dark:border-white/5">
               <TableRow>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                   {t("columns.name")}
                 </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400 ">
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400 ">
                   {t("columns.email")}
                 </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                   {t("columns.subject")}
                 </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400 ">
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400 ">
                   {t("columns.date")}
                 </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400 ">
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400 ">
                   {t("columns.status")}
                 </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                   {t("columns.actions")}
                 </TableCell>
               </TableRow>

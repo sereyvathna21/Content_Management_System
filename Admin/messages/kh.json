@@ -226,11 +226,10 @@
       "error": "ការរក្សាទុកបរាជ័យ។ សូមសាកល្បងម្ដងទៀត។"
     },
     "categories": {
-      "civilLaw": "ច្បាប់ស៊ីវិល",
-      "criminalLaw": "ច្បាប់ព្រហ្មទណ្ឌ",
-      "administrativeLaw": "ច្បាប់រដ្ឋបាល",
-      "commercialLaw": "ច្បាប់ពាណិជ្ជកម្ម",
-      "constitutionalLaw": "ច្បាប់រដ្ឋធម្មនុញ្ញ"
+      "royalDegree": "ព្រះរាជក្រឹត្យ",
+      "subDegree": "អនុក្រឹត្យ",
+      "prakas": "ប្រកាស",
+      "decisionAndGuideline": "សេចក្តីសម្រេច និង គោលការណ៍"
     }
   }
   ,
@@ -242,7 +241,13 @@
     "searchAria": "ស្វែងរកច្បាប់",
     "filters": {
       "all": "ទាំងអស់",
-      "aria": "តម្រងតាមប្រភេទ"
+      "aria": "តម្រងតាមប្រភេទ",
+      "categories": {
+        "royalDegree": "ព្រះរាជក្រឹត្យ",
+        "subDegree": "អនុក្រឹត្យ",
+        "prakas": "ប្រកាស",
+        "decisionAndGuideline": "សេចក្តីសម្រេច និង គោលការណ៍"
+      }
     },
     "card": {
       "title": "ច្បាប់",

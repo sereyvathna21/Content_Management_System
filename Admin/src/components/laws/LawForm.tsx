@@ -38,11 +38,10 @@ const DEFAULT_LANGUAGE = "km";
 const DEFAULT_LANGS = ["km", "en"];
 
 const CATEGORY_OPTIONS = [
-  { value: "Civil Law", labelKey: "categories.civilLaw" },
-  { value: "Criminal Law", labelKey: "categories.criminalLaw" },
-  { value: "Administrative Law", labelKey: "categories.administrativeLaw" },
-  { value: "Commercial Law", labelKey: "categories.commercialLaw" },
-  { value: "Constitutional Law", labelKey: "categories.constitutionalLaw" },
+  { value: "Royal Degree", labelKey: "categories.royalDegree" },
+  { value: "Sub-Degree", labelKey: "categories.subDegree" },
+  { value: "Prakas", labelKey: "categories.prakas" },
+  { value: "Decision and Guideline", labelKey: "categories.decisionAndGuideline" },
 ];
 
 function langLabel(code: string) {
@@ -54,6 +53,26 @@ function makeEmptyTranslation(language: string): Translation {
 }
 
 const DESCRIPTION_MAX_LENGTH = 500;
+
+async function extractErrorMessage(res: Response, fallback: string): Promise<string> {
+  try {
+    const data: any = await res.json();
+    if (!data) return fallback;
+    if (typeof data === "string") return data;
+    if (Array.isArray(data)) return data.join(", ");
+    if (typeof data === "object") {
+      const direct = data.message || data.title || data.error || data.detail;
+      if (direct) return String(direct);
+      if (data.errors && typeof data.errors === "object") {
+        const values = Object.values(data.errors).flat().filter(Boolean).map(String);
+        if (values.length) return values.join(", ");
+      }
+    }
+  } catch {
+    return fallback;
+  }
+  return fallback;
+}
 
 
 export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFormProps) {
@@ -161,13 +180,17 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
         body: form,
         headers: { Authorization: `Bearer ${session.accessToken}` }
       });
-      if (!res.ok) throw new Error("Failed to save");
+      if (!res.ok) {
+        const message = await extractErrorMessage(res, t("toast.error"));
+        throw new Error(message);
+      }
 
       setToast({ message: t("toast.success"), type: "success" });
       resetForm();
       onSaved?.();
-    } catch {
-      setToast({ message: t("toast.error"), type: "error" });
+    } catch (err) {
+      const message = err instanceof Error && err.message ? err.message : t("toast.error");
+      setToast({ message, type: "error" });
     } finally {
       setSaving(false);
     }

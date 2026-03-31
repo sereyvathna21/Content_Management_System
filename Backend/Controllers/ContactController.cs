@@ -74,9 +74,33 @@ namespace Backend.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 100)
+        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? q = null, [FromQuery] string status = "all")
         {
-            var query = _db.Contacts.OrderByDescending(c => c.CreatedAt).AsQueryable();
+            page = Math.Max(1, page);
+            pageSize = Math.Max(1, pageSize);
+
+            var query = _db.Contacts.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var qLower = q.Trim().ToLower();
+                query = query.Where(c =>
+                    c.Name.ToLower().Contains(qLower) ||
+                    c.Email.ToLower().Contains(qLower) ||
+                    c.Subject.ToLower().Contains(qLower) ||
+                    c.Message.ToLower().Contains(qLower));
+            }
+
+            if (string.Equals(status, "read", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(c => c.Read);
+            }
+            else if (string.Equals(status, "unread", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(c => !c.Read);
+            }
+
+            query = query.OrderByDescending(c => c.CreatedAt);
             var total = await query.CountAsync();
             var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 

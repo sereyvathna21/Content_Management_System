@@ -66,11 +66,11 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
           <Table>
             <TableHeader className="border-b border-gray-100 dark:border-white/5">
               <TableRow>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">{t("UserTable.headers.user")}</TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">{t("UserTable.headers.email")}</TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">{t("UserTable.headers.password")}</TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">{t("UserTable.headers.role")}</TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-md dark:text-gray-400">{t("UserTable.headers.actions")}</TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">{t("UserTable.headers.user")}</TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">{t("UserTable.headers.email")}</TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">{t("UserTable.headers.password")}</TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">{t("UserTable.headers.role")}</TableCell>
+                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">{t("UserTable.headers.actions")}</TableCell>
               </TableRow>
             </TableHeader>
 

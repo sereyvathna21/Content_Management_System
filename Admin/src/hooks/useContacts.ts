@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getSession } from "next-auth/react";
 import { getSignalRConnection } from "../lib/signalr";
 
@@ -68,7 +68,8 @@ const toContact = (i: Record<string, unknown>): Contact => ({
 
 export function useContacts() {
     // ── raw source of truth ──────────────────────────────────────────────
-    const [all, setAll] = useState<Contact[]>([]);
+    const [contacts, setContacts] = useState<Contact[]>([]);
+    const [totalCount, setTotalCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const [selected, setSelected] = useState<Contact | null>(null);
 
@@ -80,33 +81,6 @@ export function useContacts() {
     const [page, setPageState] = useState<number>(1);
     const [pageSize, setPageSizeState] = useState<number>(10);
 
-    // ── derived: filtered list (no stale closures — always fresh) ────────
-    const filteredAll = useMemo<Contact[]>(() => {
-        let result = all;
-
-        if (query.trim()) {
-            const lower = query.toLowerCase();
-            result = result.filter((c) =>
-                `${c.name} ${c.email} ${c.subject}`.toLowerCase().includes(lower)
-            );
-        }
-
-        if (statusFilter !== "all") {
-            result = result.filter((c) =>
-                statusFilter === "read" ? c.read : !c.read
-            );
-        }
-
-        return result;
-    }, [all, query, statusFilter]);
-
-    // ── derived: current page slice ───────────────────────────────────────
-    const contacts = useMemo<Contact[]>(() => {
-        const start = (page - 1) * pageSize;
-        return filteredAll.slice(start, start + pageSize);
-    }, [filteredAll, page, pageSize]);
-
-    const totalCount = filteredAll.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
     // ── keep page in bounds when filters shrink the result set ────────────
@@ -119,10 +93,10 @@ export function useContacts() {
     // ── keep selected contact in sync when `all` changes ─────────────────
     useEffect(() => {
         if (!selected) return;
-        const fresh = all.find((c) => c.id === selected.id);
+        const fresh = contacts.find((c) => c.id === selected.id);
         if (fresh && fresh !== selected) setSelected(fresh);
         if (!fresh) setSelected(null);
-    }, [all]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [contacts, selected]);
 
     // ── SignalR: real-time events ─────────────────────────────────────────
     // Handlers are stored in refs so they are never stale and don't need to
@@ -130,6 +104,7 @@ export function useContacts() {
     const createdHandlerRef = useRef<((c: Record<string, unknown>) => void) | null>(null);
     const deletedHandlerRef = useRef<((payload: Record<string, unknown>) => void) | null>(null);
     const readHandlerRef = useRef<((payload: Record<string, unknown>) => void) | null>(null);
+    const loadContactsRef = useRef<(() => void) | null>(null);
 
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -141,20 +116,20 @@ export function useContacts() {
         const onCreated = (c: Record<string, unknown>) => {
             const item = toContact(c);
             console.info("[useContacts] ContactCreated:", item);
-            setAll((prev) => [item, ...prev]);
+            if (loadContactsRef.current) loadContactsRef.current();
         };
 
         const onDeleted = (payload: Record<string, unknown>) => {
             const id = String(payload.id ?? payload);
             console.info("[useContacts] ContactDeleted:", id);
-            setAll((prev) => prev.filter((c) => c.id !== id));
+            if (loadContactsRef.current) loadContactsRef.current();
         };
 
         const onReadToggled = (payload: Record<string, unknown>) => {
             const id = String(payload.id);
             const read = Boolean(payload.read);
             console.info("[useContacts] ContactReadToggled:", id, read);
-            setAll((prev) =>
+            setContacts((prev) =>
                 prev.map((c) => (c.id === id ? { ...c, read } : c))
             );
         };
@@ -190,29 +165,50 @@ export function useContacts() {
         };
     }, []); // intentionally empty — runs once on mount
 
-    // ── API: load all contacts ────────────────────────────────────────────
-    const loadContacts = useCallback(async () => {
+    // ── API: load contacts (paged) ───────────────────────────────────────
+    const loadContacts = useCallback(async (signal?: AbortSignal) => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/contact?page=1&pageSize=100`);
+            const params = new URLSearchParams({
+                page: String(page),
+                pageSize: String(pageSize),
+            });
+            if (query.trim()) params.set("q", query.trim());
+            if (statusFilter !== "all") params.set("status", statusFilter);
+
+            const res = await fetch(`${API_BASE}/api/contact?${params.toString()}`, { signal });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const body: { items: Record<string, unknown>[] } = await res.json();
-            setAll((body.items || []).map(toContact));
+            const body: { items: Record<string, unknown>[]; total?: number } = await res.json();
+            if (signal?.aborted) return;
+            const items = body.items || [];
+            setContacts(items.map(toContact));
+            setTotalCount(Number(body.total ?? items.length));
         } catch (err) {
+            if (err instanceof DOMException && err.name === "AbortError") return;
             console.error("[useContacts] loadContacts failed:", err);
             // Surface the error to the caller — no mock fallback
             throw err;
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [page, pageSize, query, statusFilter]);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        loadContacts(controller.signal);
+        return () => controller.abort();
+    }, [loadContacts]);
+
+    useEffect(() => {
+        loadContactsRef.current = () => loadContacts();
+    }, [loadContacts]);
 
     // ── API: toggle read ──────────────────────────────────────────────────
     // Optimistic update first; if the API call fails we roll back.
     // SignalR will also broadcast ContactReadToggled to all other clients.
     const toggleRead = useCallback((id: string) => {
         // Optimistic: flip immediately
-        setAll((prev) =>
+        setContacts((prev) =>
             prev.map((c) => (c.id === id ? { ...c, read: !c.read } : c))
         );
 
@@ -225,13 +221,13 @@ export function useContacts() {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const json: { read: boolean } = await res.json();
                 // Reconcile with server truth (handles race conditions)
-                setAll((prev) =>
+                setContacts((prev) =>
                     prev.map((c) => (c.id === id ? { ...c, read: json.read } : c))
                 );
             } catch (err) {
                 console.warn("[useContacts] toggleRead failed — rolling back:", err);
                 // Roll back the optimistic flip
-                setAll((prev) =>
+                setContacts((prev) =>
                     prev.map((c) => (c.id === id ? { ...c, read: !c.read } : c))
                 );
             }
@@ -244,10 +240,11 @@ export function useContacts() {
     const removeContact = useCallback((id: string) => {
         // Snapshot for potential rollback
         let snapshot: Contact[] = [];
-        setAll((prev) => {
+        setContacts((prev) => {
             snapshot = prev;
             return prev.filter((c) => c.id !== id);
         });
+        setTotalCount((prev) => Math.max(0, prev - 1));
 
         (async () => {
             try {
@@ -256,10 +253,12 @@ export function useContacts() {
                     headers: await getAuthHeaders(),
                 });
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                if (loadContactsRef.current) loadContactsRef.current();
             } catch (err) {
                 console.warn("[useContacts] removeContact failed — rolling back:", err);
                 // Restore snapshot so the item reappears
-                setAll(snapshot);
+                setContacts(snapshot);
+                if (loadContactsRef.current) loadContactsRef.current();
             }
         })();
     }, []);
@@ -269,12 +268,10 @@ export function useContacts() {
         (id: string | null) => {
             if (!id) return setSelected(null);
             setSelected(
-                contacts.find((c) => c.id === id) ??
-                all.find((c) => c.id === id) ??
-                null
+                contacts.find((c) => c.id === id) ?? null
             );
         },
-        [contacts, all]
+        [contacts]
     );
 
     // ── filter helpers ────────────────────────────────────────────────────
@@ -336,7 +333,6 @@ export function useContacts() {
     return {
         // data
         contacts,       // current page slice, always fresh
-        all,            // full unfiltered list (useful for stats)
         loading,
         selected,
 

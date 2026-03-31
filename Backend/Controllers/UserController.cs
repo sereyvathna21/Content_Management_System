@@ -26,7 +26,7 @@ namespace Backend.Controllers
             {
                 if (result.Message.Contains("exists") || result.Message.Contains("blocked"))
                     return Conflict(new MessageResponse { Message = result.Message });
-                
+
                 return BadRequest(new MessageResponse { Message = result.Message });
             }
             return Ok(new MessageResponse { Message = result.Message });
@@ -73,16 +73,23 @@ namespace Backend.Controllers
             var result = await _user.ResetPasswordAsync(request);
             if (!result.Success)
                 return BadRequest(new MessageResponse { Message = result.Message });
-                
+
             return Ok(new MessageResponse { Message = result.Message });
         }
 
         [HttpGet]
         [Authorize(Roles = "Admin,admin,SuperAdmin")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? q = null)
         {
-            var users = await _user.GetAllUsersAsync();
-            return Ok(users);
+            var hasPaging = Request.Query.ContainsKey("page") || Request.Query.ContainsKey("pageSize") || Request.Query.ContainsKey("q");
+            if (!hasPaging)
+            {
+                var users = await _user.GetAllUsersAsync();
+                return Ok(users);
+            }
+
+            var (items, total) = await _user.GetUsersAsync(page, pageSize, q);
+            return Ok(new { total, page, pageSize, items });
         }
 
         [HttpPost]
@@ -94,7 +101,7 @@ namespace Backend.Controllers
             {
                 if (result.Message.Contains("exists") || result.Message.Contains("blocked"))
                     return Conflict(new MessageResponse { Message = result.Message });
-                
+
                 return BadRequest(new MessageResponse { Message = result.Message });
             }
             return Ok(result.Data);

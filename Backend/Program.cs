@@ -9,11 +9,22 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Backend.Hubs;
 using System.Threading.RateLimiting;
+using System.IO;
 
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
+
+var webRoot = builder.Environment.WebRootPath;
+if (string.IsNullOrWhiteSpace(webRoot) || !Directory.Exists(webRoot))
+{
+    var fallbackWebRoot = Path.Combine(builder.Environment.ContentRootPath, "Backend", "wwwroot");
+    if (Directory.Exists(fallbackWebRoot))
+    {
+        builder.WebHost.UseWebRoot(fallbackWebRoot);
+    }
+}
 
 // ---------- Database ----------
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -37,7 +48,7 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(1)
             }));
-            
+
     // Applying auth limiter for sensitive endpoints
     options.AddFixedWindowLimiter("Auth", opt =>
     {
@@ -106,6 +117,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "NSPC CMS API v1"));
 }
 
+app.UseStaticFiles();
+
 app.UseCors("AllowFrontend");
 
 app.UseRateLimiter(); // Apply Rate limiting before authentication
@@ -114,5 +127,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 // map SignalR hubs
-app.MapHub<ContactHub>("/Hubs/ContactHub");
+app.MapHub<ContactHub>("/hubs/contact");
 app.Run();

@@ -67,6 +67,26 @@ function makeEmptyTranslation(language: string): Translation {
 
 const DESCRIPTION_MAX_LENGTH = 500;
 
+async function extractErrorMessage(res: Response, fallback: string): Promise<string> {
+  try {
+    const data: any = await res.json();
+    if (!data) return fallback;
+    if (typeof data === "string") return data;
+    if (Array.isArray(data)) return data.join(", ");
+    if (typeof data === "object") {
+      const direct = data.message || data.title || data.error || data.detail;
+      if (direct) return String(direct);
+      if (data.errors && typeof data.errors === "object") {
+        const values = Object.values(data.errors).flat().filter(Boolean).map(String);
+        if (values.length) return values.join(", ");
+      }
+    }
+  } catch {
+    return fallback;
+  }
+  return fallback;
+}
+
 export default function LawEditForm({ initialLaw, onSaved, onClose, resetOnClose = true }: LawEditFormProps) {
   const t = useTranslations("LawForm");
   const { data: session, status } = useSession();
@@ -205,12 +225,16 @@ export default function LawEditForm({ initialLaw, onSaved, onClose, resetOnClose
         body: form,
         headers: { Authorization: `Bearer ${session.accessToken}` }
       });
-      if (!res.ok) throw new Error("Failed to save");
+      if (!res.ok) {
+        const message = await extractErrorMessage(res, t("toast.error"));
+        throw new Error(message);
+      }
 
       setToast({ message: t("toast.success"), type: "success" });
       onSaved?.();
-    } catch {
-      setToast({ message: t("toast.error"), type: "error" });
+    } catch (err) {
+      const message = err instanceof Error && err.message ? err.message : t("toast.error");
+      setToast({ message, type: "error" });
     } finally {
       setSaving(false);
     }
