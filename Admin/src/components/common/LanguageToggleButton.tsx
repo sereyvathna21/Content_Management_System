@@ -1,16 +1,18 @@
 "use client";
 import React from "react";
+import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 
 export const LanguageToggleButton: React.FC = () => {
   const locale = useLocale();
+  const router = useRouter();
 
   const toggleLocale = () => {
     const newLocale = locale === "en" ? "kh" : "en";
     const oneYear = 60 * 60 * 24 * 365;
     document.cookie = `NEXT_LOCALE=${encodeURIComponent(newLocale)}; path=/; max-age=${oneYear}`;
-    // full reload so server renders with new locale
-    window.location.reload();
+    // Refresh server components so the new locale cookie is used
+    router.refresh();
   };
 
   return (

@@ -185,6 +185,96 @@
     }
   }
   ,
+  "LawForm": {
+    "confirmCloseTitle": "Confirm close",
+    "confirmCloseBody": "Are you sure you want to close? Unsaved changes will be lost.",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "categoryLabel": "Category",
+    "categoryPlaceholder": "Select category…",
+    "publishDateLabel": "Publish Date",
+    "publishDatePlaceholder": "DD-MM-YYYY",
+    "languageButton": "Language",
+    "defaultBadge": "Default",
+    "removeLanguage": "Remove language",
+    "missingDefaultWarning": "Khmer (default) title is missing — fallback may not work correctly.",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Title in {language}",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Brief summary…",
+    "optional": "optional",
+    "pdfLabel": "PDF",
+    "pdfOptional": "optional",
+    "progress": "{complete}/{total} languages completed",
+    "close": "Close",
+    "save": "Save Laws",
+    "saving": "Saving…",
+    "pdfUpload": "Upload PDF",
+    "pdfOrDrag": "or drag",
+    "pdfMaxSize": "Max 10 MB",
+    "pdfSizeError": "File exceeds 10 MB limit. Please choose a smaller file.",
+    "pdfDropzoneAria": "PDF upload dropzone",
+    "pdfRemove": "Remove PDF",
+    "currentPdf": "Current PDF",
+    "errors": {
+      "categoryRequired": "Category is required",
+      "titleRequired": "Title is required"
+    },
+    "toast": {
+      "success": "Law saved successfully",
+      "error": "Save failed. Please try again."
+    },
+    "categories": {
+      "civilLaw": "Civil Law",
+      "criminalLaw": "Criminal Law",
+      "administrativeLaw": "Administrative Law",
+      "commercialLaw": "Commercial Law",
+      "constitutionalLaw": "Constitutional Law"
+    }
+  }
+  ,
+  "LawsPage": {
+    "title": "Laws",
+    "create": "New Law",
+    "edit": "Edit Law",
+    "searchPlaceholder": "Search laws",
+    "searchAria": "Search laws",
+    "filters": {
+      "all": "All",
+      "aria": "Filter by category"
+    },
+    "card": {
+      "title": "Laws",
+      "desc": "Manage laws and translations"
+    },
+    "viewPdf": "View PDF"
+  }
+  ,
+  "LawTable": {
+    "loading": "Loading...",
+    "noLawsForQuery": "No laws found for \"{query}\"",
+    "tryDifferent": "Try a different search term or clear filters.",
+    "noLawsTitle": "No laws found",
+    "tryAdjust": "Try adjusting your search or create a law.",
+    "headers": {
+      "title": "Title",
+      "category": "Category",
+      "date": "Date",
+      "pdf": "PDF",
+      "actions": "Actions"
+    },
+    "viewPdf": "View PDF",
+    "noPdf": "No PDF",
+    "confirmDeleteTitle": "Confirm delete",
+    "confirmDeleteText": "Are you sure you want to delete this law? This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "tooltips": {
+      "edit": "Edit",
+      "delete": "Delete"
+    }
+  }
+  ,
   "UsersPage": {
     "title": "User Management",
     "card": {

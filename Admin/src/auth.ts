@@ -5,8 +5,8 @@ import type { JWTEncodeParams, JWTDecodeParams } from "next-auth/jwt";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
-const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
-const SESSION_DEFAULT_AGE = 24 * 60 * 60;   // 1 day
+const SESSION_MAX_AGE = 24 * 60 * 60; // 1 day
+const SESSION_DEFAULT_AGE = 24 * 60 * 60; // 1 day
 
 function getSecretKey(secret: string | string[]): Uint8Array {
   const s = Array.isArray(secret) ? secret[0] : secret;

@@ -11,6 +11,13 @@ namespace Backend.DTOs
         public List<LawTranslationCreateDto> Translations { get; set; } = new();
     }
 
+    public class LawUpdateDto
+    {
+        public string Category { get; set; } = string.Empty;
+        public DateTime? Date { get; set; }
+        public List<LawTranslationCreateDto> Translations { get; set; } = new();
+    }
+
     public class LawTranslationCreateDto
     {
         public string Language { get; set; } = string.Empty;

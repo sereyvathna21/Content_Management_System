@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useMemo,useEffect} from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import DatePicker from "@/components/form/date-picker";
@@ -15,6 +15,7 @@ type Translation = {
   title: string;
   description: string;
   pdfFile: File | null;
+  existingPdfUrl?: string;
 };
 
 type Errors = {
@@ -22,8 +23,20 @@ type Errors = {
   translations?: Record<LangCode, { title?: string }>;
 };
 
+type InitialLaw = {
+  id: string;
+  category?: string;
+  date?: string;
+  translations: Array<{
+    language: LangCode;
+    title: string;
+    description?: string;
+    pdfUrl?: string;
+  }>;
+};
 
-interface LawFormProps {
+interface LawEditFormProps {
+  initialLaw: InitialLaw;
   onSaved?: () => void;
   onClose?: () => void;
   resetOnClose?: boolean;
@@ -35,7 +48,6 @@ const SUPPORTED_LANGUAGES = [
 ];
 
 const DEFAULT_LANGUAGE = "km";
-const DEFAULT_LANGS = ["km", "en"];
 
 const CATEGORY_OPTIONS = [
   { value: "Civil Law", labelKey: "categories.civilLaw" },
@@ -55,8 +67,7 @@ function makeEmptyTranslation(language: string): Translation {
 
 const DESCRIPTION_MAX_LENGTH = 500;
 
-
-export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFormProps) {
+export default function LawEditForm({ initialLaw, onSaved, onClose, resetOnClose = true }: LawEditFormProps) {
   const t = useTranslations("LawForm");
   const { data: session, status } = useSession();
   const [category, setCategory] = useState("");
@@ -64,10 +75,44 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
   const [activeTab, setActiveTab] = useState<LangCode>(DEFAULT_LANGUAGE);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
-  const [translations, setTranslations] = useState<Translation[]>(DEFAULT_LANGS.map(makeEmptyTranslation));
+  const [translations, setTranslations] = useState<Translation[]>([]);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const buildTranslationsFromLaw = useCallback((law: InitialLaw): Translation[] => {
+    if (!law.translations?.length) return [makeEmptyTranslation(DEFAULT_LANGUAGE)];
+
+    return law.translations.map((tr) => ({
+      language: tr.language,
+      title: tr.title ?? "",
+      description: tr.description ?? "",
+      pdfFile: null,
+      existingPdfUrl: tr.pdfUrl,
+    }));
+  }, []);
+
+  const applyInitialLaw = useCallback((law: InitialLaw) => {
+    const translationsFromLaw = buildTranslationsFromLaw(law);
+    const normalizedDate = law.date ? law.date.split("T")[0] : "";
+    const defaultTab =
+      translationsFromLaw.find((tr) => tr.language === DEFAULT_LANGUAGE) ??
+      translationsFromLaw[0];
+
+    setCategory(law.category ?? "");
+    setDate(normalizedDate);
+    setTranslations(translationsFromLaw);
+    setActiveTab(defaultTab?.language ?? DEFAULT_LANGUAGE);
+    setCatDropdownOpen(false);
+    setLangDropdownOpen(false);
+    setErrors({});
+    setToast(null);
+    setSaving(false);
+  }, [buildTranslationsFromLaw]);
+
+  useEffect(() => {
+    applyInitialLaw(initialLaw);
+  }, [initialLaw, applyInitialLaw]);
 
   const usedCodes = useMemo(() => translations.map((tr) => tr.language), [translations]);
   const availableLangs = useMemo(() => SUPPORTED_LANGUAGES.filter((l) => !usedCodes.includes(l.code)), [usedCodes]);
@@ -155,16 +200,14 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
       });
 
       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-
-      const res = await fetch(`${BACKEND_URL}/api/laws`, {
-        method: "POST",
+      const res = await fetch(`${BACKEND_URL}/api/laws/${initialLaw.id}`, {
+        method: "PUT",
         body: form,
         headers: { Authorization: `Bearer ${session.accessToken}` }
       });
       if (!res.ok) throw new Error("Failed to save");
 
       setToast({ message: t("toast.success"), type: "success" });
-      resetForm();
       onSaved?.();
     } catch {
       setToast({ message: t("toast.error"), type: "error" });
@@ -185,20 +228,11 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
   }, [activeTab, translations, usedCodes]);
 
   function resetForm() {
-    setCategory("");
-    setDate("");
-    setTranslations(DEFAULT_LANGS.map(makeEmptyTranslation));
-    setActiveTab(DEFAULT_LANGUAGE);
-    setCatDropdownOpen(false);
-    setLangDropdownOpen(false);
-    setErrors({});
-    setToast(null);
-    setSaving(false);
+    applyInitialLaw(initialLaw);
   }
 
   function isFormEmpty() {
     if (category || date) return false;
-    if (translations.length !== DEFAULT_LANGS.length) return false;
     return translations.every((tr) => !tr.title.trim() && !tr.description.trim() && !tr.pdfFile);
   }
 
@@ -267,7 +301,7 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
           </div>
           <div>
             <DatePicker
-              id="law-effective-date"
+              id="law-effective-date-edit"
               label={t("publishDateLabel")}
               placeholder={t("publishDatePlaceholder")}
               defaultDate={date || undefined}
@@ -366,7 +400,7 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-sm font-medium text-gray-900">{t("descriptionLabel")} <span className="text-gray-400 font-normal">({t("optional")})</span></label>
-                <span className={`text-[11px] ${activeTranslation.description.length > DESCRIPTION_MAX_LENGTH ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+                <span className={`text-[11px] ${activeTranslation.description.length > DESCRIPTION_MAX_LENGTH ? "text-red-500 font-medium" : "text-gray-400"}`}>
                   {activeTranslation.description.length}/{DESCRIPTION_MAX_LENGTH}
                 </span>
               </div>
@@ -376,7 +410,7 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
                 maxLength={DESCRIPTION_MAX_LENGTH}
                 onChange={(e) => updateTranslation(activeTab, { description: e.target.value })}
                 rows={3}
-                className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors resize-y ${activeTranslation.description.length >= DESCRIPTION_MAX_LENGTH ? 'border-amber-400' : 'border-gray-300 hover:border-gray-400'}`}
+                className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors resize-y ${activeTranslation.description.length >= DESCRIPTION_MAX_LENGTH ? "border-amber-400" : "border-gray-300 hover:border-gray-400"}`}
               />
             </div>
 
@@ -384,6 +418,16 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
             <div className="col-span-full">
               <label className="block text-sm font-medium text-gray-900 mb-1">{t("pdfLabel")} <span className="text-gray-400 font-normal">({t("pdfOptional")})</span></label>
               <PdfDropZone file={activeTranslation.pdfFile} onChange={(f) => updateTranslation(activeTab, { pdfFile: f })} />
+              {activeTranslation.existingPdfUrl && !activeTranslation.pdfFile && (
+                <a
+                  className="mt-2 inline-flex text-xs text-blue-600 hover:underline"
+                  href={activeTranslation.existingPdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {t("currentPdf") || "Current PDF"}
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -418,4 +462,3 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
     </div>
   );
 }
-
