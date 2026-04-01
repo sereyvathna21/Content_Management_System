@@ -21,7 +21,23 @@
 "noContactsFound": "រកមិនឃើញទំនាក់ទំនងទេ",
 "tryAdjustFilters": "សាកល្បងកែសម្រួលតម្រង ឬពាក្យស្វែងរក ដើម្បីស្វែងរកសារ។",
 "from": "ពី",
-"replyViaEmail": "ឆ្លើយតបតាមរយៈអ៊ីមែល",
+"reply": "ឆ្លើយតប",
+"replied": "បានឆ្លើយតប",
+"repliedOn": "បានឆ្លើយតបនៅ",
+"replyTitle": "ឆ្លើយតបសារ",
+"replyTo": "ទៅកាន់",
+"replyFrom": "ពី",
+"replyFromValue": "ការគាំទ្រ NSPC CMS",
+"replyNote": "សារនេះនឹងត្រូវបានផ្ញើពីអ៊ីមែលប្រព័ន្ធដែលបានកំណត់។",
+"replySubject": "ប្រធានបទ",
+"replySubjectPlaceholder": "ប្រធានបទ",
+"replyMessage": "សារ",
+"replyMessagePlaceholder": "វាយសារឆ្លើយតប...",
+"replyMessageHelp": "សរសេរឲ្យច្បាស់ និងខ្លី។",
+"replySend": "ផ្ញើការឆ្លើយតប",
+"replySending": "កំពុងផ្ញើ...",
+"replyMessageRequired": "ត្រូវការសារឆ្លើយតប",
+"replySendError": "ផ្ញើការឆ្លើយតបបរាជ័យ។ សូមសាកល្បងម្ដងទៀត។",
 "markRead": "សម្គាល់ថាបានអានហើយ",
 "markUnread": "សម្គាល់ថាមិនទាន់អាន",
 "loading": "កំពុងផ្ទុក...",
@@ -40,7 +56,8 @@
 "status": {
 "all": "ទាំងអស់",
 "read": "បានអាន",
-"unread": "មិនទាន់អាន"
+"unread": "មិនទាន់អាន",
+"replied": "បានឆ្លើយតប"
 }
 },
  "LoginPage": {
@@ -229,7 +246,12 @@
       "royalDegree": "ព្រះរាជក្រឹត្យ",
       "subDegree": "អនុក្រឹត្យ",
       "prakas": "ប្រកាស",
-      "decisionAndGuideline": "សេចក្តីសម្រេច និង គោលការណ៍"
+      "decisionAndGuideline": "សេចក្តីសម្រេច និង គោលការណ៍",
+      "constitutionalLaw": "ច្បាប់រដ្ឋធម្មនុញ្ញ",
+      "civilLaw": "ច្បាប់ស៊ីវិល",
+      "criminalLaw": "ច្បាប់ព្រហ្មទណ្ឌ",
+      "administrativeLaw": "ច្បាប់រដ្ឋបាល",
+      "commercialLaw": "ច្បាប់ពាណិជ្ជកម្ម"
     }
   }
   ,

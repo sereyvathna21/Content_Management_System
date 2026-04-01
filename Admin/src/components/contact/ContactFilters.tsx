@@ -1,7 +1,5 @@
 "use client";
 import React from "react";
-import { Modal } from "../ui/modal";
-import { useModal } from "../../hooks/useModal";
 import { useTranslations } from "next-intl";
 
 type Props = {
@@ -9,12 +7,10 @@ type Props = {
   onSearch: (q: string) => void;
   status?: "all" | "read" | "unread";
   onStatusChange?: (s: "all" | "read" | "unread") => void;
-  onExport?: () => void;
 };
 
 
-export default function ContactFilters({value, onSearch, status = "all", onStatusChange,  onExport  }: Props) {
-  const { isOpen, openModal, closeModal } = useModal();
+export default function ContactFilters({ value, onSearch, status = "all", onStatusChange }: Props) {
   const t = useTranslations("ContactPage");
 
   return (
@@ -72,33 +68,6 @@ export default function ContactFilters({value, onSearch, status = "all", onStatu
           value={value}
           onChange={(e) => onSearch(e.target.value)}
         />
-
-        <button
-          className="h-9 px-4 ml-0 sm:ml-2 rounded-lg font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200 shadow-md text-sm w-full sm:w-auto"
-          onClick={() => openModal()}
-        >
-          {t("exportButton")}
-        </button>
-
-        <Modal isOpen={isOpen} onClose={closeModal} className="max-w-md p-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">{t("exportConfirmTitle")}</h3>
-            <p className="text-sm text-gray-600 mb-4">{t("exportConfirmText")}</p>
-            <div className="flex justify-end gap-3">
-              <button className="h-9 px-4 rounded-lg font-medium bg-white border border-gray-200" onClick={closeModal}>{t("cancel")}</button>
-              <button
-                className="h-9 px-4 rounded-lg font-semibold text-white bg-primary hover:bg-primary/90"
-                onClick={() => {
-                  if (onExport) onExport();
-                  closeModal();
-                }}
-              >
-                {t("confirm")}
-              </button>
-            </div>
-          </div>
-        </Modal>
-      
       </div>
   
     </div>

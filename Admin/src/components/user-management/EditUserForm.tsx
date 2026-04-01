@@ -38,24 +38,43 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null); // Add this line at the top of the component
+  const passwordsMismatch = password !== "" && confirmPassword !== "" && password !== confirmPassword;
+  const liveError = error || (passwordsMismatch ? t("UserForm.passwordsMismatch") : null);
 
   useEffect(() => {
     setName(initial.name);
     setEmail(initial.email);
     setRole(initial.role);
     setAvatarPreview(initial.avatar || "/images/user/default-avatar.svg");
+    setPassword("");
+    setConfirmPassword("");
+    setError(null);
   }, [initial]);
+
+  useEffect(() => {
+    if (!open) return;
+    setPassword("");
+    setConfirmPassword("");
+    setError(null);
+  }, [open]);
+
+  useEffect(() => {
+    if (!error) return;
+    if (!password && !confirmPassword) {
+      setError(null);
+      return;
+    }
+    if (password === confirmPassword) setError(null);
+  }, [password, confirmPassword, error]);
 
   function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
     if (!email || !name) return;
 
     // Validate password only if provided
-    if (password || confirmPassword) {
-      if (password !== confirmPassword) {
-        setError(t("UserForm.passwordsMismatch"));
-        return;
-      }
+    if ((password || confirmPassword) && passwordsMismatch) {
+      setError(t("UserForm.passwordsMismatch"));
+      return;
     }
 
     onSave({
@@ -101,7 +120,7 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
         <p className="text-sm text-gray-500">{t("UserForm.editSubtitle")}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
           <div className="flex flex-col items-center md:items-start md:col-span-1">
             <div
@@ -155,9 +174,9 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
                 value={role}
                 onChange={(val) => setRole(val as string)}
                 options={[
-                  { label: t("UserForm.roleOptions.admin"), value: "admin" },
-                  { label: t("UserForm.roleOptions.editor"), value: "editor" },
-                  { label: t("UserForm.roleOptions.viewer"), value: "viewer" },
+                  { label: t("UserForm.roleOptions.admin"), value: "Admin" },
+                  { label: t("UserForm.roleOptions.editor"), value: "Editor" },
+                  { label: t("UserForm.roleOptions.viewer"), value: "Viewer" },
                 ]}
               />
             </div>
@@ -168,6 +187,8 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
                 placeholder={t("UserForm.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                name="new-password"
+                autoComplete="new-password"
               />
             </div>
 
@@ -177,10 +198,12 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
                 placeholder={t("UserForm.confirmPasswordPlaceholder")}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                name="new-password-confirm"
+                autoComplete="new-password"
               />
             </div>
 
-            {error && <div className="text-sm text-red-600">{error}</div>}
+            {liveError && <div className="text-sm text-red-600">{liveError}</div>}
           </div>
         </div>
 

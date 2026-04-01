@@ -10,6 +10,9 @@ using System.Security.Claims;
 using Backend.Hubs;
 using System.Threading.RateLimiting;
 using System.IO;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.StaticFiles;
 
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -117,12 +120,46 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "NSPC CMS API v1"));
 }
 
-app.UseStaticFiles();
+static void PreparePdfResponse(StaticFileResponseContext context)
+{
+    var extension = Path.GetExtension(context.File.Name);
+    if (!string.Equals(extension, ".pdf", StringComparison.OrdinalIgnoreCase))
+    {
+        return;
+    }
+
+    context.Context.Response.ContentType = "application/pdf";
+    context.Context.Response.Headers[HeaderNames.ContentDisposition] = "inline";
+    context.Context.Response.Headers[HeaderNames.XContentTypeOptions] = "nosniff";
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = PreparePdfResponse
+});
+
+var publicRoot = Path.Combine(app.Environment.ContentRootPath, "public");
+if (!Directory.Exists(publicRoot))
+{
+    var fallbackPublicRoot = Path.Combine(app.Environment.ContentRootPath, "Backend", "public");
+    if (Directory.Exists(fallbackPublicRoot))
+    {
+        publicRoot = fallbackPublicRoot;
+    }
+}
+
+if (Directory.Exists(publicRoot))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(publicRoot),
+        OnPrepareResponse = PreparePdfResponse
+    });
+}
 
 app.UseCors("AllowFrontend");
 
-app.UseRateLimiter(); // Apply Rate limiting before authentication
-
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

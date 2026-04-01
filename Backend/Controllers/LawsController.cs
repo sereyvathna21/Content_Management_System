@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Backend.Controllers
 {
@@ -14,11 +16,150 @@ namespace Backend.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _env;
+        private const long MaxPdfBytes = 50_000_000;
+        private static readonly HashSet<string> AllowedPdfContentTypes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "application/pdf",
+            "application/x-pdf"
+        };
+        private static readonly string[] BlockedDoubleExtensions =
+        {
+            ".exe",
+            ".js",
+            ".html",
+            ".htm",
+            ".bat",
+            ".cmd",
+            ".sh",
+            ".ps1",
+            ".vbs",
+            ".jar",
+            ".msi",
+            ".dll",
+            ".scr",
+            ".com"
+        };
 
         public LawsController(ApplicationDbContext db, IWebHostEnvironment env)
         {
             _db = db;
             _env = env;
+        }
+
+        private string GetUploadsRoot(Guid lawId)
+        {
+            var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            return Path.Combine(root, "uploads", "laws", lawId.ToString());
+        }
+
+        private static string GenerateSafePdfFileName(string? language)
+        {
+            var safeLang = Regex.Replace(language ?? string.Empty, "[^a-zA-Z0-9_-]+", "-").Trim('-');
+            if (string.IsNullOrWhiteSpace(safeLang))
+            {
+                safeLang = "law";
+            }
+
+            return $"{safeLang}_{Guid.NewGuid():N}.pdf";
+        }
+
+        private static bool HasPdfSignature(IFormFile file)
+        {
+            try
+            {
+                using var stream = file.OpenReadStream();
+                Span<byte> header = stackalloc byte[5];
+                var read = stream.Read(header);
+                if (read < 4)
+                {
+                    return false;
+                }
+
+                var headerText = Encoding.ASCII.GetString(header[..read]);
+                return headerText.StartsWith("%PDF-", StringComparison.Ordinal);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool TryValidatePdfFile(IFormFile file, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            if (file.Length <= 0)
+            {
+                errorMessage = "PDF file is empty.";
+                return false;
+            }
+
+            if (file.Length > MaxPdfBytes)
+            {
+                errorMessage = "PDF file is too large.";
+                return false;
+            }
+
+            var ext = Path.GetExtension(file.FileName);
+            if (!string.Equals(ext, ".pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                errorMessage = "Only PDF files are allowed.";
+                return false;
+            }
+
+            if (!AllowedPdfContentTypes.Contains(file.ContentType))
+            {
+                errorMessage = "Invalid PDF content type.";
+                return false;
+            }
+
+            var baseName = Path.GetFileNameWithoutExtension(file.FileName);
+            foreach (var blocked in BlockedDoubleExtensions)
+            {
+                if (baseName.EndsWith(blocked, StringComparison.OrdinalIgnoreCase))
+                {
+                    errorMessage = "PDF filename has a blocked double extension.";
+                    return false;
+                }
+            }
+
+            if (!HasPdfSignature(file))
+            {
+                errorMessage = "PDF signature validation failed.";
+                return false;
+            }
+
+            return true;
+        }
+
+        private void TryDeletePdfAtUrl(string? pdfUrl)
+        {
+            if (string.IsNullOrWhiteSpace(pdfUrl))
+            {
+                return;
+            }
+
+            var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var relative = pdfUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+            var fullPath = Path.GetFullPath(Path.Combine(root, relative));
+            var fullRoot = Path.GetFullPath(root);
+
+            if (!fullPath.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (System.IO.File.Exists(fullPath))
+            {
+                try
+                {
+                    System.IO.File.Delete(fullPath);
+                }
+                catch
+                {
+                    // Ignore file system errors to avoid failing the API after data changes.
+                }
+            }
         }
 
         private string? BuildPdfUrl(string? pdfUrl)
@@ -127,7 +268,7 @@ namespace Backend.Controllers
             _db.Laws.Add(law);
             await _db.SaveChangesAsync();
 
-            var uploadsRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "laws", law.Id.ToString());
+            var uploadsRoot = GetUploadsRoot(law.Id);
             Directory.CreateDirectory(uploadsRoot);
 
             foreach (var t in request.Translations)
@@ -135,8 +276,12 @@ namespace Backend.Controllers
                 string? pdfUrl = null;
                 if (t.PdfFile != null && t.PdfFile.Length > 0)
                 {
-                    var ext = Path.GetExtension(t.PdfFile.FileName);
-                    var fileName = t.Language + (string.IsNullOrEmpty(ext) ? ".pdf" : ext);
+                    if (!TryValidatePdfFile(t.PdfFile, out var errorMessage))
+                    {
+                        return BadRequest(new { message = errorMessage });
+                    }
+
+                    var fileName = GenerateSafePdfFileName(t.Language);
                     var filePath = Path.Combine(uploadsRoot, fileName);
                     using (var stream = System.IO.File.Create(filePath))
                     {
@@ -174,12 +319,7 @@ namespace Backend.Controllers
             law.Category = request.Category;
             law.Date = request.Date;
 
-            var uploadsRoot = Path.Combine(
-                _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
-                "uploads",
-                "laws",
-                law.Id.ToString()
-            );
+            var uploadsRoot = GetUploadsRoot(law.Id);
             Directory.CreateDirectory(uploadsRoot);
 
             var byLanguage = law.Translations.ToDictionary(t => t.Language, StringComparer.OrdinalIgnoreCase);
@@ -199,13 +339,18 @@ namespace Backend.Controllers
 
                     if (t.PdfFile != null && t.PdfFile.Length > 0)
                     {
-                        var ext = Path.GetExtension(t.PdfFile.FileName);
-                        var fileName = lang + (string.IsNullOrEmpty(ext) ? ".pdf" : ext);
+                        if (!TryValidatePdfFile(t.PdfFile, out var errorMessage))
+                        {
+                            return BadRequest(new { message = errorMessage });
+                        }
+
+                        var fileName = GenerateSafePdfFileName(lang);
                         var filePath = Path.Combine(uploadsRoot, fileName);
                         using (var stream = System.IO.File.Create(filePath))
                         {
                             await t.PdfFile.CopyToAsync(stream);
                         }
+                        TryDeletePdfAtUrl(existing.PdfUrl);
                         existing.PdfUrl = $"/uploads/laws/{law.Id}/{fileName}";
                     }
                 }
@@ -214,8 +359,12 @@ namespace Backend.Controllers
                     string? pdfUrl = null;
                     if (t.PdfFile != null && t.PdfFile.Length > 0)
                     {
-                        var ext = Path.GetExtension(t.PdfFile.FileName);
-                        var fileName = lang + (string.IsNullOrEmpty(ext) ? ".pdf" : ext);
+                        if (!TryValidatePdfFile(t.PdfFile, out var errorMessage))
+                        {
+                            return BadRequest(new { message = errorMessage });
+                        }
+
+                        var fileName = GenerateSafePdfFileName(lang);
                         var filePath = Path.Combine(uploadsRoot, fileName);
                         using (var stream = System.IO.File.Create(filePath))
                         {
@@ -242,6 +391,10 @@ namespace Backend.Controllers
 
             if (toRemove.Count > 0)
             {
+                foreach (var translation in toRemove)
+                {
+                    TryDeletePdfAtUrl(translation.PdfUrl);
+                }
                 _db.LawTranslations.RemoveRange(toRemove);
             }
 
@@ -260,12 +413,7 @@ namespace Backend.Controllers
             _db.Laws.Remove(law);
             await _db.SaveChangesAsync();
 
-            var uploadsRoot = Path.Combine(
-                _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
-                "uploads",
-                "laws",
-                id.ToString()
-            );
+            var uploadsRoot = GetUploadsRoot(id);
 
             if (Directory.Exists(uploadsRoot))
             {

@@ -4,23 +4,35 @@ import React, { FC, useState } from "react";
 
 interface Props {
   id?: string;
+  name?: string;
   placeholder?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
+  autoComplete?: string;
 }
 
-const PasswordInput: FC<Props> = ({ id, placeholder, value = "", onChange, className = "" }) => {
+const PasswordInput: FC<Props> = ({
+  id,
+  name,
+  placeholder,
+  value = "",
+  onChange,
+  className = "",
+  autoComplete,
+}) => {
   const [show, setShow] = useState(false);
 
   return (
     <div className={`relative ${className}`}>
       <input
         id={id}
+        name={name}
         type={show ? "text" : "password"}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        autoComplete={autoComplete}
         className="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-1 focus:ring-primary/40 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 pr-10"
       />
 

@@ -36,6 +36,8 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCrop, setShowCrop] = useState(false);
+  const passwordsMismatch = password !== "" && confirmPassword !== "" && password !== confirmPassword;
+  const liveError = error || (passwordsMismatch ? t("UserForm.passwordsMismatch") : null);
 
   function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
@@ -43,7 +45,7 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
       setError(t("UserForm.allFieldsRequired"));
       return;
     }
-    if (password !== confirmPassword) {
+    if (passwordsMismatch) {
       setError(t("UserForm.passwordsMismatch"));
       return;
     }
@@ -83,7 +85,7 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
         <p className="text-sm text-gray-500">{t("UserForm.createSubtitle")}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
           <div className="flex flex-col items-center md:items-start md:col-span-1">
             <div
@@ -146,15 +148,27 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.passwordLabel")}</label>
-              <PasswordInput placeholder={t("UserForm.passwordPlaceholder")} value={password} onChange={(e) => setPassword(e.target.value)} />
+              <PasswordInput
+                placeholder={t("UserForm.passwordPlaceholder")}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                name="new-password"
+                autoComplete="new-password"
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.confirmPasswordLabel")}</label>
-              <PasswordInput placeholder={t("UserForm.confirmPasswordPlaceholder")} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              <PasswordInput
+                placeholder={t("UserForm.confirmPasswordPlaceholder")}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                name="new-password-confirm"
+                autoComplete="new-password"
+              />
             </div>
 
-            {error && <div className="text-sm text-red-600">{error}</div>}
+            {liveError && <div className="text-sm text-red-600">{liveError}</div>}
           </div>
         </div>
 

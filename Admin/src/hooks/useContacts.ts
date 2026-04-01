@@ -44,6 +44,8 @@ export type Contact = {
     message: string;
     createdAt: string;
     read: boolean;
+    replied: boolean;
+    repliedAt: string | null;
 };
 
 type StatusFilter = "all" | "read" | "unread";
@@ -60,6 +62,8 @@ const toContact = (i: Record<string, unknown>): Contact => ({
     message: i.message as string,
     createdAt: i.createdAt as string,
     read: Boolean(i.read),
+    replied: Boolean(i.replied),
+    repliedAt: (i.repliedAt as string) ?? null,
 });
 
 // ---------------------------------------------------------------------------
@@ -104,6 +108,7 @@ export function useContacts() {
     const createdHandlerRef = useRef<((c: Record<string, unknown>) => void) | null>(null);
     const deletedHandlerRef = useRef<((payload: Record<string, unknown>) => void) | null>(null);
     const readHandlerRef = useRef<((payload: Record<string, unknown>) => void) | null>(null);
+    const repliedHandlerRef = useRef<((payload: Record<string, unknown>) => void) | null>(null);
     const loadContactsRef = useRef<(() => void) | null>(null);
 
     useEffect(() => {
@@ -134,9 +139,25 @@ export function useContacts() {
             );
         };
 
+        const onReplied = (payload: Record<string, unknown>) => {
+            const id = String(payload.id);
+            const replied = Boolean(payload.replied);
+            const repliedAt = (payload.repliedAt as string) ?? null;
+            const read = payload.read == null ? undefined : Boolean(payload.read);
+            console.info("[useContacts] ContactReplied:", id, replied);
+            setContacts((prev) =>
+                prev.map((c) =>
+                    c.id === id
+                        ? { ...c, replied, repliedAt, read: read ?? c.read }
+                        : c
+                )
+            );
+        };
+
         createdHandlerRef.current = onCreated;
         deletedHandlerRef.current = onDeleted;
         readHandlerRef.current = onReadToggled;
+        repliedHandlerRef.current = onReplied;
 
         (async () => {
             try {
@@ -146,6 +167,7 @@ export function useContacts() {
                 conn.on("ContactCreated", onCreated);
                 conn.on("ContactDeleted", onDeleted);
                 conn.on("ContactReadToggled", onReadToggled);
+                conn.on("ContactReplied", onReplied);
             } catch (err) {
                 console.warn("[useContacts] SignalR connection failed:", err);
             }
@@ -158,6 +180,7 @@ export function useContacts() {
                     if (createdHandlerRef.current) conn.off("ContactCreated", createdHandlerRef.current);
                     if (deletedHandlerRef.current) conn.off("ContactDeleted", deletedHandlerRef.current);
                     if (readHandlerRef.current) conn.off("ContactReadToggled", readHandlerRef.current);
+                    if (repliedHandlerRef.current) conn.off("ContactReplied", repliedHandlerRef.current);
                 } catch {
                     // ignore if already disconnected
                 }
@@ -263,6 +286,32 @@ export function useContacts() {
         })();
     }, []);
 
+    // ── API: reply to contact ────────────────────────────────────────────
+    const replyContact = useCallback(async (id: string, subject: string, message: string) => {
+        const res = await fetch(`${API_BASE}/api/contact/${id}/reply`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(await getAuthHeaders()),
+            },
+            body: JSON.stringify({ subject, message }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json: { replied: boolean; repliedAt: string | null; read?: boolean } = await res.json();
+        setContacts((prev) =>
+            prev.map((c) =>
+                c.id === id
+                    ? {
+                        ...c,
+                        replied: Boolean(json.replied),
+                        repliedAt: json.repliedAt ?? null,
+                        read: json.read ?? c.read,
+                    }
+                    : c
+            )
+        );
+    }, []);
+
     // ── select ────────────────────────────────────────────────────────────
     const selectContact = useCallback(
         (id: string | null) => {
@@ -308,7 +357,7 @@ export function useContacts() {
     const exportCSV = useCallback((rows: Contact[]) => {
         if (!rows.length) return;
         const headers: (keyof Contact)[] = [
-            "id", "name", "email", "subject", "message", "createdAt", "read",
+            "id", "name", "email", "subject", "message", "createdAt", "read", "replied", "repliedAt",
         ];
         const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
         const csv = [
@@ -341,6 +390,7 @@ export function useContacts() {
         selectContact,
         toggleRead,
         removeContact,
+        replyContact,
         exportCSV,
 
         // filters

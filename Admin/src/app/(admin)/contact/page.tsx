@@ -19,11 +19,11 @@ export default function ContactPage() {
     selectContact,
     toggleRead,
     removeContact,
+    replyContact,
     filterContacts,
     setStatusFilter,
     statusFilter,
     clearFilters,
-    exportCSV,
     page,
     totalPages,
     setPage,
@@ -54,7 +54,7 @@ export default function ContactPage() {
           </div>
 
           <div className="mt-4 mb-4">
-            <ContactFilters value={query} onSearch={onSearch} status={statusFilter} onStatusChange={onStatusChange} onExport={() => exportCSV && exportCSV(contacts)} />
+            <ContactFilters value={query} onSearch={onSearch} status={statusFilter} onStatusChange={onStatusChange} />
           </div>
 
           <ContactTable
@@ -86,6 +86,7 @@ export default function ContactPage() {
           contact={selected}
           onClose={() => selectContact(null)}
           onMarkRead={() => toggleRead(selected.id)}
+          onReply={(id, subject, message) => replyContact(id, subject, message)}
         />
       )}
     </div>

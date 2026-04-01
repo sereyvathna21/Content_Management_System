@@ -42,6 +42,7 @@ const Select: React.FC<SelectProps> = ({
   return (
     <Menu as="div" className={`relative w-full ${className}`}>
       <Menu.Button
+        type="button"
         className="inline-flex w-full justify-between items-center gap-x-2 rounded-lg bg-white/60 dark:bg-gray-900 px-4 py-2 text-sm text-gray-800 dark:text-white shadow-sm hover:bg-primary/5 transition border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-3 focus:ring-primary/20"
       >
         <span className={`${selectedLabel ? "text-primary" : "text-gray-500"}`}>
@@ -65,6 +66,7 @@ const Select: React.FC<SelectProps> = ({
               <Menu.Item key={opt.value}>
                 {({ active }) => (
                   <button
+                    type="button"
                     onClick={() => handleSelect(opt.value)}
                     className={`block w-full text-left px-4 py-2 text-sm transition ${
                       active ? "bg-primary/10 text-primary" : "text-gray-700 dark:text-gray-300"

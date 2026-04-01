@@ -20,7 +20,23 @@
     "noContactsFound": "No contacts found",
     "tryAdjustFilters": "Try adjusting filters or search terms to find messages.",
     "from": "From",
-    "replyViaEmail": "Reply via email",
+    "reply": "Reply",
+    "replied": "Replied",
+    "repliedOn": "Replied on",
+    "replyTitle": "Reply to message",
+    "replyTo": "To",
+    "replyFrom": "From",
+    "replyFromValue": "NSPC CMS Support",
+    "replyNote": "This will be sent from the configured system email.",
+    "replySubject": "Subject",
+    "replySubjectPlaceholder": "Subject",
+    "replyMessage": "Message",
+    "replyMessagePlaceholder": "Type your reply...",
+    "replyMessageHelp": "Keep it clear and concise.",
+    "replySend": "Send reply",
+    "replySending": "Sending...",
+    "replyMessageRequired": "Reply message is required",
+    "replySendError": "Failed to send reply. Please try again.",
     "markRead": "Mark Read",
     "markUnread": "Mark Unread",
     "loading": "Loading...",
@@ -38,7 +54,8 @@
     "status": {
       "all": "All",
       "read": "Read",
-      "unread": "Unread"
+      "unread": "Unread",
+      "replied": "Replied"
     },
     "deleteMessage": "Delete message"
   },
@@ -228,7 +245,12 @@
       "royalDegree": "Royal Degree",
       "subDegree": "Sub-Degree",
       "prakas": "Prakas",
-      "decisionAndGuideline": "Decision and Guideline"
+      "decisionAndGuideline": "Decision and Guideline",
+      "constitutionalLaw": "Constitutional Law",
+      "civilLaw": "Civil Law",
+      "criminalLaw": "Criminal Law",
+      "administrativeLaw": "Administrative Law",
+      "commercialLaw": "Commercial Law"
     }
   }
   ,

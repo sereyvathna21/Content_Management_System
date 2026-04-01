@@ -113,15 +113,22 @@ export default function ContactTable({
                     </TableCell>
 
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400  ">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-theme-xs ${
-                          c.read
-                            ? "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary/80"
-                            : "bg-blue-light-50 text-blue-light-500 dark:bg-blue-light-500/10"
-                        }`}
-                      >
-                        {c.read ? t("status.read") : t("status.unread")}
-                      </span>
+                      <div className="inline-flex flex-wrap items-center gap-2">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded text-theme-xs ${
+                            c.read
+                              ? "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary/80"
+                              : "bg-red-50 text-red-500 dark:bg-blue-light-500/10"
+                          }`}
+                        >
+                          {c.read ? t("status.read") : t("status.unread")}
+                        </span>
+                        {c.replied && (
+                          <span className="inline-block px-2 py-0.5 rounded text-theme-xs bg-blue-light-50 text-blue-light-500">
+                            {t("status.replied")}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
 
                   <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">

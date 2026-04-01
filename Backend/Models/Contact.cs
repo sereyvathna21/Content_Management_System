@@ -11,5 +11,7 @@ namespace Backend.Models
         public string Message { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public bool Read { get; set; }
+        public bool Replied { get; set; }
+        public DateTime? RepliedAt { get; set; }
     }
 }

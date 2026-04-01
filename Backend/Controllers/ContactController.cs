@@ -39,7 +39,9 @@ namespace Backend.Controllers
                 Subject = dto.Subject ?? string.Empty,
                 Message = dto.Message,
                 CreatedAt = DateTime.UtcNow,
-                Read = false
+                Read = false,
+                Replied = false,
+                RepliedAt = null
             };
 
             _db.Contacts.Add(contact);
@@ -56,7 +58,9 @@ namespace Backend.Controllers
                 Subject = contact.Subject,
                 Message = contact.Message,
                 CreatedAt = contact.CreatedAt,
-                Read = contact.Read
+                Read = contact.Read,
+                Replied = contact.Replied,
+                RepliedAt = contact.RepliedAt
             };
 
             // broadcast to connected clients
@@ -112,7 +116,9 @@ namespace Backend.Controllers
                 Subject = c.Subject,
                 Message = c.Message,
                 CreatedAt = c.CreatedAt,
-                Read = c.Read
+                Read = c.Read,
+                Replied = c.Replied,
+                RepliedAt = c.RepliedAt
             }).ToList();
 
             return Ok(new { total, page, pageSize, items = dtos });
@@ -132,9 +138,46 @@ namespace Backend.Controllers
                 Subject = c.Subject,
                 Message = c.Message,
                 CreatedAt = c.CreatedAt,
-                Read = c.Read
+                Read = c.Read,
+                Replied = c.Replied,
+                RepliedAt = c.RepliedAt
             };
             return Ok(dto);
+        }
+
+        [HttpPost("{id}/reply")]
+        [Authorize]
+        public async Task<IActionResult> Reply(int id, [FromBody] ContactReplyDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Message))
+            {
+                return BadRequest("Reply message is required.");
+            }
+
+            var c = await _db.Contacts.FindAsync(id);
+            if (c == null) return NotFound();
+
+            var subject = string.IsNullOrWhiteSpace(dto.Subject)
+                ? $"Re: {c.Subject}"
+                : dto.Subject.Trim();
+
+            await _emailService.SendContactReplyAsync(c.Email, c.Name, subject, dto.Message);
+
+            c.Replied = true;
+            c.RepliedAt = DateTime.UtcNow;
+            c.Read = true;
+            await _db.SaveChangesAsync();
+
+            try
+            {
+                await _hubContext.Clients.All.SendAsync("ContactReplied", new { id = c.Id, replied = c.Replied, repliedAt = c.RepliedAt, read = c.Read });
+            }
+            catch
+            {
+                // ignore hub errors
+            }
+
+            return Ok(new { id = c.Id, replied = c.Replied, repliedAt = c.RepliedAt, read = c.Read });
         }
 
         [HttpPut("{id}/toggle-read")]
