@@ -13,6 +13,7 @@ using System.IO;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.StaticFiles;
+using System.Linq;
 
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -66,6 +67,21 @@ var jwtSecret = builder.Configuration["Jwt:Secret"]!;
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
 var jwtAudience = builder.Configuration["Jwt:Audience"]!;
 
+var configuredOrigins = builder.Configuration.GetSection("App:FrontendUrls").Get<string[]>();
+var singleOrigin = builder.Configuration["App:FrontendUrl"];
+var allowedOrigins = (configuredOrigins ?? Array.Empty<string>())
+    .Concat(string.IsNullOrWhiteSpace(singleOrigin) ? Array.Empty<string>() : new[] { singleOrigin })
+    .Concat(new[]
+    {
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "https://localhost:3001",
+        "https://localhost:7177"
+    })
+    .Where(origin => !string.IsNullOrWhiteSpace(origin))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -94,13 +110,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        // Allow common dev frontend origins (explicit list to support credentials)
-        policy.WithOrigins(
-                builder.Configuration["App:FrontendUrl"] ?? "http://localhost:3000",
-                "http://localhost:3001",
-                "https://localhost:3001",
-                "https://localhost:7177"
-            )
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -120,12 +130,23 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "NSPC CMS API v1"));
 }
 
-static void PreparePdfResponse(StaticFileResponseContext context)
+app.UseCors("AllowFrontend");
+
+void PreparePdfResponse(StaticFileResponseContext context)
 {
     var extension = Path.GetExtension(context.File.Name);
     if (!string.Equals(extension, ".pdf", StringComparison.OrdinalIgnoreCase))
     {
         return;
+    }
+
+    var origin = context.Context.Request.Headers[HeaderNames.Origin].ToString();
+    if (!string.IsNullOrWhiteSpace(origin) &&
+        allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+    {
+        context.Context.Response.Headers[HeaderNames.AccessControlAllowOrigin] = origin;
+        context.Context.Response.Headers[HeaderNames.AccessControlAllowCredentials] = "true";
+        context.Context.Response.Headers[HeaderNames.Vary] = "Origin";
     }
 
     context.Context.Response.ContentType = "application/pdf";
@@ -156,8 +177,6 @@ if (Directory.Exists(publicRoot))
         OnPrepareResponse = PreparePdfResponse
     });
 }
-
-app.UseCors("AllowFrontend");
 
 app.UseRateLimiter();
 app.UseAuthentication();

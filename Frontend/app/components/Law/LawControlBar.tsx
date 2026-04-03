@@ -27,7 +27,7 @@ export default function LawControlBar({
 }: LawControlBarProps) {
   const t = useTranslations("LawsPage");
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden sticky top-4 z-20 backdrop-blur-sm bg-white/95">
+    <div className=" overflow-hidden sticky top-4 z-20 backdrop-blur-sm bg-white/95">
       <div className="p-6">
         <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center">
           {/* Left section - Categories */}
@@ -69,7 +69,7 @@ export default function LawControlBar({
             </div>
 
             {/* Chips for large screens */}
-            <div className="hidden lg:flex items-center gap-2 flex-wrap">
+            <div className="hidden lg:flex gap-2 flex-wrap">
               {categories.map((cat) => {
                 const active = cat === selectedCategory;
                 return (
@@ -82,15 +82,7 @@ export default function LawControlBar({
                         : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:scale-105"
                     }`}
                   >
-                    <span
-                      className={`inline-block w-2 h-2 rounded-full mr-2`}
-                    />
                     {t(`categoryLabels.${cat}`) || cat}
-                    {active && (
-                      <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs bg-white/20 rounded-full">
-                        ✓
-                      </span>
-                    )}
                   </button>
                 );
               })}

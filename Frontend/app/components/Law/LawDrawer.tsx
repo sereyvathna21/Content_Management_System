@@ -27,27 +27,19 @@ export default function LawDrawer({
   if (!open || !law) return null;
 
   const t = useTranslations("LawsPage");
-  const translatedTitle = law.id ? t(`content.items.${law.id}.title`) : "";
-  const rawTitle =
-    translatedTitle && !translatedTitle.startsWith("content.items")
-      ? translatedTitle
-      : law.title;
+  const titleKey = law.id ? `content.items.${law.id}.title` : "";
+  const translatedTitle = titleKey && t.has(titleKey) ? t(titleKey) : "";
+  const rawTitle = translatedTitle || law.title;
 
-  const translatedDescription = law.id
-    ? t(`content.items.${law.id}.description`)
-    : "";
-  const rawDescription =
-    translatedDescription && !translatedDescription.startsWith("content.items")
-      ? translatedDescription
-      : law.description;
+  const descriptionKey = law.id ? `content.items.${law.id}.description` : "";
+  const translatedDescription =
+    descriptionKey && t.has(descriptionKey) ? t(descriptionKey) : "";
+  const rawDescription = translatedDescription || law.description;
 
-  const translatedCategory = law.category
-    ? t(`categoryLabels.${law.category}`)
-    : "";
-  const rawCategory =
-    translatedCategory && !translatedCategory.startsWith("categoryLabels")
-      ? translatedCategory
-      : law.category;
+  const categoryKey = law.category ? `categoryLabels.${law.category}` : "";
+  const translatedCategory =
+    categoryKey && t.has(categoryKey) ? t(categoryKey) : "";
+  const rawCategory = translatedCategory || law.category;
 
   const pdfUrl = law.pdf;
 
@@ -150,19 +142,19 @@ export default function LawDrawer({
       >
         <header className="p-4 sm:p-6 border-b">
           <div className="flex items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0">
               <h3
-                className="text-primary text-lg sm:text-xl md:text-2xl font-semibold title-clamp"
+                className="text-primary text-lg sm:text-xl md:text-2xl font-semibold whitespace-normal break-words"
                 title={rawTitle}
               >
                 {truncatedTitle}
               </h3>
               {rawDescription && (
                 <div
-                  className="text-sm md:text-base text-gray-600 mt-1 desc-clamp"
+                  className="text-sm md:text-base text-gray-600 mt-1 whitespace-normal break-words"
                   title={rawDescription}
                 >
-                  {truncatedDescription}
+                  {rawDescription}
                 </div>
               )}
               <div className="flex items-center gap-2 mt-2">

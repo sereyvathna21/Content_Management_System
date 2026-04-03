@@ -31,23 +31,19 @@ export default function LawCard({
   const { selected, toggle } = useSelection();
 
   // Get translated title and description, fallback to hardcoded values
-  const translatedTitle = id ? t(`content.items.${id}.title`) : "";
-  const displayTitle =
-    translatedTitle && !translatedTitle.startsWith("content.items")
-      ? translatedTitle
-      : title;
+  const titleKey = id ? `content.items.${id}.title` : "";
+  const translatedTitle = titleKey && t.has(titleKey) ? t(titleKey) : "";
+  const displayTitle = translatedTitle || title;
 
-  const translatedDescription = id ? t(`content.items.${id}.description`) : "";
-  const displayDescription =
-    translatedDescription && !translatedDescription.startsWith("content.items")
-      ? translatedDescription
-      : description;
+  const descriptionKey = id ? `content.items.${id}.description` : "";
+  const translatedDescription =
+    descriptionKey && t.has(descriptionKey) ? t(descriptionKey) : "";
+  const displayDescription = translatedDescription || description;
 
-  const translatedCategory = category ? t(`categoryLabels.${category}`) : "";
-  const displayCategory =
-    translatedCategory && !translatedCategory.startsWith("categoryLabels")
-      ? translatedCategory
-      : category;
+  const categoryKey = category ? `categoryLabels.${category}` : "";
+  const translatedCategory =
+    categoryKey && t.has(categoryKey) ? t(categoryKey) : "";
+  const displayCategory = translatedCategory || category;
 
   // responsive character-based truncation (adjusts with resize)
   const [truncatedTitle, setTruncatedTitle] = useState<string>(() =>
@@ -78,7 +74,6 @@ export default function LawCard({
         maxTitle = 70;
         maxDesc = 140;
       }
-
       const tTitle =
         typeof displayTitle === "string" && displayTitle.length > maxTitle
           ? displayTitle.slice(0, maxTitle).trimEnd() + "..."
@@ -155,7 +150,7 @@ export default function LawCard({
       </h3>
 
       <p
-        className="text-sm md:text-base text-gray-600 mb-4"
+        className="text-sm md:text-base text-gray-600 mb-4 whitespace-normal break-words line-clamp-2"
         title={displayDescription}
       >
         {truncatedDescription || ""}
@@ -163,7 +158,9 @@ export default function LawCard({
 
       <div className="mt-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <div className="text-xs text-gray-500">{date}</div>
+          <div className="text-xs text-gray-500">
+            {date ? `${t("card.published")} ${date}` : t("card.noDate")}
+          </div>
         </div>
 
         <div className="w-full sm:w-auto flex justify-end">

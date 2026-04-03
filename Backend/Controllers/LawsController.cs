@@ -171,7 +171,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> List([FromQuery] string lang = "en", [FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? category = null, [FromQuery] string? q = null)
         {
             page = Math.Max(1, page);
@@ -228,7 +228,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Get(Guid id, [FromQuery] string lang = "en")
         {
             var law = await _db.Laws.Include(l => l.Translations).FirstOrDefaultAsync(l => l.Id == id);

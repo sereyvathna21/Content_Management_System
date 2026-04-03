@@ -10,9 +10,10 @@
    ==================================== */
 :root {
   /* Fonts */
-  --font-family-en: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family-en:
+    "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-family-km: "Noto Sans Khmer";
-  
+
   /* Animation Durations */
   --duration-fast: 0.3s;
   --duration-normal: 0.6s;
@@ -96,6 +97,16 @@ html[lang="km"] .text-sm {
 }
 
 /* ====================================
+   TEXT UTILITIES
+   ==================================== */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ====================================
    KEYFRAME ANIMATIONS
    ==================================== */
 @keyframes fadeIn {
@@ -174,13 +185,21 @@ html[lang="km"] .text-sm {
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
-  10%, 30%, 50%, 70%, 90% {
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
     transform: translateX(-5px);
   }
-  20%, 40%, 60%, 80% {
+  20%,
+  40%,
+  60%,
+  80% {
     transform: translateX(5px);
   }
 }
@@ -305,7 +324,7 @@ html[lang="km"] .text-sm {
     word-spacing: 0.05em;
     word-break: normal;
   }
-  
+
   /* Khmer-specific text alignment - LEFT ONLY to avoid broken rendering */
   html[lang="kh"] .text-justify-full,
   html[lang="km"] .text-justify-full {

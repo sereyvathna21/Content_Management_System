@@ -43,4 +43,15 @@ namespace Backend.DTOs
         public string? Description { get; set; }
         public string? PdfUrl { get; set; }
     }
+
+    public class PublicLawListItemDto
+    {
+        public Guid Id { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public DateTime? Date { get; set; }
+        public string Language { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string? Description { get; set; }
+        public string? PdfUrl { get; set; }
+    }
 }

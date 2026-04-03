@@ -152,3 +152,21 @@ export interface Publication {
   date: string;
   pdf: string;
 }
+
+export interface PublicLawListItem {
+  id: string;
+  category: string;
+  date?: string;
+  language: string;
+  title: string;
+  description?: string;
+  pdfUrl?: string;
+}
+
+export interface PublicLawListResponse {
+  total: number;
+  page: number;
+  pageSize: number;
+  categories?: string[];
+  items: PublicLawListItem[];
+}

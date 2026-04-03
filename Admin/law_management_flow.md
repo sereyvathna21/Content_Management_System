@@ -100,10 +100,41 @@ User clicks law title → setSelectedLaw(l) + setViewOpen(true)
 
 | Action | Method | Endpoint | Body | Auth |
 |---|---|---|---|---|
-| List | `GET` | `/api/laws` | — | Bearer |
+| List (Admin) | `GET` | `/api/laws` | — | Bearer |
 | Create | `POST` | `/api/laws` | `FormData` (multipart) | Bearer |
 | Update | `PUT` | `/api/laws/{id}` | `FormData` (multipart) | Bearer |
 | Delete | `DELETE` | `/api/laws/{id}` | — | Bearer |
+| List (Public) | `GET` | `/api/public/laws` | — | None |
+| Detail (Public) | `GET` | `/api/public/laws/{id}` | — | None |
+
+### Public Landing Page API (Option 1)
+
+**List:** `GET /api/public/laws?lang=km&page=1&pageSize=9&category=Prakas&q=search`
+
+**Response shape:**
+```
+{
+  total: number,
+  page: number,
+  pageSize: number,
+  categories: string[],
+  items: [
+    {
+      id: string,
+      category: string,
+      date?: string,
+      language: string,
+      title: string,
+      description?: string,
+      pdfUrl?: string
+    }
+  ]
+}
+```
+
+**Notes:**
+- `lang` falls back to Khmer (`km`) if the requested translation is missing.
+- `categories` is a distinct list of available categories for building tabs.
 
 ### FormData Shape (Create / Update)
 

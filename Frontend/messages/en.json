@@ -616,9 +616,11 @@
       "loadError": "Could not load PDF preview — you can open it in a new tab."
     },
     "card": {
+      "published": "Published",
       "noDate": "No Date",
       "noResults": "No documents found matching your criteria."
     },
+    "noResults": "No documents found matching your criteria.",
     "noPreview": "No preview available",
     "pdfNotAvailable": "PDF preview not available.",
     "actions": {
