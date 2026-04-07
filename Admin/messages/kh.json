@@ -201,8 +201,28 @@
       "eng": "អង់គ្លេស",
       "kh": "ភាសាខ្មែរ"
     }
-  }
-  ,
+  },
+  "NotificationDropdown": {
+    "heading": "ការជូនដំណឹង",
+    "empty": "មិនទាន់មានការជូនដំណឹង។",
+    "viewAll": "មើលការជូនដំណឹងទាំងអស់",
+    "titles": {
+      "created": "បានបង្កើតច្បាប់ថ្មី",
+      "deleted": "បានលុបច្បាប់",
+      "general": "ការជូនដំណឹងប្រព័ន្ធ"
+    },
+    "messages": {
+      "created": "បានបង្កើតច្បាប់ថ្មីមួយ។",
+      "deleted": "បានលុបច្បាប់មួយ។",
+      "createdWithTitle": "បានបង្កើតច្បាប់ \"{title}\"។",
+      "deletedWithTitle": "បានលុបច្បាប់ \"{title}\"។"
+    },
+    "badges": {
+      "created": "បានបង្កើត",
+      "deleted": "បានលុប",
+      "general": "ទូទៅ"
+    }
+  },
   "LawForm": {
     "confirmCloseTitle": "បញ្ជាក់ការបិទ",
     "confirmCloseBody": "តើអ្នកប្រាកដថាចង់បិទឬ? ទិន្នន័យមិនទាន់រក្សាទុកនឹងត្រូវបាត់។",

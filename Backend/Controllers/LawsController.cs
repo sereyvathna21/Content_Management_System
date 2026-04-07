@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.SignalR;
+using Backend.Hubs;
 
 namespace Backend.Controllers
 {
@@ -16,6 +18,7 @@ namespace Backend.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _env;
+        private readonly IHubContext<NotificationHub> _hubContext; // Add SignalR Hub Context
         private const long MaxPdfBytes = 50_000_000;
         private static readonly HashSet<string> AllowedPdfContentTypes = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -40,10 +43,78 @@ namespace Backend.Controllers
             ".com"
         };
 
-        public LawsController(ApplicationDbContext db, IWebHostEnvironment env)
+        public LawsController(ApplicationDbContext db, IWebHostEnvironment env, IHubContext<NotificationHub> hubContext)
         {
             _db = db;
             _env = env;
+            _hubContext = hubContext; // Initialize Hub Context
+        }
+
+        private static string BuildCreatedNotificationMessage(string lawTitle)
+        {
+            return $"Law \"{lawTitle}\" was created.";
+        }
+
+        private static string BuildDeletedNotificationMessage(string lawTitle)
+        {
+            return $"Law \"{lawTitle}\" was deleted.";
+        }
+
+        private static (string? TitleKm, string? TitleEn) GetLocalizedLawTitles(IEnumerable<LawTranslationCreateDto> translations)
+        {
+            var titleKm = translations
+                .FirstOrDefault(t => string.Equals(t.Language, "km", StringComparison.OrdinalIgnoreCase))?.Title?.Trim();
+            var titleEn = translations
+                .FirstOrDefault(t => string.Equals(t.Language, "en", StringComparison.OrdinalIgnoreCase))?.Title?.Trim();
+
+            return (
+                string.IsNullOrWhiteSpace(titleKm) ? null : titleKm,
+                string.IsNullOrWhiteSpace(titleEn) ? null : titleEn
+            );
+        }
+
+        private static (string? TitleKm, string? TitleEn) GetLocalizedLawTitles(IEnumerable<LawTranslation> translations)
+        {
+            var titleKm = translations
+                .FirstOrDefault(t => string.Equals(t.Language, "km", StringComparison.OrdinalIgnoreCase))?.Title?.Trim();
+            var titleEn = translations
+                .FirstOrDefault(t => string.Equals(t.Language, "en", StringComparison.OrdinalIgnoreCase))?.Title?.Trim();
+
+            return (
+                string.IsNullOrWhiteSpace(titleKm) ? null : titleKm,
+                string.IsNullOrWhiteSpace(titleEn) ? null : titleEn
+            );
+        }
+
+        private static string BuildFallbackLawTitle(string? titleKm, string? titleEn, Guid lawId)
+        {
+            if (!string.IsNullOrWhiteSpace(titleKm)) return titleKm;
+            if (!string.IsNullOrWhiteSpace(titleEn)) return titleEn;
+            return lawId.ToString();
+        }
+
+        private async Task CreateAndBroadcastNotificationAsync(string message, string kind, string? titleKm = null, string? titleEn = null)
+        {
+            var notification = new Notification
+            {
+                Message = message,
+                Kind = kind,
+                TitleKm = titleKm,
+                TitleEn = titleEn,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _db.Notifications.Add(notification);
+            await _db.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
+            {
+                message = notification.Message,
+                kind = notification.Kind,
+                titleKm = notification.TitleKm,
+                titleEn = notification.TitleEn,
+                createdAt = notification.CreatedAt
+            });
         }
 
         private string GetUploadsRoot(Guid lawId)
@@ -303,6 +374,16 @@ namespace Backend.Controllers
 
             await _db.SaveChangesAsync();
 
+            var (createdTitleKm, createdTitleEn) = GetLocalizedLawTitles(request.Translations);
+            var createdLawTitle = BuildFallbackLawTitle(createdTitleKm, createdTitleEn, law.Id);
+
+            // Notify clients about the new law and keep history for future retrieval.
+            await CreateAndBroadcastNotificationAsync(
+                BuildCreatedNotificationMessage(createdLawTitle),
+                "created",
+                createdTitleKm,
+                createdTitleEn);
+
             return CreatedAtAction(nameof(Get), new { id = law.Id }, new { id = law.Id });
         }
 
@@ -410,6 +491,9 @@ namespace Backend.Controllers
             var law = await _db.Laws.Include(l => l.Translations).FirstOrDefaultAsync(l => l.Id == id);
             if (law == null) return NotFound();
 
+            var (deletedTitleKm, deletedTitleEn) = GetLocalizedLawTitles(law.Translations);
+            var deletedLawTitle = BuildFallbackLawTitle(deletedTitleKm, deletedTitleEn, law.Id);
+
             _db.Laws.Remove(law);
             await _db.SaveChangesAsync();
 
@@ -426,6 +510,13 @@ namespace Backend.Controllers
                     // Ignore file system errors to avoid failing the API after data is deleted.
                 }
             }
+
+            // Notify clients about the deleted law and keep history for future retrieval.
+            await CreateAndBroadcastNotificationAsync(
+                BuildDeletedNotificationMessage(deletedLawTitle),
+                "deleted",
+                deletedTitleKm,
+                deletedTitleEn);
 
             return Ok(new { id });
         }

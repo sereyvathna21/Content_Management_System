@@ -38,6 +38,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddHostedService<NotificationRetentionService>();
 builder.Services.AddAutoMapper(typeof(Program));
 
 // ---------- Rate Limiting ----------
@@ -108,7 +109,7 @@ builder.Services.AddSignalR();
 // ---------- CORS ----------
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
@@ -130,7 +131,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "NSPC CMS API v1"));
 }
 
-app.UseCors("AllowFrontend");
+app.UseCors();
 
 void PreparePdfResponse(StaticFileResponseContext context)
 {
@@ -182,6 +183,6 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-// map SignalR hubs
+app.MapHub<NotificationHub>("/notificationHub");
 app.MapHub<ContactHub>("/hubs/contact");
 app.Run();

@@ -200,8 +200,28 @@
       "eng": "English",
       "kh": "Khmer"
     }
-  }
-  ,
+  },
+  "NotificationDropdown": {
+    "heading": "Notifications",
+    "empty": "No notifications yet.",
+    "viewAll": "View All Notifications",
+    "titles": {
+      "created": "New Law Created",
+      "deleted": "Law Deleted",
+      "general": "System Notification"
+    },
+    "messages": {
+      "created": "A new law has been created.",
+      "deleted": "A law has been deleted.",
+      "createdWithTitle": "Law \"{title}\" was created.",
+      "deletedWithTitle": "Law \"{title}\" was deleted."
+    },
+    "badges": {
+      "created": "created",
+      "deleted": "deleted",
+      "general": "general"
+    }
+  },
   "LawForm": {
     "confirmCloseTitle": "Confirm close",
     "confirmCloseBody": "Are you sure you want to close? Unsaved changes will be lost.",
