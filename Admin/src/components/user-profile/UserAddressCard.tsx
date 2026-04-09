@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
@@ -27,6 +28,7 @@ const EditIcon = () => (
 
 export default function UserAddressCard() {
   const { isOpen, openModal, closeModal } = useModal();
+  const t = useTranslations("ProfilePage");
   const [addressInfo, setAddressInfo] = useState({
     country: "",
     city: "",
@@ -66,19 +68,19 @@ export default function UserAddressCard() {
 
   const mapGeolocationError = (error: GeolocationPositionError) => {
     if (error.code === error.PERMISSION_DENIED) {
-      return "Location access was denied. Please enable location permission in your browser.";
+      return t("locationPermissionDenied");
     }
 
     if (error.code === error.TIMEOUT) {
-      return "Location request timed out. Please try again or fill the address manually.";
+      return t("locationTimeout");
     }
 
-    return "Location is currently unavailable. Please try again or fill the address manually.";
+    return t("locationUnavailable");
   };
 
   const handleUseCurrentLocation = useCallback(async () => {
     if (typeof window === "undefined" || !("geolocation" in navigator)) {
-      setLocationError("Geolocation is not supported in this browser.");
+      setLocationError(t("geolocationNotSupported"));
       return;
     }
 
@@ -148,7 +150,7 @@ export default function UserAddressCard() {
         setLocationError(mapGeolocationError(error as GeolocationPositionError));
       } else {
         console.error("Failed to detect current location", error);
-        setLocationError("Could not detect your location details. Please fill them manually.");
+        setLocationError(t("detectLocationFailed"));
       }
     } finally {
       setIsDetectingLocation(false);
@@ -189,35 +191,35 @@ export default function UserAddressCard() {
       setIsSaving(false);
     }
   };
-  const displayValue = (value: string) => value || "N/A";
+  const displayValue = (value: string) => value || t("notAvailable");
   return (
     <>
       <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h4 className="text-lg font-semibold text-primary dark:text-white/90 lg:mb-6">
-              Address
+              {t("address")}
             </h4>
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
               <div>
-                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  Country
+                <p className="mb-2 text-md leading-normal text-gray-500 dark:text-gray-400">
+                  {t("countryLabel")}
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   {displayValue(addressInfo.country)}
                 </p>
               </div>
               <div>
-                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  City
+                <p className="mb-2 text-md leading-normal text-gray-500 dark:text-gray-400">
+                  {t("cityLabel")}
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   {displayValue(addressInfo.city)}
                 </p>
               </div>
               <div>
-                <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                  Postal Code
+                <p className="mb-2 text-md leading-normal text-gray-500 dark:text-gray-400">
+                  {t("postalCodeLabel")}
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   {displayValue(addressInfo.postalCode)}
@@ -230,7 +232,7 @@ export default function UserAddressCard() {
             className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
           >
             <EditIcon />
-            Edit
+            {t("edit")}
           </button>
         </div>
       </div>
@@ -238,10 +240,10 @@ export default function UserAddressCard() {
         <div className="relative w-full overflow-y-auto rounded-3xl bg-white p-4 no-scrollbar dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Address
+              {t("editAddressTitle")}
             </h4>
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
+              {t("updateDetails")}
             </p>
           </div>
           <form className="flex flex-col" onSubmit={handleSave}>
@@ -253,7 +255,7 @@ export default function UserAddressCard() {
                   disabled={isDetectingLocation}
                   className="inline-flex items-center rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
                 >
-                  {isDetectingLocation ? "Detecting location..." : "Use Current Location"}
+                  {isDetectingLocation ? t("detectingLocation") : t("useCurrentLocation")}
                 </button>
                 {locationError ? (
                   <p className="text-xs text-error-500">{locationError}</p>
@@ -261,7 +263,7 @@ export default function UserAddressCard() {
               </div>
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                 <div>
-                  <Label>Country</Label>
+                  <Label>{t("countryLabel")}</Label>
                   <Input
                     type="text"
                     value={addressInfo.country}
@@ -269,7 +271,7 @@ export default function UserAddressCard() {
                   />
                 </div>
                 <div>
-                  <Label>City</Label>
+                  <Label>{t("cityLabel")}</Label>
                   <Input
                     type="text"
                     value={addressInfo.city}
@@ -277,7 +279,7 @@ export default function UserAddressCard() {
                   />
                 </div>
                 <div>
-                  <Label>Postal Code</Label>
+                  <Label>{t("postalCodeLabel")}</Label>
                   <Input
                     type="text"
                     value={addressInfo.postalCode}
@@ -288,10 +290,10 @@ export default function UserAddressCard() {
             </div>
             <div className="mt-6 flex items-center gap-3 px-2 lg:justify-end">
               <Button size="sm" variant="outline" onClick={closeModal}>
-                Close
+                {t("close")}
               </Button>
               <Button size="sm" type="submit" disabled={isSaving}>
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? t("saving") : t("saveChanges")}
               </Button>
             </div>
           </form>

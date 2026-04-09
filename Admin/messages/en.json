@@ -391,4 +391,39 @@
       "unblock": "Unblock user"
     }
   }
+  ,
+  "ProfilePage": {
+    "profileManagement": "Profile Management",
+    "personalInformation": "Personal Information",
+    "address": "Address",
+    "fullNameLabel": "Full Name",
+    "phoneLabel": "Phone Number",
+    "emailLabel": "Email address",
+    "bioLabel": "Bio",
+    "countryLabel": "Country",
+    "cityLabel": "City",
+    "postalCodeLabel": "Postal Code",
+    "edit": "Edit",
+    "editPersonalInformationTitle": "Edit Personal Information",
+    "editAddressTitle": "Edit Address",
+    "editAvatarTitle": "Edit Avatar",
+    "updateDetails": "Update your details to keep your profile up-to-date.",
+    "useCurrentLocation": "Use Current Location",
+    "detectingLocation": "Detecting location...",
+    "locationPermissionDenied": "Location access was denied. Please enable location permission in your browser.",
+    "locationTimeout": "Location request timed out. Please try again or fill the address manually.",
+    "locationUnavailable": "Location is currently unavailable. Please try again or fill the address manually.",
+    "geolocationNotSupported": "Geolocation is not supported in this browser.",
+    "detectLocationFailed": "Could not detect your location details. Please fill them manually.",
+    "close": "Close",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "changeAvatar": "Change avatar",
+    "editAvatarDescription": "Crop your image and save to update your profile avatar.",
+    "selectImageByClick": "Select an image by clicking your avatar.",
+    "chooseAnotherImage": "Choose Another Image",
+    "save": "Save",
+    "unnamedUser": "Unnamed User",
+    "notAvailable": "N/A"
+  }
 }

@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
@@ -15,6 +16,7 @@ import type { UserProfile } from "../../lib/api/user";
 
 export default function UserMetaCard() {
   const { isOpen, openModal, closeModal } = useModal();
+  const t = useTranslations("ProfilePage");
   const [userData, setUserData] = useState<UserProfile>({
     name: "",
     role: "",
@@ -83,7 +85,7 @@ export default function UserMetaCard() {
   const displayName =
     userData.name || [userData.firstName, userData.lastName].filter(Boolean).join(" ");
   const displayRole = userData.role || "Admin";
-  const displayLocation = userData.location || "N/A";
+  const displayLocation = userData.location || t("notAvailable");
   const displayAvatar = userData.avatar || "/images/user/default-avatar.svg";
 
   const handleAvatarInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,7 +153,7 @@ export default function UserMetaCard() {
               onClick={() => fileInputRef.current?.click()}
               role="button"
               tabIndex={0}
-              aria-label="Change avatar"
+              aria-label={t("changeAvatar")}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
@@ -165,7 +167,7 @@ export default function UserMetaCard() {
                 <Image width={80} height={80} src={displayAvatar} alt="user" className="h-full w-full object-cover" unoptimized />
               )}
               <div className="absolute inset-0 flex items-center justify-center bg-black/0 text-[11px] font-medium text-white transition group-hover:bg-black/45">
-                <span className="opacity-0 transition group-hover:opacity-100">Edit</span>
+                <span className="opacity-0 transition group-hover:opacity-100">{t("edit")}</span>
               </div>
             </div>
             <input
@@ -177,7 +179,7 @@ export default function UserMetaCard() {
             />
             <div className="order-3 xl:order-2">
               <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-                {displayName || "Unnamed User"}
+                {displayName || t("unnamedUser")}
               </h4>
               <div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
                 <p className="text-sm font-semibold text-primary dark:text-gray-400">
@@ -196,8 +198,8 @@ export default function UserMetaCard() {
       <Modal isOpen={isOpen} onClose={handleCloseModal} className="max-w-xl p-6" backdropClassName="fixed inset-0 h-full w-full bg-gray-400/30 backdrop-blur-sm">
         <div className="space-y-4">
           <div>
-            <h3 className="text-lg font-semibold text-primary">Edit Avatar</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Crop your image and save to update your profile avatar.</p>
+            <h3 className="text-lg font-semibold text-primary">{t("editAvatarTitle")}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t("editAvatarDescription")}</p>
           </div>
 
           <div className="flex items-center gap-4">
@@ -213,7 +215,7 @@ export default function UserMetaCard() {
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
               onClick={() => fileInputRef.current?.click()}
             >
-              Choose Another Image
+              {t("chooseAnotherImage")}
             </button>
           </div>
 
@@ -222,12 +224,12 @@ export default function UserMetaCard() {
               imageSrc={cropSrc}
               onCancel={handleCloseModal}
               onComplete={handleCropComplete}
-              actionLabel="Save"
+              actionLabel={t("save")}
               loading={isSaving}
             />
           ) : (
             <div className="rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-              Select an image by clicking your avatar.
+              {t("selectImageByClick")}
             </div>
           )}
         </div>

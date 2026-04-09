@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
@@ -27,6 +28,7 @@ const EditIcon = () => (
 
 export default function UserInfoCard() {
   const { isOpen, openModal, closeModal } = useModal();
+  const t = useTranslations("ProfilePage");
   const [userInfo, setUserInfo] = useState({
     fullName: "",
     email: "",
@@ -82,29 +84,29 @@ export default function UserInfoCard() {
     }
   };
 
-  const displayValue = (value: string) => value || "N/A";
+  const displayValue = (value: string) => value || t("notAvailable");
 
   return (
     <div className="rounded-2xl border border-gray-200 p-5 dark:border-gray-800 lg:p-6">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h4 className="text-lg font-semibold text-primary dark:text-white/90 lg:mb-6">
-            Personal Information
+            {t("personalInformation")}
           </h4>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
             <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Full Name
+              <p className="mb-2 text-md leading-normal text-gray-500 dark:text-gray-400">
+                {t("fullNameLabel")}
               </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+              <p className="text-md font-medium text-gray-800 dark:text-white/90">
                 {displayValue(userInfo.fullName)}
               </p>
             </div>
 
             <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Phone Number
+              <p className="mb-2 text-md leading-normal text-gray-500 dark:text-gray-400">
+                {t("phoneLabel")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 {displayValue(userInfo.phone)}
@@ -112,8 +114,8 @@ export default function UserInfoCard() {
             </div>
 
             <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Email address
+              <p className="mb-2 text-md leading-normal text-gray-500 dark:text-gray-400">
+                {t("emailLabel")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 {displayValue(userInfo.email)}
@@ -121,8 +123,8 @@ export default function UserInfoCard() {
             </div>
 
             <div>
-              <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Add a bio
+              <p className="mb-2 text-md leading-normal text-gray-500 dark:text-gray-400">
+                {t("bioLabel")}
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                 {displayValue(userInfo.bio)}
@@ -136,7 +138,7 @@ export default function UserInfoCard() {
           className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
         >
           <EditIcon />
-          Edit
+          {t("edit")}
         </button>
       </div>
 
@@ -144,17 +146,17 @@ export default function UserInfoCard() {
         <div className="relative w-full overflow-y-auto rounded-3xl bg-white p-4 no-scrollbar dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Personal Information
+              {t("editPersonalInformationTitle")}
             </h4>
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
+              {t("updateDetails")}
             </p>
           </div>
           <form className="flex flex-col" onSubmit={handleSave}>
             <div className="custom-scrollbar max-h-[450px] overflow-y-auto px-2 pb-3">
               <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                 <div className="col-span-2 lg:col-span-1">
-                  <Label>Full Name</Label>
+                  <Label>{t("fullNameLabel")}</Label>
                   <Input
                     type="text"
                     value={userInfo.fullName}
@@ -163,7 +165,7 @@ export default function UserInfoCard() {
                 </div>
 
                 <div className="col-span-2 lg:col-span-1">
-                  <Label>Phone</Label>
+                  <Label>{t("phoneLabel")}</Label>
                   <Input
                     type="text"
                     value={userInfo.phone}
@@ -172,7 +174,7 @@ export default function UserInfoCard() {
                 </div>
 
                 <div className="col-span-2 lg:col-span-1">
-                  <Label>Email Address</Label>
+                  <Label>{t("emailLabel")}</Label>
                   <Input
                     type="email"
                     value={userInfo.email}
@@ -181,7 +183,7 @@ export default function UserInfoCard() {
                 </div>
 
                 <div className="col-span-2 lg:col-span-1">
-                  <Label>Bio</Label>
+                  <Label>{t("bioLabel")}</Label>
                   <Input
                     type="text"
                     value={userInfo.bio}
@@ -192,10 +194,10 @@ export default function UserInfoCard() {
             </div>
             <div className="mt-6 flex items-center gap-3 px-2 lg:justify-end">
               <Button size="sm" variant="outline" onClick={closeModal}>
-                Close
+                {t("close")}
               </Button>
               <Button size="sm" type="submit" disabled={isSaving}>
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? t("saving") : t("saveChanges")}
               </Button>
             </div>
           </form>
