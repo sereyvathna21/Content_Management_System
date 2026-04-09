@@ -30,7 +30,7 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
   const t = useTranslations();
   const [name, setName] = useState(initial.name);
   const [email, setEmail] = useState(initial.email);
-  const [role, setRole] = useState(initial.role);
+  const [role, setRole] = useState((initial.role || "User").toLowerCase());
   const [avatarPreview, setAvatarPreview] = useState<string | null>(initial.avatar || "/images/user/default-avatar.svg");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
   useEffect(() => {
     setName(initial.name);
     setEmail(initial.email);
-    setRole(initial.role);
+    setRole((initial.role || "User").toLowerCase());
     setAvatarPreview(initial.avatar || "/images/user/default-avatar.svg");
     setPassword("");
     setConfirmPassword("");
@@ -175,8 +175,8 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
                 onChange={(val) => setRole(val as string)}
                 options={[
                   { label: t("UserForm.roleOptions.admin"), value: "Admin" },
-                  { label: t("UserForm.roleOptions.editor"), value: "Editor" },
-                  { label: t("UserForm.roleOptions.viewer"), value: "Viewer" },
+                  { label: t("UserForm.roleOptions.user"), value: "User" },
+                  { label: t("UserForm.roleOptions.superAdmin"), value: "SuperAdmin" },
                 ]}
               />
             </div>

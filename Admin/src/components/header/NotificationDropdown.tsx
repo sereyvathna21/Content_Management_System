@@ -74,6 +74,8 @@ export default function NotificationDropdown() {
   const t = useTranslations("NotificationDropdown");
   const locale = useLocale();
   const { data: session, status } = useSession();
+  const userRole = session?.user?.role?.toLowerCase() || "";
+  const canViewNotifications = userRole === "admin" || userRole === "superadmin";
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -82,6 +84,12 @@ export default function NotificationDropdown() {
 
   useEffect(() => {
     if (status === "loading" || !session?.accessToken) {
+      return;
+    }
+
+    if (!canViewNotifications) {
+      setNotifications([]);
+      setNotifying(false);
       return;
     }
 
@@ -127,9 +135,13 @@ export default function NotificationDropdown() {
     return () => {
       controller.abort();
     };
-  }, [backendUrl, session?.accessToken, status]);
+  }, [backendUrl, canViewNotifications, session?.accessToken, status]);
 
   useEffect(() => {
+    if (!canViewNotifications) {
+      return;
+    }
+
     const connection = new HubConnectionBuilder()
       .withUrl(`${backendUrl}/notificationHub`)
       .withAutomaticReconnect()
@@ -178,7 +190,11 @@ export default function NotificationDropdown() {
     return () => {
       connection.stop().then(() => console.log("SignalR Disconnected"));
     };
-  }, [backendUrl]);
+  }, [backendUrl, canViewNotifications]);
+
+  if (status !== "loading" && !canViewNotifications) {
+    return null;
+  }
 
   function toggleDropdown() {
     setIsOpen(!isOpen);

@@ -5,6 +5,7 @@ using AutoMapper;
 using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
+using Backend.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -28,7 +29,8 @@ namespace Backend.Services
             if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
                 return (false, "Email and password are required.", null);
 
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 return (false, "Invalid email or password.", null);
 
@@ -59,13 +61,15 @@ namespace Backend.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var normalizedRole = RoleConstants.NormalizeOrDefault(user.Role);
+
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("fullName", user.FullName ?? ""),
-                new Claim(ClaimTypes.Role, user.Role ?? "User"),
-                new Claim("role", user.Role ?? "User"),
+                new Claim(ClaimTypes.Role, normalizedRole),
+                new Claim("role", normalizedRole),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 

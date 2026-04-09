@@ -7,6 +7,11 @@ namespace Backend.Models
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string? Avatar { get; set; }
+        public string? Phone { get; set; }
+        public string? Bio { get; set; }
+        public string? Country { get; set; }
+        public string? City { get; set; }
+        public string? PostalCode { get; set; }
         public string Role { get; set; } = "User";
         public bool IsEmailVerified { get; set; }
         public string? OtpCode { get; set; }

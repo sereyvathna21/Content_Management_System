@@ -356,8 +356,8 @@
     "roleLabel": "តួនាទី",
     "roleOptions": {
       "admin": "Admin",
-      "editor": "Editor",
-      "viewer": "Viewer"
+      "user": "User",
+      "superAdmin": "Super Admin"
     },
     "passwordLabel": "ពាក្យសម្ងាត់",
     "passwordPlaceholder": "ពាក្យសម្ងាត់",

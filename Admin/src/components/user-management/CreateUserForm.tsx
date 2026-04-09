@@ -28,7 +28,7 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
   const t = useTranslations();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("editor");
+  const [role, setRole] = useState("user");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -140,8 +140,8 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
                 onChange={(val) => setRole(val as string)}
                 options={[
                   { label: t("UserForm.roleOptions.admin"), value: "admin" },
-                  { label: t("UserForm.roleOptions.editor"), value: "editor" },
-                  { label: t("UserForm.roleOptions.viewer"), value: "viewer" },
+                  { label: t("UserForm.roleOptions.user"), value: "user" },
+                  { label: t("UserForm.roleOptions.superAdmin"), value: "superadmin" },
                 ]}
               />
             </div>

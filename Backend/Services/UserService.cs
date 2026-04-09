@@ -3,6 +3,7 @@ using AutoMapper;
 using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
+using Backend.Security;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Services
@@ -29,7 +30,8 @@ namespace Backend.Services
                 string.IsNullOrWhiteSpace(request.FullName))
                 return (false, "All fields are required.");
 
-            var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var normalizedEmail = NormalizeEmail(request.Email);
+            var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
             if (existing != null)
             {
                 return (false, "An account with this email already exists.");
@@ -41,8 +43,9 @@ namespace Backend.Services
             var user = new User
             {
                 FullName = request.FullName,
-                Email = request.Email,
+                Email = normalizedEmail,
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
+                Role = RoleConstants.User,
                 OtpCode = otp,
                 OtpExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes),
                 OtpAttempts = 0
@@ -60,7 +63,8 @@ namespace Backend.Services
         {
             const int maxAttempts = 5;
 
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var normalizedEmail = NormalizeEmail(request.Email);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
             if (user == null)
                 return (false, "User not found.");
 
@@ -98,7 +102,8 @@ namespace Backend.Services
 
         public async Task<(bool Success, string Message)> ResendOtpAsync(ForgotPasswordRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var normalizedEmail = NormalizeEmail(request.Email);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
             if (user == null)
                 return (false, "User not found.");
 
@@ -120,7 +125,8 @@ namespace Backend.Services
 
         public async Task<(bool Success, string Message)> ForgotPasswordAsync(ForgotPasswordRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var normalizedEmail = NormalizeEmail(request.Email);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
             if (user == null)
                 return (true, "If that email exists, a reset link has been sent.");
 
@@ -136,7 +142,8 @@ namespace Backend.Services
 
         public async Task<(bool Success, string Message)> ResetPasswordAsync(ResetPasswordRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var normalizedEmail = NormalizeEmail(request.Email);
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
             if (user == null ||
                 user.PasswordResetToken != request.Token ||
                 user.PasswordResetTokenExpiresAt < DateTime.UtcNow)
@@ -187,19 +194,30 @@ namespace Backend.Services
                 string.IsNullOrWhiteSpace(request.FullName))
                 return (false, "All fields are required.", null);
 
-            var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var normalizedEmail = NormalizeEmail(request.Email);
+            var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
             if (existing != null)
             {
                 return (false, "An account with this email already exists.", null);
             }
 
+            if (!RoleConstants.TryNormalize(request.Role, out var normalizedRole))
+            {
+                return (false, "Role must be one of: admin, user, superadmin.", null);
+            }
+
             var user = new User
             {
                 FullName = request.FullName,
-                Email = request.Email,
+                Email = normalizedEmail,
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                Role = string.IsNullOrWhiteSpace(request.Role) ? "User" : request.Role,
+                Role = normalizedRole,
                 Avatar = request.Avatar,
+                Phone = request.Phone,
+                Bio = request.Bio,
+                Country = request.Country,
+                City = request.City,
+                PostalCode = request.PostalCode,
                 IsEmailVerified = true
             };
 
@@ -218,7 +236,12 @@ namespace Backend.Services
             if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.FullName))
                 return (false, "Full name and email are required.", null);
 
-            var emailExists = await _db.Users.AnyAsync(u => u.Email == request.Email && u.Id != id);
+            if (!RoleConstants.TryNormalize(request.Role, out var normalizedRole))
+                return (false, "Role must be one of: admin, user, superadmin.", null);
+
+            var normalizedEmail = NormalizeEmail(request.Email);
+
+            var emailExists = await _db.Users.AnyAsync(u => u.Email == normalizedEmail && u.Id != id);
             if (emailExists)
                 return (false, "An account with this email already exists.", null);
 
@@ -228,9 +251,14 @@ namespace Backend.Services
             }
 
             user.FullName = request.FullName;
-            user.Email = request.Email;
-            user.Role = string.IsNullOrWhiteSpace(request.Role) ? user.Role : request.Role;
+            user.Email = normalizedEmail;
+            user.Role = normalizedRole;
             user.Avatar = request.Avatar;
+            user.Phone = request.Phone ?? user.Phone;
+            user.Bio = request.Bio ?? user.Bio;
+            user.Country = request.Country ?? user.Country;
+            user.City = request.City ?? user.City;
+            user.PostalCode = request.PostalCode ?? user.PostalCode;
 
             if (!string.IsNullOrWhiteSpace(request.Password))
             {
@@ -242,11 +270,20 @@ namespace Backend.Services
             return (true, "User updated successfully.", _mapper.Map<UserDto>(user));
         }
 
+        public async Task<UserDto?> GetUserByIdAsync(int userId)
+        {
+            var user = await _db.Users.FindAsync(userId);
+            return user == null ? null : _mapper.Map<UserDto>(user);
+        }
+
         private static string GenerateOtp() =>
             Random.Shared.Next(100000, 999999).ToString();
 
         private static string GenerateSecureToken() =>
             Convert.ToBase64String(RandomNumberGenerator.GetBytes(64))
                 .Replace("+", "-").Replace("/", "_").Replace("=", "");
+
+        private static string NormalizeEmail(string email) =>
+            email.Trim().ToLowerInvariant();
     }
 }

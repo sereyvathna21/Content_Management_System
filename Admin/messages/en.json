@@ -355,8 +355,8 @@
     "roleLabel": "Role",
     "roleOptions": {
       "admin": "Admin",
-      "editor": "Editor",
-      "viewer": "Viewer"
+      "user": "User",
+      "superAdmin": "Super Admin"
     },
     "passwordLabel": "Password",
     "passwordPlaceholder": "Password",

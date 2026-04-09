@@ -6,7 +6,9 @@ import Cropper from "react-easy-crop";
 interface Props {
   imageSrc: string;
   onCancel: () => void;
-  onComplete: (croppedDataUrl: string) => void;
+  onComplete: (croppedDataUrl: string) => void | Promise<void>;
+  actionLabel?: string;
+  loading?: boolean;
 }
 
 function getCroppedImg(imageSrc: string, crop: { x: number; y: number }, zoom: number, croppedAreaPixels: { width: number; height: number; x: number; y: number }) {
@@ -41,7 +43,7 @@ function getCroppedImg(imageSrc: string, crop: { x: number; y: number }, zoom: n
   });
 }
 
-export default function AvatarCropper({ imageSrc, onCancel, onComplete }: Props) {
+export default function AvatarCropper({ imageSrc, onCancel, onComplete, actionLabel, loading = false }: Props) {
   const t = useTranslations();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -52,10 +54,10 @@ export default function AvatarCropper({ imageSrc, onCancel, onComplete }: Props)
   }, []);
 
   const handleCrop = async () => {
-    if (!croppedAreaPixels) return;
+    if (!croppedAreaPixels || loading) return;
     try {
       const dataUrl = await getCroppedImg(imageSrc, crop, zoom, croppedAreaPixels);
-      onComplete(dataUrl);
+      await onComplete(dataUrl);
     } catch (err) {
       console.error("Crop failed", err);
     }
@@ -88,11 +90,11 @@ export default function AvatarCropper({ imageSrc, onCancel, onComplete }: Props)
       </div>
 
       <div className="flex justify-end gap-3 mt-3">
-        <button type="button" className="px-3 py-1 rounded-md border" onClick={onCancel}>
+        <button type="button" className="px-3 py-1 rounded-md border" onClick={onCancel} disabled={loading}>
           {t("UserForm.cancel")}
         </button>
-        <button type="button" className="px-3 py-1 rounded-md bg-primary text-white" onClick={handleCrop}>
-          {t("UserForm.crop")}
+        <button type="button" className="px-3 py-1 rounded-md bg-primary text-white disabled:opacity-60" onClick={handleCrop} disabled={loading}>
+          {loading ? "Saving..." : actionLabel || t("UserForm.crop")}
         </button>
       </div>
     </div>
