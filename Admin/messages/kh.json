@@ -323,6 +323,100 @@
     }
   }
   ,
+  "PublicationForm": {
+    "categoryLabel": "ប្រភេទ",
+    "categoryPlaceholder": "ជ្រើស ឬ វាយប្រភេទ...",
+    "publishDateLabel": "កាលបរិច្ឆេទបោះពុម្ពផ្សាយ",
+    "publishDatePlaceholder": "DD-MM-YYYY",
+    "authorsLabel": "អ្នកនិពន្ធ",
+    "authorsPlaceholder": "ឈ្មោះអ្នកនិពន្ធ",
+    "languageButton": "ភាសា",
+    "defaultBadge": "លំនាំដើម",
+    "removeLanguage": "លុបភាសា",
+    "missingDefaultWarning": "មិនមានចំណងជើងភាសាខ្មែរ (លំនាំដើម) ទេ - ការបង្ហាញអាចមិនត្រឹមត្រូវ។",
+    "titleLabel": "ចំណងជើង",
+    "titlePlaceholder": "ចំណងជើងជាភាសា {language}",
+    "summaryLabel": "សេចក្តីសង្ខេប",
+    "summaryPlaceholder": "សេចក្តីសង្ខេបខ្លី...",
+    "contentLabel": "មាតិកា",
+    "contentPlaceholder": "មាតិកាលម្អិតនៃការបោះពុម្ពផ្សាយ...",
+    "optional": "ស្រេចចិត្ត",
+    "attachmentLabel": "ឯកសារភ្ជាប់ (PDF)",
+    "attachmentOptional": "ស្រេចចិត្ត",
+    "progress": "បានបញ្ចប់ {complete}/{total} ភាសា",
+    "close": "បិទ",
+    "save": "រក្សាទុកការបោះពុម្ពផ្សាយ",
+    "saveEdit": "រក្សាទុកការកែប្រែ",
+    "saving": "កំពុងរក្សាទុក...",
+    "attachmentUpload": "បង្ហោះ PDF",
+    "attachmentOrDrag": "ឬអូស",
+    "attachmentMaxSize": "អតិបរមា 10 MB",
+    "attachmentSizeError": "ឯកសារលើសកម្រិត 10 MB។ សូមជ្រើសឯកសារតូចជាងនេះ។",
+    "attachmentDropzoneAria": "តំបន់បង្ហោះឯកសារភ្ជាប់ការបោះពុម្ពផ្សាយ",
+    "attachmentRemove": "លុបឯកសារភ្ជាប់",
+    "currentAttachment": "ឯកសារភ្ជាប់បច្ចុប្បន្ន",
+    "errors": {
+      "categoryRequired": "តម្រូវឱ្យមានប្រភេទ",
+      "titleRequired": "តម្រូវឱ្យមានចំណងជើង",
+      "defaultTitleRequired": "តម្រូវឱ្យមានចំណងជើងភាសាខ្មែរ"
+    },
+    "toast": {
+      "success": "រក្សាទុកការបោះពុម្ពផ្សាយបានជោគជ័យ",
+      "error": "ការរក្សាទុកបរាជ័យ។ សូមសាកល្បងម្ដងទៀត។"
+    },
+    "categories": {
+      "nspc": "NSPC",
+      "others": "ផ្សេងៗ"
+    }
+  },
+  "PublicationsPage": {
+    "title": "ការបោះពុម្ពផ្សាយ",
+    "create": "បង្កើតការបោះពុម្ពផ្សាយថ្មី",
+    "edit": "កែសម្រួលការបោះពុម្ពផ្សាយ",
+    "searchPlaceholder": "ស្វែងរកការបោះពុម្ពផ្សាយ",
+    "searchAria": "ស្វែងរកការបោះពុម្ពផ្សាយ",
+    "filters": {
+      "all": "ទាំងអស់",
+      "aria": "តម្រងតាមប្រភេទ",
+      "customCategoryAria": "តម្រងតាមប្រភេទបន្ថែម",
+      "customCategoryPlaceholder": "វាយប្រភេទ...",
+      "categories": {
+        "nspc": "NSPC",
+        "others": "ផ្សេងៗ"
+      }
+    },
+    "card": {
+      "title": "ការបោះពុម្ពផ្សាយ",
+      "desc": "គ្រប់គ្រងការបោះពុម្ពផ្សាយ និងការបកប្រែ"
+    },
+    "viewAttachment": "មើលឯកសារភ្ជាប់"
+  },
+  "PublicationTable": {
+    "loading": "កំពុងផ្ទុក...",
+    "create": "បង្កើតការបោះពុម្ពផ្សាយថ្មី",
+    "noItemsForQuery": "រកមិនឃើញការបោះពុម្ពផ្សាយសម្រាប់ \"{query}\"",
+    "tryDifferent": "សាកល្បងពាក្យស្វែងរកផ្សេង ឬលុបតម្រង។",
+    "noItemsTitle": "រកមិនឃើញការបោះពុម្ពផ្សាយ",
+    "tryAdjust": "សាកល្បងកែសម្រួលការស្វែងរក ឬបង្កើតការបោះពុម្ពផ្សាយថ្មី។",
+    "headers": {
+      "title": "ចំណងជើង",
+      "category": "ប្រភេទ",
+      "date": "កាលបរិច្ឆេទ",
+      "attachment": "ឯកសារភ្ជាប់",
+      "actions": "សកម្មភាព"
+    },
+    "viewAttachment": "មើលឯកសារភ្ជាប់",
+    "noAttachment": "មិនមានឯកសារភ្ជាប់",
+    "confirmDeleteTitle": "បញ្ជាក់ការលុប",
+    "confirmDeleteText": "តើអ្នកប្រាកដថាចង់លុបការបោះពុម្ពផ្សាយនេះទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+    "cancel": "បោះបង់",
+    "delete": "លុប",
+    "tooltips": {
+      "edit": "កែប្រែ",
+      "delete": "លុប"
+    }
+  }
+  ,
   "UsersPage": {
     "title": "គ្រប់គ្រងអ្នកប្រើប្រាស់",
     "card": {

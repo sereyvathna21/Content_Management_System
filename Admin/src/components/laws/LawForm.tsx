@@ -97,7 +97,8 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
 
   const selectedCategoryLabel = useMemo(() => {
     const opt = CATEGORY_OPTIONS.find((o) => o.value === category);
-    return opt ? t(opt.labelKey) : "";
+    if (opt) return t(opt.labelKey);
+    return category.trim();
   }, [category, t]);
 
   const tabStatus = useCallback((code: LangCode): "complete" | "empty" => {
@@ -266,16 +267,30 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="relative">
             <label className="block text-sm font-medium text-gray-900 mb-1">{t("categoryLabel")} <span className="text-red-500">*</span></label>
-            <button
-              type="button"
-              onClick={() => setCatDropdownOpen(!catDropdownOpen)}
-              className={`dropdown-toggle w-full flex items-center justify-between px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${errors.category ? "border-red-500" : "border-gray-300 hover:border-gray-400"}`}
-            >
-              <span className={category ? "text-gray-900" : "text-gray-400"}>{selectedCategoryLabel || t("categoryPlaceholder")}</span>
-              <svg className={`w-4 h-4 transition-transform text-gray-400 ${catDropdownOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+            <div className="relative">
+              <input
+                type="text"
+                value={category}
+                placeholder={t("categoryPlaceholder")}
+                onFocus={() => setCatDropdownOpen(true)}
+                onClick={() => setCatDropdownOpen(true)}
+                onChange={(e) => {
+                  setCategory(e.target.value);
+                  setErrors((prev) => ({ ...prev, category: undefined }));
+                }}
+                className={`w-full pr-10 px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${errors.category ? "border-red-500" : "border-gray-300 hover:border-gray-400"}`}
+              />
+              <button
+                type="button"
+                aria-label={t("categoryLabel")}
+                onClick={() => setCatDropdownOpen(!catDropdownOpen)}
+                className="dropdown-toggle absolute inset-y-0 right-0 px-3 flex items-center justify-center text-gray-400 hover:text-gray-600"
+              >
+                <svg className={`w-4 h-4 transition-transform ${catDropdownOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
             <Dropdown isOpen={catDropdownOpen} onClose={() => setCatDropdownOpen(false)} className="w-full left-0 origin-top">
               {CATEGORY_OPTIONS.map((cat) => (
                 <DropdownItem

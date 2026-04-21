@@ -242,7 +242,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> List([FromQuery] string lang = "en", [FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? category = null, [FromQuery] string? q = null)
         {
             page = Math.Max(1, page);
@@ -299,7 +299,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> Get(Guid id, [FromQuery] string lang = "en")
         {
             var law = await _db.Laws.Include(l => l.Translations).FirstOrDefaultAsync(l => l.Id == id);
@@ -324,7 +324,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [RequestSizeLimit(50_000_000)]
         public async Task<IActionResult> Create([FromForm] LawCreateDto request)
         {
@@ -388,7 +388,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         [RequestSizeLimit(50_000_000)]
         public async Task<IActionResult> Update(Guid id, [FromForm] LawUpdateDto request)
         {
@@ -485,7 +485,7 @@ namespace Backend.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var law = await _db.Laws.Include(l => l.Translations).FirstOrDefaultAsync(l => l.Id == id);

@@ -14,6 +14,8 @@ namespace Backend.Data
         public DbSet<Models.Contact> Contacts { get; set; }
         public DbSet<Models.Law> Laws { get; set; }
         public DbSet<Models.LawTranslation> LawTranslations { get; set; }
+        public DbSet<Models.Publication> Publications { get; set; }
+        public DbSet<Models.PublicationTranslation> PublicationTranslations { get; set; }
         public DbSet<Models.Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -30,6 +32,22 @@ namespace Backend.Data
             {
                 b.HasKey(x => x.Id);
                 b.HasIndex(x => new { x.LawId, x.Language }).IsUnique();
+                b.Property(x => x.Language).HasMaxLength(10);
+            });
+
+            modelBuilder.Entity<Models.Publication>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasMany(x => x.Translations)
+                    .WithOne(t => t.Publication)
+                    .HasForeignKey(t => t.PublicationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Models.PublicationTranslation>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => new { x.PublicationId, x.Language }).IsUnique();
                 b.Property(x => x.Language).HasMaxLength(10);
             });
 

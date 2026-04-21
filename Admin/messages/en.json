@@ -322,6 +322,100 @@
     }
   }
   ,
+  "PublicationForm": {
+    "categoryLabel": "Category",
+    "categoryPlaceholder": "Select or type category...",
+    "publishDateLabel": "Publish Date",
+    "publishDatePlaceholder": "DD-MM-YYYY",
+    "authorsLabel": "Authors",
+    "authorsPlaceholder": "Author names",
+    "languageButton": "Language",
+    "defaultBadge": "Default",
+    "removeLanguage": "Remove language",
+    "missingDefaultWarning": "Khmer (default) title is missing - fallback may not work correctly.",
+    "titleLabel": "Title",
+    "titlePlaceholder": "Title in {language}",
+    "summaryLabel": "Summary",
+    "summaryPlaceholder": "Brief summary...",
+    "contentLabel": "Content",
+    "contentPlaceholder": "Detailed publication content...",
+    "optional": "optional",
+    "attachmentLabel": "Attachment (PDF)",
+    "attachmentOptional": "optional",
+    "progress": "{complete}/{total} languages completed",
+    "close": "Close",
+    "save": "Save Publication",
+    "saveEdit": "Save Changes",
+    "saving": "Saving...",
+    "attachmentUpload": "Upload PDF",
+    "attachmentOrDrag": "or drag",
+    "attachmentMaxSize": "Max 10 MB",
+    "attachmentSizeError": "File exceeds 10 MB limit. Please choose a smaller file.",
+    "attachmentDropzoneAria": "Publication attachment upload dropzone",
+    "attachmentRemove": "Remove attachment",
+    "currentAttachment": "Current attachment",
+    "errors": {
+      "categoryRequired": "Category is required",
+      "titleRequired": "Title is required",
+      "defaultTitleRequired": "Khmer title is required"
+    },
+    "toast": {
+      "success": "Publication saved successfully",
+      "error": "Save failed. Please try again."
+    },
+    "categories": {
+      "nspc": "NSPC",
+      "others": "Others"
+    }
+  },
+  "PublicationsPage": {
+    "title": "Publications",
+    "create": "New Publication",
+    "edit": "Edit Publication",
+    "searchPlaceholder": "Search publications",
+    "searchAria": "Search publications",
+    "filters": {
+      "all": "All",
+      "aria": "Filter by category",
+      "customCategoryAria": "Filter by custom category",
+      "customCategoryPlaceholder": "Type category...",
+      "categories": {
+        "nspc": "NSPC",
+        "others": "Others"
+      }
+    },
+    "card": {
+      "title": "Publications",
+      "desc": "Manage publications and translations"
+    },
+    "viewAttachment": "View Attachment"
+  },
+  "PublicationTable": {
+    "loading": "Loading...",
+    "create": "New Publication",
+    "noItemsForQuery": "No publications found for \"{query}\"",
+    "tryDifferent": "Try a different search term or clear filters.",
+    "noItemsTitle": "No publications found",
+    "tryAdjust": "Try adjusting your search or create a publication.",
+    "headers": {
+      "title": "Title",
+      "category": "Category",
+      "date": "Date",
+      "attachment": "Attachment",
+      "actions": "Actions"
+    },
+    "viewAttachment": "View Attachment",
+    "noAttachment": "No attachment",
+    "confirmDeleteTitle": "Confirm delete",
+    "confirmDeleteText": "Are you sure you want to delete this publication? This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "tooltips": {
+      "edit": "Edit",
+      "delete": "Delete"
+    }
+  }
+  ,
   "UsersPage": {
     "title": "User Management",
     "card": {
