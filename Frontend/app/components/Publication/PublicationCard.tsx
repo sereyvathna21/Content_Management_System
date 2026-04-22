@@ -24,32 +24,30 @@ export default function PublicationCard({
   onOpen?: (p: Pub) => void;
 }) {
   const t = useTranslations("PublicationPage");
+  const hasTranslation = (key: string) => {
+    return typeof (t as unknown as { has?: (k: string) => boolean }).has ===
+      "function"
+      ? (t as unknown as { has: (k: string) => boolean }).has(key)
+      : false;
+  };
   const thumb = usePdfThumbnail(pub.pdf, 2);
   const [objectUrl, setObjectUrl] = useState<string | null>(null);
   const { selected, toggle } = useSelection();
 
-  // Get translated title and description, fallback to hardcoded values
-  const translatedTitle = pub.id ? t(`content.items.${pub.id}.title`) : "";
-  const displayTitle =
-    translatedTitle && !translatedTitle.startsWith("content.items")
-      ? translatedTitle
-      : pub.title;
+  const titleKey = pub.id ? `content.items.${pub.id}.title` : "";
+  const descriptionKey = pub.id ? `content.items.${pub.id}.description` : "";
+  const categoryKey = pub.category ? `categoryLabels.${pub.category}` : "";
 
-  const translatedDescription = pub.id
-    ? t(`content.items.${pub.id}.description`)
-    : "";
+  const displayTitle =
+    titleKey && hasTranslation(titleKey) ? t(titleKey) : pub.title;
+
   const displayDescription =
-    translatedDescription && !translatedDescription.startsWith("content.items")
-      ? translatedDescription
+    descriptionKey && hasTranslation(descriptionKey)
+      ? t(descriptionKey)
       : pub.description;
 
-  const translatedCategory = pub.category
-    ? t(`categoryLabels.${pub.category}`)
-    : "";
   const displayCategory =
-    translatedCategory && !translatedCategory.startsWith("categoryLabels")
-      ? translatedCategory
-      : pub.category;
+    categoryKey && hasTranslation(categoryKey) ? t(categoryKey) : pub.category;
 
   useEffect(() => {
     if (pub.pdf && typeof pub.pdf !== "string" && pub.pdf instanceof File) {

@@ -66,7 +66,15 @@ namespace Backend.Controllers
 
             if (!string.IsNullOrWhiteSpace(category))
             {
-                query = query.Where(p => p.Category == category);
+                // Support special "Others" filter: group all non-NSPC categories under "Others"
+                if (string.Equals(category, "Others", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(p => p.Category != null && p.Category != string.Empty && p.Category.ToLower() != "nspc");
+                }
+                else
+                {
+                    query = query.Where(p => p.Category == category);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(q))
@@ -100,6 +108,7 @@ namespace Backend.Controllers
                 {
                     Id = t.Id,
                     Language = t.Language,
+                    Category = t.Category,
                     Title = t.Title,
                     Summary = t.Summary,
                     Content = t.Content,
@@ -130,6 +139,7 @@ namespace Backend.Controllers
                 {
                     Id = t.Id,
                     Language = t.Language,
+                    Category = t.Category,
                     Title = t.Title,
                     Summary = t.Summary,
                     Content = t.Content,
@@ -190,6 +200,7 @@ namespace Backend.Controllers
                 {
                     PublicationId = publication.Id,
                     Language = normalizedLanguage,
+                    Category = translation.Category?.Trim(),
                     Title = translation.Title.Trim(),
                     Summary = string.IsNullOrWhiteSpace(translation.Summary) ? null : translation.Summary.Trim(),
                     Content = string.IsNullOrWhiteSpace(translation.Content) ? null : translation.Content.Trim(),
@@ -240,6 +251,7 @@ namespace Backend.Controllers
                     existing.Title = translation.Title.Trim();
                     existing.Summary = string.IsNullOrWhiteSpace(translation.Summary) ? null : translation.Summary.Trim();
                     existing.Content = string.IsNullOrWhiteSpace(translation.Content) ? null : translation.Content.Trim();
+                    existing.Category = translation.Category?.Trim();
 
                     if (translation.AttachmentFile != null && translation.AttachmentFile.Length > 0)
                     {
@@ -283,6 +295,7 @@ namespace Backend.Controllers
                     {
                         PublicationId = publication.Id,
                         Language = normalizedLanguage,
+                        Category = translation.Category?.Trim(),
                         Title = translation.Title.Trim(),
                         Summary = string.IsNullOrWhiteSpace(translation.Summary) ? null : translation.Summary.Trim(),
                         Content = string.IsNullOrWhiteSpace(translation.Content) ? null : translation.Content.Trim(),

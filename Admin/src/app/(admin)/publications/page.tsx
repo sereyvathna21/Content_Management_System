@@ -90,7 +90,8 @@ export default function PublicationsPage() {
 							language: translation.language,
 							title: translation.title,
 							content: translation.content,
-							attachmentUrl: translation.attachmentUrl,
+								attachmentUrl: translation.attachmentUrl,
+								category: (translation as any).category,
 						})),
 					})),
 				);
@@ -123,30 +124,15 @@ export default function PublicationsPage() {
 
 	const currentLocale = locale || "en";
 
-	const categoryOptions = useMemo(
-		() => {
-			const baseOptions = [
-				{ value: "all", label: t("PublicationsPage.filters.all") },
-				{ value: "NSPC", label: t("PublicationsPage.filters.categories.nspc") },
-				{ value: "Others", label: t("PublicationsPage.filters.categories.others") },
-			];
-
-			const seen = new Set(baseOptions.map((option) => option.value.toLowerCase()));
-			const dynamicOptions = publications
-				.map((publication) => publication.category?.trim())
-				.filter((category): category is string => Boolean(category))
-				.filter((category) => {
-					const key = category.toLowerCase();
-					if (seen.has(key)) return false;
-					seen.add(key);
-					return true;
-				})
-				.map((category) => ({ value: category, label: category }));
-
-			return [...baseOptions, ...dynamicOptions];
-		},
-		[publications, t],
-	);
+	const categoryOptions = useMemo(() => {
+		// Only show fixed tabs: All, NSPC, Others.
+		// Any category other than 'NSPC' will be grouped under 'Others'.
+		return [
+			{ value: "all", label: t("PublicationsPage.filters.all") },
+			{ value: "NSPC", label: t("PublicationsPage.filters.categories.nspc") },
+			{ value: "Others", label: t("PublicationsPage.filters.categories.others") },
+		];
+	}, [t]);
 
 	function handleOpenCreate() {
 		setEditingPublication(null);
@@ -194,6 +180,7 @@ export default function PublicationsPage() {
 					language: translation.language,
 					title: translation.title,
 					pdfUrl: translation.attachmentUrl,
+					category: (translation as any).category,
 				})),
 				currentLocale,
 				`Publication #${selectedPublication.id}`,
@@ -282,13 +269,14 @@ export default function PublicationsPage() {
 						editingPublication
 							? {
 									id: editingPublication.id,
-									category: editingPublication.category,
+								category: editingPublication.category,
 									publicationDate: editingPublication.publicationDate,
 									translations: editingPublication.translations.map((translation) => ({
 										language: translation.language,
 										title: translation.title,
 										content: translation.content,
-										attachmentUrl: translation.attachmentUrl,
+									attachmentUrl: translation.attachmentUrl,
+									category: (translation as any).category,
 									})),
 								}
 							: null
@@ -303,7 +291,7 @@ export default function PublicationsPage() {
 					<div>
 						<h3 className="text-lg font-semibold mb-2">{selectedTranslation.title}</h3>
 						<p className="text-sm text-gray-600">
-							{selectedPublication.category || "-"}
+							{selectedTranslation?.category ?? selectedPublication.category ?? "-"}
 							{selectedPublication.publicationDate ? ` • ${new Date(selectedPublication.publicationDate).toLocaleDateString(currentLocale === "km" ? "km-KH" : "en-US")}` : ""}
 						</p>
 

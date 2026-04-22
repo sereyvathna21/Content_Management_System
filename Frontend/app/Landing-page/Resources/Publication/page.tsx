@@ -8,10 +8,8 @@ import PublicationCard from "@/app/components/Publication/PublicationCard";
 import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
 import HeroCover from "@/app/components/HeroCover";
-import { matchesSearch } from "@/app/lib/searchUtils";
 import ListSkeleton from "@/app/components/ListSkeleton";
-import enMessages from "@/messages/en.json";
-import khMessages from "@/messages/kh.json";
+import { api } from "@/app/lib/api";
 
 const PublicationDrawerWrapper = dynamic(
   () => import("@/app/components/Publication/PublicationDrawer"),
@@ -22,153 +20,161 @@ const PublicationDrawerWrapper = dynamic(
 
 export default function Publication() {
   const t = useTranslations("PublicationPage");
-  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
-  const [selectedPub, setSelectedPub] = useState<any | null>(null);
-  const publications = [
-    {
-      id: 1,
-      title: "Publication Title 1",
-      description:
-        "A brief description of the publication goes here. It provides an overview of the content and key findings.",
-      category: "NSPC",
-      date: "2023-05-01",
-      pdf: "/laws/test.pdf",
-    },
-    {
-      id: 2,
-      title: "Publication Title 2",
-      description: "Summary of the second publication.",
-      category: "Others",
-      date: "2023-05-01",
-      pdf: "/laws/sample.pdf",
-    },
-    {
-      id: 3,
-      title: "Publication Title 3",
-      description: "Summary of the third publication.",
-      category: "NSPC",
-      date: "2023-05-01",
-      pdf: "/laws/sample.pdf",
-    },
-    {
-      id: 4,
-      title: "Publication Title 4",
-      description: "Summary of the fourth publication.",
-      category: "NSPC",
-      date: "2023-05-01",
-      pdf: "/laws/sample.pdf",
-    },
-    {
-      id: 5,
-      title: "Publication Title 2",
-      description: "Summary of the second publication.",
-      category: "Others",
-      date: "2023-05-01",
-      pdf: "/laws/sample.pdf",
-    },
-    {
-      id: 6,
-      title: "Publication Title 3",
-      description: "Summary of the third publication.",
-      category: "NSPC",
-      date: "2023-05-01",
-      pdf: "/laws/sample.pdf",
-    },
-    {
-      id: 7,
-      title: "Publication Title 4",
-      description: "Summary of the fourth publication.",
-      category: "NSPC",
-      date: "2023-05-01",
-      pdf: "/laws/sample.pdf",
-    },
-  ];
-
-  const tabLabels = ["All", "NSPC", "Others"];
-  const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<string>("all");
-
-  const tabs = tabLabels.map((label) => ({
-    key: label.toLowerCase(),
-    label,
-  }));
-
   const locale = useLocale();
+  const apiLang = locale === "kh" ? "km" : locale || "en";
 
-  const filtered = useMemo(() => {
-    const q = query.trim();
+  type PublicationItem = {
+    id: string | number;
+    title: string;
+    description?: string;
+    category?: string;
+    date?: string;
+    pdf?: string | File;
+  };
 
-    const safeGet = (obj: any, path: string) => {
-      if (!obj) return undefined;
-      const parts = path.split(".");
-      let cur: any = obj;
-      for (const p of parts) {
-        if (cur && typeof cur === "object" && p in cur) cur = cur[p];
-        else return undefined;
-      }
-      return cur;
-    };
+  type PublicPublicationListItem = {
+    id: string;
+    category: string;
+    publicationDate?: string;
+    language: string;
+    title: string;
+    summary?: string;
+    content?: string;
+    attachmentUrl?: string;
+  };
 
-    const bundles: Record<string, any> = { en: enMessages, kh: khMessages };
-    const bundle = bundles[locale] || enMessages;
+  type PublicPublicationListResponse = {
+    total: number;
+    page: number;
+    pageSize: number;
+    categories?: string[];
+    items: PublicPublicationListItem[];
+  };
 
-    const getTitle = (p: any) => {
-      const msg = safeGet(
-        bundle,
-        `PublicationPage.content.items.${p.id}.title`,
-      );
-      return typeof msg === "string" && msg.length > 0 ? msg : p.title;
-    };
-    const getDescription = (p: any) => {
-      const msg = safeGet(
-        bundle,
-        `PublicationPage.content.items.${p.id}.description`,
-      );
-      return typeof msg === "string" && msg.length > 0 ? msg : p.description;
-    };
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+  const [selectedPub, setSelectedPub] = useState<PublicationItem | null>(null);
+  const [publications, setPublications] = useState<PublicationItem[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
-    return publications.filter((p) => {
-      if (activeTab !== "all" && p.category.toLowerCase() !== activeTab)
-        return false;
-      if (!q) return true;
+  const categoryLabels = useMemo(() => {
+    const inferred = categories.length
+      ? categories
+      : Array.from(
+          new Set(
+            publications
+              .map((p) => p.category)
+              .filter((category): category is string => Boolean(category)),
+          ),
+        );
+    return ["All", ...inferred];
+  }, [categories, publications]);
 
-      const localizedTitle = getTitle(p);
-      const rawTitle = p.title;
-      const localizedDesc = getDescription(p);
-      const rawDesc = p.description;
-
-      return (
-        matchesSearch(localizedTitle, q) ||
-        matchesSearch(rawTitle, q) ||
-        matchesSearch(localizedDesc, q) ||
-        matchesSearch(rawDesc, q)
-      );
-    });
-  }, [publications, query, activeTab, locale]);
-
+  const [query, setQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [mounted, setMounted] = useState(false);
   const pageSize = 9;
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  const formatDate = (value?: string) => {
+    if (!value) return "";
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    })
+      .format(parsed)
+      .replace(/\//g, "-");
+  };
+
+  const getCategoryLabel = (label: string) => {
+    if (label === "All") return t("categoryLabels.All");
+    if (label === "NSPC") return t("categoryLabels.NSPC");
+    if (label === "Others") return t("categoryLabels.Others");
+    return label;
+  };
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    // reset to first page when filters change
+    if (!mounted) return;
+
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const params = new URLSearchParams({
+          lang: apiLang,
+          page: String(currentPage),
+          pageSize: String(pageSize),
+        });
+
+        const q = query.trim();
+        if (q) params.set("q", q);
+        if (activeTab !== "All") params.set("category", activeTab);
+
+        const data = await api.get<PublicPublicationListResponse>(
+          `/api/public/publications?${params.toString()}`,
+          { public: true },
+        );
+
+        if (cancelled) return;
+
+        const items = data.items || [];
+
+        setPublications(
+          items.map((item) => ({
+            id: item.id,
+            title: item.title,
+            description: item.summary || item.content || "",
+            category: item.category,
+            date: formatDate(item.publicationDate),
+            pdf: item.attachmentUrl,
+          })),
+        );
+
+        setCategories(data.categories ?? []);
+        setTotalCount(Number(data.total ?? items.length));
+      } catch (err) {
+        if (cancelled) return;
+        console.error(err);
+        setError("Failed to load publications.");
+        setPublications([]);
+        setTotalCount(0);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, apiLang, currentPage, mounted, pageSize, query]);
+
+  useEffect(() => {
     setCurrentPage(1);
   }, [query, activeTab]);
 
-  // clamp currentPage if filtered length shrinks
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
 
-  const pageItems = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, currentPage]);
+  const tabs = categoryLabels.map((label) => ({
+    key: label,
+    label,
+  }));
 
   // Show loading skeleton while mounting
   if (!mounted) {
@@ -235,7 +241,7 @@ export default function Publication() {
                                   : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-primary hover:text-white hover:border-primary hover:shadow-md hover:scale-105"
                               }`}
                             >
-                              {t(`categoryLabels.${tab.label}`)}
+                              {getCategoryLabel(tab.label)}
                               {active && (
                                 <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs bg-white/20 rounded-full">
                                   ✓
@@ -255,7 +261,7 @@ export default function Publication() {
                           >
                             {tabs.map((tab) => (
                               <option key={tab.key} value={tab.key}>
-                                {t(`categoryLabels.${tab.label}`)}
+                                {getCategoryLabel(tab.label)}
                               </option>
                             ))}
                           </select>
@@ -329,30 +335,43 @@ export default function Publication() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {pageItems.map((p, i) => (
-                  <div
-                    key={p.id}
-                    className="animate-slide-right-fade opacity-0"
-                    style={{ animationDelay: `${0.9 + i * 0.06}s` }}
-                  >
-                    <PublicationCard
-                      pub={p}
-                      onOpen={(pub) => {
-                        const pdfUrl =
-                          typeof pub.pdf === "string" ? pub.pdf : undefined;
-                        if (window.innerWidth < 640 && pdfUrl) {
-                          window.open(pdfUrl, "_blank", "noopener,noreferrer");
-                        } else {
-                          setSelectedPub(pub);
-                          setDrawerOpen(true);
-                        }
-                      }}
-                    />
-                  </div>
-                ))}
-                {filtered.length === 0 && (
+                {loading ? (
+                  <ListSkeleton count={pageSize} />
+                ) : (
+                  publications.map((p, i) => (
+                    <div
+                      key={p.id}
+                      className="animate-slide-right-fade opacity-0"
+                      style={{ animationDelay: `${0.9 + i * 0.06}s` }}
+                    >
+                      <PublicationCard
+                        pub={p}
+                        onOpen={(pub) => {
+                          const pdfUrl =
+                            typeof pub.pdf === "string" ? pub.pdf : undefined;
+                          if (window.innerWidth < 640 && pdfUrl) {
+                            window.open(
+                              pdfUrl,
+                              "_blank",
+                              "noopener,noreferrer",
+                            );
+                          } else {
+                            setSelectedPub(pub);
+                            setDrawerOpen(true);
+                          }
+                        }}
+                      />
+                    </div>
+                  ))
+                )}
+                {!loading && !error && publications.length === 0 && (
                   <div className="col-span-full text-center text-gray-500">
                     {t("noResults")}
+                  </div>
+                )}
+                {error && (
+                  <div className="col-span-full text-center text-red-600">
+                    {error}
                   </div>
                 )}
               </div>

@@ -14,6 +14,7 @@ export type PublicationTranslation = {
   title: string;
   content?: string;
   attachmentUrl?: string;
+  category?: string;
 };
 
 export type Publication = {
@@ -167,6 +168,7 @@ export default React.memo(function PublicationTable({
                           language: tr.language,
                           title: tr.title,
                           pdfUrl: tr.attachmentUrl,
+                          category: tr.category,
                         })),
                         locale,
                         `Publication #${publication.id}`,
@@ -188,7 +190,7 @@ export default React.memo(function PublicationTable({
                           </TableCell>
 
                           <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                            {formatCategory(publication.category, t) ?? <span className="text-gray-300 italic">-</span>}
+                            {formatCategory(translation.category ?? publication.category, t) ?? <span className="text-gray-300 italic">-</span>}
                           </TableCell>
 
                           <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">

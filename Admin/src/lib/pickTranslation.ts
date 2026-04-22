@@ -4,6 +4,7 @@ export type LawTranslationLite = {
     title: string;
     description?: string;
     pdfUrl?: string;
+    category?: string;
 };
 
 export function pickTranslation(

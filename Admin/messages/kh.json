@@ -246,6 +246,7 @@
     "progress": "បានបញ្ចប់ {complete}/{total} ភាសា",
     "close": "បិទ",
     "save": "រក្សាទុកច្បាប់",
+    "saveEdit": "រក្សាទុកការកែប្រែ",
     "saving": "កំពុងរក្សាទុក…",
     "pdfUpload": "បង្ហោះ PDF",
     "pdfOrDrag": "ឬអូស",
@@ -256,7 +257,8 @@
     "currentPdf": "PDF បច្ចុប្បន្ន",
     "errors": {
       "categoryRequired": "តម្រូវឱ្យមានប្រភេទ",
-      "titleRequired": "តម្រូវឱ្យមានចំណងជើង"
+      "titleRequired": "តម្រូវឱ្យមានចំណងជើង",
+      "defaultTitleRequired": "តម្រូវឱ្យមានចំណងជើងភាសាខ្មែរ"
     },
     "toast": {
       "success": "រក្សាទុកច្បាប់បានជោគជ័យ",

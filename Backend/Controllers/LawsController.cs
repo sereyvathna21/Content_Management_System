@@ -203,6 +203,58 @@ namespace Backend.Controllers
             return true;
         }
 
+        private static bool TryValidateLawRequest(IEnumerable<LawTranslationCreateDto> translations, out string error)
+        {
+            error = string.Empty;
+            var list = translations?.ToList() ?? new List<LawTranslationCreateDto>();
+
+            if (list.Count == 0)
+            {
+                error = "At least one translation is required.";
+                return false;
+            }
+
+            var languages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var hasKhTitle = false;
+
+            foreach (var translation in list)
+            {
+                var lang = (translation.Language ?? string.Empty).Trim();
+                var title = (translation.Title ?? string.Empty).Trim();
+
+                if (string.IsNullOrWhiteSpace(lang))
+                {
+                    error = "Translation language is required.";
+                    return false;
+                }
+
+                if (!languages.Add(lang))
+                {
+                    error = "Duplicate translation language is not allowed.";
+                    return false;
+                }
+
+                if (string.IsNullOrWhiteSpace(title))
+                {
+                    error = $"Title is required for language '{lang}'.";
+                    return false;
+                }
+
+                if (string.Equals(lang, "km", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(title))
+                {
+                    hasKhTitle = true;
+                }
+            }
+
+            if (!hasKhTitle)
+            {
+                error = "Khmer (km) title is required.";
+                return false;
+            }
+
+            return true;
+        }
+
         private void TryDeletePdfAtUrl(string? pdfUrl)
         {
             if (string.IsNullOrWhiteSpace(pdfUrl))
@@ -284,6 +336,7 @@ namespace Backend.Controllers
                     {
                         Id = t.Id,
                         Language = t.Language,
+                        Category = t.Category,
                         Title = t.Title,
                         Description = t.Description,
                         PdfUrl = BuildPdfUrl(t.PdfUrl)
@@ -314,6 +367,7 @@ namespace Backend.Controllers
                 {
                     Id = t.Id,
                     Language = t.Language,
+                    Category = t.Category,
                     Title = t.Title,
                     Description = t.Description,
                     PdfUrl = BuildPdfUrl(t.PdfUrl)
@@ -329,10 +383,22 @@ namespace Backend.Controllers
         public async Task<IActionResult> Create([FromForm] LawCreateDto request)
         {
             if (request == null) return BadRequest();
+            if (!TryValidateLawRequest(request.Translations, out var validationError))
+            {
+                return BadRequest(new { message = validationError });
+            }
+
+            var normalizedCategory = (request.Category ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(normalizedCategory))
+            {
+                normalizedCategory = request.Translations
+                    .Select(t => t.Category?.Trim())
+                    .FirstOrDefault(c => !string.IsNullOrWhiteSpace(c)) ?? string.Empty;
+            }
 
             var law = new Law
             {
-                Category = request.Category,
+                Category = normalizedCategory,
                 Date = request.Date
             };
 
@@ -344,6 +410,7 @@ namespace Backend.Controllers
 
             foreach (var t in request.Translations)
             {
+                var normalizedLanguage = (t.Language ?? string.Empty).Trim();
                 string? pdfUrl = null;
                 if (t.PdfFile != null && t.PdfFile.Length > 0)
                 {
@@ -352,9 +419,9 @@ namespace Backend.Controllers
                         return BadRequest(new { message = errorMessage });
                     }
 
-                    var fileName = GenerateSafePdfFileName(t.Language);
+                    var fileName = GenerateSafePdfFileName(normalizedLanguage);
                     var filePath = Path.Combine(uploadsRoot, fileName);
-                    using (var stream = System.IO.File.Create(filePath))
+                    await using (var stream = System.IO.File.Create(filePath))
                     {
                         await t.PdfFile.CopyToAsync(stream);
                     }
@@ -364,9 +431,10 @@ namespace Backend.Controllers
                 var trans = new LawTranslation
                 {
                     LawId = law.Id,
-                    Language = t.Language,
-                    Title = t.Title,
-                    Description = t.Description,
+                    Language = normalizedLanguage,
+                    Category = string.IsNullOrWhiteSpace(t.Category) ? null : t.Category.Trim(),
+                    Title = t.Title.Trim(),
+                    Description = string.IsNullOrWhiteSpace(t.Description) ? null : t.Description.Trim(),
                     PdfUrl = pdfUrl
                 };
                 _db.LawTranslations.Add(trans);
@@ -393,11 +461,23 @@ namespace Backend.Controllers
         public async Task<IActionResult> Update(Guid id, [FromForm] LawUpdateDto request)
         {
             if (request == null) return BadRequest();
+            if (!TryValidateLawRequest(request.Translations, out var validationError))
+            {
+                return BadRequest(new { message = validationError });
+            }
 
             var law = await _db.Laws.Include(l => l.Translations).FirstOrDefaultAsync(l => l.Id == id);
             if (law == null) return NotFound();
 
-            law.Category = request.Category;
+            var normalizedCategory = (request.Category ?? string.Empty).Trim();
+            if (string.IsNullOrWhiteSpace(normalizedCategory))
+            {
+                normalizedCategory = request.Translations
+                    .Select(t => t.Category?.Trim())
+                    .FirstOrDefault(c => !string.IsNullOrWhiteSpace(c)) ?? string.Empty;
+            }
+
+            law.Category = normalizedCategory;
             law.Date = request.Date;
 
             var uploadsRoot = GetUploadsRoot(law.Id);
@@ -409,14 +489,13 @@ namespace Backend.Controllers
             foreach (var t in request.Translations)
             {
                 var lang = (t.Language ?? string.Empty).Trim();
-                if (string.IsNullOrWhiteSpace(lang)) continue;
-
                 requestedLanguages.Add(lang);
 
                 if (byLanguage.TryGetValue(lang, out var existing))
                 {
-                    existing.Title = t.Title;
-                    existing.Description = t.Description;
+                    existing.Title = t.Title.Trim();
+                    existing.Category = string.IsNullOrWhiteSpace(t.Category) ? null : t.Category.Trim();
+                    existing.Description = string.IsNullOrWhiteSpace(t.Description) ? null : t.Description.Trim();
 
                     if (t.PdfFile != null && t.PdfFile.Length > 0)
                     {
@@ -427,7 +506,7 @@ namespace Backend.Controllers
 
                         var fileName = GenerateSafePdfFileName(lang);
                         var filePath = Path.Combine(uploadsRoot, fileName);
-                        using (var stream = System.IO.File.Create(filePath))
+                        await using (var stream = System.IO.File.Create(filePath))
                         {
                             await t.PdfFile.CopyToAsync(stream);
                         }
@@ -447,7 +526,7 @@ namespace Backend.Controllers
 
                         var fileName = GenerateSafePdfFileName(lang);
                         var filePath = Path.Combine(uploadsRoot, fileName);
-                        using (var stream = System.IO.File.Create(filePath))
+                        await using (var stream = System.IO.File.Create(filePath))
                         {
                             await t.PdfFile.CopyToAsync(stream);
                         }
@@ -458,8 +537,9 @@ namespace Backend.Controllers
                     {
                         LawId = law.Id,
                         Language = lang,
-                        Title = t.Title,
-                        Description = t.Description,
+                        Category = string.IsNullOrWhiteSpace(t.Category) ? null : t.Category.Trim(),
+                        Title = t.Title.Trim(),
+                        Description = string.IsNullOrWhiteSpace(t.Description) ? null : t.Description.Trim(),
                         PdfUrl = pdfUrl
                     };
                     _db.LawTranslations.Add(trans);

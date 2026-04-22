@@ -11,6 +11,7 @@
   "dependencies": {
     "@radix-ui/themes": "^3.2.1",
     "@stitches/react": "^1.2.8",
+    "axios": "^1.15.1",
     "jspdf": "^4.1.0",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.563.0",

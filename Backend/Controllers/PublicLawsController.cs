@@ -31,10 +31,12 @@ namespace Backend.Controllers
             [FromQuery] string? category = null,
             [FromQuery] string? q = null)
         {
+            var requestedLang = NormalizeLang(lang);
             page = Math.Max(1, page);
             pageSize = Math.Max(1, pageSize);
 
-            var baseQuery = _db.Laws.AsQueryable();
+            var baseQuery = _db.Laws
+                .Where(l => l.Translations.Any(t => t.Language.ToLower() == requestedLang));
 
             var categories = await baseQuery
                 .Where(l => l.Category != null && l.Category != string.Empty)
@@ -71,13 +73,13 @@ namespace Backend.Controllers
 
             var items = laws.Select(law =>
             {
-                var translation = PickTranslation(law.Translations, lang);
+                var translation = PickTranslation(law.Translations, requestedLang);
                 return new PublicLawListItemDto
                 {
                     Id = law.Id,
-                    Category = law.Category ?? string.Empty,
+                    Category = translation?.Category ?? law.Category ?? string.Empty,
                     Date = law.Date,
-                    Language = translation?.Language ?? lang,
+                    Language = translation?.Language ?? requestedLang,
                     Title = translation?.Title ?? string.Empty,
                     Description = translation?.Description,
                     PdfUrl = BuildPdfUrl(translation?.PdfUrl)
@@ -91,19 +93,23 @@ namespace Backend.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Get(Guid id, [FromQuery] string lang = "en")
         {
+            var requestedLang = NormalizeLang(lang);
             var law = await _db.Laws.Include(l => l.Translations).FirstOrDefaultAsync(l => l.Id == id);
             if (law == null) return NotFound();
 
-            var translation = PickTranslation(law.Translations, lang);
+            var translation = PickTranslation(law.Translations, requestedLang);
+            if (translation == null) return NotFound();
+            var selectedTranslation = translation;
+
             var dto = new PublicLawListItemDto
             {
                 Id = law.Id,
-                Category = law.Category ?? string.Empty,
+                Category = selectedTranslation.Category ?? law.Category ?? string.Empty,
                 Date = law.Date,
-                Language = translation?.Language ?? lang,
-                Title = translation?.Title ?? string.Empty,
-                Description = translation?.Description,
-                PdfUrl = BuildPdfUrl(translation?.PdfUrl)
+                Language = selectedTranslation.Language,
+                Title = selectedTranslation.Title ?? string.Empty,
+                Description = selectedTranslation.Description,
+                PdfUrl = BuildPdfUrl(selectedTranslation.PdfUrl)
             };
 
             return Ok(dto);
@@ -115,14 +121,15 @@ namespace Backend.Controllers
             var list = translations.ToList();
             if (list.Count == 0) return null;
 
-            if (!string.IsNullOrWhiteSpace(lang))
-            {
-                var match = list.FirstOrDefault(t => string.Equals(t.Language, lang, StringComparison.OrdinalIgnoreCase));
-                if (match != null) return match;
-            }
+            if (string.IsNullOrWhiteSpace(lang)) return null;
+            return list.FirstOrDefault(t => string.Equals(t.Language, lang, StringComparison.OrdinalIgnoreCase));
+        }
 
-            var khMatch = list.FirstOrDefault(t => string.Equals(t.Language, "km", StringComparison.OrdinalIgnoreCase));
-            return khMatch ?? list[0];
+        private static string NormalizeLang(string? lang)
+        {
+            return string.IsNullOrWhiteSpace(lang)
+                ? "en"
+                : lang.Trim().ToLowerInvariant();
         }
 
         private string? BuildPdfUrl(string? pdfUrl)

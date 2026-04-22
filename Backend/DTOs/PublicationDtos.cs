@@ -26,6 +26,7 @@ namespace Backend.DTOs
         public string Title { get; set; } = string.Empty;
         public string? Summary { get; set; }
         public string? Content { get; set; }
+        public string? Category { get; set; }
         public IFormFile? AttachmentFile { get; set; }
     }
 
@@ -43,6 +44,7 @@ namespace Backend.DTOs
         public Guid Id { get; set; }
         public string Language { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
+        public string? Category { get; set; }
         public string? Summary { get; set; }
         public string? Content { get; set; }
         public string? AttachmentUrl { get; set; }

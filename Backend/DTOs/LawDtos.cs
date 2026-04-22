@@ -22,6 +22,7 @@ namespace Backend.DTOs
     {
         public string Language { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
+        public string? Category { get; set; }
         public string? Description { get; set; }
         // When using multipart/form-data the field name should match this property for each translation
         public IFormFile? PdfFile { get; set; }
@@ -40,6 +41,7 @@ namespace Backend.DTOs
         public Guid Id { get; set; }
         public string Language { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
+        public string? Category { get; set; }
         public string? Description { get; set; }
         public string? PdfUrl { get; set; }
     }

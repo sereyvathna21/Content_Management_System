@@ -17,11 +17,12 @@ type Translation = {
   content: string;
   attachmentFile: File | null;
   existingAttachmentUrl?: string;
+  categoryValue?: string;
+  categoryLabel?: string;
 };
 
 type Errors = {
-  category?: string;
-  translations?: Record<LangCode, { title?: string }>;
+  translations?: Record<LangCode, { title?: string; category?: string }>;
 };
 
 type InitialPublication = {
@@ -33,6 +34,7 @@ type InitialPublication = {
     title: string;
     content?: string;
     attachmentUrl?: string;
+    category?: string;
   }>;
 };
 
@@ -67,6 +69,8 @@ function makeEmptyTranslation(language: string): Translation {
     title: "",
     content: "",
     attachmentFile: null,
+    categoryValue: "",
+    categoryLabel: "",
   };
 }
 
@@ -128,20 +132,31 @@ export default function PublicationForm({
   const isEditing = Boolean(initialPublication?.id);
 
   const buildInitialTranslations = useCallback((publication?: InitialPublication | null) => {
-    if (!publication || !publication.translations?.length) {
-      return DEFAULT_LANGS.map(makeEmptyTranslation);
+    // Ensure the form only contains the default languages (Khmer + English).
+    // For each default language, prefer the provided translation if available; otherwise create an empty translation.
+    const map = new Map<string, { language: string; title?: string; content?: string; attachmentUrl?: string; category?: string }>();
+    if (publication?.translations?.length) {
+      publication.translations.forEach((tr) => {
+        if (tr?.language) map.set(tr.language.toLowerCase(), tr as any);
+      });
     }
 
-    return publication.translations.map((translation) => ({
-      language: translation.language,
-      title: translation.title ?? "",
-      content: translation.content ?? "",
-      attachmentFile: null,
-      existingAttachmentUrl: translation.attachmentUrl,
-    }));
+    return DEFAULT_LANGS.map((lang) => {
+      const existing = map.get(lang.toLowerCase());
+      return {
+        language: lang,
+        title: existing?.title ?? "",
+        content: existing?.content ?? "",
+        attachmentFile: null,
+        existingAttachmentUrl: existing?.attachmentUrl,
+        // prefer a per-translation category if provided, otherwise fall back to publication-level category
+        categoryValue: existing?.category ?? publication?.category ?? "",
+        categoryLabel: existing?.category ?? publication?.category ?? "",
+      } as Translation;
+    });
   }, []);
 
-  const [category, setCategory] = useState(initialPublication?.category ?? "");
+  // category is now per-translation; top-level category will be derived from default translation on submit
   const [publicationDate, setPublicationDate] = useState(initialPublication?.publicationDate?.split("T")[0] ?? "");
   const [activeTab, setActiveTab] = useState<LangCode>(DEFAULT_LANGUAGE);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
@@ -152,7 +167,6 @@ export default function PublicationForm({
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
-    setCategory(initialPublication?.category ?? "");
     setPublicationDate(initialPublication?.publicationDate?.split("T")[0] ?? "");
     setTranslations(buildInitialTranslations(initialPublication));
     setActiveTab(initialPublication?.translations?.find((tr) => tr.language === DEFAULT_LANGUAGE)?.language ?? DEFAULT_LANGUAGE);
@@ -185,12 +199,16 @@ export default function PublicationForm({
   const updateTranslation = useCallback((code: LangCode, patch: Partial<Translation>) => {
     setTranslations((prev) => prev.map((translation) => (translation.language === code ? { ...translation, ...patch } : translation)));
 
-    if (Object.prototype.hasOwnProperty.call(patch, "title")) {
+    if (
+      Object.prototype.hasOwnProperty.call(patch, "title") ||
+      Object.prototype.hasOwnProperty.call(patch, "categoryValue") ||
+      Object.prototype.hasOwnProperty.call(patch, "categoryLabel")
+    ) {
       setErrors((prev) => {
-        const translationErrors = { ...(prev.translations ?? {}) };
+        const translationErrors = { ...(prev.translations ?? {}) } as Record<LangCode, { title?: string; category?: string }>;
         if (translationErrors[code]) {
-          const { title: _ignored, ...rest } = translationErrors[code];
-          if (Object.keys(rest).length) translationErrors[code] = rest;
+          const { title: _ignoredTitle, category: _ignoredCategory, ...rest } = translationErrors[code];
+          if (Object.keys(rest).length) translationErrors[code] = rest as any;
           else delete translationErrors[code];
         }
 
@@ -203,13 +221,13 @@ export default function PublicationForm({
   }, []);
 
   const addLanguage = useCallback((code: LangCode) => {
-    setTranslations((prev) => [...prev, makeEmptyTranslation(code)]);
-    setActiveTab(code);
+    // Adding extra languages is not allowed; form is restricted to Khmer + English only.
     setLangDropdownOpen(false);
   }, []);
 
   const removeLanguage = useCallback((code: LangCode) => {
-    if (code === DEFAULT_LANGUAGE) return;
+    // Prevent removing Khmer (default) and English from the form.
+    if (code === DEFAULT_LANGUAGE || code === "en") return;
     setTranslations((prev) => prev.filter((translation) => translation.language !== code));
     setActiveTab(DEFAULT_LANGUAGE);
   }, []);
@@ -223,23 +241,27 @@ export default function PublicationForm({
   function validate() {
     const nextErrors: Errors = {};
 
-    if (!category) {
-      nextErrors.category = t("errors.categoryRequired");
-    }
-
-    const translationErrors: Record<LangCode, { title?: string }> = {};
+    const translationErrors: Record<LangCode, { title?: string; category?: string }> = {};
     let firstInvalidTab: LangCode | null = null;
     let hasKmTitle = false;
 
     translations.forEach((translation) => {
+      const errs: { title?: string; category?: string } = {};
       if (!translation.title.trim()) {
-        translationErrors[translation.language] = { title: t("errors.titleRequired") };
+        errs.title = t("errors.titleRequired");
+        if (!firstInvalidTab) firstInvalidTab = translation.language;
+      }
+
+      if ((!(translation.categoryLabel && translation.categoryLabel.trim())) && (!(translation.categoryValue && translation.categoryValue.trim()))) {
+        errs.category = t("errors.categoryRequired");
         if (!firstInvalidTab) firstInvalidTab = translation.language;
       }
 
       if (translation.language === DEFAULT_LANGUAGE && translation.title.trim()) {
         hasKmTitle = true;
       }
+
+      if (Object.keys(errs).length) translationErrors[translation.language] = errs;
     });
 
     if (!hasKmTitle) {
@@ -261,7 +283,6 @@ export default function PublicationForm({
   }
 
   function resetForm() {
-    setCategory(initialPublication?.category ?? "");
     setPublicationDate(initialPublication?.publicationDate?.split("T")[0] ?? "");
     setTranslations(buildInitialTranslations(initialPublication));
     setActiveTab(DEFAULT_LANGUAGE);
@@ -285,13 +306,25 @@ export default function PublicationForm({
 
     try {
       const form = new FormData();
-      form.append("Category", category);
+      // derive top-level category from default language translation (keeps backend compatible)
+      const defaultTranslation = getTranslation(DEFAULT_LANGUAGE);
+      const defaultCategory =
+        (defaultTranslation.categoryValue && defaultTranslation.categoryValue.trim()) ||
+        (defaultTranslation.categoryLabel && defaultTranslation.categoryLabel.trim()) ||
+        (translations[0]?.categoryValue && translations[0]?.categoryValue.trim()) ||
+        (translations[0]?.categoryLabel && translations[0]?.categoryLabel.trim()) ||
+        "";
+      form.append("Category", defaultCategory);
       if (publicationDate) form.append("PublicationDate", publicationDate);
 
       translations.forEach((translation, index) => {
         form.append(`Translations[${index}].Language`, translation.language);
         form.append(`Translations[${index}].Title`, translation.title);
         if (translation.content.trim()) form.append(`Translations[${index}].Content`, translation.content.trim());
+        const catVal = (translation.categoryValue && translation.categoryValue.trim()) || (translation.categoryLabel && translation.categoryLabel.trim());
+        if (catVal) {
+          form.append(`Translations[${index}].Category`, catVal);
+        }
         if (translation.attachmentFile) {
           form.append(`Translations[${index}].AttachmentFile`, translation.attachmentFile, `${translation.language}.pdf`);
         }
@@ -343,16 +376,15 @@ export default function PublicationForm({
             <div className="relative">
               <input
                 type="text"
-                value={category}
+                value={activeTranslation.categoryLabel ?? activeTranslation.categoryValue ?? ""}
                 placeholder={t("categoryPlaceholder")}
                 onFocus={() => setCatDropdownOpen(true)}
                 onClick={() => setCatDropdownOpen(true)}
                 onChange={(e) => {
-                  setCategory(e.target.value);
-                  setErrors((prev) => ({ ...prev, category: undefined }));
+                  updateTranslation(activeTab, { categoryLabel: e.target.value, categoryValue: "" });
                 }}
                 className={`w-full pr-10 px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
-                  errors.category ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+                  errors.translations?.[activeTab]?.category ? "border-red-500" : "border-gray-300 hover:border-gray-400"
                 }`}
               />
               <button
@@ -371,16 +403,17 @@ export default function PublicationForm({
                 <DropdownItem
                   key={option.value}
                   onClick={() => {
-                    setCategory(option.value);
+                    updateTranslation(activeTab, { categoryValue: option.value, categoryLabel: t(option.labelKey) });
                     setCatDropdownOpen(false);
-                    setErrors((prev) => ({ ...prev, category: undefined }));
                   }}
                 >
                   {t(option.labelKey)}
                 </DropdownItem>
               ))}
             </Dropdown>
-            {errors.category && <p className="text-xs text-red-500 mt-1">{errors.category}</p>}
+            {errors.translations?.[activeTab]?.category && (
+              <p className="text-xs text-red-500 mt-1">{errors.translations[activeTab].category}</p>
+            )}
           </div>
 
           <div>
@@ -417,19 +450,6 @@ export default function PublicationForm({
                       </span>
                     )}
                   </button>
-
-                  {translation.language !== DEFAULT_LANGUAGE && (
-                    <button
-                      type="button"
-                      onClick={() => removeLanguage(translation.language)}
-                      className="ml-1.5 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 text-gray-400 hover:text-red-500 hover:bg-red-50"
-                      title={t("removeLanguage")}
-                    >
-                      <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
               );
             })}

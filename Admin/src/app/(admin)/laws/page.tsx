@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import ComponentCard from "@/components/common/ComponentCard";
 import { Modal } from "@/components/ui/modal";
 import LawForm from "@/components/laws/LawForm";
-import LawEditForm from "@/components/laws/LawEditForm";
 import LawTable, { Law as LawType } from "@/components/laws/LawTable";
 import LawFilters from "@/components/laws/LawFilters";
 import { pickTranslation } from "@/lib/pickTranslation";
@@ -17,6 +16,7 @@ type LawTranslation = {
   id: string;
   language: string;
   title: string;
+  category?: string;
   description?: string;
   pdfUrl?: string;
 };
@@ -27,6 +27,10 @@ type Law = {
   date?: string;
   translations: LawTranslation[];
 };
+
+function getBackendUrl() {
+  return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+}
 
 function resolvePdfUrl(pdfUrl?: string) {
   if (!pdfUrl) return null;
@@ -62,18 +66,31 @@ export default function LawsPage() {
       });
       if (query.trim()) params.set("q", query.trim());
       if (categoryFilter !== "all") params.set("category", categoryFilter);
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-      const res = await fetch(`${BACKEND_URL}/api/laws?${params.toString()}`, {
+      const res = await fetch(`${getBackendUrl()}/api/laws?${params.toString()}`, {
         headers: {
           "Authorization": `Bearer ${session.accessToken}`
         },
         signal
       });
       if (!res.ok) return;
-      const data = await res.json();
+      const data = (await res.json()) as { total?: number; items?: Law[] };
       if (signal?.aborted) return;
-      const items = data.items || [];
-      setLaws(items.map((it: any) => ({ id: it.id, category: it.category, date: it.date, translations: it.translations || [] })));
+      const items = data.items ?? [];
+      setLaws(
+        items.map((item) => ({
+          id: item.id,
+          category: item.category,
+          date: item.date,
+          translations: (item.translations ?? []).map((translation) => ({
+            id: translation.id,
+            language: translation.language,
+            title: translation.title,
+            category: translation.category,
+            description: translation.description,
+            pdfUrl: translation.pdfUrl,
+          })),
+        })),
+      );
       setTotalCount(Number(data.total ?? items.length));
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
@@ -114,8 +131,7 @@ export default function LawsPage() {
     setDeletingId(id);
     try
     {
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-      const res = await fetch(`${BACKEND_URL}/api/laws/${id}`, {
+      const res = await fetch(`${getBackendUrl()}/api/laws/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${session.accessToken}` }
       });
@@ -134,16 +150,27 @@ export default function LawsPage() {
 
   const currentLocale = locale || "en";
   const selectedTranslation = selectedLaw
-    ? pickTranslation(selectedLaw.translations, currentLocale, `Law #${selectedLaw.id}`)
+    ? pickTranslation(
+        selectedLaw.translations.map((translation) => ({
+          id: translation.id,
+          language: translation.language,
+          title: translation.title,
+          category: translation.category,
+          description: translation.description,
+          pdfUrl: translation.pdfUrl,
+        })),
+        currentLocale,
+        `Law #${selectedLaw.id}`,
+      )
     : null;
 
-  const categoryOptions = [
+  const categoryOptions = useMemo(() => [
     { value: "all", label: t("LawsPage.filters.all") },
     { value: "Royal Degree", label: t("LawsPage.filters.categories.royalDegree") },
     { value: "Sub-Degree", label: t("LawsPage.filters.categories.subDegree") },
     { value: "Prakas", label: t("LawsPage.filters.categories.prakas") },
     { value: "Decision and Guideline", label: t("LawsPage.filters.categories.decisionAndGuideline") },
-  ];
+  ], [t]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
@@ -193,7 +220,7 @@ export default function LawsPage() {
           </div>
           
           {loading ? (
-            <div>Loading...</div>
+            <div>{t("LawTable.loading")}</div>
           ) : (
             <div className="grid grid-cols-1 gap-3">
               <LawTable
@@ -220,37 +247,56 @@ export default function LawsPage() {
         </div>
       </ComponentCard>
 
-      <Modal isOpen={createOpen} onClose={handleCloseCreate} className="max-w-3xl p-4">
+      <Modal isOpen={createOpen} onClose={handleCloseCreate} className="max-w-4xl p-4">
         <h3 className="text-lg font-semibold mb-3">
           {editingLaw ? (t("LawsPage.edit") || "Edit Law") : (t("LawsPage.create") || "Create Law")}
         </h3>
-        {editingLaw ? (
-          <LawEditForm initialLaw={editingLaw} onSaved={handleCreated} onClose={handleCloseCreate} />
-        ) : (
-          <LawForm onSaved={handleCreated} onClose={handleCloseCreate} />
-        )}
+        <LawForm
+          initialLaw={
+            editingLaw
+              ? {
+                  id: editingLaw.id,
+                  category: editingLaw.category,
+                  date: editingLaw.date,
+                  translations: editingLaw.translations.map((translation) => ({
+                    language: translation.language,
+                    title: translation.title,
+                    category: translation.category,
+                    description: translation.description,
+                    pdfUrl: translation.pdfUrl,
+                  })),
+                }
+              : null
+          }
+          onSaved={handleCreated}
+          onClose={handleCloseCreate}
+        />
       </Modal>
 
-      {/*For view both KH-ENG PDF*/}
-      
-      {/* <Modal isOpen={viewOpen} onClose={() => setViewOpen(false)} className="max-w-md p-6">
+      <Modal isOpen={viewOpen} onClose={() => setViewOpen(false)} className="max-w-2xl p-6">
         {selectedLaw && selectedTranslation && (
           <div>
             <h3 className="text-lg font-semibold mb-2">{selectedTranslation.title}</h3>
-            <p className="text-sm text-gray-600">{selectedLaw.category} • {selectedLaw.date}</p>
+            <p className="text-sm text-gray-600">
+              {selectedTranslation?.category ?? selectedLaw.category ?? "-"}
+              {selectedLaw.date ? ` • ${new Date(selectedLaw.date).toLocaleDateString(currentLocale === "km" ? "km-KH" : "en-US")}` : ""}
+            </p>
+
             <div className="mt-3 space-y-2">
-              {selectedLaw.translations.map((tr) => {
-                const pdfHref = resolvePdfUrl(tr.pdfUrl);
+              {selectedLaw.translations.map((translation) => {
+                const pdfHref = resolvePdfUrl(translation.pdfUrl);
                 return (
-                  <div key={tr.language} className="p-2 border rounded">
-                    <div className="font-medium">{tr.language.toUpperCase()} — {tr.title}</div>
-                    {tr.description && <div className="text-sm text-gray-600">{tr.description}</div>}
+                  <div key={translation.language} className="p-3 border rounded-lg">
+                    <div className="font-medium">
+                      {translation.language.toUpperCase()} - {translation.title}
+                    </div>
+                    {translation.description && <div className="text-sm text-gray-600 mt-1 whitespace-pre-line">{translation.description}</div>}
                     {pdfHref ? (
-                      <a className="text-sm text-red-600" href={pdfHref} target="_blank" rel="noreferrer">
+                      <a className="inline-flex mt-2 text-sm text-blue-600 hover:underline" href={pdfHref} target="_blank" rel="noreferrer">
                         {t("LawsPage.viewPdf") || "View PDF"}
                       </a>
                     ) : (
-                      <div className="text-sm text-gray-400">No PDF</div>
+                      <div className="text-sm text-gray-400 mt-2">{t("LawTable.noPdf")}</div>
                     )}
                   </div>
                 );
@@ -258,7 +304,7 @@ export default function LawsPage() {
             </div>
           </div>
         )}
-      </Modal> */}
+      </Modal>
     </div>
   );
 }

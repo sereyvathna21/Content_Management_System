@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useCallback, useMemo,useEffect} from "react";
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import DatePicker from "@/components/form/date-picker";
@@ -15,18 +16,33 @@ type Translation = {
   title: string;
   description: string;
   pdfFile: File | null;
+  existingPdfUrl?: string;
+  categoryValue?: string;
+  categoryLabel?: string;
 };
 
 type Errors = {
-  category?: string;
-  translations?: Record<LangCode, { title?: string }>;
+  translations?: Record<LangCode, { title?: string; category?: string }>;
 };
 
+type InitialLaw = {
+  id: string;
+  category?: string;
+  date?: string;
+  translations: Array<{
+    language: string;
+    title: string;
+    category?: string;
+    description?: string;
+    pdfUrl?: string;
+  }>;
+};
 
 interface LawFormProps {
   onSaved?: () => void;
   onClose?: () => void;
   resetOnClose?: boolean;
+  initialLaw?: InitialLaw | null;
 }
 
 const SUPPORTED_LANGUAGES = [
@@ -36,6 +52,7 @@ const SUPPORTED_LANGUAGES = [
 
 const DEFAULT_LANGUAGE = "km";
 const DEFAULT_LANGS = ["km", "en"];
+const DESCRIPTION_MAX_LENGTH = 500;
 
 const CATEGORY_OPTIONS = [
   { value: "Royal Degree", labelKey: "categories.royalDegree" },
@@ -45,173 +62,233 @@ const CATEGORY_OPTIONS = [
 ];
 
 function langLabel(code: string) {
-  return SUPPORTED_LANGUAGES.find((l) => l.code === code)?.label ?? code.toUpperCase();
+  return SUPPORTED_LANGUAGES.find((lang) => lang.code === code)?.label ?? code.toUpperCase();
 }
 
 function makeEmptyTranslation(language: string): Translation {
-  return { language, title: "", description: "", pdfFile: null };
+  return {
+    language,
+    title: "",
+    description: "",
+    pdfFile: null,
+    categoryValue: "",
+    categoryLabel: "",
+  };
 }
 
-const DESCRIPTION_MAX_LENGTH = 500;
+function getBackendUrl() {
+  return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+}
+
+function resolvePdfUrl(pdfUrl?: string) {
+  if (!pdfUrl) return null;
+  if (/^https?:\/\//i.test(pdfUrl)) return pdfUrl;
+  const backendUrl = getBackendUrl();
+  return `${backendUrl}${pdfUrl.startsWith("/") ? "" : "/"}${pdfUrl}`;
+}
 
 async function extractErrorMessage(res: Response, fallback: string): Promise<string> {
   try {
-    const data: any = await res.json();
+    const data: unknown = await res.json();
+
     if (!data) return fallback;
     if (typeof data === "string") return data;
-    if (Array.isArray(data)) return data.join(", ");
+    if (Array.isArray(data)) return data.filter(Boolean).map(String).join(", ");
+
     if (typeof data === "object") {
-      const direct = data.message || data.title || data.error || data.detail;
+      const obj = data as {
+        message?: string;
+        title?: string;
+        error?: string;
+        detail?: string;
+        errors?: Record<string, unknown>;
+      };
+
+      const direct = obj.message || obj.title || obj.error || obj.detail;
       if (direct) return String(direct);
-      if (data.errors && typeof data.errors === "object") {
-        const values = Object.values(data.errors).flat().filter(Boolean).map(String);
+
+      if (obj.errors && typeof obj.errors === "object") {
+        const values = Object.values(obj.errors)
+          .flatMap((value) => (Array.isArray(value) ? value : [value]))
+          .filter(Boolean)
+          .map(String);
+
         if (values.length) return values.join(", ");
       }
     }
   } catch {
     return fallback;
   }
+
   return fallback;
 }
 
-
-export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFormProps) {
+export default function LawForm({
+  onSaved,
+  onClose,
+  resetOnClose = true,
+  initialLaw,
+}: LawFormProps) {
   const t = useTranslations("LawForm");
   const { data: session, status } = useSession();
-  const [category, setCategory] = useState("");
-  const [date, setDate] = useState("");
+  const isEditing = Boolean(initialLaw?.id);
+
+  const buildInitialTranslations = useCallback((law?: InitialLaw | null) => {
+    const map = new Map<
+      string,
+      { language: string; title?: string; category?: string; description?: string; pdfUrl?: string }
+    >();
+
+    if (law?.translations?.length) {
+      law.translations.forEach((translation) => {
+        if (translation?.language) map.set(translation.language.toLowerCase(), translation as any);
+      });
+    }
+
+    return DEFAULT_LANGS.map((lang) => {
+      const existing = map.get(lang.toLowerCase());
+      return {
+        language: lang,
+        title: existing?.title ?? "",
+        description: existing?.description ?? "",
+        pdfFile: null,
+        existingPdfUrl: existing?.pdfUrl,
+        categoryValue: existing?.category ?? law?.category ?? "",
+        categoryLabel: existing?.category ?? law?.category ?? "",
+      } as Translation;
+    });
+  }, []);
+
+  const [date, setDate] = useState(initialLaw?.date?.split("T")[0] ?? "");
   const [activeTab, setActiveTab] = useState<LangCode>(DEFAULT_LANGUAGE);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
-  const [translations, setTranslations] = useState<Translation[]>(DEFAULT_LANGS.map(makeEmptyTranslation));
+  const [translations, setTranslations] = useState<Translation[]>(buildInitialTranslations(initialLaw));
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  const usedCodes = useMemo(() => translations.map((tr) => tr.language), [translations]);
-  const availableLangs = useMemo(() => SUPPORTED_LANGUAGES.filter((l) => !usedCodes.includes(l.code)), [usedCodes]);
+  useEffect(() => {
+    setDate(initialLaw?.date?.split("T")[0] ?? "");
+    setTranslations(buildInitialTranslations(initialLaw));
+    setActiveTab(initialLaw?.translations?.find((translation) => translation.language === DEFAULT_LANGUAGE)?.language ?? DEFAULT_LANGUAGE);
+    setErrors({});
+    setToast(null);
+    setSaving(false);
+  }, [initialLaw, buildInitialTranslations]);
 
-  const getTranslation = useCallback((code: LangCode): Translation => {
-    return translations.find((tr) => tr.language === code) ?? makeEmptyTranslation(code);
-  }, [translations]);
+  const usedCodes = useMemo(() => translations.map((translation) => translation.language), [translations]);
+  const availableLangs = useMemo(
+    () => SUPPORTED_LANGUAGES.filter((language) => !usedCodes.includes(language.code)),
+    [usedCodes],
+  );
 
-  const selectedCategoryLabel = useMemo(() => {
-    const opt = CATEGORY_OPTIONS.find((o) => o.value === category);
-    if (opt) return t(opt.labelKey);
-    return category.trim();
-  }, [category, t]);
+  const getTranslation = useCallback(
+    (code: LangCode): Translation => translations.find((translation) => translation.language === code) ?? makeEmptyTranslation(code),
+    [translations],
+  );
 
-  const tabStatus = useCallback((code: LangCode): "complete" | "empty" => {
-    return getTranslation(code).title.trim() ? "complete" : "empty";
-  }, [getTranslation]);
+  const completeCount = useMemo(
+    () => translations.filter((translation) => translation.title.trim()).length,
+    [translations],
+  );
 
-  const completeCount = useMemo(() => translations.filter((tr) => tr.title.trim()).length, [translations]);
+  const tabStatus = useCallback(
+    (code: LangCode): "complete" | "empty" => (getTranslation(code).title.trim() ? "complete" : "empty"),
+    [getTranslation],
+  );
 
   const updateTranslation = useCallback((code: LangCode, patch: Partial<Translation>) => {
-    setTranslations((prev) => prev.map((tr) => (tr.language === code ? { ...tr, ...patch } : tr)));
-    if (Object.prototype.hasOwnProperty.call(patch, "title")) {
+    setTranslations((prev) => prev.map((translation) => (translation.language === code ? { ...translation, ...patch } : translation)));
+
+    if (
+      Object.prototype.hasOwnProperty.call(patch, "title") ||
+      Object.prototype.hasOwnProperty.call(patch, "categoryValue") ||
+      Object.prototype.hasOwnProperty.call(patch, "categoryLabel")
+    ) {
       setErrors((prev) => {
-        const tErrs = { ...(prev.translations ?? {}) };
-        if (tErrs[code]) {
-          const { title: _omit, ...rest } = tErrs[code];
-          if (Object.keys(rest).length) tErrs[code] = rest;
-          else delete tErrs[code];
+        const translationErrors = { ...(prev.translations ?? {}) } as Record<LangCode, { title?: string; category?: string }>;
+        if (translationErrors[code]) {
+          const { title: _ignoredTitle, category: _ignoredCategory, ...rest } = translationErrors[code];
+          if (Object.keys(rest).length) translationErrors[code] = rest as any;
+          else delete translationErrors[code];
         }
-        return { ...prev, translations: Object.keys(tErrs).length ? tErrs : undefined };
+
+        return {
+          ...prev,
+          translations: Object.keys(translationErrors).length ? translationErrors : undefined,
+        };
       });
     }
   }, []);
 
-  const addLanguage = useCallback((code: LangCode) => {
-    setTranslations((prev) => [...prev, makeEmptyTranslation(code)]);
-    setActiveTab(code);
+  const addLanguage = useCallback((_code: LangCode) => {
     setLangDropdownOpen(false);
   }, []);
 
   const removeLanguage = useCallback((code: LangCode) => {
-    if (code === DEFAULT_LANGUAGE) return;
-    setTranslations((prev) => prev.filter((t) => t.language !== code));
+    if (code === DEFAULT_LANGUAGE || code === "en") return;
+    setTranslations((prev) => prev.filter((translation) => translation.language !== code));
     setActiveTab(DEFAULT_LANGUAGE);
   }, []);
 
-  function validate(): boolean {
-    const newErrors: Errors = {};
-    if (!category) newErrors.category = t("errors.categoryRequired");
-
-    const tErrs: Record<LangCode, { title?: string }> = {};
-    let firstInvalidTab: LangCode | null = null;
-    translations.forEach((tr) => {
-      if (!tr.title.trim()) {
-        tErrs[tr.language] = { title: t("errors.titleRequired") };
-        if (!firstInvalidTab) firstInvalidTab = tr.language;
-      }
-    });
-    if (Object.keys(tErrs).length) newErrors.translations = tErrs;
-
-    setErrors(newErrors);
-    if (firstInvalidTab) setActiveTab(firstInvalidTab);
-    return Object.keys(newErrors).length === 0;
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-    if (status === "loading" || !session?.accessToken) {
-      setToast({ message: t("toast.error"), type: "error" });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const form = new FormData();
-      form.append("Category", category);
-      if (date) form.append("Date", date);
-
-      translations.forEach((tr, i) => {
-        form.append(`Translations[${i}].Language`, tr.language);
-        form.append(`Translations[${i}].Title`, tr.title);
-        if (tr.description) form.append(`Translations[${i}].Description`, tr.description);
-        if (tr.pdfFile) form.append(`Translations[${i}].PdfFile`, tr.pdfFile, `${tr.language}.pdf`);
-      });
-
-      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-
-      const res = await fetch(`${BACKEND_URL}/api/laws`, {
-        method: "POST",
-        body: form,
-        headers: { Authorization: `Bearer ${session.accessToken}` }
-      });
-      if (!res.ok) {
-        const message = await extractErrorMessage(res, t("toast.error"));
-        throw new Error(message);
-      }
-
-      setToast({ message: t("toast.success"), type: "success" });
-      resetForm();
-      onSaved?.();
-    } catch (err) {
-      const message = err instanceof Error && err.message ? err.message : t("toast.error");
-      setToast({ message, type: "error" });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const activeTranslation = getTranslation(activeTab);
-  const enMissing = useMemo(() => activeTab !== DEFAULT_LANGUAGE && !getTranslation(DEFAULT_LANGUAGE).title.trim(), [activeTab, getTranslation]);
-  const [showConfirm, setShowConfirm] = useState(false);
-
   useEffect(() => {
-    // Ensure activeTab points to an existing translation
     if (usedCodes.includes(activeTab) || translations.length === 0) return;
-    const fallback = translations.find((tr) => tr.language === DEFAULT_LANGUAGE) ?? translations[0];
+    const fallback = translations.find((translation) => translation.language === DEFAULT_LANGUAGE) ?? translations[0];
     if (fallback) setActiveTab(fallback.language);
   }, [activeTab, translations, usedCodes]);
 
+  function validate() {
+    const nextErrors: Errors = {};
+    const translationErrors: Record<LangCode, { title?: string; category?: string }> = {};
+    let firstInvalidTab: LangCode | null = null;
+    let hasKmTitle = false;
+
+    translations.forEach((translation) => {
+      const itemErrors: { title?: string; category?: string } = {};
+
+      if (!translation.title.trim()) {
+        itemErrors.title = t("errors.titleRequired");
+        if (!firstInvalidTab) firstInvalidTab = translation.language;
+      }
+
+      const hasCategory =
+        (translation.categoryLabel && translation.categoryLabel.trim()) ||
+        (translation.categoryValue && translation.categoryValue.trim());
+
+      if (!hasCategory) {
+        itemErrors.category = t("errors.categoryRequired");
+        if (!firstInvalidTab) firstInvalidTab = translation.language;
+      }
+
+      if (translation.language === DEFAULT_LANGUAGE && translation.title.trim()) {
+        hasKmTitle = true;
+      }
+
+      if (Object.keys(itemErrors).length) translationErrors[translation.language] = itemErrors;
+    });
+
+    if (!hasKmTitle) {
+      translationErrors[DEFAULT_LANGUAGE] = {
+        ...(translationErrors[DEFAULT_LANGUAGE] ?? {}),
+        title: t("errors.defaultTitleRequired"),
+      };
+      firstInvalidTab = firstInvalidTab ?? DEFAULT_LANGUAGE;
+    }
+
+    if (Object.keys(translationErrors).length) {
+      nextErrors.translations = translationErrors;
+    }
+
+    setErrors(nextErrors);
+    if (firstInvalidTab) setActiveTab(firstInvalidTab);
+
+    return Object.keys(nextErrors).length === 0;
+  }
+
   function resetForm() {
-    setCategory("");
-    setDate("");
-    setTranslations(DEFAULT_LANGS.map(makeEmptyTranslation));
+    setDate(initialLaw?.date?.split("T")[0] ?? "");
+    setTranslations(buildInitialTranslations(initialLaw));
     setActiveTab(DEFAULT_LANGUAGE);
     setCatDropdownOpen(false);
     setLangDropdownOpen(false);
@@ -220,65 +297,104 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
     setSaving(false);
   }
 
-  function isFormEmpty() {
-    if (category || date) return false;
-    if (translations.length !== DEFAULT_LANGS.length) return false;
-    return translations.every((tr) => !tr.title.trim() && !tr.description.trim() && !tr.pdfFile);
-  }
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
 
-  function handleCloseClick() {
-    if (isFormEmpty()) {
-      if (resetOnClose) resetForm();
-      onClose?.();
+    if (!validate()) return;
+    if (status === "loading" || !session?.accessToken) {
+      setToast({ message: t("toast.error"), type: "error" });
       return;
     }
-    setShowConfirm(true);
+
+    setSaving(true);
+
+    try {
+      const form = new FormData();
+      const defaultTranslation = getTranslation(DEFAULT_LANGUAGE);
+      const defaultCategory =
+        (defaultTranslation.categoryValue && defaultTranslation.categoryValue.trim()) ||
+        (defaultTranslation.categoryLabel && defaultTranslation.categoryLabel.trim()) ||
+        (translations[0]?.categoryValue && translations[0].categoryValue.trim()) ||
+        (translations[0]?.categoryLabel && translations[0].categoryLabel.trim()) ||
+        "";
+
+      form.append("Category", defaultCategory);
+      if (date) form.append("Date", date);
+
+      translations.forEach((translation, index) => {
+        form.append(`Translations[${index}].Language`, translation.language);
+        form.append(`Translations[${index}].Title`, translation.title);
+        if (translation.description.trim()) form.append(`Translations[${index}].Description`, translation.description.trim());
+
+        const categoryValue =
+          (translation.categoryValue && translation.categoryValue.trim()) ||
+          (translation.categoryLabel && translation.categoryLabel.trim());
+
+        if (categoryValue) {
+          form.append(`Translations[${index}].Category`, categoryValue);
+        }
+
+        if (translation.pdfFile) {
+          form.append(`Translations[${index}].PdfFile`, translation.pdfFile, `${translation.language}.pdf`);
+        }
+      });
+
+      const backendUrl = getBackendUrl();
+      const url = isEditing && initialLaw?.id
+        ? `${backendUrl}/api/laws/${initialLaw.id}`
+        : `${backendUrl}/api/laws`;
+
+      const res = await fetch(url, {
+        method: isEditing ? "PUT" : "POST",
+        body: form,
+        headers: { Authorization: `Bearer ${session.accessToken}` },
+      });
+
+      if (!res.ok) {
+        const message = await extractErrorMessage(res, t("toast.error"));
+        throw new Error(message);
+      }
+
+      setToast({ message: t("toast.success"), type: "success" });
+      if (!isEditing) resetForm();
+      onSaved?.();
+    } catch (error) {
+      const message = error instanceof Error && error.message ? error.message : t("toast.error");
+      setToast({ message, type: "error" });
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function confirmClose() {
-    setShowConfirm(false);
-    if (resetOnClose) resetForm();
-    onClose?.();
-  }
-
-  function cancelClose() {
-    setShowConfirm(false);
-  }
+  const activeTranslation = getTranslation(activeTab);
+  const defaultMissing = useMemo(
+    () => activeTab !== DEFAULT_LANGUAGE && !getTranslation(DEFAULT_LANGUAGE).title.trim(),
+    [activeTab, getTranslation],
+  );
 
   return (
     <div className="bg-white rounded-xl p-4 sm:p-5">
       {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
 
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
-        {showConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/40" onClick={cancelClose} />
-            <div role="dialog" aria-modal="true" className="relative bg-white rounded-lg shadow-lg p-5 w-full max-w-md mx-4">
-              <h3 className="text-sm font-medium text-gray-900">{t("confirmCloseTitle")}</h3>
-              <p className="text-xs text-gray-600 mt-2">{t("confirmCloseBody")}</p>
-              <div className="mt-4 flex justify-end gap-2">
-                <button type="button" onClick={cancelClose} className="px-3 py-1.5 rounded bg-white border border-primary text-primary text-sm">{t("cancel")}</button>
-                <button type="button" onClick={confirmClose} className="px-3 py-1.5 rounded bg-primary text-sm text-white">{t("confirm")}</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Row 1: Category + Date */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-900 mb-1">{t("categoryLabel")} <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-medium text-gray-900 mb-1">
+              {t("categoryLabel")} <span className="text-red-500">*</span>
+            </label>
             <div className="relative">
               <input
                 type="text"
-                value={category}
+                value={activeTranslation.categoryLabel ?? activeTranslation.categoryValue ?? ""}
                 placeholder={t("categoryPlaceholder")}
                 onFocus={() => setCatDropdownOpen(true)}
                 onClick={() => setCatDropdownOpen(true)}
                 onChange={(e) => {
-                  setCategory(e.target.value);
-                  setErrors((prev) => ({ ...prev, category: undefined }));
+                  updateTranslation(activeTab, { categoryLabel: e.target.value, categoryValue: "" });
                 }}
-                className={`w-full pr-10 px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${errors.category ? "border-red-500" : "border-gray-300 hover:border-gray-400"}`}
+                className={`w-full pr-10 px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
+                  errors.translations?.[activeTab]?.category ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+                }`}
               />
               <button
                 type="button"
@@ -292,51 +408,62 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
               </button>
             </div>
             <Dropdown isOpen={catDropdownOpen} onClose={() => setCatDropdownOpen(false)} className="w-full left-0 origin-top">
-              {CATEGORY_OPTIONS.map((cat) => (
+              {CATEGORY_OPTIONS.map((option) => (
                 <DropdownItem
-                  key={cat.value}
-                  onClick={() => { setCategory(cat.value); setCatDropdownOpen(false); setErrors((p) => ({ ...p, category: undefined })); }}
+                  key={option.value}
+                  onClick={() => {
+                    updateTranslation(activeTab, { categoryValue: option.value, categoryLabel: t(option.labelKey) });
+                    setCatDropdownOpen(false);
+                  }}
                 >
-                  {t(cat.labelKey)}
+                  {t(option.labelKey)}
                 </DropdownItem>
               ))}
             </Dropdown>
-            {errors.category && <p className="text-xs text-red-500 mt-1">{errors.category}</p>}
+            {errors.translations?.[activeTab]?.category && (
+              <p className="text-xs text-red-500 mt-1">{errors.translations[activeTab].category}</p>
+            )}
           </div>
+
           <div>
             <DatePicker
-              id="law-effective-date"
+              id={isEditing ? "law-date-edit" : "law-date"}
               label={t("publishDateLabel")}
               placeholder={t("publishDatePlaceholder")}
               defaultDate={date || undefined}
-              onChange={(selectedDates: Date[], dateStr: string) => setDate(dateStr)}
+              onChange={(_selectedDates: Date[], dateStr: string) => setDate(dateStr)}
             />
           </div>
         </div>
 
-        {/* Language Tabs */}
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-4 overflow-x-auto" aria-label="Tabs">
-            {translations.map((tr) => {
-              const status = tabStatus(tr.language);
-              const isActive = tr.language === activeTab;
+            {translations.map((translation) => {
+              const status = tabStatus(translation.language);
+              const isActive = translation.language === activeTab;
+
               return (
-                <div key={tr.language} className="flex items-center group relative min-w-max">
+                <div key={translation.language} className="flex items-center group relative min-w-max">
                   <button
                     type="button"
-                    onClick={() => setActiveTab(tr.language)}
-                    className={`whitespace-nowrap flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${isActive ? "border-primary text-primary" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}`}
+                    onClick={() => setActiveTab(translation.language)}
+                    className={`whitespace-nowrap flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      isActive ? "border-primary text-primary" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    }`}
                   >
                     <span className={`w-2 h-2 rounded-full inline-block ${status === "complete" ? "bg-green-500" : "bg-gray-300 group-hover:bg-gray-400"} transition-colors duration-200`} />
-                    <span>{langLabel(tr.language)}</span>
-                    {tr.language === DEFAULT_LANGUAGE && (
-                      <span className="text-[10px] leading-tight text-gray-400 font-normal ml-0.5 border border-gray-200 rounded px-1.5 py-0.5 uppercase tracking-wide">{t("defaultBadge")}</span>
+                    <span>{langLabel(translation.language)}</span>
+                    {translation.language === DEFAULT_LANGUAGE && (
+                      <span className="text-[10px] leading-tight text-gray-400 font-normal ml-0.5 border border-gray-200 rounded px-1.5 py-0.5 uppercase tracking-wide">
+                        {t("defaultBadge")}
+                      </span>
                     )}
                   </button>
-                  {tr.language !== DEFAULT_LANGUAGE && (
+
+                  {translation.language !== DEFAULT_LANGUAGE && translation.language !== "en" && (
                     <button
                       type="button"
-                      onClick={() => removeLanguage(tr.language)}
+                      onClick={() => removeLanguage(translation.language)}
                       className="ml-1.5 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 text-gray-400 hover:text-red-500 hover:bg-red-50"
                       title={t("removeLanguage")}
                     >
@@ -348,6 +475,7 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
                 </div>
               );
             })}
+
             {availableLangs.length > 0 && (
               <div className="flex items-center pl-4 relative">
                 <button
@@ -361,9 +489,9 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
                   {t("languageButton")}
                 </button>
                 <Dropdown isOpen={langDropdownOpen} onClose={() => setLangDropdownOpen(false)} className="left-4 top-full mt-0">
-                  {availableLangs.map((l) => (
-                    <DropdownItem key={l.code} onClick={() => addLanguage(l.code as LangCode)}>
-                      {l.label}
+                  {availableLangs.map((language) => (
+                    <DropdownItem key={language.code} onClick={() => addLanguage(language.code as LangCode)}>
+                      {language.label}
                     </DropdownItem>
                   ))}
                 </Dropdown>
@@ -372,9 +500,8 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
           </nav>
         </div>
 
-        {/* Translation fields — Title | Description | PDF in one row */}
         <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 space-y-3">
-          {enMissing && (
+          {defaultMissing && (
             <div className="rounded-md bg-yellow-50 p-2.5 border border-yellow-200 flex items-center gap-2">
               <svg className="h-4 w-4 text-yellow-400 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
@@ -383,28 +510,31 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
             </div>
           )}
 
-          {/* Responsive 3-col grid: stacks on mobile, 2-col on sm, 3-col on lg */}
           <div className="flex flex-col gap-4">
-            {/* Title */}
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1">{t("titleLabel")} <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-gray-900 mb-1">
+                {t("titleLabel")} <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
                 value={activeTranslation.title}
                 placeholder={t("titlePlaceholder", { language: langLabel(activeTab) })}
                 onChange={(e) => updateTranslation(activeTab, { title: e.target.value })}
-                className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${errors.translations?.[activeTab]?.title ? "border-red-500" : "border-gray-300 hover:border-gray-400"}`}
+                className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors ${
+                  errors.translations?.[activeTab]?.title ? "border-red-500" : "border-gray-300 hover:border-gray-400"
+                }`}
               />
               {errors.translations?.[activeTab]?.title && (
                 <p className="text-xs text-red-500 mt-1">{errors.translations[activeTab].title}</p>
               )}
             </div>
 
-            {/* Description */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-900">{t("descriptionLabel")} <span className="text-gray-400 font-normal">({t("optional")})</span></label>
-                <span className={`text-[11px] ${activeTranslation.description.length > DESCRIPTION_MAX_LENGTH ? 'text-red-500 font-medium' : 'text-gray-400'}`}>
+                <label className="block text-sm font-medium text-gray-900">
+                  {t("descriptionLabel")} <span className="text-gray-400 font-normal">({t("optional")})</span>
+                </label>
+                <span className={`text-[11px] ${activeTranslation.description.length > DESCRIPTION_MAX_LENGTH ? "text-red-500 font-medium" : "text-gray-400"}`}>
                   {activeTranslation.description.length}/{DESCRIPTION_MAX_LENGTH}
                 </span>
               </div>
@@ -414,46 +544,61 @@ export default function LawForm({ onSaved, onClose, resetOnClose = true }: LawFo
                 maxLength={DESCRIPTION_MAX_LENGTH}
                 onChange={(e) => updateTranslation(activeTab, { description: e.target.value })}
                 rows={3}
-                className={`w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors resize-y ${activeTranslation.description.length >= DESCRIPTION_MAX_LENGTH ? 'border-amber-400' : 'border-gray-300 hover:border-gray-400'}`}
+                className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors resize-y border-gray-300 hover:border-gray-400"
               />
             </div>
 
-            {/* PDF upload */}
             <div className="col-span-full">
-              <label className="block text-sm font-medium text-gray-900 mb-1">{t("pdfLabel")} <span className="text-gray-400 font-normal">({t("pdfOptional")})</span></label>
-              <PdfDropZone file={activeTranslation.pdfFile} onChange={(f) => updateTranslation(activeTab, { pdfFile: f })} />
+              <label className="block text-sm font-medium text-gray-900 mb-1">
+                {t("pdfLabel")} <span className="text-gray-400 font-normal">({t("pdfOptional")})</span>
+              </label>
+              <PdfDropZone file={activeTranslation.pdfFile} onChange={(file) => updateTranslation(activeTab, { pdfFile: file })} />
+              {activeTranslation.existingPdfUrl && !activeTranslation.pdfFile && (
+                <a
+                  className="mt-2 inline-flex text-xs text-blue-600 hover:underline"
+                  href={resolvePdfUrl(activeTranslation.existingPdfUrl) ?? "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {t("currentPdf") || "Current PDF"}
+                </a>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="pt-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="text-sm text-gray-400">{t("progress", { complete: completeCount, total: translations.length })}</span>
           <div className="w-full sm:w-auto flex items-center gap-3">
             <button
               type="button"
-              onClick={handleCloseClick}
+              onClick={() => {
+                if (resetOnClose) resetForm();
+                onClose?.();
+              }}
               className="inline-flex justify-center items-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold text-primary bg-white border border-primary hover:bg-gray-50 transition-all"
             >
               {t("close")}
             </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className={`w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold text-white shadow-sm transition-all ${saving ? "bg-primary/70 cursor-not-allowed" : "bg-primary hover:bg-primary/90 hover:shadow-md"}`}
-          >
-            {saving && (
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
-                <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-              </svg>
-            )}
-            {saving ? t("saving") : t("save")}
-          </button>
+
+            <button
+              type="submit"
+              disabled={saving}
+              className={`w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold text-white shadow-sm transition-all ${
+                saving ? "bg-primary/70 cursor-not-allowed" : "bg-primary hover:bg-primary/90 hover:shadow-md"
+              }`}
+            >
+              {saving && (
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
+                  <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
+                </svg>
+              )}
+              {saving ? t("saving") : isEditing ? t("saveEdit") : t("save")}
+            </button>
           </div>
         </div>
       </form>
     </div>
   );
 }
-

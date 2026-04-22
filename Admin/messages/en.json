@@ -245,6 +245,7 @@
     "progress": "{complete}/{total} languages completed",
     "close": "Close",
     "save": "Save Laws",
+    "saveEdit": "Save Changes",
     "saving": "Saving…",
     "pdfUpload": "Upload PDF",
     "pdfOrDrag": "or drag",
@@ -255,7 +256,8 @@
     "currentPdf": "Current PDF",
     "errors": {
       "categoryRequired": "Category is required",
-      "titleRequired": "Title is required"
+      "titleRequired": "Title is required",
+      "defaultTitleRequired": "Khmer title is required"
     },
     "toast": {
       "success": "Law saved successfully",

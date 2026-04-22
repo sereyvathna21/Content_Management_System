@@ -11,6 +11,7 @@ export type LawTranslation = {
   id?: string;
   language: string;
   title: string;
+  category?: string;
   description?: string;
   pdfUrl?: string;
 };
@@ -160,7 +161,18 @@ export default React.memo(function LawTable({
 
                 <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
                   {laws.map((l) => {
-                    const tr = pickTranslation(l.translations, locale, `Law #${l.id}`);
+                    const tr = pickTranslation(
+                      l.translations.map((translation) => ({
+                        id: translation.id,
+                        language: translation.language,
+                        title: translation.title,
+                        category: translation.category,
+                        description: translation.description,
+                        pdfUrl: translation.pdfUrl,
+                      })),
+                      locale,
+                      `Law #${l.id}`,
+                    );
                     const pdfHref = resolvePdfUrl(tr.pdfUrl);
                     return (
                       <TableRow key={l.id}>
@@ -176,11 +188,11 @@ export default React.memo(function LawTable({
                         </TableCell>
 
                         <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                          {formatCategory(l.category, t) ?? <span className="text-gray-300 italic">—</span>}
+                          {formatCategory(tr.category ?? l.category, t) ?? <span className="text-gray-300 italic">-</span>}
                         </TableCell>
 
                         <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                          {formatDate(l.date, locale) ?? <span className="text-gray-300 italic">—</span>}
+                          {formatDate(l.date, locale) ?? <span className="text-gray-300 italic">-</span>}
                         </TableCell>
 
                         {/* ← this was the broken part, <a was missing */}

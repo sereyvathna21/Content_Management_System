@@ -27,27 +27,27 @@ export default function PublicationDrawer({
   if (!open || !pub) return null;
 
   const t = useTranslations("PublicationPage");
-  const translatedTitle = pub.id ? t(`content.items.${pub.id}.title`) : "";
-  const rawTitle =
-    translatedTitle && !translatedTitle.startsWith("content.items")
-      ? translatedTitle
-      : pub.title;
+  const hasTranslation = (key: string) => {
+    return typeof (t as unknown as { has?: (k: string) => boolean }).has ===
+      "function"
+      ? (t as unknown as { has: (k: string) => boolean }).has(key)
+      : false;
+  };
 
-  const translatedDescription = pub.id
-    ? t(`content.items.${pub.id}.description`)
-    : "";
+  const titleKey = pub.id ? `content.items.${pub.id}.title` : "";
+  const descriptionKey = pub.id ? `content.items.${pub.id}.description` : "";
+  const categoryKey = pub.category ? `categoryLabels.${pub.category}` : "";
+
+  const rawTitle =
+    titleKey && hasTranslation(titleKey) ? t(titleKey) : pub.title;
+
   const rawDescription =
-    translatedDescription && !translatedDescription.startsWith("content.items")
-      ? translatedDescription
+    descriptionKey && hasTranslation(descriptionKey)
+      ? t(descriptionKey)
       : pub.description;
 
-  const translatedCategory = pub.category
-    ? t(`categoryLabels.${pub.category}`)
-    : "";
   const rawCategory =
-    translatedCategory && !translatedCategory.startsWith("categoryLabels")
-      ? translatedCategory
-      : pub.category;
+    categoryKey && hasTranslation(categoryKey) ? t(categoryKey) : pub.category;
 
   const pdfUrl = typeof pub.pdf === "string" ? pub.pdf : undefined;
 

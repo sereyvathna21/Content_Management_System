@@ -11,6 +11,7 @@ namespace Backend.Models
         public Law Law { get; set; } = null!;
         public string Language { get; set; } = string.Empty; // en, km, etc.
         public string Title { get; set; } = string.Empty;
+        public string? Category { get; set; }
         public string? Description { get; set; }
         public string? PdfUrl { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

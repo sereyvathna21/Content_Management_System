@@ -27,10 +27,12 @@ namespace Backend.Controllers
             [FromQuery] string? category = null,
             [FromQuery] string? q = null)
         {
+            var requestedLang = NormalizeLang(lang);
             page = Math.Max(1, page);
             pageSize = Math.Max(1, pageSize);
 
-            var baseQuery = _db.Publications.AsQueryable();
+            var baseQuery = _db.Publications
+                .Where(p => p.Translations.Any(t => t.Language.ToLower() == requestedLang));
 
             var categories = await baseQuery
                 .Where(p => p.Category != null && p.Category != string.Empty)
@@ -43,7 +45,15 @@ namespace Backend.Controllers
 
             if (!string.IsNullOrWhiteSpace(category))
             {
-                query = query.Where(p => p.Category == category);
+                // Support special "Others" filter for public listing as well
+                if (string.Equals(category, "Others", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.Where(p => p.Category != null && p.Category != string.Empty && p.Category.ToLower() != "nspc");
+                }
+                else
+                {
+                    query = query.Where(p => p.Category == category);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(q))
@@ -69,14 +79,14 @@ namespace Backend.Controllers
 
             var items = publications.Select(publication =>
             {
-                var translation = PickTranslation(publication.Translations, lang);
+                var translation = PickTranslation(publication.Translations, requestedLang);
                 return new PublicPublicationListItemDto
                 {
                     Id = publication.Id,
-                    Category = publication.Category ?? string.Empty,
+                    Category = translation?.Category ?? publication.Category ?? string.Empty,
                     PublicationDate = publication.PublicationDate,
                     Authors = publication.Authors,
-                    Language = translation?.Language ?? lang,
+                    Language = translation?.Language ?? requestedLang,
                     Title = translation?.Title ?? string.Empty,
                     Summary = translation?.Summary,
                     Content = translation?.Content,
@@ -91,24 +101,28 @@ namespace Backend.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Get(Guid id, [FromQuery] string lang = "en")
         {
+            var requestedLang = NormalizeLang(lang);
             var publication = await _db.Publications
                 .Include(p => p.Translations)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (publication == null) return NotFound();
 
-            var translation = PickTranslation(publication.Translations, lang);
+            var translation = PickTranslation(publication.Translations, requestedLang);
+            if (translation == null) return NotFound();
+            var selectedTranslation = translation;
+
             var dto = new PublicPublicationListItemDto
             {
                 Id = publication.Id,
-                Category = publication.Category ?? string.Empty,
+                Category = selectedTranslation.Category ?? publication.Category ?? string.Empty,
                 PublicationDate = publication.PublicationDate,
                 Authors = publication.Authors,
-                Language = translation?.Language ?? lang,
-                Title = translation?.Title ?? string.Empty,
-                Summary = translation?.Summary,
-                Content = translation?.Content,
-                AttachmentUrl = BuildAttachmentUrl(translation?.AttachmentUrl)
+                Language = selectedTranslation.Language,
+                Title = selectedTranslation.Title ?? string.Empty,
+                Summary = selectedTranslation.Summary,
+                Content = selectedTranslation.Content,
+                AttachmentUrl = BuildAttachmentUrl(selectedTranslation.AttachmentUrl)
             };
 
             return Ok(dto);
@@ -119,14 +133,15 @@ namespace Backend.Controllers
             var list = translations?.ToList() ?? new List<PublicationTranslation>();
             if (list.Count == 0) return null;
 
-            if (!string.IsNullOrWhiteSpace(lang))
-            {
-                var byLang = list.FirstOrDefault(t => string.Equals(t.Language, lang, StringComparison.OrdinalIgnoreCase));
-                if (byLang != null) return byLang;
-            }
+            if (string.IsNullOrWhiteSpace(lang)) return null;
+            return list.FirstOrDefault(t => string.Equals(t.Language, lang, StringComparison.OrdinalIgnoreCase));
+        }
 
-            var kh = list.FirstOrDefault(t => string.Equals(t.Language, "km", StringComparison.OrdinalIgnoreCase));
-            return kh ?? list[0];
+        private static string NormalizeLang(string? lang)
+        {
+            return string.IsNullOrWhiteSpace(lang)
+                ? "en"
+                : lang.Trim().ToLowerInvariant();
         }
 
         private string? BuildAttachmentUrl(string? attachmentUrl)
