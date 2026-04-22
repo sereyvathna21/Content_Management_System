@@ -11,31 +11,31 @@ namespace Backend.Data
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Models.Contact> Contacts { get; set; }
-        public DbSet<Models.Law> Laws { get; set; }
-        public DbSet<Models.LawTranslation> LawTranslations { get; set; }
-        public DbSet<Models.Publication> Publications { get; set; }
-        public DbSet<Models.PublicationTranslation> PublicationTranslations { get; set; }
-        public DbSet<Models.Notification> Notifications { get; set; }
+        public DbSet<Contact> Contacts { get; set; }
+        public DbSet<Law> Laws { get; set; }
+        public DbSet<LawTranslation> LawTranslations { get; set; }
+        public DbSet<Publication> Publications { get; set; }
+        public DbSet<PublicationTranslation> PublicationTranslations { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Models.Law>(b =>
+            modelBuilder.Entity<Law>(b =>
             {
                 b.HasKey(x => x.Id);
                 b.HasMany(x => x.Translations).WithOne(t => t.Law).HasForeignKey(t => t.LawId).OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<Models.LawTranslation>(b =>
+            modelBuilder.Entity<LawTranslation>(b =>
             {
                 b.HasKey(x => x.Id);
                 b.HasIndex(x => new { x.LawId, x.Language }).IsUnique();
                 b.Property(x => x.Language).HasMaxLength(10);
             });
 
-            modelBuilder.Entity<Models.Publication>(b =>
+            modelBuilder.Entity<Publication>(b =>
             {
                 b.HasKey(x => x.Id);
                 b.HasMany(x => x.Translations)
@@ -44,14 +44,14 @@ namespace Backend.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<Models.PublicationTranslation>(b =>
+            modelBuilder.Entity<PublicationTranslation>(b =>
             {
                 b.HasKey(x => x.Id);
                 b.HasIndex(x => new { x.PublicationId, x.Language }).IsUnique();
                 b.Property(x => x.Language).HasMaxLength(10);
             });
 
-            modelBuilder.Entity<Models.Notification>(b =>
+            modelBuilder.Entity<Notification>(b =>
             {
                 b.HasKey(x => x.Id);
                 b.Property(x => x.Message).HasMaxLength(1000).IsRequired();
