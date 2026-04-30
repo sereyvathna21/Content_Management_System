@@ -18,6 +18,14 @@ namespace Backend.Data
         public DbSet<PublicationTranslation> PublicationTranslations { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
+        // Social Content
+        public DbSet<SocialTopic> SocialTopics { get; set; }
+        public DbSet<SocialSection> SocialSections { get; set; }
+        public DbSet<Media> Media { get; set; }
+        public DbSet<SocialSectionMedia> SocialSectionMedia { get; set; }
+        public DbSet<SocialRevision> SocialRevisions { get; set; }
+        public DbSet<SocialAuditLog> SocialAuditLogs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -59,6 +67,79 @@ namespace Backend.Data
                 b.Property(x => x.TitleKm).HasMaxLength(500);
                 b.Property(x => x.TitleEn).HasMaxLength(500);
                 b.HasIndex(x => x.CreatedAt);
+            });
+
+            modelBuilder.Entity<SocialTopic>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.Slug).IsUnique();
+                b.HasIndex(x => x.Status);
+                b.HasIndex(x => x.SortOrder);
+                b.Property(x => x.Slug).HasMaxLength(100).IsRequired();
+                b.Property(x => x.Status).HasConversion<string>().HasMaxLength(50);
+
+                b.HasMany(x => x.Sections)
+                    .WithOne(s => s.Topic)
+                    .HasForeignKey(s => s.TopicId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasMany(x => x.Revisions)
+                    .WithOne(r => r.Topic)
+                    .HasForeignKey(r => r.TopicId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<SocialSection>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.SortOrder);
+                b.HasIndex(x => x.Status);
+                b.HasIndex(x => x.SectionKey);
+                b.Property(x => x.Status).HasConversion<string>().HasMaxLength(50);
+
+                b.HasOne(x => x.ParentSection)
+                    .WithMany(p => p.ChildSections)
+                    .HasForeignKey(x => x.ParentSectionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasMany(x => x.Media)
+                    .WithOne(m => m.Section)
+                    .HasForeignKey(m => m.SectionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<SocialSectionMedia>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.SortOrder);
+                b.Property(x => x.Position).HasConversion<string>().HasMaxLength(50);
+
+                b.HasOne(x => x.Media)
+                    .WithMany()
+                    .HasForeignKey(x => x.MediaId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Media>(b =>
+            {
+                b.HasKey(x => x.Id);
+            });
+
+            modelBuilder.Entity<SocialRevision>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.RevisionNumber);
+            });
+
+            modelBuilder.Entity<SocialAuditLog>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.CreatedAt);
+                b.HasIndex(x => x.TopicId);
+                b.HasIndex(x => x.SectionId);
+                b.Property(x => x.Action).HasMaxLength(60).IsRequired();
+                b.Property(x => x.EntityType).HasMaxLength(60).IsRequired();
+                b.Property(x => x.EntityId).HasMaxLength(80);
             });
         }
 

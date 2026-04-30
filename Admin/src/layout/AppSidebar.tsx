@@ -67,7 +67,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Laws", path: "/laws", pro: false },
       { name: "Publications", path: "/publications", pro: false },
-      { name: "Social", path: "/socials", pro: false },
+      { name: "Social", path: "/social", pro: false },
     ],
   },
    {

@@ -59,7 +59,7 @@
     },
     "deleteMessage": "Delete message"
   },
-   "LoginPage": {
+  "LoginPage": {
     "signIn": {
       "title": "Sign In",
       "subtitle": "Enter your credentials to access your account",
@@ -274,8 +274,7 @@
       "administrativeLaw": "Administrative Law",
       "commercialLaw": "Commercial Law"
     }
-  }
-  ,
+  },
   "LawsPage": {
     "title": "Laws",
     "create": "New Law",
@@ -297,8 +296,7 @@
       "desc": "Manage laws and translations"
     },
     "viewPdf": "View PDF"
-  }
-  ,
+  },
   "LawTable": {
     "loading": "Loading...",
     "noLawsForQuery": "No laws found for \"{query}\"",
@@ -322,8 +320,7 @@
       "edit": "Edit",
       "delete": "Delete"
     }
-  }
-  ,
+  },
   "PublicationForm": {
     "categoryLabel": "Category",
     "categoryPlaceholder": "Select or type category...",
@@ -416,8 +413,7 @@
       "edit": "Edit",
       "delete": "Delete"
     }
-  }
-  ,
+  },
   "UsersPage": {
     "title": "User Management",
     "card": {
@@ -435,8 +431,7 @@
     "blockedLabel": "Blocked:",
     "yes": "Yes",
     "no": "No"
-  }
-  ,
+  },
   "UserForm": {
     "createTitle": "Create User",
     "createSubtitle": "Add user details below.",
@@ -486,8 +481,7 @@
       "block": "Block user",
       "unblock": "Unblock user"
     }
-  }
-  ,
+  },
   "ProfilePage": {
     "profileManagement": "Profile Management",
     "personalInformation": "Personal Information",
@@ -521,5 +515,45 @@
     "save": "Save",
     "unnamedUser": "Unnamed User",
     "notAvailable": "N/A"
+  },
+  "SocialPage": {
+    "title": "Social Content",
+    "create": "New Topic",
+    "edit": "Edit Topic",
+    "searchPlaceholder": "Search topics",
+    "card": {
+      "title": "Social Topics",
+      "desc": "Manage social topics and sections"
+    }
+  },
+  "SocialTable": {
+    "loading": "Loading...",
+    "noTopicsForQuery": "No topics found for '{query}'",
+    "tryDifferent": "Try a different search term.",
+    "noTopicsTitle": "No topics found",
+    "tryAdjust": "Try creating a new topic.",
+    "headers": {
+      "title": "Title",
+      "slug": "Slug",
+      "status": "Status",
+      "publishedAt": "Published Date",
+      "actions": "Actions"
+    },
+    "tooltips": {
+      "edit": "Edit",
+      "delete": "Delete"
+    }
+  },
+  "SocialEditor": {
+    "saveDraft": "Save Draft",
+    "publish": "Publish",
+    "publishSuccess": "Published successfully",
+    "rollback": "Rollback",
+    "addSection": "Add Section",
+    "sectionTitle": "Section Title",
+    "sectionContent": "Content (Markdown)",
+    "sectionKey": "Section Key",
+    "confirmDeleteSecTitle": "Delete section?",
+    "confirmDeleteSecText": "Are you sure you want to delete this section?"
   }
 }

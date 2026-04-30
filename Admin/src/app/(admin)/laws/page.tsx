@@ -211,7 +211,7 @@ export default function LawsPage() {
                 <button
                   type="button"
                   onClick={handleOpenCreate}
-                  className="h-9 px-4 rounded-lg font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200 shadow-md text-sm w-full sm:w-auto"
+                  className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm w-full sm:w-auto whitespace-nowrap"
                 >
                   {t("LawsPage.create") || "New Law"}
                 </button>

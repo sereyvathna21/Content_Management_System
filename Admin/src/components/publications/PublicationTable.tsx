@@ -262,21 +262,28 @@ export default React.memo(function PublicationTable({
 
       {onDelete && (
         <Modal isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} className="max-w-md p-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">{t("PublicationTable.confirmDeleteTitle")}</h3>
-            <p className="text-sm text-gray-600 mb-4">{t("PublicationTable.confirmDeleteText")}</p>
-            <div className="flex justify-end gap-3">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-red-500">
+                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+            
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t("PublicationTable.confirmDeleteTitle")}</h3>
+            <p className="text-gray-500 mb-6">
+              {t("PublicationTable.confirmDeleteText")}
+            </p>
+
+            <div className="flex gap-3 w-full">
               <button
-                className="h-9 px-4 rounded-lg font-medium bg-white border border-gray-200"
+                className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
                 onClick={() => setIsDeleteOpen(false)}
                 disabled={isDeleting}
               >
                 {t("PublicationTable.cancel")}
               </button>
               <button
-                className={`h-9 px-4 rounded-lg font-semibold text-white transition ${
-                  isDeleting ? "bg-red-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
-                }`}
+                className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors ${isDeleting ? "bg-red-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"}`}
                 disabled={isDeleting}
                 onClick={async () => {
                   if (!deleteId || !onDelete || isDeleting) return;
@@ -285,13 +292,7 @@ export default React.memo(function PublicationTable({
                   setDeleteId(null);
                 }}
               >
-                {isDeleting && (
-                  <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="4" />
-                    <path d="M22 12a10 10 0 00-10-10" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
-                  </svg>
-                )}
-                {t("PublicationTable.delete")}
+                {isDeleting ? "Deleting..." : t("PublicationTable.delete")}
               </button>
             </div>
           </div>

@@ -2,53 +2,29 @@
 import React from "react";
 import { useTranslations } from "next-intl";
 
-type CategoryOption = {
-  value: string;
-  label: string;
-};
-
 type Props = {
   query: string;
   onSearch: (q: string) => void;
-  category: string;
-  onCategoryChange: (value: string) => void;
-  categories: CategoryOption[];
   action?: React.ReactNode;
 };
 
-export default function LawFilters({ query, onSearch, category, onCategoryChange, categories, action }: Props) {
-  const t = useTranslations("LawsPage");
+export default function SocialFilters({ query, onSearch, action }: Props) {
+  const t = useTranslations();
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
+    <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4 mb-4">
       <div className="flex items-center gap-3 w-full sm:w-auto">
-        <div role="group" aria-label={t("filters.aria")} className="flex flex-wrap items-center gap-2">
-          {categories.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              aria-pressed={category === opt.value}
-              onClick={() => onCategoryChange(opt.value)}
-              className={`h-9 px-4 rounded-full text-sm font-medium transition-all duration-200 flex items-center justify-center ${
-                category === opt.value
-                  ? "bg-primary text-white shadow-md shadow-primary/20"
-                  : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        {/* Placeholder for status filters if needed in future */}
       </div>
 
       <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
         <div className="relative w-full sm:w-64">
           <input
-            aria-label={t("searchAria")}
-            className={`w-full h-10 pl-10 pr-10 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 text-sm ${
+            type="text"
+            className={`w-full h-10 pl-10 pr-4 border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all duration-200 text-sm ${
               query ? "border-primary bg-primary/5" : "border-gray-200 bg-gray-50"
             }`}
-            placeholder={t("searchPlaceholder")}
+            placeholder={t("SocialPage.searchPlaceholder") || "Search topics..."}
             value={query}
             onChange={(e) => onSearch(e.target.value)}
           />

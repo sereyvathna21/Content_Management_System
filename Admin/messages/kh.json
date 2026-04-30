@@ -522,5 +522,45 @@
     "save": "រក្សាទុក",
     "unnamedUser": "ឈ្មោះមិនបានកំណត់",
     "notAvailable": "មិនមាន"
+  },
+    "SocialPage": {
+    "title": "មាតិកាសង្គម",
+    "create": "បង្កើតប្រធានបទថ្មី",
+    "edit": "កែប្រែប្រធានបទ",
+    "searchPlaceholder": "ស្វែងរកប្រធានបទ",
+    "card": {
+      "title": "ប្រធានបទសង្គម",
+      "desc": "គ្រប់គ្រងមាតិកាសង្គម"
+    }
+  },
+  "SocialTable": {
+    "loading": "កំពុងទាញយក...",
+    "noTopicsForQuery": "រកមិនឃើញប្រធានបទសម្រាប់ '{query}'",
+    "tryDifferent": "សាកល្បងស្វែងរកម្តងទៀត។",
+    "noTopicsTitle": "រកមិនឃើញប្រធានបទ",
+    "tryAdjust": "សាកល្បងបន្ថែមប្រធានបទថ្មី។",
+    "headers": {
+      "title": "ចំណងជើង",
+      "slug": "តំណរ (Slug)",
+      "status": "ស្ថានភាព",
+      "publishedAt": "ថ្ងៃចេញផ្សាយ",
+      "actions": "សកម្មភាព"
+    },
+    "tooltips": {
+      "edit": "កែប្រែ",
+      "delete": "លុប"
+    }
+  },
+  "SocialEditor": {
+    "saveDraft": "រក្សាទុកព្រាង",
+    "publish": "បោះពុម្ភ",
+    "publishSuccess": "បានបោះពុម្ភដោយជោគជ័យ",
+    "rollback": "ថយក្រោយទិន្នន័យ",
+    "addSection": "បន្ថែមផ្នែកថ្មី",
+    "sectionTitle": "ចំណងជើងផ្នែក",
+    "sectionContent": "មាតិកា",
+    "sectionKey": "លេខកូដផ្នែក",
+    "confirmDeleteSecTitle": "លុបផ្នែក?",
+    "confirmDeleteSecText": "តើអ្នកប្រាកដងថាចង់លុបផ្នែកនេះទេ?"
   }
 }
