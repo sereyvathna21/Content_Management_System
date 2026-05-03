@@ -5,15 +5,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components
 import ComponentCard from "@/components/common/ComponentCard";
 import Tooltip from "@/components/ui/Tooltip";
 
-export type SocialTopic = {
-  id: string;
-  slug: string;
-  titleKm: string;
-  titleEn?: string;
-  status: number; // 0 = Draft, 1 = Published
-  publishedAt?: string;
-  sortOrder: number;
-};
+import { SocialTopic } from "../../types/social.types";
 
 type Props = {
   loading?: boolean;
@@ -22,7 +14,6 @@ type Props = {
   locale?: string;
   onEdit: (t: SocialTopic) => void;
   onDelete: (t: SocialTopic) => void;
-  onCreate?: () => void;
 };
 
 export default React.memo(function SocialTopicTable({
@@ -32,10 +23,8 @@ export default React.memo(function SocialTopicTable({
   locale,
   onEdit,
   onDelete,
-  onCreate,
 }: Props) {
   const t = useTranslations();
-  const createText = t("SocialPage.create");
 
   return (
     <div>

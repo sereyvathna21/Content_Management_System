@@ -4,15 +4,7 @@ import React from "react";
 import { useLocale } from "next-intl";
 import Tooltip from "@/components/ui/Tooltip";
 
-export type TreeSection = {
-    id: string;
-    sectionKey: string;
-    titleKm: string;
-    titleEn?: string;
-    sortOrder: number;
-    depth: number;
-    parentSectionId?: string;
-};
+import { TreeSection } from "../../types/social.types";
 
 type Props = {
     sections: TreeSection[];

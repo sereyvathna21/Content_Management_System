@@ -6,7 +6,8 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ComponentCard from "@/components/common/ComponentCard";
 import { Modal } from "@/components/ui/modal";
-import SocialTopicTable, { SocialTopic } from "@/components/social/SocialTopicTable";
+import SocialTopicTable from "@/components/social/SocialTopicTable";
+import { SocialTopic } from "@/types/social.types";
 import SocialFilters from "@/components/social/SocialFilters";
 
 

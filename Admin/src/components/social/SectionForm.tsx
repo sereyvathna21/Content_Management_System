@@ -5,16 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 
 type LangCode = "km" | "en";
 
-export type SectionData = {
-  id?: string;
-  topicId?: string;
-  parentSectionId?: string;
-  sectionKey: string;
-  titleKm: string;
-  titleEn: string;
-  contentKm: string;
-  contentEn: string;
-};
+import { SectionData } from "../../types/social.types";
 
 type Props = {
   initialData?: SectionData | null;
