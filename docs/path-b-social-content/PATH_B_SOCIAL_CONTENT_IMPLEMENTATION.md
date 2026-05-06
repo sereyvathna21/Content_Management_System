@@ -46,6 +46,8 @@ This removes manual edits in frontend data files and gives a clean draft-to-publ
 - TitleEn
 - SubtitleKm
 - SubtitleEn
+- ReferenceKm
+- ReferenceEn
 - SortOrder
 - Status (Draft, Published)
 - PublishedAt
@@ -103,6 +105,22 @@ This removes manual edits in frontend data files and gives a clean draft-to-publ
 - CreatedByUserId
 - ActionType (SaveDraft, Publish, Rollback)
 
+### SocialReference
+
+- Id
+- TopicId
+- TitleKm
+- TitleEn
+- FileName
+- StoragePath
+- PublicUrl
+- MimeType
+- FileSizeBytes
+- SortOrder
+- UploadedByUserId
+- CreatedAt
+- UpdatedAt
+
 ## 5. API design
 
 ### Admin endpoints
@@ -122,6 +140,11 @@ This removes manual edits in frontend data files and gives a clean draft-to-publ
 - POST /api/admin/social/sections/{sectionId}/media
 - DELETE /api/admin/social/sections/{sectionId}/media/{sectionMediaId}
 - GET /api/admin/social/topics/{topicId}/revisions
+- GET /api/admin/social/topics/{topicId}/references
+- POST /api/admin/social/topics/{topicId}/references/upload
+- PUT /api/admin/social/references/{referenceId}
+- DELETE /api/admin/social/references/{referenceId}
+- POST /api/admin/social/topics/{topicId}/references/reorder
 
 ### Public endpoints (frontend)
 
@@ -134,6 +157,8 @@ Public endpoint rules:
 - Return Published only.
 - Return localized fields for requested language.
 - Return section tree already ordered.
+- Return a localized `reference` field (derived from `ReferenceKm` or `ReferenceEn`).
+- Include `references` with `title`, `publicUrl`, `fileSizeBytes`, and `sortOrder` (sorted).
 
 ## 6. Admin dashboard flow
 
@@ -503,7 +528,45 @@ Done when:
 
 - Publish updates appear without manual redeploy.
 
-### Step 14: QA and release
+### Step 14: Add Reference text fields to SocialTopic
+
+Actions:
+
+- Add `ReferenceKm` and `ReferenceEn` columns to the `SocialTopics` table via EF migration.
+- Update `SocialTopicDto` and AutoMapper profile to include the new fields.
+- Update Admin CRUD endpoints to accept and return reference fields.
+- Add bilingual Reference input fields to the Admin Dashboard topic settings UI.
+- Update `PublicSocialController` to return the reference text in API responses.
+- Update Frontend page mappers to read the localized `apiTopic.reference` from the API instead of using a hardcoded string.
+
+Deliverables:
+
+- Reference text (e.g. "National Social Protection Policy Framework 2016-2025") is fully editable per topic from the Admin Dashboard.
+
+Done when:
+
+- Each topic can have its own bilingual reference text managed in the admin UI and displayed on the landing page.
+
+### Step 15: Reference file improvements (admin + public UX)
+
+Actions:
+
+- Add `SocialReference` table with `FileSizeBytes` and `SortOrder`.
+- Add upload endpoint to capture and store file size at upload time.
+- Add delete endpoint that removes both DB row and the physical file in `wwwroot/uploads/social/`.
+- Add reorder endpoint to persist drag-and-drop order.
+- Update Admin UI to allow drag-and-drop sorting for references.
+- Update Public response mapper and Landing page UI to display file size (for example `Policy-Framework.pdf (2.4 MB)`).
+
+Deliverables:
+
+- Reference files are fully managed (upload, delete, reorder) and show size on the landing page.
+
+Done when:
+
+- Deleting a reference removes the server file, order is editable, and the public list shows file size.
+
+### Step 16: QA and release
 
 Actions:
 

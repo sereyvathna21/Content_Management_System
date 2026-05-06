@@ -25,6 +25,7 @@ namespace Backend.Data
         public DbSet<SocialSectionMedia> SocialSectionMedia { get; set; }
         public DbSet<SocialRevision> SocialRevisions { get; set; }
         public DbSet<SocialAuditLog> SocialAuditLogs { get; set; }
+        public DbSet<SocialReference> SocialReferences { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -87,6 +88,11 @@ namespace Backend.Data
                     .WithOne(r => r.Topic)
                     .HasForeignKey(r => r.TopicId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasMany(x => x.References)
+                    .WithOne(r => r.Topic)
+                    .HasForeignKey(r => r.TopicId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<SocialSection>(b =>
@@ -129,6 +135,18 @@ namespace Backend.Data
             {
                 b.HasKey(x => x.Id);
                 b.HasIndex(x => x.RevisionNumber);
+            });
+
+            modelBuilder.Entity<SocialReference>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.TopicId);
+                b.HasIndex(x => x.SortOrder);
+                b.HasIndex(x => new { x.TopicId, x.Language });
+                b.Property(x => x.FileName).HasMaxLength(260).IsRequired();
+                b.Property(x => x.PublicUrl).HasMaxLength(500).IsRequired();
+                b.Property(x => x.MimeType).HasMaxLength(100).IsRequired();
+                b.Property(x => x.Language).HasMaxLength(10).IsRequired();
             });
 
             modelBuilder.Entity<SocialAuditLog>(b =>

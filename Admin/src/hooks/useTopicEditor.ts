@@ -285,6 +285,7 @@ export function useTopicEditor() {
         handleSaveSection,
         handleDeleteSection,
         handleReorder,
-        router
+        router,
+        session
     };
 }

@@ -102,7 +102,7 @@ namespace Backend.Controllers
             topic.UpdatedAt = DateTime.UtcNow;
             topic.UpdatedByUserId = GetCurrentUserId();
 
-            AddAudit("UpdateTopic", "SocialTopic", topic.Id, topic.Id, null, new { dto.TitleKm, dto.TitleEn, dto.SubtitleKm, dto.SubtitleEn, dto.SortOrder, dto.Status });
+            AddAudit("UpdateTopic", "SocialTopic", topic.Id, topic.Id, null, new { dto.TitleKm, dto.TitleEn, dto.SubtitleKm, dto.SubtitleEn, dto.ReferenceKm, dto.ReferenceEn, dto.SortOrder, dto.Status });
             await _db.SaveChangesAsync();
             return Ok(_mapper.Map<SocialTopicDto>(topic));
         }
@@ -119,9 +119,9 @@ namespace Backend.Controllers
             // Optional: Prevent deletion if there are sections, or rely on cascade.
             // Given the ApplicationDbContext has cascade delete for sections, it should work.
             // But we might want to log it.
-            
+
             AddAudit("DeleteTopic", "SocialTopic", topic.Id, topic.Id, null, new { topic.Slug, topic.TitleKm });
-            
+
             _db.SocialTopics.Remove(topic);
             await _db.SaveChangesAsync();
             return NoContent();
@@ -253,12 +253,15 @@ namespace Backend.Controllers
             const long maxBytes = 5 * 1024 * 1024;
             if (file.Length > maxBytes) return BadRequest("File too large. Max 5 MB.");
 
-            if (string.IsNullOrWhiteSpace(file.ContentType) || !file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-                return BadRequest("Invalid file type.");
+            var isImage = file.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+            var isPdf = file.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase);
+
+            if (!isImage && !isPdf)
+                return BadRequest("Invalid file type. Only images and PDFs are allowed.");
 
             var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
-            if (!allowedExtensions.Contains(ext)) return BadRequest("Invalid file type.");
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf" };
+            if (!allowedExtensions.Contains(ext)) return BadRequest("Invalid file extension.");
 
             var uploadsRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "social");
             Directory.CreateDirectory(uploadsRoot);
@@ -342,10 +345,143 @@ namespace Backend.Controllers
 
         #endregion
 
+        #region Reference Files
+
+        [HttpGet("topics/{topicId}/references")]
+        public async Task<IActionResult> GetReferences(Guid topicId)
+        {
+            var references = await _db.SocialReferences
+                .Where(r => r.TopicId == topicId)
+                .OrderBy(r => r.SortOrder)
+                .ToListAsync();
+
+            return Ok(_mapper.Map<List<SocialReferenceDto>>(references));
+        }
+
+        [HttpPost("topics/{topicId}/references/upload")]
+        public async Task<IActionResult> UploadReference(Guid topicId, [FromForm] IFormFile file, [FromForm] string? titleKm, [FromForm] string? titleEn, [FromForm] string? language)
+        {
+            var topic = await _db.SocialTopics.FindAsync(topicId);
+            if (topic == null) return NotFound("Topic not found.");
+
+            if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
+
+            const long maxBytes = 10 * 1024 * 1024;
+            if (file.Length > maxBytes) return BadRequest("File too large. Max 10 MB.");
+
+            if (!file.ContentType.Equals("application/pdf", StringComparison.OrdinalIgnoreCase))
+                return BadRequest("Invalid file type. Only PDFs are allowed.");
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext != ".pdf") return BadRequest("Invalid file extension.");
+
+            var normalizedLang = (language ?? "km").Trim().ToLowerInvariant();
+            if (normalizedLang != "km" && normalizedLang != "en")
+                return BadRequest("Invalid language. Use 'km' or 'en'.");
+
+            var uploadsRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "social", "references");
+            Directory.CreateDirectory(uploadsRoot);
+
+            var fileName = $"{Guid.NewGuid():N}{ext}";
+            var filePath = Path.Combine(uploadsRoot, fileName);
+
+            await using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var sortOrder = (await _db.SocialReferences
+                .Where(r => r.TopicId == topicId)
+                .MaxAsync(r => (int?)r.SortOrder) ?? -1) + 1;
+
+            var safeName = Path.GetFileName(file.FileName);
+
+            var reference = new SocialReference
+            {
+                TopicId = topicId,
+                Language = normalizedLang,
+                TitleKm = normalizedLang == "km" ? (string.IsNullOrWhiteSpace(titleKm) ? safeName : titleKm) : null,
+                TitleEn = normalizedLang == "en" ? (string.IsNullOrWhiteSpace(titleEn) ? safeName : titleEn) : null,
+                FileName = safeName,
+                StoragePath = filePath,
+                PublicUrl = $"/uploads/social/references/{fileName}",
+                MimeType = file.ContentType,
+                FileSizeBytes = file.Length,
+                SortOrder = sortOrder,
+                UploadedByUserId = GetCurrentUserId(),
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _db.SocialReferences.Add(reference);
+            AddAudit("UploadReference", "SocialReference", reference.Id, topicId, null, new { reference.PublicUrl, reference.FileSizeBytes, reference.SortOrder, reference.Language });
+            await _db.SaveChangesAsync();
+
+            return Ok(_mapper.Map<SocialReferenceDto>(reference));
+        }
+
+        [HttpPut("references/{referenceId}")]
+        public async Task<IActionResult> UpdateReference(Guid referenceId, [FromBody] SocialReferenceUpdateDto dto)
+        {
+            var reference = await _db.SocialReferences.FindAsync(referenceId);
+            if (reference == null) return NotFound();
+
+            reference.TitleKm = dto.TitleKm;
+            reference.TitleEn = dto.TitleEn;
+            reference.SortOrder = dto.SortOrder;
+            reference.UpdatedAt = DateTime.UtcNow;
+
+            AddAudit("UpdateReference", "SocialReference", reference.Id, reference.TopicId, null, new { dto.TitleKm, dto.TitleEn, dto.SortOrder });
+            await _db.SaveChangesAsync();
+
+            return Ok(_mapper.Map<SocialReferenceDto>(reference));
+        }
+
+        [HttpDelete("references/{referenceId}")]
+        public async Task<IActionResult> DeleteReference(Guid referenceId)
+        {
+            var reference = await _db.SocialReferences.FindAsync(referenceId);
+            if (reference == null) return NotFound();
+
+            var uploadsRoot = Path.GetFullPath(Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "social"));
+            var fullPath = Path.GetFullPath(reference.StoragePath);
+            if (fullPath.StartsWith(uploadsRoot, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(fullPath))
+            {
+                System.IO.File.Delete(fullPath);
+            }
+
+            AddAudit("DeleteReference", "SocialReference", reference.Id, reference.TopicId, null, new { reference.PublicUrl, reference.SortOrder });
+            _db.SocialReferences.Remove(reference);
+            await _db.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPost("topics/{topicId}/references/reorder")]
+        public async Task<IActionResult> ReorderReferences(Guid topicId, [FromBody] List<SocialReferenceReorderDto> reorders)
+        {
+            var referenceIds = reorders.Select(r => r.ReferenceId).ToList();
+            var references = await _db.SocialReferences
+                .Where(r => r.TopicId == topicId && referenceIds.Contains(r.Id))
+                .ToListAsync();
+
+            foreach (var reference in references)
+            {
+                var reorder = reorders.First(r => r.ReferenceId == reference.Id);
+                reference.SortOrder = reorder.SortOrder;
+                reference.UpdatedAt = DateTime.UtcNow;
+            }
+
+            AddAudit("ReorderReferences", "SocialReference", null, topicId, null, reorders);
+            await _db.SaveChangesAsync();
+            return Ok();
+        }
+
+        #endregion
+
         #region Governance (Publish/Rollback)
 
         [HttpPost("topics/{topicId}/publish")]
-        public async Task<IActionResult> PublishTopic(Guid topicId)
+        public async Task<IActionResult> PublishTopic(Guid topicId, [FromServices] Microsoft.Extensions.Configuration.IConfiguration config)
         {
             var topic = await _db.SocialTopics
                 .Include(t => t.Sections)
@@ -424,7 +560,24 @@ namespace Backend.Controllers
 
             await _db.SaveChangesAsync();
 
-            // Cache invalidation code could be placed here if needed (e.g. calling an internal Revalidate API)
+            // Cache invalidation: Trigger frontend webhook
+            try
+            {
+                var frontendUrl = config["FrontendUrl"] ?? "http://localhost:3000";
+                var secret = config["RevalidateSecret"] ?? "fallback-secret-123";
+                using var client = new System.Net.Http.HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(5);
+
+                var payload = new { secret = secret, path = "/Landing-page/Resources/Social" };
+                var content = new System.Net.Http.StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+
+                // We fire the request but do not fail publish if it fails
+                await client.PostAsync($"{frontendUrl.TrimEnd('/')}/api/revalidate", content);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to trigger frontend revalidation: {ex.Message}");
+            }
 
             return Ok(new { message = "Topic published successfully.", revisionNumber });
         }

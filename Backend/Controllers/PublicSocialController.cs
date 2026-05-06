@@ -24,10 +24,9 @@ namespace Backend.Controllers
 
         private static string FallbackText(string lang, string? textKm, string? textEn)
         {
-            if (lang == "km" && !string.IsNullOrWhiteSpace(textKm)) return textKm;
-            if (lang == "en" && !string.IsNullOrWhiteSpace(textEn)) return textEn;
-            // Fallback to whichever is available
-            return !string.IsNullOrWhiteSpace(textKm) ? textKm! : textEn ?? string.Empty;
+            if (lang == "km") return textKm ?? string.Empty;
+            if (lang == "en") return textEn ?? string.Empty;
+            return string.Empty;
         }
 
         private string? BuildUrl(string? rawUrl)
@@ -58,8 +57,11 @@ namespace Backend.Controllers
                 Slug = t.Slug,
                 Title = FallbackText(targetLang, t.TitleKm, t.TitleEn),
                 Subtitle = string.IsNullOrWhiteSpace(FallbackText(targetLang, t.SubtitleKm, t.SubtitleEn)) ? null : FallbackText(targetLang, t.SubtitleKm, t.SubtitleEn),
+                Reference = string.IsNullOrWhiteSpace(FallbackText(targetLang, t.ReferenceKm, t.ReferenceEn)) ? null : FallbackText(targetLang, t.ReferenceKm, t.ReferenceEn),
                 PublishedAt = t.PublishedAt,
-                Sections = new List<PublicSocialSectionDto>() // List API doesn't load heavy sections
+                Sections = new List<PublicSocialSectionDto>(), // List API doesn't load heavy sections
+                ReferencesKm = new List<PublicSocialReferenceDto>(),
+                ReferencesEn = new List<PublicSocialReferenceDto>()
             }).ToList();
 
             return Ok(list);
@@ -75,6 +77,7 @@ namespace Backend.Controllers
                 .Include(t => t.Sections)
                     .ThenInclude(s => s.Media)
                         .ThenInclude(sm => sm.Media)
+                .Include(t => t.References)
                 .FirstOrDefaultAsync(t => t.Slug == slug && t.Status == TopicStatus.Published);
 
             if (topic == null) return NotFound();
@@ -84,8 +87,31 @@ namespace Backend.Controllers
                 Slug = topic.Slug,
                 Title = FallbackText(targetLang, topic.TitleKm, topic.TitleEn),
                 Subtitle = string.IsNullOrWhiteSpace(FallbackText(targetLang, topic.SubtitleKm, topic.SubtitleEn)) ? null : FallbackText(targetLang, topic.SubtitleKm, topic.SubtitleEn),
+                Reference = string.IsNullOrWhiteSpace(FallbackText(targetLang, topic.ReferenceKm, topic.ReferenceEn)) ? null : FallbackText(targetLang, topic.ReferenceKm, topic.ReferenceEn),
                 PublishedAt = topic.PublishedAt,
-                Sections = BuildSectionTree(topic.Sections.Where(s => s.Status == TopicStatus.Published), targetLang, null)
+                Sections = BuildSectionTree(topic.Sections.Where(s => s.Status == TopicStatus.Published), targetLang, null),
+                ReferencesKm = topic.References
+                    .Where(r => r.Language == "km")
+                    .OrderBy(r => r.SortOrder)
+                    .Select(r => new PublicSocialReferenceDto
+                    {
+                        Title = string.IsNullOrWhiteSpace(r.TitleKm) ? r.FileName : r.TitleKm,
+                        PublicUrl = BuildUrl(r.PublicUrl) ?? string.Empty,
+                        FileSizeBytes = r.FileSizeBytes,
+                        SortOrder = r.SortOrder
+                    })
+                    .ToList(),
+                ReferencesEn = topic.References
+                    .Where(r => r.Language == "en")
+                    .OrderBy(r => r.SortOrder)
+                    .Select(r => new PublicSocialReferenceDto
+                    {
+                        Title = string.IsNullOrWhiteSpace(r.TitleEn) ? r.FileName : r.TitleEn,
+                        PublicUrl = BuildUrl(r.PublicUrl) ?? string.Empty,
+                        FileSizeBytes = r.FileSizeBytes,
+                        SortOrder = r.SortOrder
+                    })
+                    .ToList()
             };
 
             return Ok(result);

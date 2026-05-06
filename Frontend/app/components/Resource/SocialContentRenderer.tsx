@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
-import { ContentSection, SocialTopic } from "../data/socialContent";
-import { useTranslations, useLocale } from "next-intl";
+import { ContentSection, SocialTopic } from "../../data/socialContent";
+import { useLocale, useTranslations } from "next-intl";
 
 interface SectionRendererProps {
   section: ContentSection;
@@ -13,10 +13,20 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
 
   // Helper function to get localized text
   const getLocalizedText = (
-    text: string | { en: string; kh: string },
+    text?: string | { en: string; kh: string } | null,
   ): string => {
+    if (!text) return "";
     if (typeof text === "string") return text;
-    return text[locale] || text.en;
+    return text[locale] || text.en || "";
+  };
+
+  const formatBytes = (bytes?: number) => {
+    if (bytes === undefined || bytes === null) return "";
+    if (bytes < 1024) return `${bytes} B`;
+    const kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(1)} KB`;
+    const mb = kb / 1024;
+    return `${mb.toFixed(1)} MB`;
   };
 
   // Helper function to get localized content
@@ -99,6 +109,7 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
           width={800}
           height={500}
           className="w-full h-auto object-cover"
+          unoptimized
         />
         {image.caption && (
           <p className="text-sm text-gray-600 italic mt-2 text-center">
@@ -126,6 +137,7 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
               width={400}
               height={300}
               className="w-full h-auto object-cover"
+              unoptimized
             />
             {img.caption && (
               <p className="text-xs sm:text-sm text-gray-600 italic mt-2 text-center">
@@ -253,10 +265,31 @@ export default function SocialContentRenderer({
 
   // Helper function to get localized text
   const getLocalizedText = (
-    text: string | { en: string; kh: string },
+    text?: string | { en: string; kh: string } | null,
   ): string => {
+    if (!text) return "";
     if (typeof text === "string") return text;
-    return text[locale] || text.en;
+    return text[locale] || text.en || "";
+  };
+
+
+  const renderReferenceFiles = (files?: SocialTopic["referenceFilesKm"]) => {
+    if (!files || files.length === 0) return null;
+    return (
+      <div className="flex flex-col gap-2 mt-2">
+        {files.map((file, idx) => (
+          <a
+            key={`${file.publicUrl}-${idx}`}
+            href={file.publicUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-primary hover:underline hover:text-primary/80 inline-flex items-center gap-1"
+          >
+            {file.title}
+          </a>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -280,14 +313,16 @@ export default function SocialContentRenderer({
         <SectionRenderer key={section.id} section={section} />
       ))}
 
-      <div className="mt-8 sm:mt-12 pt-4 sm:pt-6 border-t border-gray-200">
-        <p className="text-xs sm:text-sm md:text-base text-gray-600 italic">
-          {t("reference")}:{" "}
-          <span className="font-bold text-primary">
-            {getLocalizedText(topic.reference)}
-          </span>
-        </p>
-      </div>
+      {(topic.referenceFilesKm?.length || topic.referenceFilesEn?.length) && (
+        <div className="mt-8 sm:mt-12 pt-4 sm:pt-6 border-t border-gray-200">
+          <p className="text-xs sm:text-sm md:text-base text-gray-600 italic">
+            {t("reference")}
+          </p>
+          {renderReferenceFiles(
+            locale === "kh" ? topic.referenceFilesKm : topic.referenceFilesEn,
+          )}
+        </div>
+      )}
     </>
   );
 }

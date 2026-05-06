@@ -9,14 +9,14 @@ export type TreeSection = {
 };
 
 export type SectionData = {
-  id?: string;
-  topicId?: string;
-  parentSectionId?: string;
-  sectionKey: string;
-  titleKm: string;
-  titleEn: string;
-  contentKm: string;
-  contentEn: string;
+    id?: string;
+    topicId?: string;
+    parentSectionId?: string;
+    sectionKey: string;
+    titleKm: string;
+    titleEn: string;
+    contentKm: string;
+    contentEn: string;
 };
 
 export type MediaDto = {
@@ -48,11 +48,28 @@ export type EditorSection = TreeSection & {
 };
 
 export type SocialTopic = {
-  id: string;
-  slug: string;
-  titleKm: string;
-  titleEn?: string;
-  status: number; // 0 = Draft, 1 = Published
-  publishedAt?: string;
-  sortOrder: number;
+    id: string;
+    slug: string;
+    titleKm: string;
+    titleEn?: string;
+    referenceKm?: string;
+    referenceEn?: string;
+    status: number; // 0 = Draft, 1 = Published
+    publishedAt?: string;
+    sortOrder: number;
+};
+
+export type SocialReference = {
+    id: string;
+    topicId: string;
+    language: string;
+    titleKm?: string;
+    titleEn?: string;
+    fileName: string;
+    publicUrl: string;
+    mimeType: string;
+    fileSizeBytes: number;
+    sortOrder: number;
+    createdAt: string;
+    updatedAt: string;
 };

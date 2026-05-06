@@ -129,7 +129,7 @@ export default function SectionForm({ initialData, onSave, onCancel, saving }: P
           </label>
           <input
             type="text"
-            value={isKm ? data.titleKm : data.titleEn}
+            value={(isKm ? data.titleKm : data.titleEn) || ""}
             onChange={(e) => isKm ? setData({ ...data, titleKm: e.target.value }) : setData({ ...data, titleEn: e.target.value })}
             placeholder={isKm ? "ចំណងជើង..." : "Title..."}
             className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none ${isKm && errors.titleKm ? "border-red-500" : "border-gray-300"}`}
@@ -144,7 +144,7 @@ export default function SectionForm({ initialData, onSave, onCancel, saving }: P
           </label>
           <textarea
             rows={10}
-            value={isKm ? data.contentKm : data.contentEn}
+            value={(isKm ? data.contentKm : data.contentEn) || ""}
             onChange={(e) => isKm ? setData({ ...data, contentKm: e.target.value }) : setData({ ...data, contentEn: e.target.value })}
             placeholder={isKm ? "សរសេរអត្ថបទទីនេះ (គាំទ្រការសរសេរ Markdown)..." : "Write markdown content here..."}
             className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none resize-y font-mono ${isKm && errors.contentKm ? "border-red-500" : "border-gray-300"}`}

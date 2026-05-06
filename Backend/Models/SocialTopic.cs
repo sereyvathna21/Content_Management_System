@@ -11,6 +11,8 @@ namespace Backend.Models
         public string? TitleEn { get; set; }
         public string? SubtitleKm { get; set; }
         public string? SubtitleEn { get; set; }
+        public string? ReferenceKm { get; set; }
+        public string? ReferenceEn { get; set; }
         public int SortOrder { get; set; }
         public TopicStatus Status { get; set; } = TopicStatus.Draft;
         public DateTime? PublishedAt { get; set; }
@@ -20,5 +22,6 @@ namespace Backend.Models
 
         public ICollection<SocialSection> Sections { get; set; } = new List<SocialSection>();
         public ICollection<SocialRevision> Revisions { get; set; } = new List<SocialRevision>();
+        public ICollection<SocialReference> References { get; set; } = new List<SocialReference>();
     }
 }

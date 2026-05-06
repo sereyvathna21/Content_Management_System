@@ -3,6 +3,7 @@ using System;
 using Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260506034937_AddReferenceToSocialTopic")]
+    partial class AddReferenceToSocialTopic
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -305,71 +308,6 @@ namespace Backend.Migrations
                     b.HasIndex("TopicId");
 
                     b.ToTable("SocialAuditLogs");
-                });
-
-            modelBuilder.Entity("Backend.Models.SocialReference", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(260)
-                        .HasColumnType("character varying(260)");
-
-                    b.Property<long>("FileSizeBytes")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<string>("MimeType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("PublicUrl")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("StoragePath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("TitleEn")
-                        .HasColumnType("text");
-
-                    b.Property<string>("TitleKm")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<int?>("UploadedByUserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SortOrder");
-
-                    b.HasIndex("TopicId");
-
-                    b.HasIndex("TopicId", "Language");
-
-                    b.ToTable("SocialReferences");
                 });
 
             modelBuilder.Entity("Backend.Models.SocialRevision", b =>
@@ -667,17 +605,6 @@ namespace Backend.Migrations
                     b.Navigation("Publication");
                 });
 
-            modelBuilder.Entity("Backend.Models.SocialReference", b =>
-                {
-                    b.HasOne("Backend.Models.SocialTopic", "Topic")
-                        .WithMany("References")
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Topic");
-                });
-
             modelBuilder.Entity("Backend.Models.SocialRevision", b =>
                 {
                     b.HasOne("Backend.Models.SocialTopic", "Topic")
@@ -745,8 +672,6 @@ namespace Backend.Migrations
 
             modelBuilder.Entity("Backend.Models.SocialTopic", b =>
                 {
-                    b.Navigation("References");
-
                     b.Navigation("Revisions");
 
                     b.Navigation("Sections");

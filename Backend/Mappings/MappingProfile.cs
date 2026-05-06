@@ -28,6 +28,8 @@ namespace Backend.Mappings
             CreateMap<SocialSectionMediaUpdateDto, SocialSectionMedia>();
 
             CreateMap<SocialRevision, SocialRevisionDto>();
+
+            CreateMap<SocialReference, SocialReferenceDto>();
         }
     }
 }

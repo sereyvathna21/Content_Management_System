@@ -668,7 +668,8 @@
       "assistance": "Social Assistance",
       "security": "Social Security"
     },
-    "reference": "Reference"
+    "reference": "Reference",
+    "viewDocument": "View document"
   },
   "AboutUsPage": {
     "hero": {

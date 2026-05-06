@@ -12,6 +12,8 @@ namespace Backend.DTOs
         public string? TitleEn { get; set; }
         public string? SubtitleKm { get; set; }
         public string? SubtitleEn { get; set; }
+        public string? ReferenceKm { get; set; }
+        public string? ReferenceEn { get; set; }
         public int SortOrder { get; set; }
     }
 
@@ -21,6 +23,8 @@ namespace Backend.DTOs
         public string? TitleEn { get; set; }
         public string? SubtitleKm { get; set; }
         public string? SubtitleEn { get; set; }
+        public string? ReferenceKm { get; set; }
+        public string? ReferenceEn { get; set; }
         public int SortOrder { get; set; }
         public TopicStatus Status { get; set; }
     }
@@ -75,6 +79,19 @@ namespace Backend.DTOs
         public int SortOrder { get; set; }
     }
 
+    public class SocialReferenceUpdateDto
+    {
+        public string? TitleKm { get; set; }
+        public string? TitleEn { get; set; }
+        public int SortOrder { get; set; }
+    }
+
+    public class SocialReferenceReorderDto
+    {
+        public Guid ReferenceId { get; set; }
+        public int SortOrder { get; set; }
+    }
+
     // Admin Response DTOs
     public class SocialTopicDto
     {
@@ -84,6 +101,8 @@ namespace Backend.DTOs
         public string? TitleEn { get; set; }
         public string? SubtitleKm { get; set; }
         public string? SubtitleEn { get; set; }
+        public string? ReferenceKm { get; set; }
+        public string? ReferenceEn { get; set; }
         public int SortOrder { get; set; }
         public TopicStatus Status { get; set; }
         public DateTime? PublishedAt { get; set; }
@@ -148,14 +167,33 @@ namespace Backend.DTOs
         public string ActionType { get; set; } = string.Empty;
     }
 
+    public class SocialReferenceDto
+    {
+        public Guid Id { get; set; }
+        public Guid TopicId { get; set; }
+        public string Language { get; set; } = "km";
+        public string? TitleKm { get; set; }
+        public string? TitleEn { get; set; }
+        public string FileName { get; set; } = string.Empty;
+        public string PublicUrl { get; set; } = string.Empty;
+        public string MimeType { get; set; } = string.Empty;
+        public long FileSizeBytes { get; set; }
+        public int SortOrder { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+    }
+
     // Public DTOs (Localized)
     public class PublicSocialTopicDto
     {
         public string Slug { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string? Subtitle { get; set; }
+        public string? Reference { get; set; }
         public DateTime? PublishedAt { get; set; }
         public List<PublicSocialSectionDto> Sections { get; set; } = new();
+        public List<PublicSocialReferenceDto> ReferencesKm { get; set; } = new();
+        public List<PublicSocialReferenceDto> ReferencesEn { get; set; } = new();
     }
 
     public class PublicSocialSectionDto
@@ -178,5 +216,13 @@ namespace Backend.DTOs
         public int SortOrder { get; set; }
         public int? Width { get; set; }
         public int? Height { get; set; }
+    }
+
+    public class PublicSocialReferenceDto
+    {
+        public string Title { get; set; } = string.Empty;
+        public string PublicUrl { get; set; } = string.Empty;
+        public long FileSizeBytes { get; set; }
+        public int SortOrder { get; set; }
     }
 }
