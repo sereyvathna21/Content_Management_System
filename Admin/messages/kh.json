@@ -554,8 +554,9 @@
   "SocialEditor": {
     "saveDraft": "រក្សាទុកព្រាង",
     "publish": "បោះពុម្ភ",
+    "unpublish": "ដកចេញពីការបោះពុម្ភ",
     "publishSuccess": "បានបោះពុម្ភដោយជោគជ័យ",
-    "rollback": "ថយក្រោយទិន្នន័យ",
+    
     "addSection": "បន្ថែមផ្នែកថ្មី",
     "sectionTitle": "ចំណងជើងផ្នែក",
     "sectionContent": "មាតិកា",

@@ -33,7 +33,6 @@ export default function TopicEditorPage() {
         backendUrl,
         load,
         handlePublish,
-        handleRollback,
         handleAddSubSection,
         handleSaveSection,
         handleDeleteSection,
@@ -74,6 +73,8 @@ export default function TopicEditorPage() {
 
     if (loading) return <div className="p-6">Loading Topic...</div>;
     if (!topic) return <div className="p-6">Topic not found</div>;
+
+    const isPublished = topic.status === 1 || topic.status === "Published";
 
     const currentFormInitialData = activeSectionId?.startsWith('new-') 
         ? null 
@@ -227,8 +228,19 @@ export default function TopicEditorPage() {
                    <p className="text-sm text-gray-500 font-mono">/{topic.slug}</p>
                </div>
                <div className="flex gap-3 items-center">
-                   <div className="px-3 py-1 bg-gray-100 rounded-lg text-sm text-gray-600 border border-gray-200">
-                       {topic.status === 1 ? "Live" : "Draft"}
+                   <div
+                       className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide rounded-full border ${
+                           isPublished
+                               ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                               : "bg-amber-50 text-amber-700 border-amber-200"
+                       }`}
+                   >
+                       <span
+                           className={`h-2 w-2 rounded-full ${
+                               isPublished ? "bg-emerald-500" : "bg-amber-500"
+                           }`}
+                       />
+                       {isPublished ? "Live" : "Draft"}
                    </div>
                    <button onClick={() => setSettingsOpen(true)} className="px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 rounded-lg hover:bg-blue-100 border border-blue-200">
                        Reference
@@ -236,13 +248,13 @@ export default function TopicEditorPage() {
                    <button onClick={() => router.back()} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 border border-gray-200">
                        Back
                    </button>
-                   {topic.status === 0 && (
-                       <button onClick={() => setConfirmModal({ type: 'rollback' })} className="px-4 py-2 text-sm font-medium text-orange-700 bg-orange-50 rounded-lg hover:bg-orange-100 border border-orange-200">
-                           {t("rollback") || "Rollback"}
-                       </button>
-                   )}
-                   <button onClick={() => setConfirmModal({ type: 'publish' })} className="px-5 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 shadow-md">
-                       {t("publish") || "Publish Live"}
+                   <button
+                       onClick={() => setConfirmModal({ type: 'publish' })}
+                       className={`px-5 py-2 text-sm font-semibold text-white rounded-lg shadow-md ${
+                           isPublished ? "bg-red-600 hover:bg-red-700" : "bg-green-600 hover:bg-green-700"
+                       }`}
+                   >
+                       {isPublished ? (t("unpublish") || "Unpublish") : (t("publish") || "Publish Live")}
                    </button>
                </div>
             </div>
@@ -303,13 +315,13 @@ export default function TopicEditorPage() {
             <Modal isOpen={!!confirmModal} onClose={() => setConfirmModal(null)} className="max-w-md p-6">
                 <div>
                    <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                       {confirmModal?.type === 'publish' && "Publish Topic"}
-                       {confirmModal?.type === 'rollback' && "Rollback Topic"}
+                       {confirmModal?.type === 'publish' && (isPublished ? "Unpublish Topic" : "Publish Topic")}
                        {confirmModal?.type === 'deleteSection' && "Delete Section"}
                    </h3>
                    <p className="text-sm text-gray-600 mb-6">
-                       {confirmModal?.type === 'publish' && "Are you sure you want to publish? This will push all content live immediately."}
-                       {confirmModal?.type === 'rollback' && "Are you sure you want to rollback to the last published version? Unsaved draft changes will be lost."}
+                       {confirmModal?.type === 'publish' && (isPublished
+                           ? "Are you sure you want to unpublish? This topic will be removed from the public landing page."
+                           : "Are you sure you want to publish? This will push all content live immediately.")}
                        {confirmModal?.type === 'deleteSection' && "Are you sure you want to delete this block? All child blocks will also be deleted. This cannot be undone."}
                    </p>
                    <div className="flex justify-end gap-3">
@@ -321,17 +333,15 @@ export default function TopicEditorPage() {
                        </button>
                        <button
                            className={`h-9 px-4 rounded-lg font-semibold text-white transition ${
-                               confirmModal?.type === 'publish' ? 'bg-green-600 hover:bg-green-700' :
-                               confirmModal?.type === 'rollback' ? 'bg-orange-600 hover:bg-orange-700' :
+                               confirmModal?.type === 'publish' ? (isPublished ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700') :
                                'bg-red-600 hover:bg-red-700'
                            }`}
                            onClick={() => {
                                if (confirmModal?.type === 'publish') handlePublish();
-                               if (confirmModal?.type === 'rollback') handleRollback();
                                if (confirmModal?.type === 'deleteSection' && confirmModal.payload) handleDeleteSection(confirmModal.payload);
                            }}
                        >
-                           Confirm
+                           {confirmModal?.type === 'publish' ? (isPublished ? 'Unpublish' : 'Publish') : 'Confirm'}
                        </button>
                    </div>
                 </div>
@@ -339,7 +349,7 @@ export default function TopicEditorPage() {
 
             {/* Topic Settings Modal */}
             <Modal isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} className="max-w-xl p-6">
-                <h3 className="text-lg font-semibold mb-4 text-gray-800">Topic Settings</h3>
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">Reference</h3>
                 <div className="space-y-6">
                     <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">Reference PDFs (Khmer)</label>
@@ -452,7 +462,7 @@ export default function TopicEditorPage() {
                         disabled={savingSettings || uploadingPdf}
                         className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50"
                     >
-                        {savingSettings ? "Saving..." : "Save Settings"}
+                        {savingSettings ? "Saving..." : "Save Reference"}
                     </button>
                 </div>
             </Modal>

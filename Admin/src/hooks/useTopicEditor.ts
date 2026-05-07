@@ -7,7 +7,7 @@ import { useTranslations } from "next-intl";
 import { EditorSection, SectionData } from "@/types/social.types";
 
 function getBackendUrl() {
-  return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+    return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 }
 
 export function useTopicEditor() {
@@ -24,7 +24,7 @@ export function useTopicEditor() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-    const [confirmModal, setConfirmModal] = useState<{ type: "publish" | "rollback" | "deleteSection", payload?: string } | null>(null);
+    const [confirmModal, setConfirmModal] = useState<{ type: "publish"  | "deleteSection", payload?: string } | null>(null);
 
     // Build a proper tree-order (pre-order traversal) from flat sections
     function buildTreeOrder(flatSections: EditorSection[]): EditorSection[] {
@@ -115,32 +115,15 @@ export function useTopicEditor() {
                 const err = await res.json();
                 throw new Error(err.message || "Missing Khmer validation fields.");
             }
-            setToast({ message: t("publishSuccess") || "Published successfully", type: "success" });
+            const data = await res.json();
+            setToast({ message: data?.message || t("publishSuccess") || "Published successfully", type: "success" });
             load();
         } catch (err: any) {
             setToast({ message: err.message, type: "error" });
         }
     }
 
-    async function handleRollback() {
-        setConfirmModal(null);
-        try {
-            const res = await fetch(`${getBackendUrl()}/api/admin/social/topics/${topicId}/rollback`, {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${session?.accessToken}` }
-            });
-            if (!res.ok) {
-                const err = await res.json();
-                throw new Error(err.message || "Cannot rollback. Ensure a published version exists.");
-            }
-            setToast({ message: "Rolled back successfully", type: "success" });
-            setActiveSectionId(null);
-            setIsFormOpen(false);
-            load();
-        } catch (err: any) {
-             setToast({ message: err.message, type: "error" });
-        }
-    }
+ 
 
     function handleAddSubSection(parentId: string | null) {
         setActiveSectionId(null);
@@ -152,7 +135,7 @@ export function useTopicEditor() {
         setIsSaving(true);
         try {
             const isEditing = !!data.id;
-            const url = isEditing 
+            const url = isEditing
                 ? `${getBackendUrl()}/api/admin/social/sections/${data.id}`
                 : `${getBackendUrl()}/api/admin/social/topics/${topicId}/sections`;
 
@@ -166,7 +149,7 @@ export function useTopicEditor() {
 
             const res = await fetch(url, {
                 method: isEditing ? "PUT" : "POST",
-                headers: { 
+                headers: {
                     "Authorization": `Bearer ${session?.accessToken}`,
                     "Content-Type": "application/json"
                 },
@@ -177,7 +160,7 @@ export function useTopicEditor() {
 
             const savedNode = await res.json();
             await load();
-            
+
             setActiveSectionId(savedNode.id);
             setIsFormOpen(false);
             setToast({ message: "Section saved successfully", type: "success" });
@@ -243,9 +226,9 @@ export function useTopicEditor() {
         try {
             const res = await fetch(`${getBackendUrl()}/api/admin/social/topics/${topicId}/sections/reorder`, {
                 method: "POST",
-                headers: { 
+                headers: {
                     "Authorization": `Bearer ${session?.accessToken}`,
-                    "Content-Type": "application/json" 
+                    "Content-Type": "application/json"
                 },
                 body: JSON.stringify(apiPayload)
             });
@@ -280,7 +263,6 @@ export function useTopicEditor() {
         backendUrl,
         load,
         handlePublish,
-        handleRollback,
         handleAddSubSection,
         handleSaveSection,
         handleDeleteSection,

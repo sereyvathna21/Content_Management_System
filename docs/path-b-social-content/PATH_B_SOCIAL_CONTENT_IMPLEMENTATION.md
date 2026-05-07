@@ -103,7 +103,7 @@ This removes manual edits in frontend data files and gives a clean draft-to-publ
 - RevisionNumber
 - CreatedAt
 - CreatedByUserId
-- ActionType (SaveDraft, Publish, Rollback)
+- ActionType (SaveDraft, Publish, Unpublish)
 
 ### SocialReference
 
@@ -130,7 +130,6 @@ This removes manual edits in frontend data files and gives a clean draft-to-publ
 - POST /api/admin/social/topics
 - PUT /api/admin/social/topics/{topicId}
 - POST /api/admin/social/topics/{topicId}/publish
-- POST /api/admin/social/topics/{topicId}/rollback/{revisionId}
 - GET /api/admin/social/topics/{topicId}/sections
 - POST /api/admin/social/topics/{topicId}/sections
 - PUT /api/admin/social/sections/{sectionId}
@@ -258,7 +257,7 @@ Frontend Social page fetches public API by topic + locale and renders response.
 
 ## 10. Roles and permissions
 
-- Admin and SuperAdmin: full edit + publish + rollback.
+- Admin and SuperAdmin: full edit + publish.
 - Editor: draft only (optional policy).
 - Viewer: read only.
 
@@ -283,7 +282,7 @@ All write actions should be audit logged.
 - Build topics list.
 - Build tree editor + bilingual markdown form.
 - Build draft/publish actions.
-- Build revisions and rollback view.
+
 
 ### Phase 4: Frontend switch
 
@@ -295,14 +294,14 @@ All write actions should be audit logged.
 
 - Import existing content.
 - Validate km/en output.
-- Test publish, rollback, media rendering.
+
 - Remove static content path.
 
 ## 12. Go-live checklist
 
 - Authorization tested for Admin and SuperAdmin.
 - Draft and publish flow tested.
-- Revisions and rollback tested.
+
 - Frontend revalidation confirmed.
 - Khmer and English QA approved.
 - Monitoring/logging enabled for social endpoints.
@@ -404,7 +403,6 @@ Done when:
 Actions:
 
 - Add admin controller routes for topic CRUD, section CRUD, reorder, media attach/remove.
-- Add publish, rollback, and revisions endpoints.
 - Add role authorization for Admin and SuperAdmin.
 
 Deliverables:
@@ -438,7 +436,7 @@ Actions:
 - Create Social topic list page with status and action buttons.
 - Create topic editor with section tree + form panel.
 - Add bilingual markdown fields and section reorder actions.
-- Add save draft, publish, preview, rollback UI actions.
+- Add save draft, publish, unpublish UI actions.
 
 Deliverables:
 
@@ -470,7 +468,7 @@ Done when:
 Actions:
 
 - Enforce publish-time completeness rules.
-- Save revision snapshot on publish and rollback actions.
+- Save revision snapshot on publish and unpublish actions.
 - Write audit entries for create/update/delete/publish actions.
 
 Deliverables:

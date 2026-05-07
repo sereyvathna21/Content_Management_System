@@ -547,8 +547,9 @@
   "SocialEditor": {
     "saveDraft": "Save Draft",
     "publish": "Publish",
+    "unpublish": "Unpublish",
     "publishSuccess": "Published successfully",
-    "rollback": "Rollback",
+  
     "addSection": "Add Section",
     "sectionTitle": "Section Title",
     "sectionContent": "Content (Markdown)",

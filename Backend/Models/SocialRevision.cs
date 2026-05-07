@@ -10,7 +10,7 @@ namespace Backend.Models
         public int RevisionNumber { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public int? CreatedByUserId { get; set; }
-        public string ActionType { get; set; } = string.Empty; // SaveDraft, Publish, Rollback
+        public string ActionType { get; set; } = string.Empty; // SaveDraft, Publish
 
         public SocialTopic? Topic { get; set; }
     }

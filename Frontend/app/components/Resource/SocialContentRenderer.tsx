@@ -272,7 +272,6 @@ export default function SocialContentRenderer({
     return text[locale] || text.en || "";
   };
 
-
   const renderReferenceFiles = (files?: SocialTopic["referenceFilesKm"]) => {
     if (!files || files.length === 0) return null;
     return (
@@ -291,6 +290,10 @@ export default function SocialContentRenderer({
       </div>
     );
   };
+
+  const hasReferences =
+    (topic.referenceFilesKm?.length ?? 0) > 0 ||
+    (topic.referenceFilesEn?.length ?? 0) > 0;
 
   return (
     <>
@@ -313,7 +316,7 @@ export default function SocialContentRenderer({
         <SectionRenderer key={section.id} section={section} />
       ))}
 
-      {(topic.referenceFilesKm?.length || topic.referenceFilesEn?.length) && (
+      {hasReferences && (
         <div className="mt-8 sm:mt-12 pt-4 sm:pt-6 border-t border-gray-200">
           <p className="text-xs sm:text-sm md:text-base text-gray-600 italic">
             {t("reference")}

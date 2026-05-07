@@ -1,4 +1,4 @@
-import { SectionMedia } from "../../types/social.types";
+import { SectionMedia } from "../types/social.types";
 
 export const IMAGE_POSITIONS = [
     { value: 0, label: "Top" },

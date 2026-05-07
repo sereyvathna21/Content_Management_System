@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,12 +24,14 @@ namespace Backend.Controllers
         private readonly ApplicationDbContext _db;
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
+        private readonly IConfiguration _config;
 
-        public AdminSocialController(ApplicationDbContext db, IMapper mapper, IWebHostEnvironment env)
+        public AdminSocialController(ApplicationDbContext db, IMapper mapper, IWebHostEnvironment env, IConfiguration config)
         {
             _db = db;
             _mapper = mapper;
             _env = env;
+            _config = config;
         }
 
         private int GetCurrentUserId()
@@ -53,6 +56,26 @@ namespace Backend.Controllers
                 MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata),
                 CreatedAt = DateTime.UtcNow
             });
+        }
+
+        private async Task TriggerFrontendRevalidationAsync(string path)
+        {
+            try
+            {
+                var frontendUrl = _config["FrontendUrl"] ?? "http://localhost:3000";
+                var secret = _config["RevalidateSecret"] ?? "fallback-secret-123";
+                using var client = new System.Net.Http.HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(5);
+
+                var payload = new { secret = secret, path = path };
+                var content = new System.Net.Http.StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+
+                await client.PostAsync($"{frontendUrl.TrimEnd('/')}/api/revalidate", content);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to trigger frontend revalidation: {ex.Message}");
+            }
         }
 
         #region Topics CRUD
@@ -104,6 +127,11 @@ namespace Backend.Controllers
 
             AddAudit("UpdateTopic", "SocialTopic", topic.Id, topic.Id, null, new { dto.TitleKm, dto.TitleEn, dto.SubtitleKm, dto.SubtitleEn, dto.ReferenceKm, dto.ReferenceEn, dto.SortOrder, dto.Status });
             await _db.SaveChangesAsync();
+            // If this topic is published, trigger frontend revalidation so updates appear on the landing page
+            if (topic.Status == TopicStatus.Published)
+            {
+                await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+            }
             return Ok(_mapper.Map<SocialTopicDto>(topic));
         }
 
@@ -201,6 +229,12 @@ namespace Backend.Controllers
 
             AddAudit("UpdateSection", "SocialSection", section.Id, section.TopicId, section.Id, new { dto.SectionKey, dto.TitleKm, dto.TitleEn, dto.SortOrder, dto.ParentSectionId, dto.Status });
             await _db.SaveChangesAsync();
+            // If the parent topic is published, trigger frontend revalidation so section changes appear immediately
+            var parentTopic = await _db.SocialTopics.FindAsync(section.TopicId);
+            if (parentTopic != null && parentTopic.Status == TopicStatus.Published)
+            {
+                await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+            }
             return Ok(_mapper.Map<SocialSectionDto>(section));
         }
 
@@ -478,10 +512,10 @@ namespace Backend.Controllers
 
         #endregion
 
-        #region Governance (Publish/Rollback)
+        #region Governance (Publish/Unpublish)
 
         [HttpPost("topics/{topicId}/publish")]
-        public async Task<IActionResult> PublishTopic(Guid topicId, [FromServices] Microsoft.Extensions.Configuration.IConfiguration config)
+        public async Task<IActionResult> PublishTopic(Guid topicId)
         {
             var topic = await _db.SocialTopics
                 .Include(t => t.Sections)
@@ -489,6 +523,29 @@ namespace Backend.Controllers
                 .FirstOrDefaultAsync(t => t.Id == topicId);
 
             if (topic == null) return NotFound();
+
+            // Toggle behavior: clicking publish again on a published topic will unpublish it.
+            if (topic.Status == TopicStatus.Published)
+            {
+                topic.Status = TopicStatus.Draft;
+                topic.PublishedAt = null;
+                topic.PublishedByUserId = null;
+                topic.UpdatedAt = DateTime.UtcNow;
+                topic.UpdatedByUserId = GetCurrentUserId();
+
+                foreach (var section in topic.Sections)
+                {
+                    section.Status = TopicStatus.Draft;
+                    section.UpdatedAt = DateTime.UtcNow;
+                    section.UpdatedByUserId = GetCurrentUserId();
+                }
+
+                AddAudit("UnpublishTopic", "SocialTopic", topicId, topicId, null, new { topic.Slug });
+                await _db.SaveChangesAsync();
+                await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+
+                return Ok(new { message = "Topic unpublished successfully.", action = "unpublished" });
+            }
 
             var sectionIds = topic.Sections.Select(s => s.Id).ToHashSet();
 
@@ -559,27 +616,40 @@ namespace Backend.Controllers
             }
 
             await _db.SaveChangesAsync();
+            await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
 
-            // Cache invalidation: Trigger frontend webhook
-            try
+            return Ok(new { message = "Topic published successfully.", revisionNumber, action = "published" });
+        }
+
+        [HttpPost("topics/{topicId}/unpublish")]
+        public async Task<IActionResult> UnpublishTopic(Guid topicId)
+        {
+            var topic = await _db.SocialTopics
+                .Include(t => t.Sections)
+                .FirstOrDefaultAsync(t => t.Id == topicId);
+
+            if (topic == null) return NotFound();
+            if (topic.Status != TopicStatus.Published)
+                return BadRequest("Topic is not currently published.");
+
+            topic.Status = TopicStatus.Draft;
+            topic.PublishedAt = null;
+            topic.PublishedByUserId = null;
+            topic.UpdatedAt = DateTime.UtcNow;
+            topic.UpdatedByUserId = GetCurrentUserId();
+
+            foreach (var section in topic.Sections)
             {
-                var frontendUrl = config["FrontendUrl"] ?? "http://localhost:3000";
-                var secret = config["RevalidateSecret"] ?? "fallback-secret-123";
-                using var client = new System.Net.Http.HttpClient();
-                client.Timeout = TimeSpan.FromSeconds(5);
-
-                var payload = new { secret = secret, path = "/Landing-page/Resources/Social" };
-                var content = new System.Net.Http.StringContent(JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
-
-                // We fire the request but do not fail publish if it fails
-                await client.PostAsync($"{frontendUrl.TrimEnd('/')}/api/revalidate", content);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to trigger frontend revalidation: {ex.Message}");
+                section.Status = TopicStatus.Draft;
+                section.UpdatedAt = DateTime.UtcNow;
+                section.UpdatedByUserId = GetCurrentUserId();
             }
 
-            return Ok(new { message = "Topic published successfully.", revisionNumber });
+            AddAudit("UnpublishTopic", "SocialTopic", topicId, topicId, null, new { topic.Slug });
+            await _db.SaveChangesAsync();
+            await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+
+            return Ok(new { message = "Topic unpublished successfully." });
         }
 
         [HttpGet("topics/{topicId}/revisions")]
@@ -591,36 +661,6 @@ namespace Backend.Controllers
                 .ToListAsync();
 
             return Ok(_mapper.Map<List<SocialRevisionDto>>(revisions));
-        }
-
-        [HttpPost("topics/{topicId}/rollback/{revisionId}")]
-        public async Task<IActionResult> RollbackTopic(Guid topicId, Guid revisionId)
-        {
-            var revision = await _db.SocialRevisions.FirstOrDefaultAsync(r => r.Id == revisionId && r.TopicId == topicId);
-            if (revision == null) return NotFound("Revision not found.");
-
-            // Rollback feature requires complex wiping of current DB state and inserting JSON state.
-            // For MVP: Mark status back to Draft and create a rollback log. Further implementation of deep rollback can be customized.
-            var topic = await _db.SocialTopics.FindAsync(topicId);
-            if (topic == null) return NotFound();
-
-            topic.Status = TopicStatus.Draft;
-
-            var rollbackLog = new SocialRevision
-            {
-                TopicId = topicId,
-                SnapshotJson = revision.SnapshotJson,
-                RevisionNumber = await _db.SocialRevisions.Where(r => r.TopicId == topicId).MaxAsync(r => r.RevisionNumber) + 1,
-                CreatedAt = DateTime.UtcNow,
-                CreatedByUserId = GetCurrentUserId(),
-                ActionType = "Rollback"
-            };
-
-            _db.SocialRevisions.Add(rollbackLog);
-            AddAudit("RollbackTopic", "SocialTopic", topicId, topicId, null, new { revisionId });
-            await _db.SaveChangesAsync();
-
-            return Ok(new { message = "Topic rolled back to draft successfully based on revision context." });
         }
 
         #endregion

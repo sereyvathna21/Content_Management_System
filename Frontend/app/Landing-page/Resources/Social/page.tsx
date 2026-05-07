@@ -259,13 +259,6 @@ export default function Social() {
 
                   {topicsSummary.map((topic) => {
                     const isActive = topic.slug === selectedTopicId;
-                    // Map topic slug to translation key
-                    const tabKey =
-                      topic.slug === "governance"
-                        ? "governance"
-                        : topic.slug === "assistance"
-                          ? "assistance"
-                          : "security";
                     return (
                       <button
                         key={topic.slug}
@@ -283,7 +276,7 @@ export default function Social() {
                           }
                         `}
                       >
-                        <span>{t(`tabs.${tabKey}`)}</span>
+                        <span>{topic.title || t("tabs.security")}</span>
                       </button>
                     );
                   })}
