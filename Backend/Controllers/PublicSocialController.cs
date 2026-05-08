@@ -119,6 +119,9 @@ namespace Backend.Controllers
 
         private List<PublicSocialSectionDto> BuildSectionTree(IEnumerable<SocialSection> allSections, string lang, Guid? parentId)
         {
+            // Convert lang to ImageLanguage enum
+            var targetImageLang = lang == "en" ? ImageLanguage.EN : ImageLanguage.KH;
+
             return allSections
                 .Where(s => s.ParentSectionId == parentId)
                 .OrderBy(s => s.SortOrder)
@@ -129,16 +132,27 @@ namespace Backend.Controllers
                     Content = FallbackText(lang, s.ContentKm, s.ContentEn),
                     SortOrder = s.SortOrder,
                     Depth = s.Depth,
-                    Media = s.Media.OrderBy(m => m.SortOrder).Select(m => new PublicSocialSectionMediaDto
-                    {
-                        PublicUrl = BuildUrl(m.Media?.PublicUrl) ?? "",
-                        Position = m.Position.ToString().ToLower(),
-                        Caption = string.IsNullOrWhiteSpace(FallbackText(lang, m.CaptionKm, m.CaptionEn)) ? null : FallbackText(lang, m.CaptionKm, m.CaptionEn),
-                        Alt = string.IsNullOrWhiteSpace(FallbackText(lang, m.AltKm, m.AltEn)) ? null : FallbackText(lang, m.AltKm, m.AltEn),
-                        SortOrder = m.SortOrder,
-                        Width = m.Media?.Width,
-                        Height = m.Media?.Height
-                    }).ToList(),
+                    Media = s.Media
+                        .Where(m => m.Language == targetImageLang)
+                        .OrderBy(m => m.SortOrder)
+                        .Select(m => new
+                        {
+                            PublicUrl = BuildUrl(m.Media?.PublicUrl),
+                            Media = m
+                        })
+                        .Where(x => !string.IsNullOrWhiteSpace(x.PublicUrl))
+                        .Select(x => new PublicSocialSectionMediaDto
+                        {
+                            PublicUrl = x.PublicUrl!,
+                            Position = x.Media.Position.ToString().ToLower(),
+                            Language = x.Media.Language.ToString(),
+                            Caption = string.IsNullOrWhiteSpace(FallbackText(lang, x.Media.CaptionKm, x.Media.CaptionEn)) ? null : FallbackText(lang, x.Media.CaptionKm, x.Media.CaptionEn),
+                            Alt = string.IsNullOrWhiteSpace(FallbackText(lang, x.Media.AltKm, x.Media.AltEn)) ? null : FallbackText(lang, x.Media.AltKm, x.Media.AltEn),
+                            SortOrder = x.Media.SortOrder,
+                            Width = x.Media.Width > 0 ? x.Media.Width : 75,
+                            Height = x.Media.Media?.Height
+                        })
+                        .ToList(),
                     ChildSections = BuildSectionTree(allSections, lang, s.Id)
                 }).ToList();
         }

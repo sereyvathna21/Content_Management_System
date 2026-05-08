@@ -24,7 +24,7 @@ export function useTopicEditor() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-    const [confirmModal, setConfirmModal] = useState<{ type: "publish"  | "deleteSection", payload?: string } | null>(null);
+    const [confirmModal, setConfirmModal] = useState<{ type: "publish" | "deleteSection", payload?: string } | null>(null);
 
     // Build a proper tree-order (pre-order traversal) from flat sections
     function buildTreeOrder(flatSections: EditorSection[]): EditorSection[] {
@@ -74,6 +74,9 @@ export function useTopicEditor() {
                             sectionId: m.sectionId,
                             mediaId: m.mediaId,
                             position: m.position,
+                            // map backend enum (number or string) to client "KH"|"EN"
+                            language: typeof m.language === 'number' ? (m.language === 1 ? 'EN' : 'KH') : (typeof m.language === 'string' ? (m.language.toUpperCase() === 'EN' ? 'EN' : 'KH') : 'KH'),
+                            width: m.width,
                             captionKm: m.captionKm,
                             captionEn: m.captionEn,
                             altKm: m.altKm,
@@ -123,7 +126,7 @@ export function useTopicEditor() {
         }
     }
 
- 
+
 
     function handleAddSubSection(parentId: string | null) {
         setActiveSectionId(null);

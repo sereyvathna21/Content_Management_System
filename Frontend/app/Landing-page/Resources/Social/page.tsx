@@ -18,19 +18,28 @@ function mapApiSections(apiSections: any[]): ContentSection[] {
     let image: ContentSection["image"] = undefined;
     let images: ContentSection["images"] = undefined;
 
-    if (s.media && s.media.length > 0) {
-      if (s.media.length === 1) {
+    const validMedia = Array.isArray(s.media)
+      ? s.media.filter(
+          (m: any) =>
+            typeof m?.publicUrl === "string" && m.publicUrl.trim().length > 0,
+        )
+      : [];
+
+    if (validMedia.length > 0) {
+      if (validMedia.length === 1) {
         image = {
-          src: s.media[0].publicUrl,
-          alt: s.media[0].alt || "",
-          caption: s.media[0].caption,
-          position: (s.media[0].position || "top") as any,
+          src: validMedia[0].publicUrl,
+          alt: validMedia[0].alt || "",
+          caption: validMedia[0].caption,
+          position: (validMedia[0].position || "top") as any,
+          width: validMedia[0].width || 100,
         };
       } else {
-        images = s.media.map((m: any) => ({
+        images = validMedia.map((m: any) => ({
           src: m.publicUrl,
           alt: m.alt || "",
           caption: m.caption,
+          width: m.width || 100,
         }));
       }
     }
@@ -109,51 +118,77 @@ export default function Social() {
   const isInternalNavigation = useRef(false);
   const prevUrlRef = useRef({ topic: urlTopic });
 
+  const fetchTopics = useCallback(async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const res = await axios.get(
+        `${apiUrl}/api/public/social/topics?lang=${locale}`,
+        { headers: { "Cache-Control": "no-cache" } },
+      );
+      setTopicsSummary(res.data);
+      if (res.data.length > 0 && !urlTopic) {
+        setSelectedTopicId(res.data[0].slug);
+      }
+    } catch (err) {
+      console.error("Failed to load topics", err);
+      setError("Failed to load topics");
+    }
+  }, [locale, urlTopic]);
+
+  const fetchTopicData = useCallback(async () => {
+    if (!selectedTopicId) return;
+
+    setLoading(true);
+    setError("");
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const res = await axios.get(
+        `${apiUrl}/api/public/social/topics/${selectedTopicId}?lang=${locale}`,
+        { headers: { "Cache-Control": "no-cache" } },
+      );
+      setTopicData(mapApiTopicToRenderer(res.data));
+    } catch (err) {
+      console.error("Failed to load topic details", err);
+      setError("Failed to load topic details");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedTopicId, locale]);
+
   // 1. Fetch topics list
   useEffect(() => {
-    const fetchTopics = async () => {
-      try {
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-        const res = await axios.get(
-          `${apiUrl}/api/public/social/topics?lang=${locale}`,
-        );
-        setTopicsSummary(res.data);
-        if (res.data.length > 0 && !urlTopic) {
-          setSelectedTopicId(res.data[0].slug);
-        }
-      } catch (err) {
-        console.error("Failed to load topics", err);
-        setError("Failed to load topics");
-      }
-    };
     fetchTopics();
-  }, [locale, urlTopic]);
+  }, [fetchTopics]);
 
   // 2. Fetch specific topic content when selectedTopicId changes
   useEffect(() => {
-    if (!selectedTopicId) return;
+    fetchTopicData();
+  }, [fetchTopicData]);
 
-    const fetchTopicData = async () => {
-      setLoading(true);
-      setError("");
-      try {
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
-        const res = await axios.get(
-          `${apiUrl}/api/public/social/topics/${selectedTopicId}?lang=${locale}`,
-        );
-        setTopicData(mapApiTopicToRenderer(res.data));
-      } catch (err) {
-        console.error("Failed to load topic details", err);
-        setError("Failed to load topic details");
-      } finally {
-        setLoading(false);
+  useEffect(() => {
+    const refreshLiveData = () => {
+      fetchTopics();
+      fetchTopicData();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshLiveData();
       }
     };
 
-    fetchTopicData();
-  }, [selectedTopicId, locale]);
+    refreshLiveData();
+    window.addEventListener("focus", refreshLiveData);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    const intervalId = window.setInterval(refreshLiveData, 30000);
+
+    return () => {
+      window.removeEventListener("focus", refreshLiveData);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.clearInterval(intervalId);
+    };
+  }, [fetchTopics, fetchTopicData]);
 
   // Update state when URL params change (e.g., from navbar)
   useEffect(() => {

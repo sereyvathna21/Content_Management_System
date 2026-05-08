@@ -81,12 +81,41 @@ namespace Backend.Controllers
         #region Topics CRUD
 
         [HttpGet("topics")]
-        public async Task<IActionResult> GetTopics()
+        public async Task<IActionResult> GetTopics(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? q = null)
         {
-            var topics = await _db.SocialTopics
+            page = Math.Max(1, page);
+            pageSize = Math.Max(1, pageSize);
+
+            var query = _db.SocialTopics.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                var qLower = q.Trim().ToLower();
+                query = query.Where(topic =>
+                    (topic.Slug ?? string.Empty).ToLower().Contains(qLower) ||
+                    (topic.TitleKm ?? string.Empty).ToLower().Contains(qLower) ||
+                    (topic.TitleEn ?? string.Empty).ToLower().Contains(qLower));
+            }
+
+            var total = await query.CountAsync();
+
+            var topics = await query
                 .OrderBy(t => t.SortOrder)
+                .ThenByDescending(t => t.UpdatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
-            return Ok(_mapper.Map<List<SocialTopicDto>>(topics));
+
+            return Ok(new
+            {
+                total,
+                page,
+                pageSize,
+                items = _mapper.Map<List<SocialTopicDto>>(topics)
+            });
         }
 
         [HttpGet("topics/{topicId}")]
@@ -211,7 +240,9 @@ namespace Backend.Controllers
             var section = await _db.SocialSections.FindAsync(sectionId);
             if (section == null) return NotFound();
 
+            var existingStatus = section.Status;
             _mapper.Map(dto, section);
+            section.Status = dto.Status ?? existingStatus;
             section.UpdatedAt = DateTime.UtcNow;
             section.UpdatedByUserId = GetCurrentUserId();
 

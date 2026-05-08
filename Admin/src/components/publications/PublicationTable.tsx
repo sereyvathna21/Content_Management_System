@@ -137,123 +137,198 @@ export default React.memo(function PublicationTable({
           </ComponentCard>
         ) : (
           <ComponentCard title="" className="mt-2">
-            <div className="max-w-full overflow-x-auto">
-              <div className="min-w-0">
-                <Table>
-                  <TableHeader className="border-b border-gray-100 dark:border-white/5">
-                    <TableRow>
-                      <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        {t("PublicationTable.headers.title")}
-                      </TableCell>
-                      <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        {t("PublicationTable.headers.category")}
-                      </TableCell>
-                      <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        {t("PublicationTable.headers.date")}
-                      </TableCell>
-                      <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        {t("PublicationTable.headers.attachment")}
-                      </TableCell>
-                      <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        {t("PublicationTable.headers.actions")}
-                      </TableCell>
-                    </TableRow>
-                  </TableHeader>
+            <div className="space-y-4">
+              <div className="md:hidden space-y-3">
+                {publications.map((publication) => {
+                  const translation = pickTranslation(
+                    publication.translations.map((tr) => ({
+                      id: tr.id,
+                      language: tr.language,
+                      title: tr.title,
+                      pdfUrl: tr.attachmentUrl,
+                      category: tr.category,
+                    })),
+                    locale,
+                    `Publication #${publication.id}`,
+                  );
+                  const attachmentHref = resolveAttachmentUrl(translation.pdfUrl);
 
-                  <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
-                    {publications.map((publication) => {
-                      const translation = pickTranslation(
-                        publication.translations.map((tr) => ({
-                          id: tr.id,
-                          language: tr.language,
-                          title: tr.title,
-                          pdfUrl: tr.attachmentUrl,
-                          category: tr.category,
-                        })),
-                        locale,
-                        `Publication #${publication.id}`,
-                      );
+                  return (
+                    <div key={publication.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
+                      <button
+                        type="button"
+                        onClick={() => onOpen(publication)}
+                        className="text-left w-full"
+                      >
+                        <div className="text-sm font-semibold text-gray-800 hover:text-primary transition">
+                          {translation.title}
+                        </div>
+                      </button>
+                      <div className="grid grid-cols-1 gap-2 text-sm text-gray-500">
+                        <div>
+                          <span className="font-medium text-gray-700">{t("PublicationTable.headers.category")}: </span>
+                          {formatCategory(translation.category ?? publication.category, t) ?? <span className="text-gray-300 italic">-</span>}
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">{t("PublicationTable.headers.date")}: </span>
+                          {formatDate(publication.publicationDate, locale) ?? <span className="text-gray-300 italic">-</span>}
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700">{t("PublicationTable.headers.attachment")}: </span>
+                          {attachmentHref ? (
+                            <a className="text-blue-500 hover:underline" href={attachmentHref} target="_blank" rel="noreferrer">
+                              {t("PublicationTable.viewAttachment")}
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">{t("PublicationTable.noAttachment")}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => onEdit(publication)}
+                          className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50"
+                        >
+                          {t("PublicationTable.tooltips.edit")}
+                        </button>
+                        {onDelete && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeleteId(publication.id);
+                              setIsDeleteOpen(true);
+                            }}
+                            disabled={Boolean(deletingId)}
+                            className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition ${deletingId ? "opacity-50 cursor-not-allowed border-red-100 text-red-300" : "text-red-600 border-red-200 hover:bg-red-50"}`}
+                          >
+                            {t("PublicationTable.tooltips.delete")}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-                      const attachmentHref = resolveAttachmentUrl(translation.pdfUrl);
+              <div className="hidden md:block max-w-full overflow-x-auto">
+                <div className="min-w-0">
+                  <Table>
+                    <TableHeader className="border-b border-gray-100 dark:border-white/5">
+                      <TableRow>
+                        <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                          {t("PublicationTable.headers.title")}
+                        </TableCell>
+                        <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                          {t("PublicationTable.headers.category")}
+                        </TableCell>
+                        <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                          {t("PublicationTable.headers.date")}
+                        </TableCell>
+                        <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                          {t("PublicationTable.headers.attachment")}
+                        </TableCell>
+                        <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                          {t("PublicationTable.headers.actions")}
+                        </TableCell>
+                      </TableRow>
+                    </TableHeader>
 
-                      return (
-                        <TableRow key={publication.id}>
-                          <TableCell className="px-5 py-3 sm:px-6 text-start">
-                            <button
-                              className="text-sm font-medium text-gray-800 dark:text-white/90"
-                              onClick={() => onOpen(publication)}
-                            >
-                              <div className="flex items-center gap-3">
-                                <div className="font-medium">{translation.title}</div>
-                              </div>
-                            </button>
-                          </TableCell>
+                    <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
+                      {publications.map((publication) => {
+                        const translation = pickTranslation(
+                          publication.translations.map((tr) => ({
+                            id: tr.id,
+                            language: tr.language,
+                            title: tr.title,
+                            pdfUrl: tr.attachmentUrl,
+                            category: tr.category,
+                          })),
+                          locale,
+                          `Publication #${publication.id}`,
+                        );
 
-                          <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                            {formatCategory(translation.category ?? publication.category, t) ?? <span className="text-gray-300 italic">-</span>}
-                          </TableCell>
+                        const attachmentHref = resolveAttachmentUrl(translation.pdfUrl);
 
-                          <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                            {formatDate(publication.publicationDate, locale) ?? <span className="text-gray-300 italic">-</span>}
-                          </TableCell>
+                        return (
+                          <TableRow key={publication.id}>
+                            <TableCell className="px-5 py-3 sm:px-6 text-start">
+                              <button
+                                className="text-sm font-medium text-gray-800 dark:text-white/90"
+                                onClick={() => onOpen(publication)}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="font-medium">{translation.title}</div>
+                                </div>
+                              </button>
+                            </TableCell>
 
-                          <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                            {attachmentHref ? (
-                              <a className="text-sm text-blue-500 hover:underline" href={attachmentHref} target="_blank" rel="noreferrer">
-                                {t("PublicationTable.viewAttachment")}
-                              </a>
-                            ) : (
-                              <span className="text-sm text-gray-400">{t("PublicationTable.noAttachment")}</span>
-                            )}
-                          </TableCell>
+                            <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
+                              {formatCategory(translation.category ?? publication.category, t) ?? <span className="text-gray-300 italic">-</span>}
+                            </TableCell>
 
-                          <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
-                            <div className="flex items-center gap-2">
-                              <Tooltip label={t("PublicationTable.tooltips.edit")}>
-                                <button
-                                  onClick={() => onEdit(publication)}
-                                  title={t("PublicationTable.tooltips.edit")}
-                                  aria-label={t("PublicationTable.tooltips.edit")}
-                                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/10 transition text-sky-500 dark:text-sky-400"
-                                >
-                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                    <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                  </svg>
-                                </button>
-                              </Tooltip>
+                            <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
+                              {formatDate(publication.publicationDate, locale) ?? <span className="text-gray-300 italic">-</span>}
+                            </TableCell>
 
-                              {onDelete && (
-                                <Tooltip label={t("PublicationTable.tooltips.delete")}>
+                            <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
+                              {attachmentHref ? (
+                                <a className="text-sm text-blue-500 hover:underline" href={attachmentHref} target="_blank" rel="noreferrer">
+                                  {t("PublicationTable.viewAttachment")}
+                                </a>
+                              ) : (
+                                <span className="text-sm text-gray-400">{t("PublicationTable.noAttachment")}</span>
+                              )}
+                            </TableCell>
+
+                            <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
+                              <div className="flex items-center gap-2">
+                                <Tooltip label={t("PublicationTable.tooltips.edit")}>
                                   <button
-                                    onClick={() => {
-                                      setDeleteId(publication.id);
-                                      setIsDeleteOpen(true);
-                                    }}
-                                    title={t("PublicationTable.tooltips.delete")}
-                                    aria-label={t("PublicationTable.tooltips.delete")}
-                                    disabled={Boolean(deletingId)}
-                                    className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${
-                                      deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50"
-                                    }`}
+                                    onClick={() => onEdit(publication)}
+                                    title={t("PublicationTable.tooltips.edit")}
+                                    aria-label={t("PublicationTable.tooltips.edit")}
+                                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/10 transition text-sky-500 dark:text-sky-400"
                                   >
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                      <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M10 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M14 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M9 6V4h6v2" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                   </button>
                                 </Tooltip>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+
+                                {onDelete && (
+                                  <Tooltip label={t("PublicationTable.tooltips.delete")}>
+                                    <button
+                                      onClick={() => {
+                                        setDeleteId(publication.id);
+                                        setIsDeleteOpen(true);
+                                      }}
+                                      title={t("PublicationTable.tooltips.delete")}
+                                      aria-label={t("PublicationTable.tooltips.delete")}
+                                      disabled={Boolean(deletingId)}
+                                      className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${
+                                        deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50"
+                                      }`}
+                                    >
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                        <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M10 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M14 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M9 6V4h6v2" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      </svg>
+                                    </button>
+                                  </Tooltip>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </div>
           </ComponentCard>

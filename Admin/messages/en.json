@@ -517,14 +517,74 @@
     "notAvailable": "N/A"
   },
   "SocialPage": {
-    "title": "Social Content",
+    "title": "Social Management",
     "create": "New Topic",
     "edit": "Edit Topic",
     "searchPlaceholder": "Search topics",
+    "loadError": "Failed to load topics. Please refresh the page.",
+    "deleteFailed": "Failed to delete topic. Please try again.",
+    "createFailed": "Failed to create topic.",
+    "requiredFields": "Khmer title and slug are required.",
+    "form": {
+      "slugLabel": "Slug",
+      "slugPlaceholder": "e.g. assistance",
+      "slugHelp": "This will form the public URL (e.g. /social/assistance)",
+      "khmerTitleLabel": "Khmer Title",
+      "khmerTitlePlaceholder": "Title in Khmer...",
+      "englishTitleLabel": "English Title",
+      "englishTitlePlaceholder": "Title...",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "createDraft": "Create Draft"
+    },
+    "deleteModal": {
+      "title": "Confirm Delete",
+      "body": "Are you sure you want to delete this topic? This will permanently remove all associated sections and revisions.",
+      "cancel": "Cancel",
+      "deleting": "Deleting...",
+      "confirm": "Delete Topic"
+    },
     "card": {
       "title": "Social Topics",
       "desc": "Manage social topics and sections"
     }
+  },
+  "Sidebar": {
+    "menu": "Menu",
+    "others": "Others",
+    "dashboard": "Dashboard",
+    "ecommerce": "Ecommerce",
+    "calendar": "Calendar",
+    "profile": "User Profile",
+    "forms": "Forms",
+    "formElements": "Form Elements",
+    "tables": "Tables",
+    "basicTables": "Basic Tables",
+    "pages": "Pages",
+    "blankPage": "Blank Page",
+    "error404": "404 Error",
+    "resource": "Resource",
+    "laws": "Laws",
+    "publications": "Publications",
+    "social": "Social Management",
+    "new": "New",
+    "news": "News",
+    "video": "Video",
+    "contact": "Contact",
+    "aboutUs": "About-us",
+    "charts": "Charts",
+    "lineChart": "Line Chart",
+    "barChart": "Bar Chart",
+    "uiElements": "UI Elements",
+    "alerts": "Alerts",
+    "avatar": "Avatar",
+    "badge": "Badge",
+    "buttons": "Buttons",
+    "images": "Images",
+    "videos": "Videos",
+    "auditLog": "Audit Log",
+    "rolePermission": "Role Permission",
+    "userManagement": "User Management"
   },
   "SocialTable": {
     "loading": "Loading...",
@@ -539,6 +599,10 @@
       "publishedAt": "Published Date",
       "actions": "Actions"
     },
+    "status": {
+      "published": "Published",
+      "draft": "Draft"
+    },
     "tooltips": {
       "edit": "Edit",
       "delete": "Delete"
@@ -548,7 +612,167 @@
     "saveDraft": "Save Draft",
     "publish": "Publish",
     "unpublish": "Unpublish",
+    "publishLive": "Publish Live",
     "publishSuccess": "Published successfully",
+    "loadingTopic": "Loading topic...",
+    "topicNotFound": "Topic not found",
+    "addImage": "Add Image",
+    "sectionImage": "Section Images",
+    "status": {
+      "live": "Live",
+      "draft": "Draft"
+    },
+    "back": "Back",
+    "settings": {
+      "saveSuccess": "Topic settings saved",
+      "saveFailed": "Failed to save"
+    },
+    "errors": {
+      "onlyPdf": "Only PDF files are allowed",
+      "uploadFailed": "Failed to upload PDF",
+      "deleteReferenceFailed": "Failed to delete reference",
+      "reorderFailed": "Failed to reorder references"
+    },
+    "success": {
+      "uploadSuccess": "PDF uploaded successfully.",
+      "deleteReferenceSuccess": "Reference deleted"
+    },
+    "references": {
+      "title": "Reference",
+      "khmerLabel": "Reference PDFs (Khmer)",
+      "englishLabel": "Reference PDFs (English)",
+      "loading": "Loading references...",
+      "loadFailed": "Failed to load references",
+      "emptyKhmer": "No Khmer reference PDFs uploaded yet.",
+      "emptyEnglish": "No English reference PDFs uploaded yet.",
+      "dragToReorder": "Drag to reorder",
+      "uploading": "Uploading...",
+      "addKhmer": "Click to add Khmer PDF",
+      "addEnglish": "Click to add English PDF",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "save": "Save Reference"
+    },
+    "confirmModal": {
+      "publishTitle": "Publish Topic",
+      "unpublishTitle": "Unpublish Topic",
+      "deleteTitle": "Delete Section",
+      "publishBody": "Are you sure you want to publish? This will push all content live immediately.",
+      "unpublishBody": "Are you sure you want to unpublish? This topic will be removed from the public landing page.",
+      "deleteBody": "Are you sure you want to delete this block? All child blocks will also be deleted. This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "publish": "Publish",
+      "unpublish": "Unpublish"
+    },
+    "emptyState": {
+      "title": "Select a section to edit",
+      "subtitle": "Or click \"+ Add Root Section\" to begin writing content."
+    },
+    "sectionForm": {
+      "titleEdit": "Edit Section",
+      "titleNew": "New Section",
+      "sectionKeyPlaceholder": "e.g. intro-block",
+      "tabKhmer": "Khmer",
+      "tabEnglish": "English",
+      "tabDefault": "Default",
+      "titlePlaceholderKm": "Khmer title...",
+      "titlePlaceholderEn": "Title...",
+      "contentPlaceholderKm": "Write Khmer content here...",
+      "contentPlaceholderEn": "Write markdown content here...",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "save": "Save Block",
+      "errors": {
+        "sectionKeyRequired": "Section key is required",
+        "titleKmRequired": "Khmer title is required",
+        "contentKmRequired": "Khmer content is required"
+      }
+    },
+    "sectionTree": {
+      "title": "Content Sections",
+      "helper": "Select a section to edit",
+      "addRoot": "+ Add Root Section",
+      "empty": "No sections yet. Add one to get started!",
+      "untitled": "Untitled Section",
+      "addSub": "Add Sub-section",
+      "delete": "Delete"
+    },
+    "media": {
+      "title": "Section Images",
+      "subtitle": "Upload and manage images for this section.",
+      "fileHint": "PNG/JPG/WEBP/GIF up to {max}",
+      "saveBeforeAttach": "Save this section before attaching images.",
+      "dropzone": {
+        "uploading": "Uploading image...",
+        "clickToUpload": "Click to upload an image.",
+        "pendingAlt": "Pending upload",
+        "uploaded": "Uploaded image",
+        "readyToAttach": "Ready to attach",
+        "remove": "Remove"
+      },
+      "labels": {
+        "position": "Position",
+        "sortOrder": "Sort Order",
+        "width": "Image Width",
+        "alt": "Alt Text",
+        "language": "Language",
+        "altKhmer": "Alt Text (Khmer)",
+        "altEnglish": "Alt Text (English)",
+        "captionKhmer": "Caption (Khmer)",
+        "captionEnglish": "Caption (English)"
+      },
+      "placeholders": {
+        "alt": "Alt text...",
+        "altKhmer": "Alt text in Khmer...",
+        "altEnglish": "Alt text...",
+        "captionKhmer": "Caption in Khmer...",
+        "captionEnglish": "Caption..."
+      },
+      "buttons": {
+        "attach": "Attach Image",
+        "attaching": "Attaching...",
+        "edit": "Edit",
+        "remove": "Remove",
+        "removing": "Removing...",
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+      },
+      "list": {
+        "title": "Attached Images",
+        "count": "{count} items",
+        "empty": "No images attached yet.",
+        "noPreview": "No preview",
+        "noKhmerAlt": "(No Khmer alt text)",
+        "imageAlt": "Section image",
+        "order": "Order {order}"
+      },
+      "messages": {
+        "attachSuccess": "Image attached successfully",
+        "removeSuccess": "Image removed",
+        "updateSuccess": "Image updated"
+      },
+      "errors": {
+        "saveBeforeAdd": "Save the section before adding images.",
+        "invalidFileType": "Invalid file type.",
+        "imageTooLarge": "Image too large. Max {max}.",
+        "missingToken": "Missing access token.",
+        "uploadFailed": "Failed to upload image.",
+        "attachFailed": "Failed to attach image.",
+        "removeFailed": "Failed to remove image.",
+        "updateFailed": "Failed to update image.",
+        "uploadFirst": "Upload an image first.",
+        "altKhmerRequired": "Khmer alt text is required."
+      },
+      "position": {
+        "top": "Top",
+        "bottom": "Bottom",
+        "left": "Left",
+        "right": "Right",
+        "full": "Full"
+      }
+    },
   
     "addSection": "Add Section",
     "sectionTitle": "Section Title",

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ComponentCard from "@/components/common/ComponentCard";
 import { Modal } from "@/components/ui/modal";
+import Pagination from "@/components/tables/Pagination";
 import SocialTopicTable from "@/components/social/SocialTopicTable";
 import { SocialTopic } from "@/types/social.types";
 import SocialFilters from "@/components/social/SocialFilters";
@@ -26,6 +27,8 @@ export default function SocialPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
+  const pageSize = 10;
+  const [totalCount, setTotalCount] = useState(0);
   const locale = useLocale();
 
   // Create form state
@@ -44,22 +47,30 @@ export default function SocialPage() {
     if (status === "loading" || !session?.accessToken) return;
     setLoading(true);
     try {
-      const res = await fetch(`${getBackendUrl()}/api/admin/social/topics`, {
+      const params = new URLSearchParams({
+        page: String(page),
+        pageSize: String(pageSize),
+      });
+
+      if (query.trim()) params.set("q", query.trim());
+
+      const res = await fetch(`${getBackendUrl()}/api/admin/social/topics?${params.toString()}`, {
         headers: { "Authorization": `Bearer ${session.accessToken}` },
         signal
       });
       if (!res.ok) return;
-      const data = (await res.json()) as SocialTopic[];
+      const data = (await res.json()) as { total?: number; items?: SocialTopic[] };
       if (signal?.aborted) return;
-      setTopics(data);
+      setTopics(data.items ?? []);
+      setTotalCount(Number(data.total ?? 0));
       setLoadError("");
     } catch (err: any) {
       if (err instanceof DOMException && err.name === "AbortError") return;
-      setLoadError("Failed to load topics. Please refresh the page.");
+      setLoadError(t("SocialPage.loadError") || "Failed to load topics. Please refresh the page.");
     } finally {
       setLoading(false);
     }
-  }, [session?.accessToken, status]);
+  }, [page, pageSize, query, session?.accessToken, status, t]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -67,15 +78,12 @@ export default function SocialPage() {
     return () => controller.abort();
   }, [load]);
 
-  const filteredTopics = React.useMemo(() => {
-    if (!query.trim()) return topics;
-    const q = query.toLowerCase();
-    return topics.filter(t => 
-      t.slug.toLowerCase().includes(q) ||
-      t.titleKm.toLowerCase().includes(q) ||
-      t.titleEn?.toLowerCase().includes(q)
-    );
-  }, [topics, query]);
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
   function handleDelete(topic: SocialTopic) {
     setSelectedTopic(topic);
     setDeleteError("");
@@ -95,7 +103,7 @@ export default function SocialPage() {
       
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || "Failed to delete topic. Please try again.");
+        throw new Error(data.message || (t("SocialPage.deleteFailed") || "Failed to delete topic. Please try again."));
       }
       
       setDeleteOpen(false);
@@ -110,7 +118,7 @@ export default function SocialPage() {
   async function handleCreate(e: React.FormEvent) {
       e.preventDefault();
       if (!titleKm || !slug) {
-          setCreateError("Khmer title and slug are required.");
+        setCreateError(t("SocialPage.requiredFields") || "Khmer title and slug are required.");
           return;
       }
 
@@ -127,8 +135,8 @@ export default function SocialPage() {
         });
         
         if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.message || "Failed to create topic");
+          const errData = await res.json();
+          throw new Error(errData.message || (t("SocialPage.createFailed") || "Failed to create topic"));
         }
 
         const newTopic = await res.json();
@@ -150,14 +158,14 @@ export default function SocialPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div className="flex items-start justify-between">
-        <h1 className="text-3xl text-primary font-semibold mb-4">{t("SocialPage.title") || "Social Content"}</h1>
+        <h1 className="text-3xl text-primary font-semibold mb-4">{t("SocialPage.title") || "Social Management"}</h1>
       </div>
 
       <ComponentCard
         title={t("SocialPage.card.title") || "Social Topics"}
-        desc={t("SocialPage.card.desc") || "Manage content topics and sections"}
+        desc={t("SocialPage.card.desc") || "Manage social topics and sections"}
       >
         {loadError && (
           <div className="mb-4">
@@ -169,7 +177,10 @@ export default function SocialPage() {
 
         <SocialFilters 
           query={query}
-          onSearch={setQuery}
+          onSearch={(value) => {
+            setQuery(value);
+            setPage(1);
+          }}
           action={
             <button
               onClick={handleOpenCreate}
@@ -187,12 +198,18 @@ export default function SocialPage() {
             <div className="grid grid-cols-1 gap-3">
               <SocialTopicTable
                 loading={loading}
-                topics={filteredTopics}
+                topics={topics}
                 query={query}
                 locale={locale || "en"}
                 onEdit={(t) => router.push(`/social/${t.id}`)}
                 onDelete={handleDelete}
               />
+
+              {totalPages > 1 && (
+                <div className="mt-4 flex justify-end">
+                  <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -210,41 +227,41 @@ export default function SocialPage() {
         <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-1">
-                Slug <span className="text-red-500">*</span>
+                {t("SocialPage.form.slugLabel") || "Slug"} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 autoFocus
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-'))}
-                placeholder="e.g. assistance"
+                placeholder={t("SocialPage.form.slugPlaceholder") || "e.g. assistance"}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               />
-              <p className="text-xs text-gray-500 mt-1">This will form the public URL (e.g. /social/assistance)</p>
+              <p className="text-xs text-gray-500 mt-1">{t("SocialPage.form.slugHelp") || "This will form the public URL (e.g. /social/assistance)"}</p>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-1">
-                Khmer Title <span className="text-red-500">*</span>
+                {t("SocialPage.form.khmerTitleLabel") || "Khmer Title"} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={titleKm}
                 onChange={(e) => setTitleKm(e.target.value)}
-                placeholder="ចំណងជើង..."
+                placeholder={t("SocialPage.form.khmerTitlePlaceholder") || "Title in Khmer..."}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-1">
-                English Title
+                {t("SocialPage.form.englishTitleLabel") || "English Title"}
               </label>
               <input
                 type="text"
                 value={titleEn}
                 onChange={(e) => setTitleEn(e.target.value)}
-                placeholder="Title..."
+                placeholder={t("SocialPage.form.englishTitlePlaceholder") || "Title..."}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
               />
             </div>
@@ -255,14 +272,14 @@ export default function SocialPage() {
                     onClick={() => setCreateOpen(false)}
                     className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg"
                 >
-                    Cancel
+                  {t("SocialPage.form.cancel") || "Cancel"}
                 </button>
                 <button
                     type="submit"
                     disabled={creating}
                     className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50"
                 >
-                    {creating ? "Creating..." : "Create Draft"}
+                  {creating ? (t("SocialPage.form.creating") || "Creating...") : (t("SocialPage.form.createDraft") || "Create Draft")}
                 </button>
             </div>
         </form>
@@ -275,10 +292,9 @@ export default function SocialPage() {
             </svg>
           </div>
           
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Confirm Delete</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{t("SocialPage.deleteModal.title") || "Confirm Delete"}</h3>
           <p className="text-gray-500 mb-6">
-            Are you sure you want to delete Topic.
-            This will permanently remove all associated sections and revisions.
+            {t("SocialPage.deleteModal.body") || "Are you sure you want to delete this topic? This will permanently remove all associated sections and revisions."}
           </p>
 
           {deleteError && (
@@ -292,14 +308,14 @@ export default function SocialPage() {
               onClick={() => setDeleteOpen(false)}
               className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
             >
-              Cancel
+              {t("SocialPage.deleteModal.cancel") || "Cancel"}
             </button>
             <button
               onClick={confirmDelete}
               disabled={!!deletingId}
               className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 disabled:opacity-50 transition-colors"
             >
-              {deletingId ? "Deleting..." : "Delete Topic"}
+              {deletingId ? (t("SocialPage.deleteModal.deleting") || "Deleting...") : (t("SocialPage.deleteModal.confirm") || "Delete Topic")}
             </button>
           </div>
         </div>

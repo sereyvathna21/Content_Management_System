@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { EditorSection, MediaDto, SectionMedia } from "../../types/social.types";
 import {
@@ -21,6 +22,7 @@ interface SectionMediaPanelProps {
     backendUrl: string;
     onChanged: () => void;
     setToast: (toast: { message: string; type: "success" | "error" }) => void;
+    filterLang?: "km" | "en";
 }
 
 export default function SectionMediaPanel({
@@ -29,8 +31,10 @@ export default function SectionMediaPanel({
     backendUrl,
     onChanged,
     setToast
+    , filterLang
 }: SectionMediaPanelProps) {
     const { data: session } = useSession();
+    const t = useTranslations("SocialEditor");
     
     const [pendingFile, setPendingFile] = useState<File | null>(null);
     const [pendingMedia, setPendingMedia] = useState<MediaDto | null>(null);
@@ -41,20 +45,18 @@ export default function SectionMediaPanel({
     
     const [mediaForm, setMediaForm] = useState({
         position: 4,
-        altKm: "",
-        altEn: "",
-        captionKm: "",
-        captionEn: "",
+        width: 75,
+        language: "KH",
+        alt: "",
         sortOrder: 0
     });
     
     const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
     const [editingMediaForm, setEditingMediaForm] = useState({
         position: 4,
-        altKm: "",
-        altEn: "",
-        captionKm: "",
-        captionEn: "",
+        width: 75,
+        language: "KH",
+        alt: "",
         sortOrder: 0
     });
     const [updatingMediaId, setUpdatingMediaId] = useState<string | null>(null);
@@ -72,18 +74,16 @@ export default function SectionMediaPanel({
         setUpdatingMediaId(null);
         setMediaForm({
             position: 4,
-            altKm: "",
-            altEn: "",
-            captionKm: "",
-            captionEn: "",
+            width: 75,
+            language: "KH",
+            alt: "",
             sortOrder: activeSectionData ? getNextSortOrder(activeSectionData.media) : 0
         });
         setEditingMediaForm({
             position: 4,
-            altKm: "",
-            altEn: "",
-            captionKm: "",
-            captionEn: "",
+            width: 75,
+            language: "KH",
+            alt: "",
             sortOrder: activeSectionData ? getNextSortOrder(activeSectionData.media) : 0
         });
         if (imageInputRef.current) imageInputRef.current.value = "";
@@ -98,22 +98,22 @@ export default function SectionMediaPanel({
 
     async function handleUploadImage(file: File) {
         if (!activeSectionReady) {
-            setUploadError("Save the section before adding images.");
+            setUploadError(t("media.errors.saveBeforeAdd") || "Save the section before adding images.");
             return;
         }
 
         if (!file.type.startsWith("image/")) {
-            setUploadError("Invalid file type.");
+            setUploadError(t("media.errors.invalidFileType") || "Invalid file type.");
             return;
         }
 
         if (file.size > MAX_IMAGE_BYTES) {
-            setUploadError(`Image too large. Max ${MAX_IMAGE_LABEL}.`);
+            setUploadError(t("media.errors.imageTooLarge", { max: MAX_IMAGE_LABEL }) || `Image too large. Max ${MAX_IMAGE_LABEL}.`);
             return;
         }
 
         if (!session?.accessToken) {
-            setUploadError("Missing access token.");
+            setUploadError(t("media.errors.missingToken") || "Missing access token.");
             return;
         }
 
@@ -131,7 +131,7 @@ export default function SectionMediaPanel({
             });
 
             if (!res.ok) {
-                let message = "Failed to upload image.";
+                let message = t("media.errors.uploadFailed") || "Failed to upload image.";
                 try {
                     const err = await res.json();
                     message = err?.message || err || message;
@@ -150,7 +150,7 @@ export default function SectionMediaPanel({
                 sortOrder: activeSectionData ? getNextSortOrder(activeSectionData.media) : prev.sortOrder
             }));
         } catch (err: any) {
-            setUploadError(err.message || "Failed to upload image.");
+            setUploadError(err.message || (t("media.errors.uploadFailed") || "Failed to upload image."));
         } finally {
             setUploadingImage(false);
         }
@@ -166,18 +166,18 @@ export default function SectionMediaPanel({
     async function handleAttachMedia() {
         if (!activeSectionReady || !activeSectionData) return;
         if (!pendingMedia) {
-            setUploadError("Upload an image first.");
+            setUploadError(t("media.errors.uploadFirst") || "Upload an image first.");
             return;
         }
 
-        const altKm = mediaForm.altKm.trim();
-        if (!altKm) {
-            setUploadError("Khmer alt text is required.");
+        const alt = (mediaForm as any).alt?.trim() ?? "";
+        if (!alt) {
+            setUploadError(t("media.errors.altKhmerRequired") || "Khmer alt text is required.");
             return;
         }
 
         if (!session?.accessToken) {
-            setUploadError("Missing access token.");
+            setUploadError(t("media.errors.missingToken") || "Missing access token.");
             return;
         }
 
@@ -189,10 +189,11 @@ export default function SectionMediaPanel({
             const payload = {
                 mediaId: pendingMedia.id,
                 position: mediaForm.position,
-                captionKm: normalizeText(mediaForm.captionKm),
-                captionEn: normalizeText(mediaForm.captionEn),
-                altKm,
-                altEn: normalizeText(mediaForm.altEn),
+                // send numeric enum value: 0 = KH, 1 = EN
+                language: mediaForm.language === "EN" ? 1 : 0,
+                width: mediaForm.width,
+                altKm: alt,
+                altEn: alt,
                 sortOrder
             };
 
@@ -206,7 +207,7 @@ export default function SectionMediaPanel({
             });
 
             if (!res.ok) {
-                let message = "Failed to attach image.";
+                let message = t("media.errors.attachFailed") || "Failed to attach image.";
                 try {
                     const err = await res.json();
                     message = err?.message || err || message;
@@ -219,18 +220,17 @@ export default function SectionMediaPanel({
 
             const nextSortOrder = Number.isFinite(Number(mediaForm.sortOrder)) ? Number(mediaForm.sortOrder) + 1 : 0;
             resetPendingUpload();
-            setMediaForm({
+                setMediaForm({
                 position: 4,
-                altKm: "",
-                altEn: "",
-                captionKm: "",
-                captionEn: "",
+                width: 75,
+                language: "KH",
+                alt: "",
                 sortOrder: nextSortOrder
             });
-            setToast({ message: "Image attached successfully", type: "success" });
+            setToast({ message: t("media.messages.attachSuccess") || "Image attached successfully", type: "success" });
             onChanged();
         } catch (err: any) {
-            setToast({ message: err.message || "Failed to attach image", type: "error" });
+            setToast({ message: err.message || (t("media.errors.attachFailed") || "Failed to attach image"), type: "error" });
         } finally {
             setSavingMedia(false);
         }
@@ -248,7 +248,7 @@ export default function SectionMediaPanel({
             });
 
             if (!res.ok) {
-                let message = "Failed to remove image.";
+                let message = t("media.errors.removeFailed") || "Failed to remove image.";
                 try {
                     const err = await res.json();
                     message = err?.message || err || message;
@@ -259,13 +259,13 @@ export default function SectionMediaPanel({
                 throw new Error(message);
             }
 
-            setToast({ message: "Image removed", type: "success" });
+            setToast({ message: t("media.messages.removeSuccess") || "Image removed", type: "success" });
             if (editingMediaId === sectionMediaId) {
                 setEditingMediaId(null);
             }
             onChanged();
         } catch (err: any) {
-            setToast({ message: err.message || "Failed to remove image", type: "error" });
+            setToast({ message: err.message || (t("media.errors.removeFailed") || "Failed to remove image"), type: "error" });
         } finally {
             setRemovingMediaId(null);
         }
@@ -275,10 +275,10 @@ export default function SectionMediaPanel({
         setEditingMediaId(item.id);
         setEditingMediaForm({
             position: item.position ?? 4,
-            altKm: item.altKm || "",
-            altEn: item.altEn || "",
-            captionKm: item.captionKm || "",
-            captionEn: item.captionEn || "",
+            width: item.width ?? 75,
+            language: item.language || "KH",
+            alt: item.altKm || item.altEn || "",
+
             sortOrder: Number.isFinite(Number(item.sortOrder)) ? Number(item.sortOrder) : 0
         });
     }
@@ -287,10 +287,9 @@ export default function SectionMediaPanel({
         setEditingMediaId(null);
         setEditingMediaForm({
             position: 4,
-            altKm: "",
-            altEn: "",
-            captionKm: "",
-            captionEn: "",
+            width: 75,
+            language: "KH",
+            alt: "",
             sortOrder: 0
         });
     }
@@ -299,9 +298,9 @@ export default function SectionMediaPanel({
         if (!activeSectionReady || !activeSectionData) return;
         if (!session?.accessToken) return;
 
-        const altKm = editingMediaForm.altKm.trim();
-        if (!altKm) {
-            setToast({ message: "Khmer alt text is required.", type: "error" });
+        const alt = (editingMediaForm as any).alt?.trim() ?? "";
+        if (!alt) {
+            setToast({ message: t("media.errors.altKhmerRequired") || "Khmer alt text is required.", type: "error" });
             return;
         }
 
@@ -310,10 +309,11 @@ export default function SectionMediaPanel({
         try {
             const payload = {
                 position: editingMediaForm.position,
-                captionKm: normalizeText(editingMediaForm.captionKm),
-                captionEn: normalizeText(editingMediaForm.captionEn),
-                altKm,
-                altEn: normalizeText(editingMediaForm.altEn),
+                // send numeric enum value: 0 = KH, 1 = EN
+                language: editingMediaForm.language === "EN" ? 1 : 0,
+                width: editingMediaForm.width,
+                altKm: alt,
+                altEn: alt,
                 sortOrder: Number.isFinite(Number(editingMediaForm.sortOrder)) ? Number(editingMediaForm.sortOrder) : 0
             };
 
@@ -327,7 +327,7 @@ export default function SectionMediaPanel({
             });
 
             if (!res.ok) {
-                let message = "Failed to update image.";
+                let message = t("media.errors.updateFailed") || "Failed to update image.";
                 try {
                     const err = await res.json();
                     message = err?.message || err || message;
@@ -338,33 +338,49 @@ export default function SectionMediaPanel({
                 throw new Error(message);
             }
 
-            setToast({ message: "Image updated", type: "success" });
+            setToast({ message: t("media.messages.updateSuccess") || "Image updated", type: "success" });
             cancelEditMedia();
             onChanged();
         } catch (err: any) {
-            setToast({ message: err.message || "Failed to update image", type: "error" });
+            setToast({ message: err.message || (t("media.errors.updateFailed") || "Failed to update image"), type: "error" });
         } finally {
             setUpdatingMediaId(null);
         }
     }
 
     const sortedMedia = activeSectionData?.media
-        ? [...activeSectionData.media].sort((a, b) => a.sortOrder - b.sortOrder)
+        ? [...activeSectionData.media]
+            .filter((m) => {
+                if (!filterLang) return true;
+                return filterLang === "en" ? m.language === "EN" : m.language === "KH";
+            })
+            .sort((a, b) => a.sortOrder - b.sortOrder)
         : [];
+
+    const getPositionLabelText = (value: number) => {
+        const labels: Record<number, string> = {
+            0: t("media.position.top") || "Top",
+            1: t("media.position.bottom") || "Bottom",
+            2: t("media.position.left") || "Left",
+            3: t("media.position.right") || "Right",
+            4: t("media.position.full") || "Full"
+        };
+        return labels[value] || getPositionLabel(value);
+    };
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                 <div>
-                    <h3 className="font-semibold text-lg text-gray-800">Section Images</h3>
-                    <p className="text-xs text-gray-500">Upload and manage images for this section.</p>
+                    <h3 className="font-semibold text-lg text-gray-800">{t("media.title") || "Section Images"}</h3>
+                    <p className="text-xs text-gray-500">{t("media.subtitle") || "Upload and manage images for this section."}</p>
                 </div>
-                <p className="text-xs text-gray-400">PNG/JPG/WEBP/GIF up to {MAX_IMAGE_LABEL}</p>
+                <p className="text-xs text-gray-400">{t("media.fileHint", { max: MAX_IMAGE_LABEL }) || `PNG/JPG/WEBP/GIF up to ${MAX_IMAGE_LABEL}`}</p>
             </div>
 
             {!activeSectionReady ? (
                 <div className="mt-4 rounded-lg border border-dashed border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
-                    Save this section before attaching images.
+                    {t("media.saveBeforeAttach") || "Save this section before attaching images."}
                 </div>
             ) : (
                 <div className="mt-4 space-y-6">
@@ -385,20 +401,20 @@ export default function SectionMediaPanel({
                             }}
                         />
                         {uploadingImage ? (
-                            <div className="relative z-20 text-sm text-gray-500">Uploading image...</div>
+                            <div className="relative z-20 text-sm text-gray-500">{t("media.dropzone.uploading") || "Uploading image..."}</div>
                         ) : pendingMedia ? (
                             <div className="relative z-20 flex flex-col sm:flex-row items-center gap-4 text-left">
                                 <img
                                     src={resolveMediaUrl(backendUrl, pendingMedia.publicUrl)}
-                                    alt={pendingFile?.name || "Pending upload"}
+                                    alt={pendingFile?.name || (t("media.dropzone.pendingAlt") || "Pending upload")}
                                     className="h-20 w-20 rounded-lg object-cover border border-gray-200"
                                 />
                                 <div className="flex-1 min-w-0">
                                     <div className="text-sm font-medium text-gray-900 truncate">
-                                        {pendingFile?.name || "Uploaded image"}
+                                        {pendingFile?.name || (t("media.dropzone.uploaded") || "Uploaded image")}
                                     </div>
                                     <div className="text-xs text-gray-500 mt-1">
-                                        {pendingFile ? formatBytes(pendingFile.size) : "Ready to attach"}
+                                        {pendingFile ? formatBytes(pendingFile.size) : (t("media.dropzone.readyToAttach") || "Ready to attach")}
                                     </div>
                                 </div>
                                 <button
@@ -406,12 +422,12 @@ export default function SectionMediaPanel({
                                     onClick={resetPendingUpload}
                                     className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
                                 >
-                                    Remove
+                                    {t("media.dropzone.remove") || "Remove"}
                                 </button>
                             </div>
                         ) : (
                             <div className="relative z-20 text-sm text-gray-500">
-                                Click to upload an image.
+                                {t("media.dropzone.clickToUpload") || "Click to upload an image."}
                             </div>
                         )}
                     </div>
@@ -422,19 +438,42 @@ export default function SectionMediaPanel({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-1">Position</label>
+                            <label className="block text-sm font-medium text-gray-900 mb-1">{t("media.labels.position") || "Position"}</label>
                             <select
                                 value={mediaForm.position}
                                 onChange={(e) => setMediaForm({ ...mediaForm, position: Number(e.target.value) })}
                                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                             >
                                 {IMAGE_POSITIONS.map((p) => (
-                                    <option key={p.value} value={p.value}>{p.label}</option>
+                                    <option key={p.value} value={p.value}>{getPositionLabelText(p.value)}</option>
                                 ))}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-1">Sort Order</label>
+                            <label className="block text-sm font-medium text-gray-900 mb-1">{t("media.labels.width") || "Image Width"}</label>
+                            <select
+                                value={mediaForm.width}
+                                onChange={(e) => setMediaForm({ ...mediaForm, width: Number(e.target.value) })}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            >
+                                <option value={75}>75%</option>
+                                <option value={50}>50%</option>
+                                <option value={30}>30%</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-1">{t("media.labels.language") || "Language"}</label>
+                            <select
+                                value={mediaForm.language}
+                                onChange={(e) => setMediaForm({ ...mediaForm, language: e.target.value })}
+                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                            >
+                                <option value="KH">Khmer</option>
+                                <option value="EN">English</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-1">{t("media.labels.sortOrder") || "Sort Order"}</label>
                             <input
                                 type="number"
                                 min={0}
@@ -444,45 +483,17 @@ export default function SectionMediaPanel({
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-1">Alt Text (Khmer) <span className="text-red-500">*</span></label>
+                            <label className="block text-sm font-medium text-gray-900 mb-1">{t("media.labels.alt") || "Alt Text"} <span className="text-red-500">*</span></label>
                             <input
                                 type="text"
-                                value={mediaForm.altKm}
-                                onChange={(e) => setMediaForm({ ...mediaForm, altKm: e.target.value })}
-                                placeholder="សេចក្តីពណ៌នា..."
+                                value={(mediaForm as any).alt}
+                                onChange={(e) => setMediaForm({ ...mediaForm, alt: e.target.value })}
+                                placeholder={t("media.placeholders.alt") || "Alt text..."}
                                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-1">Alt Text (English)</label>
-                            <input
-                                type="text"
-                                value={mediaForm.altEn}
-                                onChange={(e) => setMediaForm({ ...mediaForm, altEn: e.target.value })}
-                                placeholder="Alt text..."
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-1">Caption (Khmer)</label>
-                            <textarea
-                                rows={3}
-                                value={mediaForm.captionKm}
-                                onChange={(e) => setMediaForm({ ...mediaForm, captionKm: e.target.value })}
-                                placeholder="ចំណងជើងរូបភាព..."
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-y"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-1">Caption (English)</label>
-                            <textarea
-                                rows={3}
-                                value={mediaForm.captionEn}
-                                onChange={(e) => setMediaForm({ ...mediaForm, captionEn: e.target.value })}
-                                placeholder="Caption..."
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-y"
-                            />
-                        </div>
+                        
+
                     </div>
 
                     <div className="flex justify-end">
@@ -492,14 +503,14 @@ export default function SectionMediaPanel({
                             disabled={savingMedia || !pendingMedia}
                             className="px-5 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50"
                         >
-                            {savingMedia ? "Attaching..." : "Attach Image"}
+                            {savingMedia ? (t("media.buttons.attaching") || "Attaching...") : (t("media.buttons.attach") || "Attach Image")}
                         </button>
                     </div>
 
                     <div className="border-t border-gray-100 pt-4">
                         <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-sm font-semibold text-gray-800">Attached Images</h4>
-                            <span className="text-xs text-gray-400">{activeSectionData?.media?.length || 0} items</span>
+                            <h4 className="text-sm font-semibold text-gray-800">{t("media.list.title") || "Attached Images"}</h4>
+                            <span className="text-xs text-gray-400">{t("media.list.count", { count: activeSectionData?.media?.length || 0 }) || `${activeSectionData?.media?.length || 0} items`}</span>
                         </div>
                         {sortedMedia.length ? (
                             <div className="space-y-3">
@@ -510,9 +521,9 @@ export default function SectionMediaPanel({
                                         <div key={item.id} className="flex flex-col sm:flex-row gap-4 rounded-lg border border-gray-100 p-3">
                                             <div className="h-20 w-20 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
                                                 {mediaUrl ? (
-                                                    <img src={mediaUrl} alt={item.altKm || "Section image"} className="h-full w-full object-cover" />
+                                                    <img src={mediaUrl} alt={(item.altKm || item.altEn) || (t("media.list.imageAlt") || "Section image")} className="h-full w-full object-cover" />
                                                 ) : (
-                                                    <div className="h-full w-full flex items-center justify-center text-xs text-gray-400">No preview</div>
+                                                    <div className="h-full w-full flex items-center justify-center text-xs text-gray-400">{t("media.list.noPreview") || "No preview"}</div>
                                                 )}
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -520,19 +531,42 @@ export default function SectionMediaPanel({
                                                     <div className="space-y-3">
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                             <div>
-                                                                <label className="block text-xs font-medium text-gray-600 mb-1">Position</label>
+                                                                <label className="block text-xs font-medium text-gray-600 mb-1">{t("media.labels.position") || "Position"}</label>
                                                                 <select
                                                                     value={editingMediaForm.position}
                                                                     onChange={(e) => setEditingMediaForm({ ...editingMediaForm, position: Number(e.target.value) })}
                                                                     className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                                                                 >
                                                                     {IMAGE_POSITIONS.map((p) => (
-                                                                        <option key={p.value} value={p.value}>{p.label}</option>
+                                                                        <option key={p.value} value={p.value}>{getPositionLabelText(p.value)}</option>
                                                                     ))}
                                                                 </select>
                                                             </div>
                                                             <div>
-                                                                <label className="block text-xs font-medium text-gray-600 mb-1">Sort Order</label>
+                                                                <label className="block text-xs font-medium text-gray-600 mb-1">{t("media.labels.width") || "Image Width"}</label>
+                                                                <select
+                                                                    value={editingMediaForm.width}
+                                                                    onChange={(e) => setEditingMediaForm({ ...editingMediaForm, width: Number(e.target.value) })}
+                                                                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                                                >
+                                                                    <option value={75}>75%</option>
+                                                                    <option value={50}>50%</option>
+                                                                    <option value={30}>30%</option>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-medium text-gray-600 mb-1">{t("media.labels.language") || "Language"}</label>
+                                                                <select
+                                                                    value={editingMediaForm.language}
+                                                                    onChange={(e) => setEditingMediaForm({ ...editingMediaForm, language: e.target.value })}
+                                                                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                                                                >
+                                                                    <option value="KH">Khmer</option>
+                                                                    <option value="EN">English</option>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label className="block text-xs font-medium text-gray-600 mb-1">{t("media.labels.sortOrder") || "Sort Order"}</label>
                                                                 <input
                                                                     type="number"
                                                                     min={0}
@@ -542,41 +576,15 @@ export default function SectionMediaPanel({
                                                                 />
                                                             </div>
                                                             <div>
-                                                                <label className="block text-xs font-medium text-gray-600 mb-1">Alt Text (Khmer) <span className="text-red-500">*</span></label>
+                                                                <label className="block text-xs font-medium text-gray-600 mb-1">{t("media.labels.alt") || "Alt Text"} <span className="text-red-500">*</span></label>
                                                                 <input
                                                                     type="text"
-                                                                    value={editingMediaForm.altKm}
-                                                                    onChange={(e) => setEditingMediaForm({ ...editingMediaForm, altKm: e.target.value })}
+                                                                    value={(editingMediaForm as any).alt}
+                                                                    onChange={(e) => setEditingMediaForm({ ...editingMediaForm, alt: e.target.value })}
                                                                     className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                                                                 />
                                                             </div>
-                                                            <div>
-                                                                <label className="block text-xs font-medium text-gray-600 mb-1">Alt Text (English)</label>
-                                                                <input
-                                                                    type="text"
-                                                                    value={editingMediaForm.altEn}
-                                                                    onChange={(e) => setEditingMediaForm({ ...editingMediaForm, altEn: e.target.value })}
-                                                                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <label className="block text-xs font-medium text-gray-600 mb-1">Caption (Khmer)</label>
-                                                                <textarea
-                                                                    rows={2}
-                                                                    value={editingMediaForm.captionKm}
-                                                                    onChange={(e) => setEditingMediaForm({ ...editingMediaForm, captionKm: e.target.value })}
-                                                                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-y"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <label className="block text-xs font-medium text-gray-600 mb-1">Caption (English)</label>
-                                                                <textarea
-                                                                    rows={2}
-                                                                    value={editingMediaForm.captionEn}
-                                                                    onChange={(e) => setEditingMediaForm({ ...editingMediaForm, captionEn: e.target.value })}
-                                                                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-y"
-                                                                />
-                                                            </div>
+
                                                         </div>
                                                         <div className="flex flex-wrap items-center gap-2">
                                                             <button
@@ -585,29 +593,27 @@ export default function SectionMediaPanel({
                                                                 disabled={updatingMediaId === item.id}
                                                                 className="px-3 py-1.5 text-xs font-medium text-white bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50"
                                                             >
-                                                                {updatingMediaId === item.id ? "Saving..." : "Save"}
+                                                                {updatingMediaId === item.id ? (t("media.buttons.saving") || "Saving...") : (t("media.buttons.save") || "Save")}
                                                             </button>
                                                             <button
                                                                 type="button"
                                                                 onClick={cancelEditMedia}
                                                                 className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
                                                             >
-                                                                Cancel
+                                                                {t("media.buttons.cancel") || "Cancel"}
                                                             </button>
                                                         </div>
                                                     </div>
                                                 ) : (
                                                     <>
                                                         <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                                                            <span className="px-2 py-1 rounded-full bg-gray-100">{getPositionLabel(item.position)}</span>
-                                                            <span className="px-2 py-1 rounded-full bg-gray-100">Order {item.sortOrder}</span>
+                                                            <span className="px-2 py-1 rounded-full bg-gray-100">{getPositionLabelText(item.position)}</span>
+                                                            <span className="px-2 py-1 rounded-full bg-gray-100">{t("media.list.order", { order: item.sortOrder }) || `Order ${item.sortOrder}`}</span>
                                                         </div>
-                                                        <div className="mt-2 text-sm text-gray-800 truncate">{item.altKm || "(No Khmer alt text)"}</div>
-                                                        {item.captionKm && (
-                                                            <div className="text-xs text-gray-500 mt-1 truncate">{item.captionKm}</div>
-                                                        )}
+                                                        <div className="mt-2 text-sm text-gray-800 truncate">{(item.altKm || item.altEn) || (t("media.list.noKhmerAlt") || "(No Khmer alt text)")}</div>
                                                     </>
                                                 )}
+
                                             </div>
                                             <div className="flex items-start gap-2">
                                                 {!isEditing && (
@@ -616,7 +622,7 @@ export default function SectionMediaPanel({
                                                         onClick={() => beginEditMedia(item)}
                                                         className="px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50"
                                                     >
-                                                        Edit
+                                                        {t("media.buttons.edit") || "Edit"}
                                                     </button>
                                                 )}
                                                 <button
@@ -625,7 +631,7 @@ export default function SectionMediaPanel({
                                                     disabled={removingMediaId === item.id}
                                                     className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50"
                                                 >
-                                                    {removingMediaId === item.id ? "Removing..." : "Remove"}
+                                                    {removingMediaId === item.id ? (t("media.buttons.removing") || "Removing...") : (t("media.buttons.remove") || "Remove")}
                                                 </button>
                                             </div>
                                         </div>
@@ -633,7 +639,7 @@ export default function SectionMediaPanel({
                                 })}
                             </div>
                         ) : (
-                            <div className="text-sm text-gray-500">No images attached yet.</div>
+                            <div className="text-sm text-gray-500">{t("media.list.empty") || "No images attached yet."}</div>
                         )}
                     </div>
                 </div>

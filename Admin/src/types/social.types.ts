@@ -33,6 +33,8 @@ export type SectionMedia = {
     sectionId: string;
     mediaId: string;
     position: number;
+    language: string;
+    width?: number;
     captionKm?: string;
     captionEn?: string;
     altKm?: string;

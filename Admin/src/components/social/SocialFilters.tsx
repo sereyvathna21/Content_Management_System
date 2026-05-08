@@ -44,7 +44,11 @@ export default function SocialFilters({ query, onSearch, action }: Props) {
             </button>
           )}
         </div>
-        {action}
+        {action && (
+          <div className="w-full sm:w-auto *:w-full sm:>*:w-auto">
+            {action}
+          </div>
+        )}
       </div>
     </div>
   );

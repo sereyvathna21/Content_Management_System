@@ -402,7 +402,7 @@
           "description": "Explore our research reports, policy documents, and informational publications."
         },
         "social": {
-          "title": "Social Protection",
+          "title": "Social Management",
           "description": "Explore Cambodia's social protection system and programs.",
           "governance": {
             "title": "Social Protection Governance",
@@ -660,7 +660,7 @@
   },
   "SocialPage": {
     "hero": {
-      "title": "Social Protection System",
+      "title": "Social Management System",
       "subtitle": "Explore governance, assistance and social security resources."
     },
     "tabs": {

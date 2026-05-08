@@ -49,7 +49,7 @@ namespace Backend.DTOs
         public string ContentKm { get; set; } = string.Empty;
         public string? ContentEn { get; set; }
         public int SortOrder { get; set; }
-        public TopicStatus Status { get; set; }
+        public TopicStatus? Status { get; set; }
     }
 
     public class SectionReorderDto
@@ -62,6 +62,8 @@ namespace Backend.DTOs
     {
         public Guid MediaId { get; set; }
         public ImagePosition Position { get; set; } = ImagePosition.Full;
+        public ImageLanguage Language { get; set; } = ImageLanguage.KH;
+        public int Width { get; set; } = 75;
         public string? CaptionKm { get; set; }
         public string? CaptionEn { get; set; }
         public string? AltKm { get; set; }
@@ -72,6 +74,8 @@ namespace Backend.DTOs
     public class SocialSectionMediaUpdateDto
     {
         public ImagePosition Position { get; set; } = ImagePosition.Full;
+        public ImageLanguage Language { get; set; } = ImageLanguage.KH;
+        public int Width { get; set; } = 75;
         public string? CaptionKm { get; set; }
         public string? CaptionEn { get; set; }
         public string? AltKm { get; set; }
@@ -147,6 +151,8 @@ namespace Backend.DTOs
         public Guid SectionId { get; set; }
         public Guid MediaId { get; set; }
         public ImagePosition Position { get; set; }
+        public ImageLanguage Language { get; set; }
+        public int Width { get; set; }
         public string? CaptionKm { get; set; }
         public string? CaptionEn { get; set; }
         public string? AltKm { get; set; }
@@ -211,10 +217,11 @@ namespace Backend.DTOs
     {
         public string PublicUrl { get; set; } = string.Empty;
         public string Position { get; set; } = string.Empty;
+        public string Language { get; set; } = string.Empty;
         public string? Caption { get; set; }
         public string? Alt { get; set; }
         public int SortOrder { get; set; }
-        public int? Width { get; set; }
+        public int Width { get; set; }
         public int? Height { get; set; }
     }
 

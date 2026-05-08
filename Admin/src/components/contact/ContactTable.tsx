@@ -65,133 +65,163 @@ export default function ContactTable({
   return (
     <>
     <ComponentCard title="" className="mt-2">
-      <div className="max-w-full overflow-x-auto">
-        <div className="min-w-0">
-          <Table>
-            <TableHeader className="border-b border-gray-100 dark:border-white/5">
-              <TableRow>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                  {t("columns.name")}
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400 ">
-                  {t("columns.email")}
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                  {t("columns.subject")}
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400 ">
-                  {t("columns.date")}
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400 ">
-                  {t("columns.status")}
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                  {t("columns.actions")}
-                </TableCell>
-              </TableRow>
-            </TableHeader>
+      <div className="space-y-4">
+        <div className="md:hidden space-y-3">
+          {contacts.map((c) => (
+            <div key={c.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
+              <button className="text-left w-full" onClick={() => onOpen(c)}>
+                <div className="text-sm font-semibold text-gray-800 hover:text-primary transition">{c.name}</div>
+              </button>
 
-            <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
-              {contacts.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell className="px-5 py-3 sm:px-6 text-start">
-                      <button className="text-sm font-medium text-gray-800 dark:text-white/90" onClick={() => onOpen(c)}>
-                      {c.name}
-                    </button>
+              <div className="grid grid-cols-1 gap-2 text-sm text-gray-500">
+                <div><span className="font-medium text-gray-700">{t("columns.email")}: </span>{c.email}</div>
+                <div><span className="font-medium text-gray-700">{t("columns.subject")}: </span>{c.subject}</div>
+                <div><span className="font-medium text-gray-700">{t("columns.date")}: </span>{new Date(c.createdAt).toLocaleString()}</div>
+                <div className="inline-flex flex-wrap items-center gap-2">
+                  <span className={`inline-block px-2 py-0.5 rounded text-theme-xs ${c.read ? "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary/80" : "bg-red-50 text-red-500 dark:bg-blue-light-500/10"}`}>
+                    {c.read ? t("status.read") : t("status.unread")}
+                  </span>
+                  {c.replied && <span className="inline-block px-2 py-0.5 rounded text-theme-xs bg-blue-light-50 text-blue-light-500">{t("status.replied")}</span>}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <button onClick={() => onOpen(c)} className="px-3 py-1.5 text-xs font-medium text-primary border border-gray-200 rounded-lg hover:bg-gray-50">{t("viewMessage")}</button>
+                <button onClick={() => onToggleRead(c.id)} className="px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50">{c.read ? t("markAsUnread") : t("markAsRead")}</button>
+                <button onClick={() => { setDeleteId(c.id); setIsModalOpen(true); }} className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50">{t("deleteMessage")}</button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="hidden md:block max-w-full overflow-x-auto">
+          <div className="min-w-0">
+            <Table>
+              <TableHeader className="border-b border-gray-100 dark:border-white/5">
+                <TableRow>
+                  <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                    {t("columns.name")}
                   </TableCell>
-
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400 ">
-                      {c.email}
-                    </TableCell>
-
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400 ">
-                      {c.subject}
-                    </TableCell>
-
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                      {new Date(c.createdAt).toLocaleString()}
-                    </TableCell>
-
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400  ">
-                      <div className="inline-flex flex-wrap items-center gap-2">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded text-theme-xs ${
-                            c.read
-                              ? "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary/80"
-                              : "bg-red-50 text-red-500 dark:bg-blue-light-500/10"
-                          }`}
-                        >
-                          {c.read ? t("status.read") : t("status.unread")}
-                        </span>
-                        {c.replied && (
-                          <span className="inline-block px-2 py-0.5 rounded text-theme-xs bg-blue-light-50 text-blue-light-500">
-                            {t("status.replied")}
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-
-                  <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
-                    <div className="flex items-center gap-2">
-                      <Tooltip label={t("viewMessage")}>
-                        <button
-                          onClick={() => onOpen(c)}
-                          title={t("viewMessage")}
-                          aria-label={t("viewMessage")}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-white/3 transition text-primary"
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                            <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </button>
-                      </Tooltip>
-
-                      <Tooltip label={c.read ? t("markAsUnread") : t("markAsRead")}>
-                        <button
-                          onClick={() => onToggleRead(c.id)}
-                          title={c.read ? t("markAsUnread") : t("markAsRead")}
-                          aria-label={c.read ? t("markAsUnread") : t("markAsRead")}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-white/3 transition"
-                        >
-                          {c.read ? (
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                              <path d="M20 6L9 17l-5-5" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          ) : (
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                              <path d="M12 5v14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M5 12h14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          )}
-                        </button>
-                      </Tooltip>
-
-                      <Tooltip label={t("deleteMessage")}>
-                        <button
-                          onClick={() => {
-                            setDeleteId(c.id);
-                            setIsModalOpen(true);
-                          }}
-                          title={t("deleteMessage")}
-                          aria-label={t("deleteMessage")}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 transition"
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                            <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M10 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M14 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            <path d="M9 6V4h6v2" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </button>
-                      </Tooltip>
-                    </div>
+                  <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400 ">
+                    {t("columns.email")}
+                  </TableCell>
+                  <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                    {t("columns.subject")}
+                  </TableCell>
+                  <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400 ">
+                    {t("columns.date")}
+                  </TableCell>
+                  <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400 ">
+                    {t("columns.status")}
+                  </TableCell>
+                  <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                    {t("columns.actions")}
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+
+              <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
+                {contacts.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell className="px-5 py-3 sm:px-6 text-start">
+                        <button className="text-sm font-medium text-gray-800 dark:text-white/90" onClick={() => onOpen(c)}>
+                        {c.name}
+                      </button>
+                    </TableCell>
+
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400 ">
+                        {c.email}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400 ">
+                        {c.subject}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
+                        {new Date(c.createdAt).toLocaleString()}
+                      </TableCell>
+
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400  ">
+                        <div className="inline-flex flex-wrap items-center gap-2">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded text-theme-xs ${
+                              c.read
+                                ? "bg-primary/10 text-primary dark:bg-primary/10 dark:text-primary/80"
+                                : "bg-red-50 text-red-500 dark:bg-blue-light-500/10"
+                            }`}
+                          >
+                            {c.read ? t("status.read") : t("status.unread")}
+                          </span>
+                          {c.replied && (
+                            <span className="inline-block px-2 py-0.5 rounded text-theme-xs bg-blue-light-50 text-blue-light-500">
+                              {t("status.replied")}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+
+                    <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
+                      <div className="flex items-center gap-2">
+                        <Tooltip label={t("viewMessage")}>
+                          <button
+                            onClick={() => onOpen(c)}
+                            title={t("viewMessage")}
+                            aria-label={t("viewMessage")}
+                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-white/3 transition text-primary"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </button>
+                        </Tooltip>
+
+                        <Tooltip label={c.read ? t("markAsUnread") : t("markAsRead")}>
+                          <button
+                            onClick={() => onToggleRead(c.id)}
+                            title={c.read ? t("markAsUnread") : t("markAsRead")}
+                            aria-label={c.read ? t("markAsUnread") : t("markAsRead")}
+                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-white/3 transition"
+                          >
+                            {c.read ? (
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                <path d="M20 6L9 17l-5-5" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            ) : (
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                <path d="M12 5v14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M5 12h14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            )}
+                          </button>
+                        </Tooltip>
+
+                        <Tooltip label={t("deleteMessage")}>
+                          <button
+                            onClick={() => {
+                              setDeleteId(c.id);
+                              setIsModalOpen(true);
+                            }}
+                            title={t("deleteMessage")}
+                            aria-label={t("deleteMessage")}
+                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 transition"
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                              <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M10 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M14 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              <path d="M9 6V4h6v2" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          </button>
+                        </Tooltip>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     </ComponentCard>

@@ -101,8 +101,17 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
   const renderImage = (image: ContentSection["image"]) => {
     if (!image) return null;
 
+    const widthClass =
+      image.width === 75
+        ? "max-w-3xl"
+        : image.width === 50
+          ? "max-w-2xl"
+          : "max-w-lg";
+
     const imageElement = (
-      <div className="relative overflow-hidden rounded-lg">
+      <div
+        className={`relative overflow-hidden rounded-lg ${widthClass} mx-auto`}
+      >
         <Image
           src={image.src}
           alt={getLocalizedText(image.alt)}
@@ -129,23 +138,34 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
       <div
         className={`grid ${images.length === 1 ? "grid-cols-1" : images.length === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3"} gap-4 my-6`}
       >
-        {images.map((img, idx) => (
-          <div key={idx} className="relative overflow-hidden rounded-lg">
-            <Image
-              src={img.src}
-              alt={getLocalizedText(img.alt)}
-              width={400}
-              height={300}
-              className="w-full h-auto object-cover"
-              unoptimized
-            />
-            {img.caption && (
-              <p className="text-xs sm:text-sm text-gray-600 italic mt-2 text-center">
-                {getLocalizedText(img.caption)}
-              </p>
-            )}
-          </div>
-        ))}
+        {images.map((img, idx) => {
+          const widthClass =
+            img.width === 75
+              ? "max-w-3xl"
+              : img.width === 50
+                ? "max-w-2xl"
+                : "max-w-lg";
+          return (
+            <div
+              key={idx}
+              className={`relative overflow-hidden rounded-lg ${widthClass}`}
+            >
+              <Image
+                src={img.src}
+                alt={getLocalizedText(img.alt)}
+                width={400}
+                height={300}
+                className="w-full h-auto object-cover"
+                unoptimized
+              />
+              {img.caption && (
+                <p className="text-xs sm:text-sm text-gray-600 italic mt-2 text-center">
+                  {getLocalizedText(img.caption)}
+                </p>
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   };

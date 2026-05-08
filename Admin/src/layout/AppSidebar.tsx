@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
+import { useTranslations } from "next-intl";
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -21,116 +22,130 @@ import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
   name: string;
+  titleKey: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  subItems?: { name: string; titleKey: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
 const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+    titleKey: "dashboard",
+    subItems: [{ name: "Ecommerce", titleKey: "ecommerce", path: "/", pro: false }],
   },
   {
     icon: <CalenderIcon />,
     name: "Calendar",
+    titleKey: "calendar",
     path: "/calendar",
   },
   {
     icon: <UserCircleIcon />,
     name: "User Profile",
+    titleKey: "profile",
     path: "/profile",
   },
 
   {
     name: "Forms",
+    titleKey: "forms",
     icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+    subItems: [{ name: "Form Elements", titleKey: "formElements", path: "/form-elements", pro: false }],
   },
   {
     name: "Tables",
+    titleKey: "tables",
     icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
+    subItems: [{ name: "Basic Tables", titleKey: "basicTables", path: "/basic-tables", pro: false }],
   },
   {
     name: "Pages",
+    titleKey: "pages",
     icon: <PageIcon />,
     subItems: [
-      { name: "Blank Page", path: "/blank", pro: false },
-      { name: "404 Error", path: "/error-404", pro: false },
+      { name: "Blank Page", titleKey: "blankPage", path: "/blank", pro: false },
+      { name: "404 Error", titleKey: "error404", path: "/error-404", pro: false },
     ],
   },
    {
     icon: <PlugInIcon />,
     name: "Resource",
+    titleKey: "resource",
     subItems: [
-      { name: "Laws", path: "/laws", pro: false },
-      { name: "Publications", path: "/publications", pro: false },
-      { name: "Social", path: "/social", pro: false },
+      { name: "Laws", titleKey: "laws", path: "/laws", pro: false },
+      { name: "Publications", titleKey: "publications", path: "/publications", pro: false },
+      { name: "Social Management", titleKey: "social", path: "/social", pro: false },
     ],
   },
    {
     icon: <PlugInIcon />,
     name: "New",
-    subItems: [{ name: "New", path: "/News", pro: false },
-      { name: "Video", path: "/Videos", pro: false }
+    titleKey: "new",
+    subItems: [{ name: "News", titleKey: "news", path: "/News", pro: false },
+      { name: "Video", titleKey: "video", path: "/Videos", pro: false }
     ],
   },
    {
     icon: <PlugInIcon />,
     name: "Contact",
+    titleKey: "contact",
     path: "/contact",
   },
    {
     icon: <PlugInIcon />,
     name: "About-us",
+    titleKey: "aboutUs",
     path: "/about-us",
   },
- 
-  
 ];
 
 const othersItems: NavItem[] = [
   {
     icon: <PieChartIcon />,
     name: "Charts",
+    titleKey: "charts",
     subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
+      { name: "Line Chart", titleKey: "lineChart", path: "/line-chart", pro: false },
+      { name: "Bar Chart", titleKey: "barChart", path: "/bar-chart", pro: false },
     ],
   },
   {
     icon: <BoxCubeIcon />,
     name: "UI Elements",
+    titleKey: "uiElements",
     subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
+      { name: "Alerts", titleKey: "alerts", path: "/alerts", pro: false },
+      { name: "Avatar", titleKey: "avatar", path: "/avatars", pro: false },
+      { name: "Badge", titleKey: "badge", path: "/badge", pro: false },
+      { name: "Buttons", titleKey: "buttons", path: "/buttons", pro: false },
+      { name: "Images", titleKey: "images", path: "/images", pro: false },
+      { name: "Videos", titleKey: "videos", path: "/videos", pro: false },
     ],
   },
    {
     icon: <PlugInIcon />,
     name: "Audit Log",
+    titleKey: "auditLog",
     path: "/audit",
   },
   {
     icon: <PlugInIcon />,
     name: "Role Permission",
+    titleKey: "rolePermission",
     path: "/permission",
   },
   {
     icon: <PlugInIcon />,
     name: "User Management",
+    titleKey: "userManagement",
     path: "/users",
   },
-
 ];
 
 const AppSidebar: React.FC = () => {
+  const t = useTranslations("Sidebar");
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
@@ -140,7 +155,7 @@ const AppSidebar: React.FC = () => {
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
-        <li key={nav.name}>
+        <li key={nav.titleKey}>
           {nav.subItems ? (
             <button
               onClick={() => handleSubmenuToggle(index, menuType)}
@@ -164,7 +179,7 @@ const AppSidebar: React.FC = () => {
                 {nav.icon}
               </span>
               {(isExpanded || isHovered || isMobileOpen) && (
-                <span className={`menu-item-text`}>{nav.name}</span>
+                <span className={`menu-item-text`}>{t(nav.titleKey)}</span>
               )}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
@@ -195,7 +210,7 @@ const AppSidebar: React.FC = () => {
                   {nav.icon}
                 </span>
                 {(isExpanded || isHovered || isMobileOpen) && (
-                  <span className={`menu-item-text`}>{nav.name}</span>
+                  <span className={`menu-item-text`}>{t(nav.titleKey)}</span>
                 )}
               </Link>
             )
@@ -215,7 +230,7 @@ const AppSidebar: React.FC = () => {
             >
               <ul className="mt-2 space-y-1 ml-9">
                 {nav.subItems.map((subItem) => (
-                  <li key={subItem.name}>
+                  <li key={subItem.titleKey}>
                     <Link
                       href={subItem.path}
                       className={`menu-dropdown-item ${
@@ -224,7 +239,7 @@ const AppSidebar: React.FC = () => {
                           : "menu-dropdown-item-inactive"
                       }`}
                     >
-                      {subItem.name}
+                      {t(subItem.titleKey)}
                       <span className="flex items-center gap-1 ml-auto">
                         {subItem.new && (
                           <span
@@ -384,7 +399,7 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Menu"
+                  t("menu")
                 ) : (
                   <HorizontaLDots />
                 )}
@@ -401,7 +416,7 @@ const AppSidebar: React.FC = () => {
                 }`}
               >
                 {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
+                  t("others")
                 ) : (
                   <HorizontaLDots />
                 )}

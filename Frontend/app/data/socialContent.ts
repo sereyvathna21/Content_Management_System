@@ -13,11 +13,13 @@ export interface ContentSection {
         alt: string;
         caption?: string;
         position?: 'top' | 'bottom' | 'left' | 'right' | 'full';
+        width?: number;
     };
     images?: Array<{
         src: string;
         alt: string;
         caption?: string;
+        width?: number;
     }>;
     subsections?: ContentSection[];
 }

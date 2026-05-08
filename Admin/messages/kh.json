@@ -524,14 +524,74 @@
     "notAvailable": "មិនមាន"
   },
     "SocialPage": {
-    "title": "មាតិកាសង្គម",
+    "title": "ការគ្រប់គ្រងមាតិកាសង្គម",
     "create": "បង្កើតប្រធានបទថ្មី",
     "edit": "កែប្រែប្រធានបទ",
     "searchPlaceholder": "ស្វែងរកប្រធានបទ",
+    "loadError": "មិនអាចទាញយកប្រធានបទបានទេ។ សូមធ្វើការធ្វើបច្ចុប្បន្នភាពទំព័រឡើងវិញ។",
+    "deleteFailed": "មិនអាចលុបប្រធានបទបានទេ។ សូមសាកល្បងម្ដងទៀត។",
+    "createFailed": "មិនអាចបង្កើតប្រធានបទបានទេ។",
+    "requiredFields": "ចំណងជើងភាសាខ្មែរ និង slug គឺត្រូវការ។",
+    "form": {
+      "slugLabel": "តំណរ (Slug)",
+      "slugPlaceholder": "ឧ. assistance",
+      "slugHelp": "នេះនឹងក្លាយជាតំណភ្ជាប់សាធារណៈ (ឧ. /social/assistance)",
+      "khmerTitleLabel": "ចំណងជើងភាសាខ្មែរ",
+      "khmerTitlePlaceholder": "ចំណងជើងភាសាខ្មែរ...",
+      "englishTitleLabel": "ចំណងជើងភាសាអង់គ្លេស",
+      "englishTitlePlaceholder": "ចំណងជើង (English)...",
+      "cancel": "បោះបង់",
+      "creating": "កំពុងបង្កើត...",
+      "createDraft": "បង្កើតព្រាង"
+    },
+    "deleteModal": {
+      "title": "បញ្ជាក់ការលុប",
+      "body": "តើអ្នកប្រាកដថាចង់លុបប្រធានបទនេះទេ? វានឹងលុបផ្នែក និងកំណែទាំងអស់ដែលពាក់ព័ន្ធជាអចិន្រ្តៃយ៍។",
+      "cancel": "បោះបង់",
+      "deleting": "កំពុងលុប...",
+      "confirm": "លុបប្រធានបទ"
+    },
     "card": {
       "title": "ប្រធានបទសង្គម",
       "desc": "គ្រប់គ្រងមាតិកាសង្គម"
     }
+  },
+  "Sidebar": {
+    "menu": "បញ្ជីមុខងារ",
+    "others": "ផ្សេងៗ",
+    "dashboard": "ផ្ទាំងគ្រប់គ្រង",
+    "ecommerce": "ពាណិជ្ជកម្ម",
+    "calendar": "ប្រតិទិន",
+    "profile": "ព័ត៌មានផ្ទាល់ខ្លួន",
+    "forms": "ទម្រង់",
+    "formElements": "ធាតុទម្រង់",
+    "tables": "តារាង",
+    "basicTables": "តារាងមូលដ្ឋាន",
+    "pages": "ទំព័រ",
+    "blankPage": "ទំព័រទទេ",
+    "error404": "កំហុស 404",
+    "resource": "ធនធាន",
+    "laws": "ច្បាប់",
+    "publications": "ការបោះពុម្ពផ្សាយ",
+    "social": "ការគ្រប់គ្រងមាតិកាសង្គម",
+    "new": "ថ្មីៗ",
+    "news": "ព័ត៌មាន",
+    "video": "វីដេអូ",
+    "contact": "ទំនាក់ទំនង",
+    "aboutUs": "អំពីយើង",
+    "charts": "គំនូសតាង",
+    "lineChart": "គំនូសតាងខ្សែ",
+    "barChart": "គំនូសតាងដុំ",
+    "uiElements": "ធាតុ UI",
+    "alerts": "ការជូនដំណឹង",
+    "avatar": "រូបតំណាង",
+    "badge": "ផ្លាកសញ្ញា",
+    "buttons": "ប៊ូតុង",
+    "images": "រូបភាព",
+    "videos": "វីដេអូ",
+    "auditLog": "កំណត់ហេតុសវនកម្ម",
+    "rolePermission": "សិទ្ធិតួនាទី",
+    "userManagement": "ការគ្រប់គ្រងអ្នកប្រើប្រាស់"
   },
   "SocialTable": {
     "loading": "កំពុងទាញយក...",
@@ -546,6 +606,10 @@
       "publishedAt": "ថ្ងៃចេញផ្សាយ",
       "actions": "សកម្មភាព"
     },
+    "status": {
+      "published": "ផ្សាយផ្ទាល់",
+      "draft": "ព្រាង"
+    },
     "tooltips": {
       "edit": "កែប្រែ",
       "delete": "លុប"
@@ -555,7 +619,167 @@
     "saveDraft": "រក្សាទុកព្រាង",
     "publish": "បោះពុម្ភ",
     "unpublish": "ដកចេញពីការបោះពុម្ភ",
+    "publishLive": "បោះពុម្ភផ្ទាល់",
     "publishSuccess": "បានបោះពុម្ភដោយជោគជ័យ",
+    "loadingTopic": "កំពុងផ្ទុកប្រធានបទ...",
+    "topicNotFound": "រកមិនឃើញប្រធានបទ",
+    "addImage": "បន្ថែមរូបភាព",
+    "sectionImage": "រូបភាពផ្នែក",
+    "status": {
+      "live": "ផ្សាយផ្ទាល់",
+      "draft": "ព្រាង"
+    },
+    "back": "ត្រលប់",
+    "settings": {
+      "saveSuccess": "រក្សាទុកការកំណត់ប្រធានបទបានជោគជ័យ",
+      "saveFailed": "រក្សាទុកបរាជ័យ"
+    },
+    "errors": {
+      "onlyPdf": "អនុញ្ញាតតែឯកសារ PDF ប៉ុណ្ណោះ",
+      "uploadFailed": "បង្ហោះ PDF បរាជ័យ",
+      "deleteReferenceFailed": "លុបឯកសារយោងបរាជ័យ",
+      "reorderFailed": "ការរៀបលំដាប់ឯកសារយោងបរាជ័យ"
+    },
+    "success": {
+      "uploadSuccess": "បង្ហោះ PDF បានជោគជ័យ។",
+      "deleteReferenceSuccess": "បានលុបឯកសារយោង"
+    },
+    "references": {
+      "title": "ឯកសារយោង",
+      "khmerLabel": "ឯកសារយោង PDF (ភាសាខ្មែរ)",
+      "englishLabel": "ឯកសារយោង PDF (ភាសាអង់គ្លេស)",
+      "loading": "កំពុងទាញយកឯកសារយោង...",
+      "loadFailed": "មិនអាចទាញយកឯកសារយោងបានទេ",
+      "emptyKhmer": "មិនទាន់មានឯកសារយោង PDF ភាសាខ្មែរ។",
+      "emptyEnglish": "មិនទាន់មានឯកសារយោង PDF ភាសាអង់គ្លេស។",
+      "dragToReorder": "អូសដើម្បីរៀបលំដាប់",
+      "uploading": "កំពុងបង្ហោះ...",
+      "addKhmer": "ចុចដើម្បីបន្ថែម PDF ភាសាខ្មែរ",
+      "addEnglish": "ចុចដើម្បីបន្ថែម PDF ភាសាអង់គ្លេស",
+      "cancel": "បោះបង់",
+      "saving": "កំពុងរក្សាទុក...",
+      "save": "រក្សាទុកឯកសារយោង"
+    },
+    "confirmModal": {
+      "publishTitle": "បោះពុម្ភប្រធានបទ",
+      "unpublishTitle": "ដកចេញពីការបោះពុម្ភ",
+      "deleteTitle": "លុបផ្នែក",
+      "publishBody": "តើអ្នកប្រាកដថាចង់បោះពុម្ភមែនទេ? វានឹងបង្ហាញមាតិកាទាំងអស់ភ្លាមៗ។",
+      "unpublishBody": "តើអ្នកប្រាកដថាចង់ដកចេញពីការបោះពុម្ភមែនទេ? ប្រធានបទនេះនឹងត្រូវបានដកចេញពីទំព័រសាធារណៈ។",
+      "deleteBody": "តើអ្នកប្រាកដថាចង់លុបប្លុកនេះទេ? ប្លុករងទាំងអស់នឹងត្រូវបានលុបផងដែរ។ មិនអាចត្រឡប់វិញបានទេ។",
+      "cancel": "បោះបង់",
+      "confirm": "បញ្ជាក់",
+      "publish": "បោះពុម្ភ",
+      "unpublish": "ដកចេញពីការបោះពុម្ភ"
+    },
+    "emptyState": {
+      "title": "ជ្រើសរើសផ្នែកដើម្បីកែសម្រួល",
+      "subtitle": "ឬចុច \"+ Add Root Section\" ដើម្បីចាប់ផ្តើមសរសេរមាតិកា។"
+    },
+    "sectionForm": {
+      "titleEdit": "កែសម្រួលផ្នែក",
+      "titleNew": "ផ្នែកថ្មី",
+      "sectionKeyPlaceholder": "ឧ. intro-block",
+      "tabKhmer": "ខ្មែរ",
+      "tabEnglish": "អង់គ្លេស",
+      "tabDefault": "លំនាំដើម",
+      "titlePlaceholderKm": "ចំណងជើងភាសាខ្មែរ...",
+      "titlePlaceholderEn": "ចំណងជើង (English)...",
+      "contentPlaceholderKm": "សរសេរមាតិកាភាសាខ្មែរនៅទីនេះ...",
+      "contentPlaceholderEn": "សរសេរមាតិកា Markdown នៅទីនេះ...",
+      "cancel": "បោះបង់",
+      "saving": "កំពុងរក្សាទុក...",
+      "save": "រក្សាទុកប្លុក",
+      "errors": {
+        "sectionKeyRequired": "តម្រូវឱ្យមានលេខកូដផ្នែក",
+        "titleKmRequired": "តម្រូវឱ្យមានចំណងជើងភាសាខ្មែរ",
+        "contentKmRequired": "តម្រូវឱ្យមានមាតិកាភាសាខ្មែរ"
+      }
+    },
+    "sectionTree": {
+      "title": "ផ្នែកមាតិកា",
+      "helper": "ជ្រើសរើសផ្នែកដើម្បីកែសម្រួល",
+      "addRoot": "+ បន្ថែមផ្នែកមូល",
+      "empty": "មិនទាន់មានផ្នែកទេ។ សូមបន្ថែមផ្នែកថ្មី!",
+      "untitled": "ផ្នែកគ្មានចំណងជើង",
+      "addSub": "បន្ថែមផ្នែករង",
+      "delete": "លុប"
+    },
+    "media": {
+      "title": "រូបភាពផ្នែក",
+      "subtitle": "បង្ហោះ និងគ្រប់គ្រងរូបភាពសម្រាប់ផ្នែកនេះ។",
+      "fileHint": "PNG/JPG/WEBP/GIF ទំហំអតិបរមា {max}",
+      "saveBeforeAttach": "សូមរក្សាទុកផ្នែកនេះ មុនពេលភ្ជាប់រូបភាព។",
+      "dropzone": {
+        "uploading": "កំពុងបង្ហោះរូបភាព...",
+        "clickToUpload": "ចុចដើម្បីបង្ហោះរូបភាព។",
+        "pendingAlt": "កំពុងរង់ចាំបង្ហោះ",
+        "uploaded": "រូបភាពបានបង្ហោះ",
+        "readyToAttach": "រួចរាល់សម្រាប់ភ្ជាប់",
+        "remove": "លុប"
+      },
+      "labels": {
+        "position": "ទីតាំង",
+        "sortOrder": "លំដាប់",
+        "width": "ទទឹងរូបភាព",
+        "alt": "អត្ថបទជំនួស",
+        "language": "ភាសា",
+        "altKhmer": "អត្ថបទជំនួស (ខ្មែរ)",
+        "altEnglish": "អត្ថបទជំនួស (អង់គ្លេស)",
+        "captionKhmer": "ចំណងជើងរូបភាព (ខ្មែរ)",
+        "captionEnglish": "ចំណងជើងរូបភាព (អង់គ្លេស)"
+      },
+      "placeholders": {
+        "alt": "អត្ថបទជំនួស...",
+        "altKhmer": "សេចក្តីពណ៌នា...",
+        "altEnglish": "Alt text...",
+        "captionKhmer": "ចំណងជើងរូបភាព...",
+        "captionEnglish": "Caption..."
+      },
+      "buttons": {
+        "attach": "ភ្ជាប់រូបភាព",
+        "attaching": "កំពុងភ្ជាប់...",
+        "edit": "កែប្រែ",
+        "remove": "លុប",
+        "removing": "កំពុងលុប...",
+        "save": "រក្សាទុក",
+        "saving": "កំពុងរក្សាទុក...",
+        "cancel": "បោះបង់"
+      },
+      "list": {
+        "title": "រូបភាពដែលបានភ្ជាប់",
+        "count": "{count} ធាតុ",
+        "empty": "មិនទាន់មានរូបភាពដែលបានភ្ជាប់ទេ។",
+        "noPreview": "មិនមានព្រីវ្យូ",
+        "noKhmerAlt": "(គ្មានអត្ថបទជំនួសភាសាខ្មែរ)",
+        "imageAlt": "រូបភាពផ្នែក",
+        "order": "លំដាប់ {order}"
+      },
+      "messages": {
+        "attachSuccess": "បានភ្ជាប់រូបភាពដោយជោគជ័យ",
+        "removeSuccess": "បានលុបរូបភាព",
+        "updateSuccess": "បានធ្វើបច្ចុប្បន្នភាពរូបភាព"
+      },
+      "errors": {
+        "saveBeforeAdd": "សូមរក្សាទុកផ្នែកនេះ មុនពេលបន្ថែមរូបភាព។",
+        "invalidFileType": "ប្រភេទឯកសារមិនត្រឹមត្រូវ។",
+        "imageTooLarge": "រូបភាពធំពេក។ អតិបរមា {max}។",
+        "missingToken": "បាត់ access token។",
+        "uploadFailed": "បង្ហោះរូបភាពបរាជ័យ។",
+        "attachFailed": "ភ្ជាប់រូបភាពបរាជ័យ។",
+        "removeFailed": "លុបរូបភាពបរាជ័យ។",
+        "updateFailed": "ធ្វើបច្ចុប្បន្នភាពរូបភាពបរាជ័យ។",
+        "uploadFirst": "សូមបង្ហោះរូបភាពជាមុនសិន។",
+        "altKhmerRequired": "តម្រូវឱ្យមានអត្ថបទជំនួសភាសាខ្មែរ។"
+      },
+      "position": {
+        "top": "ខាងលើ",
+        "bottom": "ខាងក្រោម",
+        "left": "ខាងឆ្វេង",
+        "right": "ខាងស្តាំ",
+        "full": "ពេញទំហំ"
+      }
+    },
     
     "addSection": "បន្ថែមផ្នែកថ្មី",
     "sectionTitle": "ចំណងជើងផ្នែក",
