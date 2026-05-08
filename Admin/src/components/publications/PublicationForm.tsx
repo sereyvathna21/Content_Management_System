@@ -7,7 +7,6 @@ import DatePicker from "@/components/form/date-picker";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import AttachmentDropZone from "./AttachmentDropZone";
-import Toast from "./Toast";
 
 type LangCode = string;
 
@@ -164,14 +163,12 @@ export default function PublicationForm({
   const [translations, setTranslations] = useState<Translation[]>(buildInitialTranslations(initialPublication));
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     setPublicationDate(initialPublication?.publicationDate?.split("T")[0] ?? "");
     setTranslations(buildInitialTranslations(initialPublication));
     setActiveTab(initialPublication?.translations?.find((tr) => tr.language === DEFAULT_LANGUAGE)?.language ?? DEFAULT_LANGUAGE);
     setErrors({});
-    setToast(null);
     setSaving(false);
   }, [initialPublication, buildInitialTranslations]);
 
@@ -289,7 +286,6 @@ export default function PublicationForm({
     setCatDropdownOpen(false);
     setLangDropdownOpen(false);
     setErrors({});
-    setToast(null);
     setSaving(false);
   }
 
@@ -297,10 +293,7 @@ export default function PublicationForm({
     e.preventDefault();
 
     if (!validate()) return;
-    if (status === "loading" || !session?.accessToken) {
-      setToast({ message: t("toast.error"), type: "error" });
-      return;
-    }
+    if (status === "loading" || !session?.accessToken) return;
 
     setSaving(true);
 
@@ -342,16 +335,15 @@ export default function PublicationForm({
       });
 
       if (!res.ok) {
-        const message = await extractErrorMessage(res, t("toast.error"));
+        const message = await extractErrorMessage(res, "Failed to save publication.");
         throw new Error(message);
       }
 
-      setToast({ message: t("toast.success"), type: "success" });
       if (!isEditing) resetForm();
       onSaved?.();
     } catch (error) {
-      const message = error instanceof Error && error.message ? error.message : t("toast.error");
-      setToast({ message, type: "error" });
+      const message = error instanceof Error && error.message ? error.message : "Failed to save publication.";
+      console.error("[PublicationForm] submit failed:", message);
     } finally {
       setSaving(false);
     }
@@ -365,8 +357,6 @@ export default function PublicationForm({
 
   return (
     <div className="bg-white rounded-xl p-4 sm:p-5">
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
-
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="relative">

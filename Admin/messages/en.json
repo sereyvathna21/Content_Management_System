@@ -259,10 +259,7 @@
       "titleRequired": "Title is required",
       "defaultTitleRequired": "Khmer title is required"
     },
-    "toast": {
-      "success": "Law saved successfully",
-      "error": "Save failed. Please try again."
-    },
+   
     "categories": {
       "royalDegree": "Royal Degree",
       "subDegree": "Sub-Degree",
@@ -358,10 +355,7 @@
       "titleRequired": "Title is required",
       "defaultTitleRequired": "Khmer title is required"
     },
-    "toast": {
-      "success": "Publication saved successfully",
-      "error": "Save failed. Please try again."
-    },
+  
     "categories": {
       "nspc": "NSPC",
       "others": "Others"

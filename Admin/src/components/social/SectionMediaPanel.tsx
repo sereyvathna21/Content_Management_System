@@ -21,7 +21,6 @@ interface SectionMediaPanelProps {
     activeSectionReady: boolean;
     backendUrl: string;
     onChanged: () => void;
-    setToast: (toast: { message: string; type: "success" | "error" }) => void;
     filterLang?: "km" | "en";
 }
 
@@ -30,8 +29,7 @@ export default function SectionMediaPanel({
     activeSectionReady,
     backendUrl,
     onChanged,
-    setToast
-    , filterLang
+    filterLang
 }: SectionMediaPanelProps) {
     const { data: session } = useSession();
     const t = useTranslations("SocialEditor");
@@ -220,6 +218,7 @@ export default function SectionMediaPanel({
 
             const nextSortOrder = Number.isFinite(Number(mediaForm.sortOrder)) ? Number(mediaForm.sortOrder) + 1 : 0;
             resetPendingUpload();
+            setUploadError(null);
                 setMediaForm({
                 position: 4,
                 width: 75,
@@ -227,10 +226,9 @@ export default function SectionMediaPanel({
                 alt: "",
                 sortOrder: nextSortOrder
             });
-            setToast({ message: t("media.messages.attachSuccess") || "Image attached successfully", type: "success" });
             onChanged();
         } catch (err: any) {
-            setToast({ message: err.message || (t("media.errors.attachFailed") || "Failed to attach image"), type: "error" });
+            setUploadError(err.message || (t("media.errors.attachFailed") || "Failed to attach image"));
         } finally {
             setSavingMedia(false);
         }
@@ -259,13 +257,13 @@ export default function SectionMediaPanel({
                 throw new Error(message);
             }
 
-            setToast({ message: t("media.messages.removeSuccess") || "Image removed", type: "success" });
             if (editingMediaId === sectionMediaId) {
                 setEditingMediaId(null);
             }
+            setUploadError(null);
             onChanged();
         } catch (err: any) {
-            setToast({ message: err.message || (t("media.errors.removeFailed") || "Failed to remove image"), type: "error" });
+            setUploadError(err.message || (t("media.errors.removeFailed") || "Failed to remove image"));
         } finally {
             setRemovingMediaId(null);
         }
@@ -300,7 +298,7 @@ export default function SectionMediaPanel({
 
         const alt = (editingMediaForm as any).alt?.trim() ?? "";
         if (!alt) {
-            setToast({ message: t("media.errors.altKhmerRequired") || "Khmer alt text is required.", type: "error" });
+            setUploadError(t("media.errors.altKhmerRequired") || "Khmer alt text is required.");
             return;
         }
 
@@ -338,11 +336,11 @@ export default function SectionMediaPanel({
                 throw new Error(message);
             }
 
-            setToast({ message: t("media.messages.updateSuccess") || "Image updated", type: "success" });
             cancelEditMedia();
+            setUploadError(null);
             onChanged();
         } catch (err: any) {
-            setToast({ message: err.message || (t("media.errors.updateFailed") || "Failed to update image"), type: "error" });
+            setUploadError(err.message || (t("media.errors.updateFailed") || "Failed to update image"));
         } finally {
             setUpdatingMediaId(null);
         }

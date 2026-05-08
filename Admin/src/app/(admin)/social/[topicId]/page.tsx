@@ -4,7 +4,6 @@ import React from "react";
 import { useLocale, useTranslations } from "next-intl";
 import SectionTree from "@/components/social/SectionTree";
 import SectionForm from "@/components/social/SectionForm";
-import Toast from "@/components/laws/Toast";
 import { Modal } from "@/components/ui/modal";
 import SectionMediaPanel from "@/components/social/SectionMediaPanel";
 
@@ -24,8 +23,6 @@ export default function TopicEditorPage() {
         isFormOpen,
         setIsFormOpen,
         isSaving,
-        toast,
-        setToast,
         confirmModal,
         setConfirmModal,
         activeSectionData,
@@ -62,11 +59,11 @@ export default function TopicEditorPage() {
             const data = await res.json();
             setReferences(Array.isArray(data) ? data : []);
         } catch (err: any) {
-            setToast({ message: err.message || (t("references.loadFailed") || "Failed to load references"), type: "error" });
+            console.error("[TopicEditorPage] load references failed:", err);
         } finally {
             setLoadingReferences(false);
         }
-    }, [topic?.id, backendUrl, session?.accessToken, setToast, t]);
+    }, [topic?.id, backendUrl, session?.accessToken, t]);
 
     React.useEffect(() => {
         loadReferences();
@@ -107,11 +104,10 @@ export default function TopicEditorPage() {
                 }),
             });
             if (!res.ok) throw new Error(t("settings.saveFailed") || "Failed to save");
-            setToast({ message: t("settings.saveSuccess") || "Topic settings saved", type: "success" });
             setSettingsOpen(false);
             load();
         } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            console.error("[TopicEditorPage] save settings failed:", err);
         } finally {
             setSavingSettings(false);
         }
@@ -119,7 +115,7 @@ export default function TopicEditorPage() {
 
     async function handleUploadPdf(file: File, lang: "km" | "en") {
         if (!file || file.type !== "application/pdf") {
-            setToast({ message: t("errors.onlyPdf") || "Only PDF files are allowed", type: "error" });
+            console.error("[TopicEditorPage] only PDF files are allowed");
             return;
         }
 
@@ -146,9 +142,8 @@ export default function TopicEditorPage() {
 
             const data = await res.json();
             setReferences((prev) => [...prev, data]);
-            setToast({ message: t("success.uploadSuccess") || "PDF uploaded successfully.", type: "success" });
         } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            console.error("[TopicEditorPage] upload PDF failed:", err);
         } finally {
             setUploadingPdf(false);
         }
@@ -176,9 +171,8 @@ export default function TopicEditorPage() {
             });
             if (!res.ok) throw new Error(t("errors.deleteReferenceFailed") || "Failed to delete reference");
             setReferences((prev) => prev.filter((item) => item.id !== referenceId));
-            setToast({ message: t("success.deleteReferenceSuccess") || "Reference deleted", type: "success" });
         } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            console.error("[TopicEditorPage] delete reference failed:", err);
         }
     }
 
@@ -195,7 +189,7 @@ export default function TopicEditorPage() {
             });
             if (!res.ok) throw new Error(t("errors.reorderFailed") || "Failed to reorder references");
         } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            console.error("[TopicEditorPage] reorder references failed:", err);
             loadReferences();
         }
     }
@@ -225,8 +219,6 @@ export default function TopicEditorPage() {
 
     return (
         <div className="flex flex-col min-h-[calc(100vh-80px)] p-4 sm:p-6 space-y-6 overflow-hidden">
-            {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
-            
             {/* Header Controls */}
             <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-3 shrink-0 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                <div>
@@ -345,7 +337,6 @@ export default function TopicEditorPage() {
                                     activeSectionReady={activeSectionReady}
                                     backendUrl={backendUrl}
                                     onChanged={load}
-                                    setToast={setToast}
                                     filterLang={locale === "en" ? "en" : "km"}
                                 />
                             </div>

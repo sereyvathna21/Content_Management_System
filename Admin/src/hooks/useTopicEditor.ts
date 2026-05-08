@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
 import { EditorSection, SectionData } from "@/types/social.types";
 
 function getBackendUrl() {
@@ -15,7 +14,6 @@ export function useTopicEditor() {
     const router = useRouter();
     const topicId = params.topicId as string;
     const { data: session, status } = useSession();
-    const t = useTranslations("SocialEditor");
 
     const [topic, setTopic] = useState<any>(null);
     const [sections, setSections] = useState<EditorSection[]>([]);
@@ -23,7 +21,6 @@ export function useTopicEditor() {
     const [activeSectionId, setActiveSectionId] = useState<string | null>(null);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
     const [confirmModal, setConfirmModal] = useState<{ type: "publish" | "deleteSection", payload?: string } | null>(null);
 
     // Build a proper tree-order (pre-order traversal) from flat sections
@@ -97,7 +94,6 @@ export function useTopicEditor() {
             }
         } catch (err) {
             console.error(err);
-            setToast({ message: "Failed to load topic data.", type: "error" });
         } finally {
             setLoading(false);
         }
@@ -119,10 +115,9 @@ export function useTopicEditor() {
                 throw new Error(err.message || "Missing Khmer validation fields.");
             }
             const data = await res.json();
-            setToast({ message: data?.message || t("publishSuccess") || "Published successfully", type: "success" });
             load();
         } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            console.error("[useTopicEditor] publish failed:", err);
         }
     }
 
@@ -166,9 +161,8 @@ export function useTopicEditor() {
 
             setActiveSectionId(savedNode.id);
             setIsFormOpen(false);
-            setToast({ message: "Section saved successfully", type: "success" });
         } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            console.error("[useTopicEditor] save section failed:", err);
         } finally {
             setIsSaving(false);
         }
@@ -191,7 +185,7 @@ export function useTopicEditor() {
             }
             load();
         } catch (err: any) {
-            setToast({ message: err.message, type: "error" });
+            console.error("[useTopicEditor] delete section failed:", err);
         }
     }
 
@@ -236,9 +230,8 @@ export function useTopicEditor() {
                 body: JSON.stringify(apiPayload)
             });
             if (!res.ok) throw new Error("Failed to reorder");
-            setToast({ message: "Section moved successfully", type: "success" });
         } catch (err: any) {
-            setToast({ message: err.message || "Failed to reorder sections", type: "error" });
+            console.error("[useTopicEditor] reorder failed:", err);
             await load();
         }
     }
@@ -257,8 +250,6 @@ export function useTopicEditor() {
         isFormOpen,
         setIsFormOpen,
         isSaving,
-        toast,
-        setToast,
         confirmModal,
         setConfirmModal,
         activeSectionData,

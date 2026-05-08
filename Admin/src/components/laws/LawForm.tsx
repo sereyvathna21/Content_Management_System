@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import DatePicker from "@/components/form/date-picker";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
-import Toast from "./Toast";
 import PdfDropZone from "./PdfDropZone";
 
 type LangCode = string;
@@ -166,14 +165,12 @@ export default function LawForm({
   const [translations, setTranslations] = useState<Translation[]>(buildInitialTranslations(initialLaw));
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     setDate(initialLaw?.date?.split("T")[0] ?? "");
     setTranslations(buildInitialTranslations(initialLaw));
     setActiveTab(initialLaw?.translations?.find((translation) => translation.language === DEFAULT_LANGUAGE)?.language ?? DEFAULT_LANGUAGE);
     setErrors({});
-    setToast(null);
     setSaving(false);
   }, [initialLaw, buildInitialTranslations]);
 
@@ -293,7 +290,6 @@ export default function LawForm({
     setCatDropdownOpen(false);
     setLangDropdownOpen(false);
     setErrors({});
-    setToast(null);
     setSaving(false);
   }
 
@@ -301,10 +297,7 @@ export default function LawForm({
     e.preventDefault();
 
     if (!validate()) return;
-    if (status === "loading" || !session?.accessToken) {
-      setToast({ message: t("toast.error"), type: "error" });
-      return;
-    }
+    if (status === "loading" || !session?.accessToken) return;
 
     setSaving(true);
 
@@ -351,16 +344,15 @@ export default function LawForm({
       });
 
       if (!res.ok) {
-        const message = await extractErrorMessage(res, t("toast.error"));
+        const message = await extractErrorMessage(res, "Failed to save law.");
         throw new Error(message);
       }
 
-      setToast({ message: t("toast.success"), type: "success" });
       if (!isEditing) resetForm();
       onSaved?.();
     } catch (error) {
-      const message = error instanceof Error && error.message ? error.message : t("toast.error");
-      setToast({ message, type: "error" });
+      const message = error instanceof Error && error.message ? error.message : "Failed to save law.";
+      console.error("[LawForm] submit failed:", message);
     } finally {
       setSaving(false);
     }
@@ -374,8 +366,6 @@ export default function LawForm({
 
   return (
     <div className="bg-white rounded-xl p-4 sm:p-5">
-      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
-
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="relative">
