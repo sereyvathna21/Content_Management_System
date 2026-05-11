@@ -142,7 +142,7 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
                   if (src.startsWith("data:") || src.startsWith("blob:")) {
                     return <img src={src} alt="Avatar preview" className="w-full h-full object-cover" />;
                   }
-                  return <Image src={src} alt="Avatar preview" width={96} height={96} className="w-full text-center h-full object-cover" />;
+                  return <Image src={src} alt="Avatar preview" width={96} height={96} unoptimized={src.includes('localhost') || src.includes('127.0.0.1')} className="w-full text-center h-full object-cover" />;
                 })()
               ) : (
                 <div className="text-gray-400">No avatar</div>

@@ -15,11 +15,13 @@ namespace Backend.Controllers
     {
         private readonly IUserService _user;
         private readonly IWebHostEnvironment _environment;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserService user, IWebHostEnvironment environment)
+        public UserController(IUserService user, IWebHostEnvironment environment, ILogger<UserController> logger)
         {
             _user = user;
             _environment = environment;
+            _logger = logger;
         }
 
         [HttpPost("register")]
@@ -116,6 +118,13 @@ namespace Backend.Controllers
         [Authorize(Roles = "Admin,SuperAdmin")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUserRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Where(kvp => kvp.Value.Errors.Count > 0)
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray());
+                _logger.LogWarning("Update user validation failed for id {Id}: {@Errors}", id, errors);
+                return BadRequest(new { Message = "Validation failed.", Errors = errors });
+            }
             var result = await _user.UpdateUserAsync(id, request);
             if (!result.Success)
             {
@@ -152,7 +161,7 @@ namespace Backend.Controllers
         [HttpPost("me/avatar")]
         [Authorize]
         [EnableRateLimiting("Auth")]
-        [RequestSizeLimit(5_000_000)]
+        [RequestSizeLimit(5_242_880)]
         public async Task<IActionResult> UploadCurrentUserAvatar([FromForm] IFormFile? file, CancellationToken cancellationToken)
         {
             var subject = User.FindFirstValue(JwtRegisteredClaimNames.Sub)

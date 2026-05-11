@@ -214,8 +214,8 @@
     "messages": {
       "created": "បានបង្កើតច្បាប់ថ្មីមួយ។",
       "deleted": "បានលុបច្បាប់មួយ។",
-      "createdWithTitle": "បានបង្កើតច្បាប់ \"{title}\"។",
-      "deletedWithTitle": "បានលុបច្បាប់ \"{title}\"។"
+      "createdWithTitle": "បានបង្កើត \"{title}\"។",
+      "deletedWithTitle": "បានលុប \"{title}\"។"
     },
     "badges": {
       "created": "បានបង្កើត",
@@ -424,6 +424,8 @@
     "unblock": "ដោះចាក់ទោស",
     "confirm": "បញ្ជាក់",
     "cancel": "បោះបង់",
+    "confirmBlock": "ចាក់ប្លុកអ្នកប្រើ",
+    "confirmUnblock": "ដោះប្លុកអ្នកប្រើ",
     "confirmText": "តើអ្នកប្រាកដថាចង់ {action} អ្នកប្រើប្រាស់នេះទេ?",
     "roleLabel": "តួនាទី:",
     "blockedLabel": "ត្រូវបានចាក់ទោស:",
@@ -436,7 +438,7 @@
     "createSubtitle": "បញ្ចូលពត៌មានអ្នកប្រើក្រោមនេះ។",
     "editTitle": "កែប្រែអ្នកប្រើប្រាស់",
     "editSubtitle": "បន្ទាប់បន្ថែមព័ត៌មានអ្នកប្រើប្រាស់។",
-    "avatarLabel": "Avatar (click image to upload)",
+    "avatarLabel": "រូបបង្ហាញ (ចុចរូបដើម្បីផ្ទុកឡើង) - លំដាប់កំណត់ 5MB",
     "noAvatar": "គ្មានរូបយូស",
     "fullNameLabel": "ឈ្មោះពេញ",
     "fullNamePlaceholder": "ឈ្មោះពេញ",

@@ -213,8 +213,8 @@
     "messages": {
       "created": "A new law has been created.",
       "deleted": "A law has been deleted.",
-      "createdWithTitle": "Law \"{title}\" was created.",
-      "deletedWithTitle": "Law \"{title}\" was deleted."
+      "createdWithTitle": "\"{title}\" was created.",
+      "deletedWithTitle": "\"{title}\" was deleted."
     },
     "badges": {
       "created": "created",
@@ -416,11 +416,13 @@
     },
     "searchPlaceholder": "Search users",
     "createButton": "Create User",
-    "block": "block",
-    "unblock": "unblock",
+    "block": "Block",
+    "unblock": "Unblock",
     "confirm": "Confirm",
     "cancel": "Cancel",
     "confirmText": "Are you sure you want to {action} this user?",
+    "confirmBlock": "Block User",
+    "confirmUnblock": "Unblock User",
     "roleLabel": "Role:",
     "blockedLabel": "Blocked:",
     "yes": "Yes",
@@ -431,7 +433,7 @@
     "createSubtitle": "Add user details below.",
     "editTitle": "Edit User",
     "editSubtitle": "Update user details below.",
-    "avatarLabel": "Avatar (click image to upload)",
+    "avatarLabel": "Avatar (click image to upload) - max 5MB",
     "noAvatar": "No avatar",
     "fullNameLabel": "Full name",
     "fullNamePlaceholder": "Full name",

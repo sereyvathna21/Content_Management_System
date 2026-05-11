@@ -9,6 +9,8 @@ namespace Backend.Models
         public string Kind { get; set; } = "general";
         public string? TitleKm { get; set; }
         public string? TitleEn { get; set; }
+        public Guid? PublicationId { get; set; }
+        public Publication? Publication { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

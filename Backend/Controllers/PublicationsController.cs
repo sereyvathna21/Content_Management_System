@@ -1,6 +1,7 @@
 using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,7 @@ namespace Backend.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _env;
+        private readonly INotificationService _notificationService;
 
         private const long MaxAttachmentBytes = 50_000_000;
 
@@ -43,10 +45,11 @@ namespace Backend.Controllers
             ".com"
         };
 
-        public PublicationsController(ApplicationDbContext db, IWebHostEnvironment env)
+        public PublicationsController(ApplicationDbContext db, IWebHostEnvironment env, INotificationService notificationService)
         {
             _db = db;
             _env = env;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
@@ -211,6 +214,13 @@ namespace Backend.Controllers
             }
 
             await _db.SaveChangesAsync();
+
+            // Send notification about the new publication
+            var titleKm = request.Translations.FirstOrDefault(t => t.Language?.ToLower() == "km")?.Title ?? "";
+            var titleEn = request.Translations.FirstOrDefault(t => t.Language?.ToLower() == "en")?.Title ?? "";
+            var message = $"Publication \"{titleEn}\" was created.";
+            await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "created");
+
             return CreatedAtAction(nameof(Get), new { id = publication.Id }, new { id = publication.Id });
         }
 
@@ -321,6 +331,13 @@ namespace Backend.Controllers
             }
 
             await _db.SaveChangesAsync();
+
+            // Send notification about the publication update
+            var titleKm = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "km")?.Title ?? "";
+            var titleEn = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "en")?.Title ?? "";
+            var message = $"Publication \"{titleEn}\" was updated.";
+            await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "created");
+
             return Ok(new { id = publication.Id });
         }
 
@@ -333,6 +350,14 @@ namespace Backend.Controllers
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (publication == null) return NotFound();
+
+            // Capture titles before deletion for notification
+            var titleKm = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "km")?.Title ?? "";
+            var titleEn = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "en")?.Title ?? "";
+
+            // Send notification about the publication deletion BEFORE deleting
+            var message = $"Publication \"{titleEn}\" was deleted.";
+            await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "deleted");
 
             _db.Publications.Remove(publication);
             await _db.SaveChangesAsync();

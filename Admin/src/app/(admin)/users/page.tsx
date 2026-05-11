@@ -10,6 +10,7 @@ import { Modal } from "@/components/ui/modal";
 import CreateUserForm from "@/components/user-management/CreateUserForm";
 import EditUserForm from "@/components/user-management/EditUserForm";
 import Pagination from "@/components/tables/Pagination";
+import { updateUserData } from "@/lib/api/user";
 
 type User = {
   id: string;
@@ -129,12 +130,30 @@ export default function UsersPage() {
           }),
         });
 
-        if (!res.ok) {
-          console.error("Failed to update user", res.status);
-          return;
-        }
+          if (!res.ok) {
+            let body = null;
+            try {
+              body = await res.json();
+            } catch (e) {
+              // ignore
+            }
+            console.error("Failed to update user", res.status, body);
+            return;
+          }
 
-        await loadUsers();
+          const updated = await res.json().catch(() => null);
+          // If the updated user is the current signed-in user, refresh the global profile cache and UI
+          const currentEmail = (session as any)?.user?.email;
+          if (updated && currentEmail && String(updated.email).toLowerCase() === String(currentEmail).toLowerCase()) {
+            try {
+              await updateUserData({ name: updated.fullName || updated.name, avatar: updated.avatar });
+            } catch (err) {
+              // non-fatal
+              console.warn("Failed to refresh current user profile after update", err);
+            }
+          }
+
+          await loadUsers();
       } else {
         const res = await fetch(`${BACKEND_URL}/api/user`, {
           method: "POST",
@@ -302,47 +321,51 @@ export default function UsersPage() {
         </div>
       </ComponentCard>
 
-      {/* Confirm block/unblock modal */}
+      {/* Confirm block/unblock modal (styled like Social delete modal) */}
       <Modal
         isOpen={confirmOpen}
         onClose={() => {
           setConfirmOpen(false);
           setPendingBlockId(null);
         }}
-        className="max-w-md p-4"
+        className="max-w-md p-6"
         backdropClassName="fixed inset-0 h-full w-full bg-gray-400/30 backdrop-blur-sm"
       >
-        <div className="mb-3">
-          <h3 className="text-lg font-semibold text-primary">
+        <div className="flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-red-500">
+              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
             {pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked
-              ? t("UsersPage.unblock")
-              : t("UsersPage.block")}
+              ? (t("UsersPage.unblock") || "Confirm Unblock")
+              : (t("UsersPage.block") || "Confirm Block")}
           </h3>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-gray-500 mb-6">
             {t("UsersPage.confirmText", {
               action: pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked ? t("UsersPage.unblock") : t("UsersPage.block"),
             })}
           </p>
-        </div>
 
-        <div className="flex items-center justify-end gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setConfirmOpen(false);
-              setPendingBlockId(null);
-            }}
-          >
-            {t("UsersPage.cancel")}
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleBlockConfirmed}
-            className="bg-red-600 text-white hover:bg-red-700"
-          >
-            {t("UsersPage.confirm")}
-          </Button>
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={() => {
+                setConfirmOpen(false);
+                setPendingBlockId(null);
+              }}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              {t("UsersPage.cancel")}
+            </button>
+            <button
+              onClick={handleBlockConfirmed}
+              className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors ${pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"}`}
+            >
+              {pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked ? (t("UsersPage.confirmUnblock") || "Unblock User") : (t("UsersPage.confirmBlock") || "Block User")}
+            </button>
+          </div>
         </div>
       </Modal>
 

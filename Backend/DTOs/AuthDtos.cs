@@ -57,7 +57,7 @@ namespace Backend.DTOs
         [RegularExpression("^(?i)(admin|user|superadmin)$", ErrorMessage = "Role must be one of: admin, user, superadmin.")]
         public string Role { get; set; } = "User";
 
-        [MaxLength(2048)]
+        [MaxLength(5242880)]
         public string? Avatar { get; set; }
 
         [MaxLength(30)]
@@ -91,7 +91,7 @@ namespace Backend.DTOs
         [RegularExpression("^(?i)(admin|user|superadmin)$", ErrorMessage = "Role must be one of: admin, user, superadmin.")]
         public string Role { get; set; } = "User";
 
-        [MaxLength(2048)]
+        [MaxLength(5242880)]
         public string? Avatar { get; set; }
 
         [MaxLength(30)]
@@ -125,7 +125,7 @@ namespace Backend.DTOs
         [MaxLength(255)]
         public string? Email { get; set; }
 
-        [MaxLength(2048)]
+        [MaxLength(5242880)]
         public string? Avatar { get; set; }
 
         [MaxLength(30)]

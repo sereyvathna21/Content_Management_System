@@ -14,6 +14,7 @@ type NotificationItem = {
   kind: NotificationKind;
   titleKm?: string;
   titleEn?: string;
+  publicationId?: string;
   createdAt: Date;
 };
 
@@ -23,6 +24,7 @@ type NotificationApiItem = {
   kind: string;
   titleKm?: string;
   titleEn?: string;
+  publicationId?: string;
   createdAt: string;
 };
 
@@ -117,6 +119,7 @@ export default function NotificationDropdown() {
           kind: normalizeNotificationKind(item.kind, item.message),
           titleKm: item.titleKm,
           titleEn: item.titleEn,
+          publicationId: item.publicationId,
           createdAt: new Date(item.createdAt),
         }));
 
@@ -150,7 +153,7 @@ export default function NotificationDropdown() {
 
     connection.on(
       "ReceiveNotification",
-      (payload: string | { message?: string; kind?: string; titleKm?: string; titleEn?: string; createdAt?: string }) => {
+      (payload: string | { message?: string; kind?: string; titleKm?: string; titleEn?: string; publicationId?: string; createdAt?: string }) => {
         const message = typeof payload === "string" ? payload : payload.message ?? "";
         if (!message) {
           return;
@@ -174,6 +177,7 @@ export default function NotificationDropdown() {
         kind,
         titleKm: typeof payload === "string" ? undefined : payload.titleKm,
         titleEn: typeof payload === "string" ? undefined : payload.titleEn,
+        publicationId: typeof payload === "string" ? undefined : payload.publicationId,
         createdAt,
       };
 
@@ -271,6 +275,7 @@ export default function NotificationDropdown() {
             notifications.map((notification) => {
               const isCreated = notification.kind === "created";
               const isDeleted = notification.kind === "deleted";
+              
               const localizedTitle = isCreated
                 ? t("titles.created")
                 : isDeleted

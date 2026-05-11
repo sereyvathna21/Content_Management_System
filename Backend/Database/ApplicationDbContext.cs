@@ -68,6 +68,10 @@ namespace Backend.Data
                 b.Property(x => x.TitleKm).HasMaxLength(500);
                 b.Property(x => x.TitleEn).HasMaxLength(500);
                 b.HasIndex(x => x.CreatedAt);
+                b.HasOne(x => x.Publication)
+                    .WithMany()
+                    .HasForeignKey(x => x.PublicationId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<SocialTopic>(b =>

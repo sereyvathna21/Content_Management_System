@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import Tooltip from "@/components/ui/Tooltip";
+import ComponentCard from "@/components/common/ComponentCard";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
-import { Modal } from "@/components/ui/modal";
 
 export type User = {
   id: string;
@@ -35,32 +35,34 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
 
   if (!loading && users.length === 0) {
     return (
-          <div className="py-12 text-center text-gray-500">
-        {query ? (
-          <>
-            <p className="text-lg font-medium">{t("UserTable.noUsersForQuery", { query })}</p>
-            <p className="mt-2 text-sm">{t("UserTable.tryDifferent")}</p>
-            <div className="mt-4 flex justify-center">
-              <button
-                className="h-9 px-4 rounded-lg font-semibold bg-primary text-white hover:bg-primary/90"
-                onClick={() => onClear && onClear()}
-              >
-                {t("UserTable.clear")}
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="text-lg font-medium">{t("UserTable.noUsersTitle")}</p>
-            <p className="mt-2 text-sm">{t("UserTable.tryAdjust")}</p>
-          </>
-        )}
-      </div>
+      <ComponentCard title="" className="mt-2">
+        <div className="py-12 text-center text-gray-500 space-y-3">
+          {query ? (
+            <>
+              <p className="text-lg font-medium">{t("UserTable.noUsersForQuery", { query })}</p>
+              <p className="mt-2 text-sm">{t("UserTable.tryDifferent")}</p>
+              <div className="mt-4 flex justify-center">
+                <button
+                  className="h-9 px-4 rounded-lg font-semibold bg-primary text-white hover:bg-primary/90"
+                  onClick={() => onClear && onClear()}
+                >
+                  {t("UserTable.clear")}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-medium">{t("UserTable.noUsersTitle")}</p>
+              <p className="mt-2 text-sm">{t("UserTable.tryAdjust")}</p>
+            </>
+          )}
+        </div>
+      </ComponentCard>
     );
   }
 
   return (
-    <>
+    <ComponentCard title="" className="mt-2">
       <div className="space-y-4">
         <div className="md:hidden space-y-3">
           {users.map((u) => (
@@ -205,6 +207,6 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
           </div>
         </div>
       </div>
-    </>
+    </ComponentCard>
   );
 }

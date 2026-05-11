@@ -35,6 +35,7 @@ namespace Backend.Controllers
                     Kind = n.Kind,
                     TitleKm = n.TitleKm,
                     TitleEn = n.TitleEn,
+                    PublicationId = n.PublicationId,
                     CreatedAt = n.CreatedAt
                 })
                 .ToListAsync();
