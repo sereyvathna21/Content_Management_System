@@ -30,6 +30,17 @@ namespace Backend.Mappings
             CreateMap<SocialRevision, SocialRevisionDto>();
 
             CreateMap<SocialReference, SocialReferenceDto>();
+
+            // News and Videos
+            CreateMap<NewsArticle, NewsArticleDto>();
+            CreateMap<NewsArticleTranslation, NewsArticleTranslationDto>();
+            CreateMap<NewsArticleCreateDto, NewsArticle>();
+            CreateMap<NewsArticleTranslationCreateDto, NewsArticleTranslation>();
+            CreateMap<NewsArticleUpdateDto, NewsArticle>();
+
+            CreateMap<Video, VideoDto>();
+            CreateMap<VideoCreateDto, Video>();
+            CreateMap<VideoUpdateDto, Video>();
         }
     }
 }

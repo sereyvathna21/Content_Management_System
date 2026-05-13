@@ -16,6 +16,9 @@ namespace Backend.Data
         public DbSet<LawTranslation> LawTranslations { get; set; }
         public DbSet<Publication> Publications { get; set; }
         public DbSet<PublicationTranslation> PublicationTranslations { get; set; }
+        public DbSet<NewsArticle> NewsArticles { get; set; }
+        public DbSet<NewsArticleTranslation> NewsArticleTranslations { get; set; }
+        public DbSet<Video> Videos { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
         // Social Content
@@ -58,6 +61,56 @@ namespace Backend.Data
                 b.HasKey(x => x.Id);
                 b.HasIndex(x => new { x.PublicationId, x.Language }).IsUnique();
                 b.Property(x => x.Language).HasMaxLength(10);
+            });
+
+            modelBuilder.Entity<NewsArticle>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.Slug).IsUnique();
+                b.HasIndex(x => x.Status);
+                b.HasIndex(x => x.PublishAt);
+                b.Property(x => x.Slug).HasMaxLength(200).IsRequired();
+                b.Property(x => x.Category).HasMaxLength(100);
+                b.Property(x => x.Status).HasConversion<string>().HasMaxLength(50);
+
+                b.HasMany(x => x.Translations)
+                    .WithOne(t => t.Article)
+                    .HasForeignKey(t => t.ArticleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasOne(x => x.ImageMedia)
+                    .WithMany()
+                    .HasForeignKey(x => x.ImageMediaId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<NewsArticleTranslation>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => new { x.ArticleId, x.Language }).IsUnique();
+                b.Property(x => x.Language).HasMaxLength(10).IsRequired();
+                b.Property(x => x.Title).HasMaxLength(500);
+                b.Property(x => x.Excerpt).HasMaxLength(2000);
+                b.Property(x => x.MetaTitle).HasMaxLength(500);
+                b.Property(x => x.MetaDescription).HasMaxLength(1000);
+                b.Property(x => x.CanonicalUrl).HasMaxLength(500);
+            });
+
+            modelBuilder.Entity<Video>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.Status);
+                b.HasIndex(x => x.PublishAt);
+                b.Property(x => x.EmbedUrl).HasMaxLength(1000).IsRequired();
+                b.Property(x => x.Title).HasMaxLength(500).IsRequired();
+                b.Property(x => x.Description).HasMaxLength(2000).IsRequired();
+                b.Property(x => x.Category).HasMaxLength(100);
+                b.Property(x => x.Status).HasConversion<string>().HasMaxLength(50);
+
+                b.HasOne(x => x.ThumbnailMedia)
+                    .WithMany()
+                    .HasForeignKey(x => x.ThumbnailMediaId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             modelBuilder.Entity<Notification>(b =>

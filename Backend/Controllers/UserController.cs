@@ -120,8 +120,8 @@ namespace Backend.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Where(kvp => kvp.Value.Errors.Count > 0)
-                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Errors.Select(e => e.ErrorMessage).ToArray());
+                var errors = ModelState.Where(kvp => kvp.Value?.Errors.Count > 0)
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToArray() ?? Array.Empty<string>());
                 _logger.LogWarning("Update user validation failed for id {Id}: {@Errors}", id, errors);
                 return BadRequest(new { Message = "Validation failed.", Errors = errors });
             }
