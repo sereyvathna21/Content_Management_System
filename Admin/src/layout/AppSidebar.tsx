@@ -81,10 +81,10 @@ const navItems: NavItem[] = [
   },
    {
     icon: <PlugInIcon />,
-    name: "New",
+    name: "News & Media",
     titleKey: "new",
-    subItems: [{ name: "News", titleKey: "news", path: "/News", pro: false },
-      { name: "Video", titleKey: "video", path: "/Videos", pro: false }
+    subItems: [{ name: "News", titleKey: "news", path: "/news", pro: false },
+      { name: "Video", titleKey: "video", path: "/videos", pro: false }
     ],
   },
    {
@@ -121,7 +121,6 @@ const othersItems: NavItem[] = [
       { name: "Badge", titleKey: "badge", path: "/badge", pro: false },
       { name: "Buttons", titleKey: "buttons", path: "/buttons", pro: false },
       { name: "Images", titleKey: "images", path: "/images", pro: false },
-      { name: "Videos", titleKey: "videos", path: "/videos", pro: false },
     ],
   },
    {

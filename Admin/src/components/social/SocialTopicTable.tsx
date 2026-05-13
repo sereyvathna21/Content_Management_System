@@ -55,7 +55,7 @@ export default React.memo(function SocialTopicTable({
                 const publishedDateStr = tItem.publishedAt 
                     ? new Date(tItem.publishedAt).toLocaleDateString(dateLocale, { year: "numeric", month: "long", day: "numeric" })
                     : "-";
-                const statusLabel = tItem.status === 1
+                const statusLabel = (tItem.status === 1 || tItem.status === "Published")
                   ? (t("SocialTable.status.published") || "Published")
                   : (t("SocialTable.status.draft") || "Draft");
 
@@ -72,7 +72,7 @@ export default React.memo(function SocialTopicTable({
                         <p className="text-xs text-gray-500 font-mono mt-1 truncate">{tItem.slug}</p>
                       </div>
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        tItem.status === 1
+                        (tItem.status === 1 || tItem.status === "Published")
                           ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
                           : "bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10"
                       }`}>
@@ -153,7 +153,7 @@ export default React.memo(function SocialTopicTable({
                             </TableCell>
 
                             <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                              {tItem.status === 1 ? (
+                              {(tItem.status === 1 || tItem.status === "Published") ? (
                                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20">{t("SocialTable.status.published") || "Published"}</span>
                               ) : (
                                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-600 ring-1 ring-inset ring-gray-500/10">{t("SocialTable.status.draft") || "Draft"}</span>

@@ -551,6 +551,158 @@
       "desc": "គ្រប់គ្រងមាតិកាសង្គម"
     }
   },
+  "NewsForm": {
+    "confirmCloseTitle": "បញ្ជាក់ការបិទ",
+    "confirmCloseBody": "តើអ្នកប្រាកដថាចង់បិទឬ? ទិន្នន័យមិនទាន់រក្សាទុកនឹងត្រូវបាត់។",
+    "cancel": "បោះបង់",
+    "confirm": "បញ្ជាក់",
+    "slugLabel": "តំណរ (Slug)",
+    "slugPlaceholder": "url-friendly-slug",
+    "categoryLabel": "ប្រភេទ",
+    "statusLabel": "ស្ថានភាព",
+    "publishDateLabel": "កាលបរិច្ឆេទបោះពុម្ពផ្សាយ",
+    "publishDatePlaceholder": "ជ្រើសកាលបរិច្ឆេទ",
+    "languageButton": "ភាសា",
+    "defaultBadge": "លំនាំដើម",
+    "galleryImagesLabel": "រូបភាពក្នុងវិចិត្រសាល",
+    "alreadyUploadedLabel": "បានបង្ហោះរួចហើយ",
+    "imageAltLabel": "អត្ថបទជំនួស",
+    "imageAltKhLabel": "អត្ថបទជំនួស (ខ្មែរ)",
+    "imageAltEnLabel": "អត្ថបទជំនួស (អង់គ្លេស)",
+    "titleLabel": "ចំណងជើង",
+    "excerptLabel": "សេចក្តីសង្ខេប",
+    "contentLabel": "មាតិកា",
+    "save": "រក្សាទុកព័ត៌មាន",
+    "saveEdit": "រក្សាទុកការកែប្រែ",
+    "saving": "កំពុងរក្សាទុក...",
+    "errors": {
+      "required": "តម្រូវឱ្យមាន Slug ប្រភេទ និង ចំណងជើង និងសេចក្តីសង្ខេប {language}។",
+      "publishDateRequired": "តម្រូវឱ្យមានកាលបរិច្ឆេទបោះពុម្ពផ្សាយ នៅពេលដែលស្ថានភាពជា Published។",
+      "imageRequired": "តម្រូវឱ្យមានរូបភាព មុនពេលបោះពុម្ពផ្សាយ។",
+      "imageAltKhRequired": "តម្រូវឱ្យមានអត្ថបទជំនួស (ខ្មែរ) នៅពេលដែលរូបភាពត្រូវបានកំណត់។",
+      "uploadFailed": "បង្ហោះរូបភាពបរាជ័យ។",
+      "saveFailed": "រក្សាទុកព័ត៌មាននិក្ខេបបរាជ័យ។"
+    },
+    "status": {
+      "draft": "ព្រាង",
+      "published": "ផ្សាយផ្ទាល់",
+      "archived": "ប័ណ្ណសារ"
+    }
+  },
+  "NewsFilters": {
+    "searchPlaceholder": "ស្វែងរកព័ត៌មាន...",
+    "searchAria": "ស្វែងរកព័ត៌មាន",
+    "filters": {
+      "all": "ទាំងអស់",
+      "draft": "ព្រាង",
+      "published": "ផ្សាយផ្ទាល់",
+      "archived": "ប័ណ្ណសារ"
+    }
+  },
+  "NewsTable": {
+    "loading": "កំពុងផ្ទុក...",
+    "noNewsForQuery": "រកមិនឃើញព័ត៌មាន \"{query}\"",
+    "tryDifferent": "សាកល្បងកែប្រែការស្វែងរករបស់អ្នក។",
+    "noNewsTitle": "រកមិនឃើញអត្ថបទព័ត៌មាន",
+    "tryAdjust": "បង្កើតអត្ថបទថ្មីដើម្បីចាប់ផ្តើម។",
+    "headers": {
+      "title": "ចំណងជើង",
+      "category": "ប្រភេទ",
+      "status": "ស្ថានភាព",
+      "date": "កាលបរិច្ឆេទ",
+      "actions": "សកម្មភាព"
+    },
+    "confirmDeleteTitle": "បញ្ជាក់ការលុប",
+    "confirmDeleteText": "តើអ្នកប្រាកដថាចង់លុបព័ត៌មាននេះទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+    "cancel": "បោះបង់",
+    "delete": "លុប",
+    "tooltips": {
+      "edit": "កែប្រែ",
+      "delete": "លុប"
+    }
+  },
+  "NewsPage": {
+    "title": "ការគ្រប់គ្រងព័ត៌មាន",
+    "desc": "គ្រប់គ្រងអត្ថបទព័ត៌មាន និងបកប្រែ",
+    "create": "បង្កើតព័ត៌មាន",
+    "loading": "កំពុងផ្ទុក...",
+    "card": {
+      "title": "ព័ត៌មាន",
+      "desc": "គ្រប់គ្រងអត្ថបទព័ត៌មាន និងបកប្រែ"
+    }
+  },
+  "VideoForm": {
+    "confirmCloseTitle": "បញ្ជាក់ការបិទ",
+    "confirmCloseBody": "តើអ្នកប្រាកដថាចង់បិទឬ? ទិន្នន័យមិនទាន់រក្សាទុកនឹងត្រូវបាត់។",
+    "cancel": "បោះបង់",
+    "confirm": "បញ្ជាក់",
+    "titleLabel": "ចំណងជើង",
+    "titlePlaceholder": "បញ្ចូលចំណងជើងវីដេអូ",
+    "descriptionLabel": "ការពិពណ៌នា",
+    "descriptionPlaceholder": "សេចក្តីពិពណ៌នាខ្លី...",
+    "embedUrlLabel": "URL កម្មវិធីក្រាប់",
+    "embedUrlPlaceholder": "https://www.youtube.com/embed/...",
+    "categoryLabel": "ប្រភេទ",
+    "statusLabel": "ស្ថានភាព",
+    "publishDateLabel": "កាលបរិច្ឆេទបោះពុម្ពផ្សាយ",
+    "publishDatePlaceholder": "ជ្រើសកាលបរិច្ឆេទ",
+    "save": "រក្សាទុកវីដេអូ",
+    "saveEdit": "រក្សាទុកការកែប្រែ",
+    "saving": "កំពុងរក្សាទុក...",
+    "errors": {
+      "titleRequired": "តម្រូវឱ្យមានចំណងជើង។",
+      "descriptionRequired": "តម្រូវឱ្យមានការពិពណ៌នា។",
+      "embedUrlRequired": "តម្រូវឱ្យមាន Embed URL។",
+      "saveFailed": "រក្សាទុកវីដេអូបរាជ័យ។"
+    },
+    "status": {
+      "draft": "ព្រាង",
+      "published": "ផ្សាយផ្ទាល់",
+      "archived": "ប័ណ្ណសារ"
+    }
+  },
+  "VideoFilters": {
+    "searchPlaceholder": "ស្វែងរកវីដេអូ...",
+    "searchAria": "ស្វែងរកវីដេអូ",
+    "filters": {
+      "all": "ទាំងអស់",
+      "draft": "ព្រាង",
+      "published": "ផ្សាយផ្ទាល់",
+      "archived": "ប័ណ្ណសារ"
+    }
+  },
+  "VideoTable": {
+    "loading": "កំពុងផ្ទុក...",
+    "noVideosForQuery": "រកមិនឃើញវីដេអូ \"{query}\"",
+    "tryDifferent": "សាកល្បងកែប្រែការស្វែងរករបស់អ្នក។",
+    "noVideosTitle": "រកមិនឃើញវីដេអូ",
+    "tryAdjust": "បង្កើតវីដេអូថ្មីដើម្បីចាប់ផ្តើម។",
+    "headers": {
+      "title": "ចំណងជើង",
+      "category": "ប្រភេទ",
+      "status": "ស្ថានភាព",
+      "date": "កាលបរិច្ឆេទ",
+      "actions": "សកម្មភាព"
+    },
+    "confirmDeleteTitle": "បញ្ជាក់ការលុប",
+    "confirmDeleteText": "តើអ្នកប្រាកដថាចង់លុបវីដេអូនេះទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+    "cancel": "បោះបង់",
+    "delete": "លុប",
+    "tooltips": {
+      "edit": "កែប្រែ",
+      "delete": "លុប"
+    }
+  },
+  "VideoPage": {
+    "title": "ការគ្រប់គ្រងវីដេអូ",
+    "desc": "គ្រប់គ្រងមាតិកាវីដេអូក្រាប់ (Embed)",
+    "create": "បង្កើតវីដេអូ",
+    "loading": "កំពុងផ្ទុក...",
+    "card": {
+      "title": "វីដេអូ",
+      "desc": "គ្រប់គ្រងមាតិកាវីដេអូក្រាប់"
+    }
+  },
   "Sidebar": {
     "menu": "បញ្ជីមុខងារ",
     "others": "ផ្សេងៗ",

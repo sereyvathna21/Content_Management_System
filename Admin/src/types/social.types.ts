@@ -56,7 +56,7 @@ export type SocialTopic = {
     titleEn?: string;
     referenceKm?: string;
     referenceEn?: string;
-    status: number; // 0 = Draft, 1 = Published
+    status: number | string; // 0 = Draft, 1 = Published OR "Draft" | "Published"
     publishedAt?: string;
     sortOrder: number;
 };

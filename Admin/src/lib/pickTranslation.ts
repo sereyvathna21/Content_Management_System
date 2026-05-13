@@ -12,9 +12,15 @@ export function pickTranslation(
     locale?: string,
     fallbackTitle = "Law"
 ): LawTranslationLite {
-    const normalized = locale === "kh" ? "km" : locale;
+    const normalizeLang = (lang?: string) => {
+        if (!lang) return undefined;
+        const lowered = lang.toLowerCase();
+        return lowered === "kh" ? "km" : lowered;
+    };
+
+    const normalized = normalizeLang(locale);
     const match = normalized
-        ? translations.find((tr) => tr.language === normalized)
+        ? translations.find((tr) => normalizeLang(tr.language) === normalized)
         : undefined;
 
     return (
