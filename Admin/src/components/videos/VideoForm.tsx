@@ -239,14 +239,8 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5 max-h-[65vh] overflow-y-auto">
+    <div className="bg-white rounded-xl p-4 sm:p-5">
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-        
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
@@ -319,7 +313,7 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
           </div>
         </div>
 
-        <div>
+        <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100">
           <label className="block text-sm font-medium text-gray-900 mb-1">
             {t("descriptionLabel")}
           </label>
@@ -332,8 +326,13 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
           />
         </div>
 
-        <div className="pt-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-end gap-3">
-          <div className="w-full sm:w-auto flex items-center gap-3">
+        <div className="pt-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+          {error && (
+            <div className="w-full p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          <div className="w-full sm:w-auto flex items-center gap-3 ml-auto">
             <button
               type="button"
               onClick={() => {

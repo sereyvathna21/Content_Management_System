@@ -249,18 +249,11 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
   const activeTranslation = getTranslation(activeTab);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-5 max-h-[65vh] overflow-y-auto">
+    <div className="bg-white rounded-xl p-4 sm:p-5">
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-
-        <div className="rounded-xl bg-gray-50/50 p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               {t("slugLabel")} <span className="text-red-500">*</span>
             </label>
             <input
@@ -272,10 +265,10 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
               autoCorrect="off"
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
             />
-            </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1">
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               {t("categoryLabel")} <span className="text-red-500">*</span>
             </label>
             <div className="relative z-20">
@@ -291,10 +284,10 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
                 })}
               />
             </div>
-            </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1">
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-1">
               {t("statusLabel")}
             </label>
             <div className="relative z-10">
@@ -308,23 +301,22 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
                 ]}
               />
             </div>
-            </div>
+          </div>
 
-            <div>
-              <DatePicker
-                id={isEditing ? "news-date-edit" : "news-date"}
-                label={t("publishDateLabel")}
-                placeholder={t("publishDatePlaceholder")}
-                defaultDate={publishAt || undefined}
-                onChange={(selectedDates: Date[]) =>
-                  setPublishAt(selectedDates[0] ? formatDateToIso(selectedDates[0]) : "")
-                }
-              />
-            </div>
+          <div>
+            <DatePicker
+              id={isEditing ? "news-date-edit" : "news-date"}
+              label={t("publishDateLabel")}
+              placeholder={t("publishDatePlaceholder")}
+              defaultDate={publishAt || undefined}
+              onChange={(selectedDates: Date[]) =>
+                setPublishAt(selectedDates[0] ? formatDateToIso(selectedDates[0]) : "")
+              }
+            />
           </div>
         </div>
 
-        <div className="rounded-xl bg-gray-50/50 p-4 space-y-3">
+        <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
               {t("galleryImagesLabel")}
@@ -361,7 +353,7 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
           <MultiImageDropZone files={imageFiles} onChange={setImageFiles} />
         </div>
 
-        <div className="rounded-xl bg-gray-50/50 p-4">
+        <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100">
           <label className="block text-sm font-medium text-gray-900 mb-1">
             {t("imageAltLabel")} <span className="text-red-500">{newsStatus === "Published" ? "*" : ""}</span>
           </label>
@@ -375,7 +367,7 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
         </div>
 
         <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-4" aria-label="Tabs">
+          <nav className="-mb-px flex space-x-4 overflow-x-auto" aria-label="Tabs">
             {DEFAULT_LANGS.map((lang) => {
               const isActive = lang === activeTab;
               return (
@@ -401,10 +393,10 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
           </nav>
         </div>
 
-        <div className="bg-gray-50/50 p-4 rounded-xl space-y-4">
+        <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 space-y-3">
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
-              {t("titleLabel")} <span className="text-red-500">{activeTab === DEFAULT_LANGUAGE ? "*" : ""}</span>
+              {t("titleLabel")} <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -416,7 +408,7 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
 
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
-              {t("excerptLabel")} <span className="text-red-500">{activeTab === DEFAULT_LANGUAGE ? "*" : ""}</span>
+              {t("excerptLabel")} <span className="text-red-500">*</span>
             </label>
             <textarea
               value={activeTranslation.excerpt}
@@ -439,15 +431,20 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
           </div>
         </div>
 
-        <div className="pt-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-end gap-3">
-          <div className="w-full sm:w-auto flex items-center gap-3">
+        <div className="pt-3 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+          {error && (
+            <div className="w-full p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          <div className="w-full sm:w-auto flex items-center gap-3 ml-auto">
             <button
               type="button"
               onClick={() => {
                 if (resetOnClose) resetForm();
                 onClose?.();
               }}
-              className="w-full sm:w-auto inline-flex justify-center items-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold text-primary bg-white border border-primary hover:bg-gray-50 transition-all"
+              className="inline-flex justify-center items-center gap-2 rounded-lg px-6 py-2 text-sm font-semibold text-primary bg-white border border-primary hover:bg-gray-50 transition-all"
             >
               {t("cancel")}
             </button>
