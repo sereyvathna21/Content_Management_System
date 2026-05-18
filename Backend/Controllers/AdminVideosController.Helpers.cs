@@ -25,9 +25,6 @@ namespace Backend.Controllers
             string category,
             ContentStatus status,
             DateTime? publishAt,
-            string? thumbnailUrl,
-            Guid? thumbnailMediaId,
-            string? thumbnailAltKh,
             out string error)
         {
             error = string.Empty;
@@ -68,15 +65,6 @@ namespace Backend.Controllers
                 {
                     error = "PublishAt is required when status is Published.";
                     return false;
-                }
-
-                if (!string.IsNullOrWhiteSpace(thumbnailUrl) || thumbnailMediaId != null)
-                {
-                    if (string.IsNullOrWhiteSpace(thumbnailAltKh))
-                    {
-                        error = "ThumbnailAltKh is required when a thumbnail is set.";
-                        return false;
-                    }
                 }
             }
 
@@ -121,15 +109,6 @@ namespace Backend.Controllers
             {
                 error = "PublishAt is required when status is Published.";
                 return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(video.ThumbnailUrl) || video.ThumbnailMediaId != null)
-            {
-                if (string.IsNullOrWhiteSpace(video.ThumbnailAltKh))
-                {
-                    error = "ThumbnailAltKh is required when a thumbnail is set.";
-                    return false;
-                }
             }
 
             return true;
@@ -207,10 +186,6 @@ namespace Backend.Controllers
                 Category = video.Category,
                 Status = video.Status,
                 PublishAt = video.PublishAt,
-                ThumbnailUrl = video.ThumbnailUrl,
-                ThumbnailMediaId = video.ThumbnailMediaId,
-                ThumbnailAltKh = video.ThumbnailAltKh,
-                ThumbnailAltEn = video.ThumbnailAltEn,
                 Featured = video.Featured,
                 SortOrder = video.SortOrder,
                 CreatedAt = video.CreatedAt,

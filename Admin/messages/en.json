@@ -563,6 +563,9 @@
     "imageAltLabel": "Image Alt",
     "imageAltKhLabel": "Image Alt (Khmer)",
     "imageAltEnLabel": "Image Alt (English)",
+    "imageAltKhPlaceholder": "Describe the image in Khmer",
+    "imageAltEnPlaceholder": "Describe the image in English",
+    "imageAltPlaceholder": "Describe the image",
     "titleLabel": "Title",
     "excerptLabel": "Excerpt",
     "contentLabel": "Content",
@@ -574,6 +577,8 @@
       "publishDateRequired": "Publish Date is required when status is Published.",
       "imageRequired": "Image is required before publishing.",
       "imageAltKhRequired": "Image Alt (Khmer) is required when an image is set.",
+      "imageAltRequired": "Image Alt is required when an image is set.",
+      "translationIncomplete": "{language} must include both Title and Excerpt (or leave both empty).",
       "uploadFailed": "Failed to upload an image.",
       "saveFailed": "Failed to save news article."
     },
@@ -593,6 +598,7 @@
   "NewsFilters": {
     "searchPlaceholder": "Search news...",
     "searchAria": "Search news",
+    "clearSearch": "Clear search",
     "filters": {
       "all": "All",
       "draft": "Draft",
@@ -617,6 +623,7 @@
     "confirmDeleteText": "Are you sure you want to delete this news? This action cannot be undone.",
     "cancel": "Cancel",
     "delete": "Delete",
+    "deleting": "Deleting...",
     "tooltips": {
       "edit": "Edit",
       "delete": "Delete"
@@ -627,6 +634,9 @@
     "desc": "Manage news articles and translations",
     "create": "Create News",
     "loading": "Loading...",
+    "loadError": "Failed to load news articles. Please try again.",
+    "modalCreateTitle": "Create News Article",
+    "modalEditTitle": "Edit News Article",
     "card": {
       "title": "News",
       "desc": "Manage news articles and translations"
@@ -654,6 +664,10 @@
       "titleRequired": "Title is required.",
       "descriptionRequired": "Description is required.",
       "embedUrlRequired": "Embed URL is required.",
+      "embedUrlNotAllowed": "URL must be from YouTube, Vimeo, or Facebook.",
+      "categoryRequired": "Category is required.",
+      "publishDateRequired": "Publish Date is required when status is Published.",
+      "uploadFailed": "Failed to upload thumbnail.",
       "saveFailed": "Failed to save video."
     },
     "status": {
@@ -665,6 +679,7 @@
   "VideoFilters": {
     "searchPlaceholder": "Search videos...",
     "searchAria": "Search videos",
+    "clearSearch": "Clear search",
     "filters": {
       "all": "All",
       "draft": "Draft",
@@ -689,6 +704,7 @@
     "confirmDeleteText": "Are you sure you want to delete this video? This action cannot be undone.",
     "cancel": "Cancel",
     "delete": "Delete",
+    "deleting": "Deleting...",
     "tooltips": {
       "edit": "Edit",
       "delete": "Delete"
@@ -699,6 +715,9 @@
     "desc": "Manage embedded video content",
     "create": "Create Video",
     "loading": "Loading...",
+    "loadError": "Failed to load videos. Please try again.",
+    "modalCreateTitle": "Create Video",
+    "modalEditTitle": "Edit Video",
     "card": {
       "title": "Videos",
       "desc": "Manage embedded video content"

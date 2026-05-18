@@ -108,9 +108,6 @@ namespace Backend.Controllers
                     request.Category,
                     request.Status,
                     request.PublishAt,
-                    request.ThumbnailUrl,
-                    request.ThumbnailMediaId,
-                    request.ThumbnailAltKh,
                     out var error))
             {
                 return BadRequest(new { message = error });
@@ -126,10 +123,6 @@ namespace Backend.Controllers
                 Category = request.Category.Trim(),
                 Status = request.Status,
                 PublishAt = request.PublishAt,
-                ThumbnailUrl = string.IsNullOrWhiteSpace(request.ThumbnailUrl) ? null : request.ThumbnailUrl.Trim(),
-                ThumbnailMediaId = request.ThumbnailMediaId,
-                ThumbnailAltKh = string.IsNullOrWhiteSpace(request.ThumbnailAltKh) ? null : request.ThumbnailAltKh.Trim(),
-                ThumbnailAltEn = string.IsNullOrWhiteSpace(request.ThumbnailAltEn) ? null : request.ThumbnailAltEn.Trim(),
                 Featured = request.Featured,
                 SortOrder = request.SortOrder,
                 CreatedAt = DateTime.UtcNow,
@@ -170,9 +163,6 @@ namespace Backend.Controllers
                     request.Category,
                     request.Status,
                     request.PublishAt,
-                    request.ThumbnailUrl,
-                    request.ThumbnailMediaId,
-                    request.ThumbnailAltKh,
                     out var error))
             {
                 return BadRequest(new { message = error });
@@ -191,10 +181,6 @@ namespace Backend.Controllers
             video.Category = request.Category.Trim();
             video.Status = request.Status;
             video.PublishAt = request.PublishAt;
-            video.ThumbnailUrl = string.IsNullOrWhiteSpace(request.ThumbnailUrl) ? null : request.ThumbnailUrl.Trim();
-            video.ThumbnailMediaId = request.ThumbnailMediaId;
-            video.ThumbnailAltKh = string.IsNullOrWhiteSpace(request.ThumbnailAltKh) ? null : request.ThumbnailAltKh.Trim();
-            video.ThumbnailAltEn = string.IsNullOrWhiteSpace(request.ThumbnailAltEn) ? null : request.ThumbnailAltEn.Trim();
             video.Featured = request.Featured;
             video.SortOrder = request.SortOrder;
             video.UpdatedAt = DateTime.UtcNow;

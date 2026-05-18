@@ -569,6 +569,9 @@
     "imageAltLabel": "អត្ថបទជំនួស",
     "imageAltKhLabel": "អត្ថបទជំនួស (ខ្មែរ)",
     "imageAltEnLabel": "អត្ថបទជំនួស (អង់គ្លេស)",
+    "imageAltKhPlaceholder": "ពិពណ៌នារូបភាពជាភាសាខ្មែរ",
+    "imageAltEnPlaceholder": "ពិពណ៌នារូបភាពជាភាសាអង់គ្លេស",
+    "imageAltPlaceholder": "ពិពណ៌នារូបភាព",
     "titleLabel": "ចំណងជើង",
     "excerptLabel": "សេចក្តីសង្ខេប",
     "contentLabel": "មាតិកា",
@@ -580,6 +583,8 @@
       "publishDateRequired": "តម្រូវឱ្យមានកាលបរិច្ឆេទបោះពុម្ពផ្សាយ នៅពេលដែលស្ថានភាពជា Published។",
       "imageRequired": "តម្រូវឱ្យមានរូបភាព មុនពេលបោះពុម្ពផ្សាយ។",
       "imageAltKhRequired": "តម្រូវឱ្យមានអត្ថបទជំនួស (ខ្មែរ) នៅពេលដែលរូបភាពត្រូវបានកំណត់។",
+      "imageAltRequired": "តម្រូវឱ្យមានអត្ថបទជំនួស នៅពេលដែលរូបភាពត្រូវបានកំណត់។",
+      "translationIncomplete": "{language} ត្រូវតែមានទាំង ចំណងជើង និងសេចក្តីសង្ខេប (ឬទុកទាំងពីរទទេ)។",
       "uploadFailed": "បង្ហោះរូបភាពបរាជ័យ។",
       "saveFailed": "រក្សាទុកព័ត៌មាននិក្ខេបបរាជ័យ។"
     },
@@ -587,11 +592,19 @@
       "draft": "ព្រាង",
       "published": "ផ្សាយផ្ទាល់",
       "archived": "ប័ណ្ណសារ"
+    },
+    "categories": {
+      "national": "ជាតិ",
+      "international": "អន្តរជាតិ",
+      "politics": "នយោបាយ",
+      "economy": "សេដ្ឋកិច្ច",
+      "sports": "កីឡា"
     }
   },
   "NewsFilters": {
     "searchPlaceholder": "ស្វែងរកព័ត៌មាន...",
     "searchAria": "ស្វែងរកព័ត៌មាន",
+    "clearSearch": "លុបពាក្យស្វែងរក",
     "filters": {
       "all": "ទាំងអស់",
       "draft": "ព្រាង",
@@ -616,6 +629,7 @@
     "confirmDeleteText": "តើអ្នកប្រាកដថាចង់លុបព័ត៌មាននេះទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
     "cancel": "បោះបង់",
     "delete": "លុប",
+    "deleting": "កំពុងលុប...",
     "tooltips": {
       "edit": "កែប្រែ",
       "delete": "លុប"
@@ -626,6 +640,9 @@
     "desc": "គ្រប់គ្រងអត្ថបទព័ត៌មាន និងបកប្រែ",
     "create": "បង្កើតព័ត៌មាន",
     "loading": "កំពុងផ្ទុក...",
+    "loadError": "មិនអាចទាញយកព័ត៌មានបានទេ។ សូមសាកល្បងម្ដងទៀត។",
+    "modalCreateTitle": "បង្កើតអត្ថបទព័ត៌មាន",
+    "modalEditTitle": "កែសម្រួលអត្ថបទព័ត៌មាន",
     "card": {
       "title": "ព័ត៌មាន",
       "desc": "គ្រប់គ្រងអត្ថបទព័ត៌មាន និងបកប្រែ"
@@ -653,6 +670,10 @@
       "titleRequired": "តម្រូវឱ្យមានចំណងជើង។",
       "descriptionRequired": "តម្រូវឱ្យមានការពិពណ៌នា។",
       "embedUrlRequired": "តម្រូវឱ្យមាន Embed URL។",
+      "embedUrlNotAllowed": "URL ត្រូវតែពី YouTube, Vimeo ឬ Facebook ប៉ុណ្ណោះ។",
+      "categoryRequired": "តម្រូវឱ្យមានប្រភេទ។",
+      "publishDateRequired": "តម្រូវឱ្យមានកាលបរិច្ឆេទបោះពុម្ពផ្សាយ នៅពេលដែលស្ថានភាពជា Published។",
+      "uploadFailed": "បង្ហោះរូបភាពតូច (Thumbnail) បរាជ័យ។",
       "saveFailed": "រក្សាទុកវីដេអូបរាជ័យ។"
     },
     "status": {
@@ -664,6 +685,7 @@
   "VideoFilters": {
     "searchPlaceholder": "ស្វែងរកវីដេអូ...",
     "searchAria": "ស្វែងរកវីដេអូ",
+    "clearSearch": "លុបពាក្យស្វែងរក",
     "filters": {
       "all": "ទាំងអស់",
       "draft": "ព្រាង",
@@ -688,6 +710,7 @@
     "confirmDeleteText": "តើអ្នកប្រាកដថាចង់លុបវីដេអូនេះទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
     "cancel": "បោះបង់",
     "delete": "លុប",
+    "deleting": "កំពុងលុប...",
     "tooltips": {
       "edit": "កែប្រែ",
       "delete": "លុប"
@@ -698,6 +721,9 @@
     "desc": "គ្រប់គ្រងមាតិកាវីដេអូក្រាប់ (Embed)",
     "create": "បង្កើតវីដេអូ",
     "loading": "កំពុងផ្ទុក...",
+    "loadError": "មិនអាចទាញយកវីដេអូបានទេ។ សូមសាកល្បងម្ដងទៀត។",
+    "modalCreateTitle": "បង្កើតវីដេអូ",
+    "modalEditTitle": "កែសម្រួលវីដេអូ",
     "card": {
       "title": "វីដេអូ",
       "desc": "គ្រប់គ្រងមាតិកាវីដេអូក្រាប់"

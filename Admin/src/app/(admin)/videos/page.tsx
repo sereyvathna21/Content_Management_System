@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import { useLocale } from "next-intl";
+import React, { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import ComponentCard from "@/components/common/ComponentCard";
 import { Modal } from "@/components/ui/modal";
@@ -10,23 +10,33 @@ import Pagination from "@/components/tables/Pagination";
 import VideoForm from "@/components/videos/VideoForm";
 import VideoTable, { Video } from "@/components/videos/VideoTable";
 import VideoFilters from "@/components/videos/VideoFilters";
-
-function getBackendUrl() {
-  return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-}
+import { resolveBackendUrl } from "@/lib/backend";
+import { useAdminPagedList } from "@/hooks/useAdminPagedList";
 
 export default function VideosPage() {
   const locale = useLocale();
+  const t = useTranslations("VideoPage");
   const { data: session, status } = useSession();
 
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [totalCount, setTotalCount] = useState(0);
-  
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const {
+    items: videos,
+    loading,
+    error,
+    totalPages,
+    page,
+    setPage,
+    query,
+    setQuery,
+    statusFilter,
+    setStatusFilter,
+    reload,
+  } = useAdminPagedList<Video>({
+    endpoint: "/api/admin/videos",
+    accessToken: session?.accessToken,
+    authStatus: status,
+    pageSize: 10,
+    loadErrorText: t("loadError"),
+  });
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editingVideo, setEditingVideo] = useState<Video | null>(null);
@@ -34,54 +44,13 @@ export default function VideosPage() {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const load = useCallback(async (signal?: AbortSignal) => {
-    if (status === "loading" || !session?.accessToken) return;
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({
-        page: String(page),
-        pageSize: String(pageSize),
-      });
-      if (query.trim()) params.set("q", query.trim());
-      if (statusFilter !== "all") params.set("status", statusFilter);
-      
-      const res = await fetch(`${getBackendUrl()}/api/admin/videos?${params.toString()}`, {
-        headers: { "Authorization": `Bearer ${session.accessToken}` },
-        signal
-      });
-      if (!res.ok) return;
-      const data = await res.json();
-      if (signal?.aborted) return;
-      
-      setVideos(data.items ?? []);
-      setTotalCount(Number(data.total ?? data.items?.length ?? 0));
-    } catch (err) {
-      if (err instanceof DOMException && err.name === "AbortError") return;
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [statusFilter, page, pageSize, query, session?.accessToken, status]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    load(controller.signal);
-    return () => controller.abort();
-  }, [load]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [query, statusFilter]);
-
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-
   function handleCreated() {
     setCreateOpen(false);
     setEditingVideo(null);
     if (page !== 1) {
       setPage(1);
     } else {
-      load();
+      reload();
     }
   }
 
@@ -94,12 +63,12 @@ export default function VideosPage() {
     if (status === "loading" || !session?.accessToken || deletingId) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`${getBackendUrl()}/api/admin/videos/${id}`, {
+      const res = await fetch(`${resolveBackendUrl("/api/admin/videos/")}${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${session.accessToken}` }
       });
       if (!res.ok) throw new Error("Failed to delete");
-      await load();
+      reload();
     } catch (err) {
       console.error(err);
     } finally {
@@ -114,11 +83,16 @@ export default function VideosPage() {
   return (
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex items-start justify-between">
-        <h1 className="text-2xl sm:text-3xl text-primary font-semibold mb-4">Video Management</h1>
+        <h1 className="text-2xl sm:text-3xl text-primary font-semibold mb-4">{t("title")}</h1>
       </div>
 
-      <ComponentCard title="Videos" desc="Manage embedded video content">
+      <ComponentCard title={t("card.title")} desc={t("card.desc")}>
         <div className="mt-2">
+          {error && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error.message}
+            </div>
+          )}
           <div className="mb-4">
             <VideoFilters
               query={query}
@@ -131,7 +105,7 @@ export default function VideosPage() {
                   onClick={handleOpenCreate}
                   className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm w-full sm:w-auto whitespace-nowrap"
                 >
-                  Create Video
+                  {t("create")}
                 </button>
               }
             />
@@ -148,7 +122,7 @@ export default function VideosPage() {
               onDelete={handleDelete}
               deletingId={deletingId}
               onCreate={handleOpenCreate}
-              createLabel="Create Video"
+              createLabel={t("create")}
               showInlineCreate={false}
             />
             {totalPages > 1 && !loading && (
@@ -162,7 +136,7 @@ export default function VideosPage() {
 
       <Modal isOpen={createOpen} onClose={() => setCreateOpen(false)} className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <h3 className="text-lg font-semibold mb-3">
-          {editingVideo ? "Edit Video" : "Create Video"}
+          {editingVideo ? t("modalEditTitle") : t("modalCreateTitle")}
         </h3>
         <VideoForm
           initialVideo={editingVideo}
@@ -177,7 +151,12 @@ export default function VideosPage() {
             <h3 className="text-xl font-bold mb-2">{selectedVideo.title}</h3>
             <p className="text-sm text-gray-600 mb-4">
               {selectedVideo.category}
-              {selectedVideo.publishAt ? ` • Published: ${new Date(selectedVideo.publishAt).toLocaleDateString()}` : ""}
+              {selectedVideo.publishAt
+                ? ` • Published: ${new Date(selectedVideo.publishAt).toLocaleDateString(
+                    (locale || "en") === "km" ? "km-KH" : "en-US",
+                    { year: "numeric", month: "short", day: "numeric" }
+                  )}`
+                : ""}
               {` • Status: ${selectedVideo.status}`}
             </p>
             

@@ -6,6 +6,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 import { pickTranslation } from "@/lib/pickTranslation";
 import Tooltip from "@/components/ui/Tooltip";
 import { Modal } from "@/components/ui/modal";
+import { resolveBackendUrl } from "@/lib/backend";
 
 export type NewsArticleTranslation = {
   id?: string;
@@ -61,9 +62,7 @@ function formatDate(value: string | undefined, locale?: string) {
 
 function resolveImageUrl(url?: string) {
   if (!url) return null;
-  if (/^https?:\/\//i.test(url)) return url;
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-  return `${backendUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+  return resolveBackendUrl(url);
 }
 
 export default React.memo(function NewsTable({
@@ -79,8 +78,8 @@ export default React.memo(function NewsTable({
   createLabel,
   showInlineCreate = true,
 }: Props) {
-  const t = useTranslations("NewsPage");
-  const createText = createLabel ?? t("create");
+  const t = useTranslations("NewsTable");
+  const createText = createLabel ?? "Create";
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const isDeleting = Boolean(deletingId && deleteId && deletingId === deleteId);
@@ -107,13 +106,13 @@ export default React.memo(function NewsTable({
           <div className="py-12 text-center text-gray-500 space-y-3">
             {query ? (
               <>
-                <p className="text-lg font-medium">No news found for "{query}"</p>
-                <p className="mt-2 text-sm">Try adjusting your search query.</p>
+                <p className="text-lg font-medium">{t("noNewsForQuery", { query })}</p>
+                <p className="mt-2 text-sm">{t("tryDifferent")}</p>
               </>
             ) : (
               <>
-                <p className="text-lg font-medium">No news articles found</p>
-                <p className="mt-2 text-sm">Create a new article to get started.</p>
+                <p className="text-lg font-medium">{t("noNewsTitle")}</p>
+                <p className="mt-2 text-sm">{t("tryAdjust")}</p>
               </>
             )}
 
@@ -139,19 +138,19 @@ export default React.memo(function NewsTable({
                   <TableHeader className="border-b border-gray-100 dark:border-white/5">
                     <TableRow>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        Title
+                        {t("headers.title")}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        Category
+                        {t("headers.category")}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        Status
+                        {t("headers.status")}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        Publish Date
+                        {t("headers.date")}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        Actions
+                        {t("headers.actions")}
                       </TableCell>
                     </TableRow>
                   </TableHeader>
@@ -169,6 +168,7 @@ export default React.memo(function NewsTable({
                         <TableRow key={n.id}>
                           <TableCell className="px-5 py-3 sm:px-6 text-start">
                             <button
+                              type="button"
                               className="text-sm font-medium text-gray-800 dark:text-white/90 text-left"
                               onClick={() => onOpen(n)}
                             >
@@ -201,10 +201,12 @@ export default React.memo(function NewsTable({
 
                           <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
                             <div className="flex items-center gap-2">
-                              <Tooltip label="Edit">
+                              <Tooltip label={t("tooltips.edit")}>
                                 <button
+                                  type="button"
+                                  aria-label="Edit"
                                   onClick={() => onEdit(n)}
-                                  title="Edit"
+                                  title={t("tooltips.edit")}
                                   className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 transition text-sky-500"
                                 >
                                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -214,13 +216,15 @@ export default React.memo(function NewsTable({
                                 </button>
                               </Tooltip>
                               {onDelete && (
-                                <Tooltip label="Delete">
+                                <Tooltip label={t("tooltips.delete")}>
                                   <button
+                                    type="button"
+                                    aria-label="Delete"
                                     onClick={() => {
                                       setDeleteId(n.id);
                                       setIsDeleteOpen(true);
                                     }}
-                                    title="Delete"
+                                    title={t("tooltips.delete")}
                                     disabled={Boolean(deletingId)}
                                     className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50 text-red-500"}`}
                                   >
@@ -331,17 +335,19 @@ export default React.memo(function NewsTable({
               <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Delete News Article</h3>
-          <p className="text-gray-500 mb-6">Are you sure you want to delete this article? This action cannot be undone.</p>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{t("confirmDeleteTitle")}</h3>
+          <p className="text-gray-500 mb-6">{t("confirmDeleteText")}</p>
           <div className="flex gap-3 w-full">
             <button
+              type="button"
               className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
               onClick={() => setIsDeleteOpen(false)}
               disabled={isDeleting}
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
+              type="button"
               className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors ${isDeleting ? "bg-red-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"}`}
               disabled={isDeleting}
               onClick={async () => {
@@ -351,7 +357,7 @@ export default React.memo(function NewsTable({
                 setDeleteId(null);
               }}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? t("deleting") : t("delete")}
             </button>
           </div>
         </div>

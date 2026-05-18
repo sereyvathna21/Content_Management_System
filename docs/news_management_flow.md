@@ -288,7 +288,7 @@ Revalidation route:
 - Add controllers with Admin and SuperAdmin authorization.
 - Implement CRUD and bulk endpoints with validation.
 
-5. Implement public APIs
+5. Implement public APIs   
 
 - Add list and detail endpoints.
 - Enforce strict language filtering.

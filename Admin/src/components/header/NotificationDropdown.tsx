@@ -186,6 +186,10 @@ export default function NotificationDropdown() {
       },
     );
 
+    connection.on("UserConnected", (_connectionId: string) => {});
+
+    connection.on("UserDisconnected", (_connectionId: string) => {});
+
     connection
       .start()
       .then(() => console.log("SignalR Connected"))

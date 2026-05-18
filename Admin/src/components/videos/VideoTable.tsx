@@ -14,7 +14,6 @@ export type Video = {
   category: string;
   status: string;
   publishAt?: string;
-  thumbnailUrl?: string;
 };
 
 type Props = {
@@ -45,13 +44,6 @@ function formatDate(value: string | undefined, locale?: string) {
   });
 }
 
-function resolveThumbnailUrl(url?: string) {
-  if (!url) return null;
-  if (/^https?:\/\//i.test(url)) return url;
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
-  return `${backendUrl}${url.startsWith("/") ? "" : "/"}${url}`;
-}
-
 export default React.memo(function VideoTable({
   loading,
   videos,
@@ -65,8 +57,8 @@ export default React.memo(function VideoTable({
   createLabel,
   showInlineCreate = true,
 }: Props) {
-  const t = useTranslations("VideoPage");
-  const createText = createLabel ?? "Create Video";
+  const t = useTranslations("VideoTable");
+  const createText = createLabel ?? "Create";
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const isDeleting = Boolean(deletingId && deleteId && deletingId === deleteId);
@@ -87,19 +79,19 @@ export default React.memo(function VideoTable({
       )}
 
       {loading ? (
-        <div>Loading videos...</div>
+        <div>{t("loading")}</div>
       ) : videos.length === 0 ? (
         <ComponentCard title="" className="mt-2">
           <div className="py-12 text-center text-gray-500 space-y-3">
             {query ? (
               <>
-                <p className="text-lg font-medium">No videos found for "{query}"</p>
-                <p className="mt-2 text-sm">Try adjusting your search query.</p>
+                <p className="text-lg font-medium">{t("noVideosForQuery", { query })}</p>
+                <p className="mt-2 text-sm">{t("tryDifferent")}</p>
               </>
             ) : (
               <>
-                <p className="text-lg font-medium">No videos found</p>
-                <p className="mt-2 text-sm">Create a new video to get started.</p>
+                <p className="text-lg font-medium">{t("noVideosTitle")}</p>
+                <p className="mt-2 text-sm">{t("tryAdjust")}</p>
               </>
             )}
 
@@ -125,41 +117,40 @@ export default React.memo(function VideoTable({
                   <TableHeader className="border-b border-gray-100 dark:border-white/5">
                     <TableRow>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        Title
+                        {t("headers.title")}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        Category
+                        {t("headers.category")}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        Status
+                        {t("headers.status")}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        Publish Date
+                        {t("headers.date")}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        Actions
+                        {t("headers.actions")}
                       </TableCell>
                     </TableRow>
                   </TableHeader>
 
                   <TableBody className="divide-y divide-gray-100 dark:divide-white/5">
                     {videos.map((v) => {
-                      const thumbUrl = resolveThumbnailUrl(v.thumbnailUrl);
                       return (
                         <TableRow key={v.id}>
                           <TableCell className="px-5 py-3 sm:px-6 text-start">
                             <button
+                              type="button"
                               className="text-sm font-medium text-gray-800 dark:text-white/90 text-left"
                               onClick={() => onOpen(v)}
                             >
                               <div className="flex items-center gap-3">
-                                {thumbUrl ? (
-                                  <img src={thumbUrl} alt="" className="w-10 h-10 object-cover rounded-md flex-shrink-0" />
-                                ) : (
-                                  <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-400">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                  </div>
-                                )}
+                                <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center shrink-0 text-gray-400">
+                                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                  </svg>
+                                </div>
                                 <div className="font-medium line-clamp-2">{v.title}</div>
                               </div>
                             </button>
@@ -185,9 +176,12 @@ export default React.memo(function VideoTable({
 
                           <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
                             <div className="flex items-center gap-2">
-                              <Tooltip label="Edit">
+                              <Tooltip label={t("tooltips.edit")}>
                                 <button
+                                  type="button"
+                                  aria-label="Edit"
                                   onClick={() => onEdit(v)}
+                                  title={t("tooltips.edit")}
                                   className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 transition text-sky-500"
                                 >
                                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -197,13 +191,16 @@ export default React.memo(function VideoTable({
                                 </button>
                               </Tooltip>
                               {onDelete && (
-                                <Tooltip label="Delete">
+                                <Tooltip label={t("tooltips.delete")}>
                                   <button
+                                    type="button"
+                                    aria-label="Delete"
                                     onClick={() => {
                                       setDeleteId(v.id);
                                       setIsDeleteOpen(true);
                                     }}
                                     disabled={Boolean(deletingId)}
+                                    title={t("tooltips.delete")}
                                     className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50 text-red-500"}`}
                                   >
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -228,7 +225,6 @@ export default React.memo(function VideoTable({
             
             <div className="md:hidden space-y-3">
               {videos.map((v) => {
-                const thumbUrl = resolveThumbnailUrl(v.thumbnailUrl);
                 const statusClass =
                   v.status === "Published"
                     ? "bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20"
@@ -241,16 +237,12 @@ export default React.memo(function VideoTable({
                     <div className="flex items-start justify-between gap-3">
                       <button type="button" className="text-left w-full" onClick={() => onOpen(v)}>
                         <div className="flex items-center gap-3">
-                          {thumbUrl ? (
-                            <img src={thumbUrl} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
-                          ) : (
-                            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 text-gray-400">
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                              </svg>
-                            </div>
-                          )}
+                          <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 text-gray-400">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                          </div>
                           <div className="min-w-0">
                             <div className="text-sm font-semibold text-gray-800 line-clamp-2">{v.title}</div>
                             <div className="mt-1 text-xs text-gray-500">
@@ -308,17 +300,19 @@ export default React.memo(function VideoTable({
               <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Video</h3>
-          <p className="text-gray-500 mb-6">Are you sure you want to delete this video? This action cannot be undone.</p>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{t("confirmDeleteTitle")}</h3>
+          <p className="text-gray-500 mb-6">{t("confirmDeleteText")}</p>
           <div className="flex gap-3 w-full">
             <button
+              type="button"
               className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
               onClick={() => setIsDeleteOpen(false)}
               disabled={isDeleting}
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
+              type="button"
               className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors ${isDeleting ? "bg-red-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"}`}
               disabled={isDeleting}
               onClick={async () => {
@@ -328,7 +322,7 @@ export default React.memo(function VideoTable({
                 setDeleteId(null);
               }}
             >
-              {isDeleting ? "Deleting..." : "Delete"}
+              {isDeleting ? t("deleting") : t("delete")}
             </button>
           </div>
         </div>
