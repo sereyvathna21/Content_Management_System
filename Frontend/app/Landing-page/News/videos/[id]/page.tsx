@@ -1,12 +1,15 @@
 import React from "react";
 import { getTranslations } from "next-intl/server";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { videos } from "@/app/Landing-page/News/videos";
 import Header from "@/app/components/Home/Header";
 import Footer from "@/app/components/Home/Footer";
 import Navigation from "@/app/components/Home/Navigation";
 import Breadcrumbs from "@/app/components/New/Breadcrumbs";
 import AllVideosPlayer from "@/app/components/New/AllVideosPlayer";
+
+const backendUrl =
+  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
 export default async function VideoPage({
   params,
@@ -14,18 +17,46 @@ export default async function VideoPage({
   params: Promise<{ id: string }>;
 }) {
   const t = await getTranslations("NewsPage");
+  const cookieStore = await cookies();
+  const locale = cookieStore.get("NEXT_LOCALE")?.value || "kh";
   const resolvedParams = await params;
   const id = decodeURIComponent(resolvedParams.id);
+  const lang = locale === "kh" ? "km" : locale;
+
+  // Fetch videos from public API
+  let apiVideos: any[] = [];
+  try {
+    const res = await fetch(
+      `${backendUrl}/api/public/videos?lang=${lang}&page=1&pageSize=100`,
+      { cache: "no-store" },
+    );
+    if (res.ok) {
+      const data = await res.json();
+      apiVideos = data.items || data.data || [];
+    }
+  } catch (error) {
+    console.error("Failed to fetch videos:", error);
+  }
+
+  // Map API fields to properties expected by page components
+  const mappedVideos = apiVideos.map((video: any) => ({
+    id: video.id,
+    title: video.title,
+    description: video.description || "",
+    embedUrl: video.embedUrl,
+    category: video.category || "",
+    date: video.publishAt ? video.publishAt.split("T")[0] : "",
+  }));
 
   // Try to find by id first, then try by slugified title fallback
-  let video = videos.find((v) => v.id === id);
+  let video = mappedVideos.find((v) => v.id === id);
   if (!video) {
     const slug = (s: string) =>
       s
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
-    video = videos.find((v) => slug(v.title) === slug(id));
+    video = mappedVideos.find((v) => slug(v.title) === slug(id));
   }
   if (!video) return notFound();
 
@@ -44,7 +75,7 @@ export default async function VideoPage({
             <article className="mx-auto w-full max-w-6xl space-y-6">
               <div className="flex justify-center lg:justify-start px-0">
                 <div className="w-max max-w-max sm:max-w-max md:max-w-max lg:max-w-max px-0 sm:px-0">
-                  <AllVideosPlayer initialVideo={video} videos={videos} />
+                  <AllVideosPlayer initialVideo={video} videos={mappedVideos} />
                 </div>
               </div>
             </article>

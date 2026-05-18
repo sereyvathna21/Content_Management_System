@@ -157,7 +157,12 @@
       "events": "ព្រឹត្តិការណ៍",
       "programs": "កម្មវិធី",
       "impact": "ផលប៉ះពាល់",
-      "partnerships": "សម្ព័ន្ធភាព"
+      "partnerships": "សម្ព័ន្ធភាព",
+      "national": "ជាតិ",
+      "international": "អន្តរជាតិ",
+      "politics": "នយោបាយ",
+      "economy": "សេដ្ឋកិច្ច",
+      "sports": "កីឡា"
     },
     "allVideos": "វីដេអូទាំងអស់",
     "videoLabel": "វីដេអូ",

@@ -20,7 +20,7 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className="scroll-smooth">
+    <html lang={locale} className="scroll-smooth" data-scroll-behavior="smooth">
       <body className="antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClientProviders>{children}</ClientProviders>

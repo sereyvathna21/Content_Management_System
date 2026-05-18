@@ -17,17 +17,8 @@ const VideoCard: React.FC<VideoCardProps> = ({
   title,
   description,
 }) => {
-  const t = useTranslations("NewsPage");
-  const titleKey = id ? `content.videos.${id}.title` : undefined;
-  const descKey = id ? `content.videos.${id}.description` : undefined;
-  let displayedTitle = title;
-  let displayedDesc = description;
-  if (id) {
-    const maybe = t(titleKey!);
-    if (maybe !== titleKey) displayedTitle = maybe;
-    const maybeDesc = t(descKey!);
-    if (maybeDesc !== descKey) displayedDesc = maybeDesc;
-  }
+  const displayedTitle = title;
+  const displayedDesc = description;
   const content = (
     <>
       <div className="relative w-full aspect-video overflow-hidden">

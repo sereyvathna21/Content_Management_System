@@ -2,7 +2,6 @@ import React from "react";
 import { getTranslations } from "next-intl/server";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { newsArticles } from "@/app/Landing-page/News/articles";
 import Header from "@/app/components/Home/Header";
 import Image from "next/image";
 import Footer from "@/app/components/Home/Footer";
@@ -10,6 +9,20 @@ import Navigation from "@/app/components/Home/Navigation";
 import ShareControls from "@/app/components/ShareControls";
 import Breadcrumbs from "@/app/components/New/Breadcrumbs";
 import Link from "next/link";
+
+const backendUrl =
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5001";
+
+const getFullImageUrl = (url: string | null | undefined) => {
+  if (!url) return "/images/placeholder.svg";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+    return url;
+  }
+  if (url.startsWith("/")) {
+    return `${backendUrl}${url}`;
+  }
+  return `${backendUrl}/${url}`;
+};
 
 export default async function ArticlePage({
   params,
@@ -21,18 +34,42 @@ export default async function ArticlePage({
   const locale = cookieStore.get("NEXT_LOCALE")?.value || "kh";
   const resolvedParams = await params;
   const id = decodeURIComponent(resolvedParams.id);
+  const lang = locale === "kh" ? "km" : locale;
 
-  // try to find by id first, then try by slugified title fallback
-  let article = newsArticles.find((a) => a.id === id);
-  if (!article) {
-    const slug = (s: string) =>
-      s
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-    article = newsArticles.find((a) => slug(a.title) === slug(id));
+  // Fetch article from public API
+  let article: any = null;
+  try {
+    const res = await fetch(
+      `${backendUrl}/api/public/news/${encodeURIComponent(id)}?lang=${lang}`,
+      { cache: "no-store" },
+    );
+    if (res.ok) {
+      article = await res.json();
+    }
+  } catch (error) {
+    console.error("Failed to fetch news article:", error);
   }
+
   if (!article) return notFound();
+
+  // Fetch related articles
+  let relatedArticles: any[] = [];
+  try {
+    const res = await fetch(
+      `${backendUrl}/api/public/news?lang=${lang}&page=1&pageSize=6`,
+      { cache: "no-store" },
+    );
+    if (res.ok) {
+      const newsData = await res.json();
+      const items = newsData.items || newsData.data || [];
+      relatedArticles = items
+        .filter((a: any) => a.id !== article.id)
+        .slice(0, 5);
+    }
+  } catch (error) {
+    console.error("Failed to fetch related articles:", error);
+  }
+
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
       case "events":
@@ -48,17 +85,11 @@ export default async function ArticlePage({
     }
   };
 
-  const titleKey = `content.articles.${article.id}.title`;
-  const subtitleKey = `content.articles.${article.id}.subtitle`;
-  const excerptKey = `content.articles.${article.id}.excerpt`;
-  const displayedTitle = t(titleKey) !== titleKey ? t(titleKey) : article.title;
-  const displayedSubtitle = (article as any).subtitle
-    ? t(subtitleKey) !== subtitleKey
-      ? t(subtitleKey)
-      : (article as any).subtitle
-    : undefined;
-  const displayedExcerpt =
-    t(excerptKey) !== excerptKey ? t(excerptKey) : article.excerpt;
+  const displayedTitle = article.title;
+  const displayedSubtitle = article.subtitle;
+  const displayedExcerpt = article.excerpt;
+  const displayedContent = article.contentHtml || article.contentMd;
+  const imageUrl = getFullImageUrl(article.imageUrl);
 
   return (
     <>
@@ -72,12 +103,10 @@ export default async function ArticlePage({
           <article className="grid lg:grid-cols-3 gap-10 items-start max-w-6xl mx-auto">
             <header className="lg:col-span-2">
               <div className="relative rounded-xl overflow-hidden shadow-lg ">
-                <Image
-                  src={article.image}
+                <img
+                  src={imageUrl}
                   alt={displayedTitle}
                   className="w-full h-72 sm:h-96 object-cover rounded-xl"
-                  width={1200}
-                  height={640}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6 text-white">
@@ -88,8 +117,8 @@ export default async function ArticlePage({
                       {t(`categories.${article.category.toLowerCase()}`)}
                     </span>
                     <p className="text-xs text-gray-200">
-                      {new Date(article.date).toLocaleDateString(
-                        locale || "en-US",
+                      {new Date(article.publishAt || new Date()).toLocaleDateString(
+                        locale === "kh" ? "km-KH" : locale || "en-US",
                         { year: "numeric", month: "short", day: "numeric" },
                       )}
                     </p>
@@ -109,10 +138,11 @@ export default async function ArticlePage({
                   </h2>
                 ) : null}
                 <p className="mt-2 text-lg text-gray-700">{displayedExcerpt}</p>
-                {"content" in article && (article as any).content ? (
+                {displayedContent ? (
                   <div
+                    className="mt-4"
                     dangerouslySetInnerHTML={{
-                      __html: (article as any).content,
+                      __html: displayedContent,
                     }}
                   />
                 ) : null}
@@ -126,47 +156,39 @@ export default async function ArticlePage({
                     {t("relatedArticles")}
                   </h3>
                   <ul className="space-y-4">
-                    {newsArticles
-                      .filter((a) => a.id !== article.id)
-                      .slice(0, 5)
-                      .map((a) => {
-                        const relatedTitleKey = `content.articles.${a.id}.title`;
-                        const relatedTitle =
-                          t(relatedTitleKey) !== relatedTitleKey
-                            ? t(relatedTitleKey)
-                            : a.title;
-                        return (
-                          <li key={a.id}>
-                            <Link
-                              href={`/Landing-page/News/${encodeURIComponent(a.id)}`}
-                              className="flex items-center gap-3 py-2"
-                            >
-                              <Image
-                                src={a.image}
-                                alt={relatedTitle}
-                                width={112}
-                                height={64}
-                                className="w-28 h-16 object-cover rounded"
-                              />
-                              <div className="text-base">
-                                <div className="font-medium text-gray-800">
-                                  {relatedTitle}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {new Date(a.date).toLocaleDateString(
-                                    locale || "en-US",
-                                    {
-                                      year: "numeric",
-                                      month: "short",
-                                      day: "numeric",
-                                    },
-                                  )}
-                                </div>
+                    {relatedArticles.map((a) => {
+                      const relatedTitle = a.title;
+                      const relatedImg = getFullImageUrl(a.imageUrl);
+                      return (
+                        <li key={a.id}>
+                          <Link
+                            href={`/Landing-page/News/${encodeURIComponent(a.slug || a.id)}`}
+                            className="flex items-center gap-3 py-2"
+                          >
+                            <img
+                              src={relatedImg}
+                              alt={relatedTitle}
+                              className="w-28 h-16 object-cover rounded"
+                            />
+                            <div className="text-base">
+                              <div className="font-medium text-gray-800 line-clamp-2">
+                                {relatedTitle}
                               </div>
-                            </Link>
-                          </li>
-                        );
-                      })}
+                              <div className="text-xs text-gray-500">
+                                {new Date(a.publishAt || new Date()).toLocaleDateString(
+                                  locale === "kh" ? "km-KH" : locale || "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  },
+                                )}
+                              </div>
+                            </div>
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               </div>

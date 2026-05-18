@@ -7,6 +7,7 @@ import CardSkeleton from "@/app/components/CardSkeleton";
 
 interface NewsCardProps {
   id: string;
+  slug?: string;
   title: string;
   excerpt: string;
   date: string;
@@ -74,6 +75,7 @@ function ClientFormattedDate({
 
 export default function NewsCard({
   id,
+  slug,
   title,
   excerpt,
   date,
@@ -84,12 +86,8 @@ export default function NewsCard({
   const locale = useLocale();
   const t = useTranslations("NewsPage");
   const dateLocale = locale === "kh" ? "km-KH" : locale || "en-US";
-  const titleKey = `content.articles.${id}.title`;
-  const excerptKey = `content.articles.${id}.excerpt`;
-  let displayedTitle = t(titleKey);
-  if (displayedTitle === titleKey) displayedTitle = title;
-  let displayedExcerpt = t(excerptKey);
-  if (displayedExcerpt === excerptKey) displayedExcerpt = excerpt;
+  const displayedTitle = title;
+  const displayedExcerpt = excerpt;
 
   // handle remote image failures by falling back to a local placeholder
   const [imgSrc, setImgSrc] = useState<string>(image);
@@ -101,15 +99,14 @@ export default function NewsCard({
   if (loading) return <CardSkeleton />;
 
   return (
-    <Link href={`/Landing-page/News/${id}`}>
+    <Link href={`/Landing-page/News/${slug || id}`}>
       <article className="group bg-gray-50 rounded-xl overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col">
         {/* Image Section */}
         <div className="relative w-full aspect-video overflow-hidden">
-          <Image
+          <img
             src={imgSrc}
             alt={title}
-            fill
-            className="object-cover"
+            className="w-full h-full object-cover"
             onError={() => setImgSrc("/images/placeholder.svg")}
           />
 

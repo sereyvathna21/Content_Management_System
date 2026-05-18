@@ -2,15 +2,30 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import NewsCard from "@/app/components/New/NewsCard";
 import ListSkeleton from "@/app/components/ListSkeleton";
-import { newsArticles } from "@/app/Landing-page/News/articles";
+
+const backendUrl =
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5001";
+
+const getFullImageUrl = (url: string | null | undefined) => {
+  if (!url) return "/images/placeholder.svg";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+    return url;
+  }
+  if (url.startsWith("/")) {
+    return `${backendUrl}${url}`;
+  }
+  return `${backendUrl}/${url}`;
+};
 
 export default function NewsSection() {
   const t = useTranslations("NewsPage");
+  const locale = useLocale();
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [newsItems, setNewsItems] = useState<any[]>([]);
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -30,14 +45,35 @@ export default function NewsSection() {
     return () => observer.disconnect();
   }, []);
 
-  // Get the first 3 articles from the articles data
-  const newsItems = newsArticles.slice(0, 3);
-
-  // demo loading: simulate fetch delay, then disable loading
   useEffect(() => {
-    const tmr = setTimeout(() => setLoading(false), 700);
-    return () => clearTimeout(tmr);
-  }, []);
+    const fetchLandingNews = async () => {
+      setLoading(true);
+      try {
+        const lang = locale === "kh" ? "km" : locale;
+        const res = await fetch(
+          `${backendUrl}/api/public/news?lang=${lang}&page=1&pageSize=3`,
+          { cache: "no-store" },
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const items = data.items || data.data || [];
+          setNewsItems(
+            items.map((item: any) => ({
+              ...item,
+              image: getFullImageUrl(item.imageUrl),
+              date: item.publishAt ? item.publishAt.split("T")[0] : "",
+            })),
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch landing news:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLandingNews();
+  }, [locale]);
 
   return (
     <section
@@ -56,7 +92,7 @@ export default function NewsSection() {
       </div>
 
       {loading ? (
-        <ListSkeleton count={newsItems.length} />
+        <ListSkeleton count={3} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           {newsItems.map((item, idx) => (
@@ -71,6 +107,7 @@ export default function NewsSection() {
             >
               <NewsCard
                 id={item.id}
+                slug={item.slug}
                 title={item.title}
                 excerpt={item.excerpt}
                 date={item.date}
@@ -80,6 +117,10 @@ export default function NewsSection() {
             </div>
           ))}
         </div>
+      )}
+
+      {newsItems.length === 0 && !loading && (
+        <p className="text-center text-gray-500 py-6">No news available.</p>
       )}
 
       <div className="mt-4 sm:mt-8 flex justify-center">

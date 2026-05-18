@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useTranslations, useMessages } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import Footer from "@/app/components/Home/Footer";
 import Header from "@/app/components/Home/Header";
@@ -12,33 +12,57 @@ import SortControl from "@/app/components/SortControl";
 import SearchBar from "@/app/components/SearchBar";
 import HeroCover from "@/app/components/HeroCover";
 import ListSkeleton from "@/app/components/ListSkeleton";
-import { newsArticles } from "@/app/Landing-page/News/articles";
-import { matchesSearch, compareText } from "@/app/lib/searchUtils";
-import { videos } from "@/app/Landing-page/News/videos";
+import { compareText } from "@/app/lib/searchUtils";
 
 interface NewsArticle {
   id: string;
+  slug: string;
   title: string;
   excerpt: string;
-  date: string;
+  publishAt: string;
   category: string;
-  image: string;
+  imageUrl: string;
 }
 
-const newsPerPage = 9; // Limit for news articles
-const videosPerPage = 3; // Limit for videos
+interface Video {
+  id: string;
+  embedUrl: string;
+  title: string;
+  description: string;
+  category: string;
+  publishAt: string;
+}
+
+const newsPerPage = 9;
+const videosPerPage = 3;
+const backendUrl =
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5001";
+
+const getFullImageUrl = (url: string | null | undefined) => {
+  if (!url) return "/images/placeholder.svg";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+    return url;
+  }
+  if (url.startsWith("/")) {
+    return `${backendUrl}${url}`;
+  }
+  return `${backendUrl}/${url}`;
+};
 
 export default function News() {
   const t = useTranslations("NewsPage");
-  const messages = useMessages();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const locale = useLocale();
 
+  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
   const [currentNewsPage, setCurrentNewsPage] = useState(1);
   const [currentVideoPage, setCurrentVideoPage] = useState(1);
   const [sortOption, setSortOption] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Handle initial sort parameter after component mounts
   useEffect(() => {
@@ -46,6 +70,42 @@ export default function News() {
     const initialSort = searchParams?.get("sort") || "";
     setSortOption(initialSort);
   }, [searchParams]);
+
+  // Fetch news articles and videos from API
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const lang = locale === "kh" ? "km" : locale;
+
+        // Fetch news articles
+        const newsRes = await fetch(
+          `${backendUrl}/api/public/news?lang=${lang}&page=1&pageSize=100`,
+          { cache: "no-store" },
+        );
+        if (newsRes.ok) {
+          const newsData = await newsRes.json();
+          setNewsArticles(newsData.items || newsData.data || []);
+        }
+
+        // Fetch videos
+        const videosRes = await fetch(
+          `${backendUrl}/api/public/videos?lang=${lang}&page=1&pageSize=100`,
+          { cache: "no-store" },
+        );
+        if (videosRes.ok) {
+          const videosData = await videosRes.json();
+          setVideos(videosData.items || videosData.data || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch news and videos:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [locale]);
 
   // Reset news pagination when search or sort changes
   useEffect(() => {
@@ -70,64 +130,30 @@ export default function News() {
   const effectiveSort = sortOption || "date_desc";
   const [sortKey, sortDir] = effectiveSort.split("_");
 
-  // Safe typed traversal of the next-intl message bundle for the current locale.
-  // Uses useMessages() instead of double-importing JSON files.
-  const safeGet = (
-    obj: Record<string, unknown>,
-    path: string,
-  ): string | undefined => {
-    const parts = path.split(".");
-    let cur: unknown = obj;
-    for (const p of parts) {
-      if (
-        cur !== null &&
-        typeof cur === "object" &&
-        p in (cur as Record<string, unknown>)
-      ) {
-        cur = (cur as Record<string, unknown>)[p];
-      } else {
-        return undefined;
-      }
-    }
-    return typeof cur === "string" && cur.length > 0 ? cur : undefined;
-  };
-
-  const bundle =
-    ((messages as Record<string, unknown>).NewsPage as Record<
-      string,
-      unknown
-    >) ?? {};
-
-  const getArticleTitle = (a: NewsArticle): string =>
-    safeGet(bundle, `content.articles.${a.id}.title`) ?? a.title;
-
-  const getArticleExcerpt = (a: NewsArticle): string =>
-    safeGet(bundle, `content.articles.${a.id}.excerpt`) ?? a.excerpt;
-
-  const getArticleCategory = (a: NewsArticle): string =>
-    safeGet(bundle, `categories.${a.category.toLowerCase()}`) ?? a.category;
-
+  // Sort articles
   const sortedArticles = [...newsArticles].sort((a, b) => {
     if (sortKey === "date") {
-      const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+      const diff =
+        new Date(a.publishAt).getTime() - new Date(b.publishAt).getTime();
       return sortDir === "asc" ? diff : -diff;
     } else if (sortKey === "title") {
-      const cmp = compareText(getArticleTitle(a), getArticleTitle(b));
+      const cmp = compareText(a.title, b.title);
       return sortDir === "asc" ? cmp : -cmp;
     } else if (sortKey === "category") {
-      const cmp = compareText(getArticleCategory(a), getArticleCategory(b));
+      const cmp = compareText(a.category, b.category);
       return sortDir === "asc" ? cmp : -cmp;
     }
     return 0;
   });
-  // filter by search term (title, excerpt, category)
+
+  // Filter by search term (title, excerpt, category)
   const filteredArticles = sortedArticles.filter((a) => {
     if (!searchTerm) return true;
-    const q = searchTerm.trim();
+    const q = searchTerm.trim().toLowerCase();
     return (
-      matchesSearch(getArticleTitle(a), q) ||
-      matchesSearch(getArticleExcerpt(a), q) ||
-      matchesSearch(getArticleCategory(a), q)
+      a.title.toLowerCase().includes(q) ||
+      a.excerpt.toLowerCase().includes(q) ||
+      a.category.toLowerCase().includes(q)
     );
   });
 
@@ -139,7 +165,14 @@ export default function News() {
     currentNewsPage * newsPerPage,
   );
 
-  if (!mounted) {
+  // Convert publishAt to date string for display
+  const articlesForDisplay = paginatedArticles.map((article) => ({
+    ...article,
+    image: getFullImageUrl(article.imageUrl),
+    date: article.publishAt?.split("T")[0] || "",
+  }));
+
+  if (!mounted || loading) {
     return (
       <>
         <Header />
@@ -217,13 +250,13 @@ export default function News() {
               </h2>
               <div className="flex items-center justify-center">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 w-full max-w-6xl">
-                  {paginatedArticles.map((article) => (
+                  {articlesForDisplay.map((article) => (
                     <NewsCard key={article.id} {...article} />
                   ))}
                 </div>
               </div>
               {/* No Results Found Message */}
-              {paginatedArticles.length === 0 && (
+              {articlesForDisplay.length === 0 && (
                 <div className="text-center py-16">
                   <div className="text-gray-400 mb-3">
                     <svg

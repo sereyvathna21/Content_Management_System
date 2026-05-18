@@ -40,7 +40,7 @@ namespace Backend.Controllers
                 .Where(a => a.DeletedAt == null)
                 .Where(a => a.Status == ContentStatus.Published)
                 .Where(a => a.PublishAt != null && a.PublishAt <= now)
-                .Where(a => a.Translations.Any(t => NormalizeLang(t.Language) == requestedLang));
+                .Where(a => a.Translations.Any(t => t.Language.ToLower() == requestedLang || (requestedLang == "km" && t.Language.ToLower() == "kh")));
 
             var total = await baseQuery.CountAsync();
 
@@ -81,10 +81,12 @@ namespace Backend.Controllers
             var requestedLang = NormalizeLang(lang);
             var now = DateTime.UtcNow;
 
+            Guid? articleId = Guid.TryParse(slug, out var parsedGuid) ? parsedGuid : (Guid?)null;
+
             var article = await _db.NewsArticles
                 .Include(a => a.Translations)
                 .Include(a => a.ImageMedia)
-                .FirstOrDefaultAsync(a => a.Slug == slug &&
+                .FirstOrDefaultAsync(a => (a.Slug == slug || (articleId != null && a.Id == articleId)) &&
                                           a.DeletedAt == null &&
                                           a.Status == ContentStatus.Published &&
                                           a.PublishAt != null &&

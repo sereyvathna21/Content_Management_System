@@ -231,52 +231,32 @@ namespace Backend.Controllers
             article.UpdatedAt = DateTime.UtcNow;
             article.UpdatedByUserId = userId;
 
-            var existingByLang = article.Translations
-                .ToDictionary(t => t.Language, StringComparer.OrdinalIgnoreCase);
-            var requestedLangs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            // Delete all existing translations to prevent concurrency tracking issues
+            var existingTranslations = article.Translations.ToList();
+            if (existingTranslations.Count > 0)
+            {
+                _db.NewsArticleTranslations.RemoveRange(existingTranslations);
+                await _db.SaveChangesAsync();
+            }
 
+            // Add the new translations
             foreach (var translation in request.Translations)
             {
                 var normalizedLang = NormalizeLang(translation.Language);
-                requestedLangs.Add(normalizedLang);
-
-                if (existingByLang.TryGetValue(normalizedLang, out var existing))
+                _db.NewsArticleTranslations.Add(new NewsArticleTranslation
                 {
-                    existing.Title = translation.Title.Trim();
-                    existing.Excerpt = translation.Excerpt.Trim();
-                    existing.Subtitle = string.IsNullOrWhiteSpace(translation.Subtitle) ? null : translation.Subtitle.Trim();
-                    existing.ContentHtml = string.IsNullOrWhiteSpace(translation.ContentHtml) ? null : translation.ContentHtml.Trim();
-                    existing.ContentMd = string.IsNullOrWhiteSpace(translation.ContentMd) ? null : translation.ContentMd.Trim();
-                    existing.MetaTitle = string.IsNullOrWhiteSpace(translation.MetaTitle) ? null : translation.MetaTitle.Trim();
-                    existing.MetaDescription = string.IsNullOrWhiteSpace(translation.MetaDescription) ? null : translation.MetaDescription.Trim();
-                    existing.CanonicalUrl = string.IsNullOrWhiteSpace(translation.CanonicalUrl) ? null : translation.CanonicalUrl.Trim();
-                }
-                else
-                {
-                    article.Translations.Add(new NewsArticleTranslation
-                    {
-                        ArticleId = article.Id,
-                        Language = normalizedLang,
-                        Title = translation.Title.Trim(),
-                        Excerpt = translation.Excerpt.Trim(),
-                        Subtitle = string.IsNullOrWhiteSpace(translation.Subtitle) ? null : translation.Subtitle.Trim(),
-                        ContentHtml = string.IsNullOrWhiteSpace(translation.ContentHtml) ? null : translation.ContentHtml.Trim(),
-                        ContentMd = string.IsNullOrWhiteSpace(translation.ContentMd) ? null : translation.ContentMd.Trim(),
-                        MetaTitle = string.IsNullOrWhiteSpace(translation.MetaTitle) ? null : translation.MetaTitle.Trim(),
-                        MetaDescription = string.IsNullOrWhiteSpace(translation.MetaDescription) ? null : translation.MetaDescription.Trim(),
-                        CanonicalUrl = string.IsNullOrWhiteSpace(translation.CanonicalUrl) ? null : translation.CanonicalUrl.Trim(),
-                        CreatedAt = DateTime.UtcNow
-                    });
-                }
-            }
-
-            var toRemove = article.Translations
-                .Where(t => !requestedLangs.Contains(t.Language))
-                .ToList();
-
-            if (toRemove.Count > 0)
-            {
-                _db.NewsArticleTranslations.RemoveRange(toRemove);
+                    ArticleId = article.Id,
+                    Language = normalizedLang,
+                    Title = translation.Title.Trim(),
+                    Excerpt = translation.Excerpt.Trim(),
+                    Subtitle = string.IsNullOrWhiteSpace(translation.Subtitle) ? null : translation.Subtitle.Trim(),
+                    ContentHtml = string.IsNullOrWhiteSpace(translation.ContentHtml) ? null : translation.ContentHtml.Trim(),
+                    ContentMd = string.IsNullOrWhiteSpace(translation.ContentMd) ? null : translation.ContentMd.Trim(),
+                    MetaTitle = string.IsNullOrWhiteSpace(translation.MetaTitle) ? null : translation.MetaTitle.Trim(),
+                    MetaDescription = string.IsNullOrWhiteSpace(translation.MetaDescription) ? null : translation.MetaDescription.Trim(),
+                    CanonicalUrl = string.IsNullOrWhiteSpace(translation.CanonicalUrl) ? null : translation.CanonicalUrl.Trim(),
+                    CreatedAt = DateTime.UtcNow
+                });
             }
 
             await _db.SaveChangesAsync();

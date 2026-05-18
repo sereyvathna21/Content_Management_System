@@ -54,14 +54,8 @@ export default function AllVideosPlayer({
             .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
             .map((v) =>
               (() => {
-                const titleKey = `content.videos.${v.id}.title`;
-                const descKey = `content.videos.${v.id}.description`;
-                const maybeTitle = t(titleKey);
-                const displayedTitle =
-                  maybeTitle !== titleKey ? maybeTitle : v.title;
-                const maybeDesc = t(descKey);
-                const displayedDesc =
-                  maybeDesc !== descKey ? maybeDesc : v.description;
+                const displayedTitle = v.title;
+                const displayedDesc = v.description;
 
                 return (
                   <button
