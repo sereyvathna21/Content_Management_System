@@ -70,7 +70,7 @@ export default function ContactTable({
           {contacts.map((c) => (
             <div key={c.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
               <button className="text-left w-full" onClick={() => onOpen(c)}>
-                <div className="text-sm font-semibold text-gray-800 hover:text-primary transition">{c.name}</div>
+                <div className="text-sm font-semibold text-gray-800 hover:text-primary transition truncate text-left">{c.name}</div>
               </button>
 
               <div className="grid grid-cols-1 gap-2 text-sm text-gray-500">
@@ -124,17 +124,17 @@ export default function ContactTable({
                 {contacts.map((c) => (
                   <TableRow key={c.id}>
                     <TableCell className="px-5 py-3 sm:px-6 text-start">
-                        <button className="text-sm font-medium text-gray-800 dark:text-white/90" onClick={() => onOpen(c)}>
+                        <button className="text-sm font-medium text-gray-800 dark:text-white/90 truncate text-left max-w-[200px]" onClick={() => onOpen(c)}>
                         {c.name}
                       </button>
                     </TableCell>
 
-                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400 ">
-                        {c.email}
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
+                        <div className="truncate max-w-[200px]">{c.email}</div>
                       </TableCell>
 
-                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400 ">
-                        {c.subject}
+                      <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
+                        <div className="line-clamp-2 max-w-[250px]">{c.subject}</div>
                       </TableCell>
 
                       <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">

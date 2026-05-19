@@ -156,7 +156,7 @@ export default React.memo(function LawTable({
                 return (
                   <div key={l.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm space-y-3">
                     <button type="button" className="text-left w-full" onClick={() => onOpen(l)}>
-                      <div className="text-sm font-semibold text-gray-800 hover:text-primary transition">{tr.title}</div>
+                      <div className="text-sm font-semibold text-gray-800 hover:text-primary transition line-clamp-2 text-left">{tr.title}</div>
                     </button>
 
                     <div className="grid grid-cols-1 gap-2 text-sm text-gray-500">
@@ -253,7 +253,7 @@ export default React.memo(function LawTable({
                               onClick={() => onOpen(l)}
                             >
                               <div className="flex items-center gap-3">
-                                <div className="font-medium">{tr.title}</div>
+                                <div className="font-medium line-clamp-2 text-left max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-[600px] xl:max-w-[800px] whitespace-normal break-words">{tr.title}</div>
                               </div>
                             </button>
                           </TableCell>

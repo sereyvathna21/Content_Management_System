@@ -64,7 +64,7 @@ export default React.memo(function SocialTopicTable({
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <button
-                          className="text-sm font-semibold text-gray-800 hover:text-primary transition truncate"
+                          className="text-sm font-semibold text-gray-800 hover:text-primary transition line-clamp-2 text-left"
                           onClick={() => onEdit(tItem)}
                         >
                           {titleText}
@@ -143,13 +143,13 @@ export default React.memo(function SocialTopicTable({
                                 onClick={() => onEdit(tItem)}
                               >
                                 <div className="flex items-center gap-3">
-                                  <div className="font-medium">{titleText}</div>
+                                  <div className="font-medium line-clamp-2 text-left max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-[600px] xl:max-w-[800px] whitespace-normal break-words">{titleText}</div>
                                 </div>
                               </button>
                             </TableCell>
 
                             <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
-                              {tItem.slug}
+                              <div className="truncate max-w-[200px]">{tItem.slug}</div>
                             </TableCell>
 
                             <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">

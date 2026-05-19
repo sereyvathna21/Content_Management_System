@@ -71,12 +71,10 @@ export default async function VideoPage({
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           <Breadcrumbs currentLabel={t("videoLabel")} />
 
-          <div className="max-w-7xl mx-auto">
-            <article className="mx-auto w-full max-w-6xl space-y-6">
-              <div className="flex justify-center lg:justify-start px-0">
-                <div className="w-max max-w-max sm:max-w-max md:max-w-max lg:max-w-max px-0 sm:px-0">
-                  <AllVideosPlayer initialVideo={video} videos={mappedVideos} />
-                </div>
+          <div className="max-w-7xl mx-auto w-full">
+            <article className="mx-auto w-full space-y-6">
+              <div className="w-full">
+                <AllVideosPlayer initialVideo={video} videos={mappedVideos} />
               </div>
             </article>
           </div>

@@ -78,7 +78,7 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                       return <img src={src} alt={u.name} className="w-full h-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/images/user/default-avatar.svg"; }} />;
                     })()}
                   </div>
-                  <div className="text-sm font-semibold text-gray-800 hover:text-primary transition">{u.name}</div>
+                  <div className="text-sm font-semibold text-gray-800 hover:text-primary transition truncate text-left">{u.name}</div>
                 </div>
               </button>
 
@@ -142,12 +142,14 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                               );
                             })()}
                           </div>
-                          <div>{u.name}</div>
+                          <div className="truncate max-w-[200px] text-left">{u.name}</div>
                         </div>
                       </button>
                     </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">{u.email}</TableCell>
+                    <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
+                      <div className="truncate max-w-[200px]">{u.email}</div>
+                    </TableCell>
 
                     <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
                       <span

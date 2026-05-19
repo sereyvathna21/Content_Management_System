@@ -151,7 +151,7 @@ export default React.memo(function VideoTable({
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                   </svg>
                                 </div>
-                                <div className="font-medium line-clamp-2">{v.title}</div>
+                                <div className="font-medium line-clamp-2 text-left max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-[600px] xl:max-w-[800px] whitespace-normal break-words">{v.title}</div>
                               </div>
                             </button>
                           </TableCell>
@@ -244,7 +244,7 @@ export default React.memo(function VideoTable({
                             </svg>
                           </div>
                           <div className="min-w-0">
-                            <div className="text-sm font-semibold text-gray-800 line-clamp-2">{v.title}</div>
+                            <div className="text-sm font-semibold text-gray-800 line-clamp-2 text-left">{v.title}</div>
                             <div className="mt-1 text-xs text-gray-500">
                               {formatCategory(v.category) ?? <span className="text-gray-300 italic">-</span>}
                             </div>
