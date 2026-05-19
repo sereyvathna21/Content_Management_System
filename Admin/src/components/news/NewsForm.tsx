@@ -154,6 +154,11 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
       return;
     }
 
+    if (slug.length > 150) {
+      setError("Slug cannot exceed 150 characters");
+      return;
+    }
+
     if (newsStatus === "Published") {
       if (!publishAt) {
         setError(t("errors.publishDateRequired"));
@@ -169,7 +174,25 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
       }
     }
 
+    if (imageAlt.length > 200) {
+      setError("Image Alt text cannot exceed 200 characters");
+      return;
+    }
+
     for (const tr of translations) {
+      if (tr.title.length > 150) {
+        setError(`Title for ${langLabel(tr.language)} cannot exceed 150 characters`);
+        return;
+      }
+      if (tr.excerpt.length > 300) {
+        setError(`Excerpt for ${langLabel(tr.language)} cannot exceed 300 characters`);
+        return;
+      }
+      if (tr.contentHtml.length > 20000) {
+        setError(`Content for ${langLabel(tr.language)} cannot exceed 20,000 characters`);
+        return;
+      }
+
       if (tr.language === DEFAULT_LANGUAGE) continue;
       const hasTitle = Boolean(tr.title.trim());
       const hasExcerpt = Boolean(tr.excerpt.trim());
@@ -253,11 +276,17 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
-              {t("slugLabel")} <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-900">
+                {t("slugLabel")} <span className="text-red-500">*</span>
+              </label>
+              <span className="text-[11px] text-gray-400">
+                {(slug || "").length}/150
+              </span>
+            </div>
             <input
               type="text"
+              maxLength={150}
               value={slug}
               onChange={(e) => setSlug(normalizeSlugInput(e.target.value))}
               placeholder={t("slugPlaceholder")}
@@ -354,11 +383,17 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
         </div>
 
         <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-          <label className="block text-sm font-medium text-gray-900 mb-1">
-            {t("imageAltLabel")} <span className="text-red-500">{newsStatus === "Published" ? "*" : ""}</span>
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-gray-900">
+              {t("imageAltLabel")} <span className="text-red-500">{newsStatus === "Published" ? "*" : ""}</span>
+            </label>
+            <span className="text-[11px] text-gray-400">
+              {(imageAlt || "").length}/200
+            </span>
+          </div>
           <input
             type="text"
+            maxLength={200}
             value={imageAlt}
             onChange={(e) => setImageAlt(e.target.value)}
             placeholder={t("imageAltPlaceholder")}
@@ -395,11 +430,17 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
 
         <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 space-y-3">
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
-              {t("titleLabel")} <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-900">
+                {t("titleLabel")} <span className="text-red-500">*</span>
+              </label>
+              <span className="text-[11px] text-gray-400">
+                {(activeTranslation.title || "").length}/150
+              </span>
+            </div>
             <input
               type="text"
+              maxLength={150}
               value={activeTranslation.title}
               onChange={(e) => updateTranslation(activeTab, { title: e.target.value })}
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
@@ -407,11 +448,17 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
-              {t("excerptLabel")} <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-900">
+                {t("excerptLabel")} <span className="text-red-500">*</span>
+              </label>
+              <span className="text-[11px] text-gray-400">
+                {(activeTranslation.excerpt || "").length}/300
+              </span>
+            </div>
             <textarea
               value={activeTranslation.excerpt}
+              maxLength={300}
               onChange={(e) => updateTranslation(activeTab, { excerpt: e.target.value })}
               rows={2}
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors resize-y"
@@ -419,11 +466,17 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
-              {t("contentLabel")} (HTML)
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-900">
+                {t("contentLabel")} (HTML)
+              </label>
+              <span className="text-[11px] text-gray-400">
+                {(activeTranslation.contentHtml || "").length}/20000
+              </span>
+            </div>
             <textarea
               value={activeTranslation.contentHtml}
+              maxLength={20000}
               onChange={(e) => updateTranslation(activeTab, { contentHtml: e.target.value })}
               rows={6}
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors resize-y font-mono"

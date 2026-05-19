@@ -39,14 +39,36 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
   const passwordsMismatch = password !== "" && confirmPassword !== "" && password !== confirmPassword;
   const liveError = error || (passwordsMismatch ? t("UserForm.passwordsMismatch") : null);
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
     if (!email || !name || !password) {
-      setError(t("UserForm.allFieldsRequired"));
+      setError(t("UserForm.allFieldsRequired") || "All fields are required");
+      return;
+    }
+    if (name.length > 50) {
+      setError("Full Name cannot exceed 50 characters");
+      return;
+    }
+    if (email.length > 100) {
+      setError("Email cannot exceed 100 characters");
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+    if (password.length > 32) {
+      setError("Password cannot exceed 32 characters");
       return;
     }
     if (passwordsMismatch) {
-      setError(t("UserForm.passwordsMismatch"));
+      setError(t("UserForm.passwordsMismatch") || "Passwords do not match");
       return;
     }
     onSave({ name, email, role, password, avatar: avatarPreview ?? undefined });
@@ -124,13 +146,19 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
 
           <div className="md:col-span-2 space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.fullNameLabel")}</label>
-              <Input placeholder={t("UserForm.fullNamePlaceholder")} value={name} onChange={(e) => setName(e.target.value)} />
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">{t("UserForm.fullNameLabel")}</label>
+                <span className="text-[11px] text-gray-400">{(name || "").length}/50</span>
+              </div>
+              <Input maxLength={50} placeholder={t("UserForm.fullNamePlaceholder")} value={name} onChange={(e) => setName(e.target.value)} />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.emailLabel")}</label>
-              <Input type="email" placeholder={t("UserForm.emailPlaceholder")} value={email} onChange={(e) => setEmail(e.target.value)} />
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">{t("UserForm.emailLabel")}</label>
+                <span className="text-[11px] text-gray-400">{(email || "").length}/100</span>
+              </div>
+              <Input maxLength={100} type="email" placeholder={t("UserForm.emailPlaceholder")} value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
 
             <div>
@@ -147,8 +175,12 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.passwordLabel")}</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">{t("UserForm.passwordLabel")}</label>
+                <span className="text-[11px] text-gray-400">{(password || "").length}/32</span>
+              </div>
               <PasswordInput
+                maxLength={32}
                 placeholder={t("UserForm.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -158,8 +190,12 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t("UserForm.confirmPasswordLabel")}</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">{t("UserForm.confirmPasswordLabel")}</label>
+                <span className="text-[11px] text-gray-400">{(confirmPassword || "").length}/32</span>
+              </div>
               <PasswordInput
+                maxLength={32}
                 placeholder={t("UserForm.confirmPasswordPlaceholder")}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}

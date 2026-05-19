@@ -21,7 +21,7 @@ type Translation = {
 };
 
 type Errors = {
-  translations?: Record<LangCode, { title?: string; category?: string }>;
+  translations?: Record<LangCode, { title?: string; category?: string; description?: string }>;
 };
 
 type InitialLaw = {
@@ -204,9 +204,9 @@ export default function LawForm({
       Object.prototype.hasOwnProperty.call(patch, "categoryLabel")
     ) {
       setErrors((prev) => {
-        const translationErrors = { ...(prev.translations ?? {}) } as Record<LangCode, { title?: string; category?: string }>;
+        const translationErrors = { ...(prev.translations ?? {}) } as Record<LangCode, { title?: string; category?: string; description?: string }>;
         if (translationErrors[code]) {
-          const { title: _ignoredTitle, category: _ignoredCategory, ...rest } = translationErrors[code];
+          const { title: _ignoredTitle, category: _ignoredCategory, description: _ignoredDescription, ...rest } = translationErrors[code];
           if (Object.keys(rest).length) translationErrors[code] = rest as any;
           else delete translationErrors[code];
         }
@@ -237,15 +237,23 @@ export default function LawForm({
 
   function validate() {
     const nextErrors: Errors = {};
-    const translationErrors: Record<LangCode, { title?: string; category?: string }> = {};
+    const translationErrors: Record<LangCode, { title?: string; category?: string; description?: string }> = {};
     let firstInvalidTab: LangCode | null = null;
     let hasKmTitle = false;
 
     translations.forEach((translation) => {
-      const itemErrors: { title?: string; category?: string } = {};
+      const itemErrors: { title?: string; category?: string; description?: string } = {};
 
       if (!translation.title.trim()) {
         itemErrors.title = t("errors.titleRequired");
+        if (!firstInvalidTab) firstInvalidTab = translation.language;
+      } else if (translation.title.length > 150) {
+        itemErrors.title = "Title cannot exceed 150 characters";
+        if (!firstInvalidTab) firstInvalidTab = translation.language;
+      }
+
+      if (translation.description.length > DESCRIPTION_MAX_LENGTH) {
+        itemErrors.description = `Description cannot exceed ${DESCRIPTION_MAX_LENGTH} characters`;
         if (!firstInvalidTab) firstInvalidTab = translation.language;
       }
 
@@ -256,6 +264,13 @@ export default function LawForm({
       if (!hasCategory) {
         itemErrors.category = t("errors.categoryRequired");
         if (!firstInvalidTab) firstInvalidTab = translation.language;
+      } else {
+        const catLabel = translation.categoryLabel || "";
+        const catVal = translation.categoryValue || "";
+        if (catLabel.length > 100 || catVal.length > 100) {
+          itemErrors.category = "Category cannot exceed 100 characters";
+          if (!firstInvalidTab) firstInvalidTab = translation.language;
+        }
       }
 
       if (translation.language === DEFAULT_LANGUAGE && translation.title.trim()) {
@@ -375,6 +390,7 @@ export default function LawForm({
             <div className="relative">
               <input
                 type="text"
+                maxLength={100}
                 value={activeTranslation.categoryLabel ?? activeTranslation.categoryValue ?? ""}
                 placeholder={t("categoryPlaceholder")}
                 onFocus={() => setCatDropdownOpen(true)}
@@ -502,11 +518,17 @@ export default function LawForm({
 
           <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1">
-                {t("titleLabel")} <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-900">
+                  {t("titleLabel")} <span className="text-red-500">*</span>
+                </label>
+                <span className="text-[11px] text-gray-400">
+                  {(activeTranslation.title || "").length}/150
+                </span>
+              </div>
               <input
                 type="text"
+                maxLength={150}
                 value={activeTranslation.title}
                 placeholder={t("titlePlaceholder", { language: langLabel(activeTab) })}
                 onChange={(e) => updateTranslation(activeTab, { title: e.target.value })}
@@ -536,6 +558,9 @@ export default function LawForm({
                 rows={3}
                 className="w-full px-3 py-2 text-sm border rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors resize-y border-gray-300 hover:border-gray-400"
               />
+              {errors.translations?.[activeTab]?.description && (
+                <p className="text-xs text-red-500 mt-1">{errors.translations[activeTab].description}</p>
+              )}
             </div>
 
             <div className="col-span-full">

@@ -258,7 +258,7 @@ export default React.memo(function PublicationTable({
                                 onClick={() => onOpen(publication)}
                               >
                                 <div className="flex items-center gap-3">
-                                  <div className="font-medium line-clamp-2 text-left max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-[600px] xl:max-w-[800px] whitespace-normal break-words">{translation.title}</div>
+                                  <div className="font-medium line-clamp-2 text-left max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-[600px] xl:max-w-[800px] whitespace-normal wrap-break-words">{translation.title}</div>
                                 </div>
                               </button>
                             </TableCell>

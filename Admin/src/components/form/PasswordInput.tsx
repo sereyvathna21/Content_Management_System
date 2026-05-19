@@ -10,6 +10,7 @@ interface Props {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
   autoComplete?: string;
+  maxLength?: number;
 }
 
 const PasswordInput: FC<Props> = ({
@@ -20,6 +21,7 @@ const PasswordInput: FC<Props> = ({
   onChange,
   className = "",
   autoComplete,
+  maxLength,
 }) => {
   const [show, setShow] = useState(false);
 
@@ -33,6 +35,7 @@ const PasswordInput: FC<Props> = ({
         value={value}
         onChange={onChange}
         autoComplete={autoComplete}
+        maxLength={maxLength}
         className="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-1 focus:ring-primary/40 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 pr-10"
       />
 

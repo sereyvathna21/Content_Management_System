@@ -247,11 +247,25 @@ export default function PublicationForm({
       if (!translation.title.trim()) {
         errs.title = t("errors.titleRequired");
         if (!firstInvalidTab) firstInvalidTab = translation.language;
+      } else if (translation.title.length > 150) {
+        errs.title = "Title cannot exceed 150 characters";
+        if (!firstInvalidTab) firstInvalidTab = translation.language;
       }
 
-      if ((!(translation.categoryLabel && translation.categoryLabel.trim())) && (!(translation.categoryValue && translation.categoryValue.trim()))) {
+      const hasCategory =
+        (translation.categoryLabel && translation.categoryLabel.trim()) ||
+        (translation.categoryValue && translation.categoryValue.trim());
+
+      if (!hasCategory) {
         errs.category = t("errors.categoryRequired");
         if (!firstInvalidTab) firstInvalidTab = translation.language;
+      } else {
+        const catLabel = translation.categoryLabel || "";
+        const catVal = translation.categoryValue || "";
+        if (catLabel.length > 100 || catVal.length > 100) {
+          errs.category = "Category cannot exceed 100 characters";
+          if (!firstInvalidTab) firstInvalidTab = translation.language;
+        }
       }
 
       if (translation.language === DEFAULT_LANGUAGE && translation.title.trim()) {
@@ -366,6 +380,7 @@ export default function PublicationForm({
             <div className="relative">
               <input
                 type="text"
+                maxLength={100}
                 value={activeTranslation.categoryLabel ?? activeTranslation.categoryValue ?? ""}
                 placeholder={t("categoryPlaceholder")}
                 onFocus={() => setCatDropdownOpen(true)}
@@ -480,11 +495,17 @@ export default function PublicationForm({
 
           <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-1">
-                {t("titleLabel")} <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-900">
+                  {t("titleLabel")} <span className="text-red-500">*</span>
+                </label>
+                <span className="text-[11px] text-gray-400">
+                  {activeTranslation.title.length}/150
+                </span>
+              </div>
               <input
                 type="text"
+                maxLength={150}
                 value={activeTranslation.title}
                 placeholder={t("titlePlaceholder", { language: langLabel(activeTab) })}
                 onChange={(e) => updateTranslation(activeTab, { title: e.target.value })}

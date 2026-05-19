@@ -143,7 +143,7 @@ export default React.memo(function SocialTopicTable({
                                 onClick={() => onEdit(tItem)}
                               >
                                 <div className="flex items-center gap-3">
-                                  <div className="font-medium line-clamp-2 text-left max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-[600px] xl:max-w-[800px] whitespace-normal break-words">{titleText}</div>
+                                  <div className="font-medium line-clamp-2 text-left max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-[600px] xl:max-w-[800px] whitespace-normal wrapbreak-words">{titleText}</div>
                                 </div>
                               </button>
                             </TableCell>

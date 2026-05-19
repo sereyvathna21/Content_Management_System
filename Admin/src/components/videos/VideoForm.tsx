@@ -170,8 +170,17 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
       setError(t("errors.titleRequired"));
       return;
     }
+    if (title.length > 150) {
+      setError("Title cannot exceed 150 characters");
+      return;
+    }
+
     if (!normalizedEmbedUrl) {
       setError(t("errors.embedUrlRequired"));
+      return;
+    }
+    if (embedUrl.length > 500) {
+      setError("Embed URL/Iframe cannot exceed 500 characters");
       return;
     }
 
@@ -186,6 +195,10 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
 
     if (!description.trim()) {
       setError(t("errors.descriptionRequired"));
+      return;
+    }
+    if (description.length > 500) {
+      setError("Description cannot exceed 500 characters");
       return;
     }
 
@@ -243,11 +256,17 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
-              {t("titleLabel")} <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-900">
+                {t("titleLabel")} <span className="text-red-500">*</span>
+              </label>
+              <span className="text-[11px] text-gray-400">
+                {(title || "").length}/150
+              </span>
+            </div>
             <input
               type="text"
+              maxLength={150}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t("titlePlaceholder")}
@@ -269,11 +288,17 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">
-              {t("embedUrlLabel")} <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-900">
+                {t("embedUrlLabel")} <span className="text-red-500">*</span>
+              </label>
+              <span className="text-[11px] text-gray-400">
+                {(embedUrl || "").length}/500
+              </span>
+            </div>
             <input
               type="text"
+              maxLength={500}
               value={embedUrl}
               onChange={(e) => {
                 setEmbedUrl(normalizeEmbedInput(e.target.value));
@@ -314,12 +339,18 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
         </div>
 
         <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-          <label className="block text-sm font-medium text-gray-900 mb-1">
-            {t("descriptionLabel")}
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-gray-900">
+              {t("descriptionLabel")} <span className="text-red-500">*</span>
+            </label>
+            <span className="text-[11px] text-gray-400">
+              {(description || "").length}/500
+            </span>
+          </div>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            maxLength={500}
             rows={3}
             placeholder={t("descriptionPlaceholder")}
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors resize-y"

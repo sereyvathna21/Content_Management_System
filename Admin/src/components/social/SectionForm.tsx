@@ -40,7 +40,7 @@ export default function SectionForm({
     contentEn: "",
   });
 
-  const [errors, setErrors] = useState<{sectionKey?: string; titleKm?: string; contentKm?: string}>({});
+  const [errors, setErrors] = useState<{sectionKey?: string; titleKm?: string; contentKm?: string; titleEn?: string; contentEn?: string}>({});
 
   useEffect(() => {
     if (initialData) {
@@ -68,12 +68,40 @@ export default function SectionForm({
 
   function validate() {
       const newErrors: any = {};
-      if (!data.sectionKey.trim()) newErrors.sectionKey = t("sectionForm.errors.sectionKeyRequired") || "Section key is required";
-      if (!data.titleKm.trim()) newErrors.titleKm = t("sectionForm.errors.titleKmRequired") || "Khmer title is required";
-      if (!data.contentKm.trim()) newErrors.contentKm = t("sectionForm.errors.contentKmRequired") || "Khmer content is required";
+      if (!data.sectionKey.trim()) {
+        newErrors.sectionKey = t("sectionForm.errors.sectionKeyRequired") || "Section key is required";
+      } else if (data.sectionKey.length > 50) {
+        newErrors.sectionKey = "Section key cannot exceed 50 characters";
+      }
+
+      if (!data.titleKm.trim()) {
+        newErrors.titleKm = t("sectionForm.errors.titleKmRequired") || "Khmer title is required";
+      } else if (data.titleKm.length > 150) {
+        newErrors.titleKm = "Khmer title cannot exceed 150 characters";
+      }
+
+      if (data.titleEn && data.titleEn.length > 150) {
+        newErrors.titleEn = "English title cannot exceed 150 characters";
+      }
+
+      if (!data.contentKm.trim()) {
+        newErrors.contentKm = t("sectionForm.errors.contentKmRequired") || "Khmer content is required";
+      } else if (data.contentKm.length > 5000) {
+        newErrors.contentKm = "Khmer content cannot exceed 5000 characters";
+      }
+
+      if (data.contentEn && data.contentEn.length > 5000) {
+        newErrors.contentEn = "English content cannot exceed 5000 characters";
+      }
       
       setErrors(newErrors);
-      if (Object.keys(newErrors).length > 0) setActiveTab("km"); // Switch to Khmer tab to show errors
+      if (Object.keys(newErrors).length > 0) {
+        if (newErrors.titleEn || newErrors.contentEn) {
+          setActiveTab("en");
+        } else {
+          setActiveTab("km");
+        }
+      }
       return Object.keys(newErrors).length === 0;
   }
 
@@ -104,11 +132,17 @@ export default function SectionForm({
       )}
 
       <div className="mb-5">
-          <label className="block text-[15px] font-medium text-gray-900 mb-2">
-            {t("sectionKey") || "Section Key"} <span className="text-red-500">*</span>
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-[15px] font-medium text-gray-900">
+              {t("sectionKey") || "Section Key"} <span className="text-red-500">*</span>
+            </label>
+            <span className="text-[11px] text-gray-400">
+              {(data.sectionKey || "").length}/50
+            </span>
+          </div>
           <input
             type="text"
+            maxLength={50}
             value={data.sectionKey}
             onChange={(e) => setData({ ...data, sectionKey: e.target.value.replace(/\s+/g, '-').toLowerCase() })}
             placeholder={t("sectionForm.sectionKeyPlaceholder") || "e.g. intro-block"}
@@ -143,32 +177,46 @@ export default function SectionForm({
 
        {/* Title Field Based on Tab */}
        <div className="mb-5">
-         <label className="block text-[15px] font-medium text-gray-900 mb-2">
-             {t("sectionTitle") || "Title"} {isKm && <span className="text-red-500">*</span>}
-          </label>
+         <div className="flex items-center justify-between mb-2">
+           <label className="block text-[15px] font-medium text-gray-900">
+               {t("sectionTitle") || "Title"} {isKm && <span className="text-red-500">*</span>}
+           </label>
+           <span className="text-[11px] text-gray-400">
+             {((isKm ? data.titleKm : data.titleEn) || "").length}/150
+           </span>
+         </div>
           <input
             type="text"
+            maxLength={150}
             value={(isKm ? data.titleKm : data.titleEn) || ""}
             onChange={(e) => isKm ? setData({ ...data, titleKm: e.target.value }) : setData({ ...data, titleEn: e.target.value })}
             placeholder={isKm ? (t("sectionForm.titlePlaceholderKm") || "Khmer title...") : (t("sectionForm.titlePlaceholderEn") || "Title...")}
-            className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none ${isKm && errors.titleKm ? "border-red-500" : "border-gray-300"}`}
+            className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none ${isKm ? (errors.titleKm ? "border-red-500" : "border-gray-300") : (errors.titleEn ? "border-red-500" : "border-gray-300")}`}
           />
           {isKm && errors.titleKm && <p className="text-xs text-red-500 mt-1">{errors.titleKm}</p>}
+          {!isKm && errors.titleEn && <p className="text-xs text-red-500 mt-1">{errors.titleEn}</p>}
        </div>
 
        {/* Content Field Based on Tab */}
        <div className="mb-5">
-         <label className="block text-[15px] font-medium text-gray-900 mb-2">
-             {t("sectionContent") || "Content (Markdown)"} {isKm && <span className="text-red-500">*</span>}
-          </label>
+         <div className="flex items-center justify-between mb-2">
+           <label className="block text-[15px] font-medium text-gray-900">
+               {t("sectionContent") || "Content (Markdown)"} {isKm && <span className="text-red-500">*</span>}
+           </label>
+           <span className="text-[11px] text-gray-400">
+             {((isKm ? data.contentKm : data.contentEn) || "").length}/5000
+           </span>
+         </div>
           <textarea
             rows={10}
+            maxLength={5000}
             value={(isKm ? data.contentKm : data.contentEn) || ""}
             onChange={(e) => isKm ? setData({ ...data, contentKm: e.target.value }) : setData({ ...data, contentEn: e.target.value })}
             placeholder={isKm ? (t("sectionForm.contentPlaceholderKm") || "Write Khmer content here...") : (t("sectionForm.contentPlaceholderEn") || "Write markdown content here...")}
-            className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none resize-y font-mono ${isKm && errors.contentKm ? "border-red-500" : "border-gray-300"}`}
+            className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none resize-y font-mono ${isKm ? (errors.contentKm ? "border-red-500" : "border-gray-300") : (errors.contentEn ? "border-red-500" : "border-gray-300")}`}
           />
           {isKm && errors.contentKm && <p className="text-xs text-red-500 mt-1">{errors.contentKm}</p>}
+          {!isKm && errors.contentEn && <p className="text-xs text-red-500 mt-1">{errors.contentEn}</p>}
        </div>
 
        {showActions && (
