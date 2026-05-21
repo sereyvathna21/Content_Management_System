@@ -55,9 +55,12 @@ export default function Register() {
   const [registered, setRegistered] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
+  const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(""));
   const [otpError, setOtpError] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
   const [isResending, setIsResending] = useState(false);
+
+  const inputRefs = React.useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     if (otpSent) setResendCooldown(60);
@@ -156,9 +159,17 @@ export default function Register() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setOtpError(data.message || "Failed to resend code.");
+        if (data.message?.toLowerCase().includes("expired") || data.message?.toLowerCase().includes("register again")) {
+          setOtpSent(false);
+          setOtp("");
+          setOtpValues(Array(6).fill(""));
+          setGeneralError(data.message || "Session expired. Please register again.");
+        } else {
+          setOtpError(data.message || "Failed to resend code.");
+        }
       } else {
         setOtp("");
+        setOtpValues(Array(6).fill(""));
         setResendCooldown(60);
       }
     } catch {
@@ -168,10 +179,65 @@ export default function Register() {
     }
   };
 
+  const handleOtpChange = (index: number, value: string) => {
+    const char = value.slice(-1);
+    if (char && !/^[0-9]$/.test(char)) return;
+
+    const newOtpValues = [...otpValues];
+    newOtpValues[index] = char;
+    setOtpValues(newOtpValues);
+    setOtp(newOtpValues.join(""));
+    setOtpError("");
+
+    if (char && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace") {
+      if (!otpValues[index] && index > 0) {
+        const newOtpValues = [...otpValues];
+        newOtpValues[index - 1] = "";
+        setOtpValues(newOtpValues);
+        setOtp(newOtpValues.join(""));
+        setOtpError("");
+        inputRefs.current[index - 1]?.focus();
+      } else if (otpValues[index]) {
+        const newOtpValues = [...otpValues];
+        newOtpValues[index] = "";
+        setOtpValues(newOtpValues);
+        setOtp(newOtpValues.join(""));
+        setOtpError("");
+      }
+    } else if (e.key === "ArrowLeft" && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === "ArrowRight" && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").trim();
+    if (!/^\d{6}$/.test(pastedData)) return;
+
+    const digits = pastedData.split("");
+    setOtpValues(digits);
+    setOtp(pastedData);
+    setOtpError("");
+    inputRefs.current[5]?.focus();
+  };
+
   const strength = getPasswordStrength(formData.password);
 
   const inputClass = (hasError: boolean) =>
     `block w-full text-gray-900 bg-white border-2 ${hasError ? "border-red-500" : "border-gray-300"} rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-sm sm:text-base outline-none px-3 py-2.5 sm:px-4 sm:py-3`;
+
+  const otpInputClass = (hasError: boolean) =>
+    `w-10 h-12 sm:w-12 sm:h-14 text-center text-lg sm:text-xl font-bold text-gray-900 bg-white border-2 ${
+      hasError ? "border-red-500" : "border-gray-300"
+    } rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 outline-none shadow-sm hover:shadow-md`;
 
   const EyeIcon = ({ open }: { open: boolean }) =>
     open ? (
@@ -187,6 +253,23 @@ export default function Register() {
 
   return (
     <div>
+      {otpSent && (
+        <button
+          type="button"
+          onClick={() => {
+            setOtpSent(false);
+            setOtp("");
+            setOtpValues(Array(6).fill(""));
+            setOtpError("");
+          }}
+          className="fixed top-6 left-6 sm:left-8 lg:left-[calc(50%+4rem)] z-50 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 md:text-primary lg:text-primary sm:text-black text-black hover:bg-white/20 transition-all duration-200 text-sm font-medium cursor-pointer animate-[fadeIn_0.5s_ease-out_both]"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>Back</span>
+        </button>
+      )}
       <section className="min-h-screen flex items-stretch">
         <TopNav />
         <div className="hidden lg:flex lg:w-1/2 bg-cover relative items-center justify-center p-8 md:p-12" style={{ backgroundImage: "url(/login.svg)" }} />
@@ -217,10 +300,30 @@ export default function Register() {
             ) : (
               <>
                 <h1 className="font-bold lg:text-gray-900 text-white text-center text-xl sm:text-2xl md:text-3xl mb-2 mt-4 animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-                  {otpSent ? "Verify Your Email" : t("title")}
+                  {otpSent ? "Verify your email" : t("title")}
                 </h1>
                 <p className="lg:text-gray-600 text-white/90 text-center text-sm sm:text-base mb-6 sm:mb-8 animate-[fadeIn_0.8s_ease-out_0.4s_both]">
-                  {otpSent ? `We sent a verification code to ${formData.email}` : t("subtitle")}
+                  {otpSent ? (
+                    <span className="block">
+                      The verification code has been sent to your email{" "}
+                      <span
+                        onClick={() => {
+                          setOtpSent(false);
+                          setOtp("");
+                          setOtpValues(Array(6).fill(""));
+                          setOtpError("");
+                        }}
+                        className="font-semibold text-white lg:text-primary hover:underline cursor-pointer inline-flex items-center gap-1"
+                      >
+                        {formData.email}
+                        <svg className="h-4 w-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </span>
+                    </span>
+                  ) : (
+                    t("subtitle")
+                  )}
                 </p>
 
                 {generalError && (
@@ -232,33 +335,43 @@ export default function Register() {
                 <form onSubmit={handleSubmit} noValidate className="space-y-4 sm:space-y-5 animate-[fadeInUp_0.8s_ease-out_0.5s_both]">
                   {otpSent ? (
                     <div>
-                      <label htmlFor="otp" className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2">
-                        Verification Code
-                      </label>
-                      <input
-                        type="text"
-                        id="otp"
-                        value={otp}
-                        onChange={(e) => { setOtp(e.target.value); setOtpError(""); }}
-                        placeholder="Enter 6-digit code"
-                        maxLength={6}
-                        className={inputClass(!!otpError)}
-                      />
-                      {otpError && <p role="alert" className="mt-1 text-red-500 text-xs sm:text-sm">{otpError}</p>}
-                      <div className="mt-3 text-right">
+                      <div className="flex justify-center gap-2 sm:gap-3 my-5">
+                        {otpValues.map((digit, index) => (
+                          <input
+                            key={index}
+                            ref={(el) => {
+                              inputRefs.current[index] = el;
+                            }}
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength={1}
+                            value={digit}
+                            onChange={(e) => handleOtpChange(index, e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(index, e)}
+                            onPaste={handlePaste}
+                            className={otpInputClass(!!otpError)}
+                          />
+                        ))}
+                      </div>
+                      {otpError && <p role="alert" className="mt-1 text-red-500 text-center text-xs sm:text-sm">{otpError}</p>}
+                      <div className="mt-4 text-center">
                         {resendCooldown > 0 ? (
                           <p className="text-xs sm:text-sm lg:text-gray-500 text-white/70">
-                            Resend code in {resendCooldown}s
+                            Not received yet? Resend in {resendCooldown}s
                           </p>
                         ) : (
-                          <button
-                            type="button"
-                            onClick={handleResendOtp}
-                            disabled={isResending}
-                            className="text-xs sm:text-sm font-medium text-white lg:text-primary hover:text-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {isResending ? "Sending..." : "Resend Code"}
-                          </button>
+                          <p className="text-xs sm:text-sm lg:text-gray-500 text-white/70">
+                            Not received yet?{" "}
+                            <button
+                              type="button"
+                              onClick={handleResendOtp}
+                              disabled={isResending}
+                              className="font-semibold text-white lg:text-primary hover:text-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed underline"
+                            >
+                              {isResending ? "Sending..." : "Resend verification code"}
+                            </button>
+                          </p>
                         )}
                       </div>
                     </div>
@@ -313,9 +426,9 @@ export default function Register() {
                           <input id="agreeToTerms" name="agreeToTerms" type="checkbox" checked={formData.agreeToTerms} onChange={handleChange} className="mt-0.5 h-4 w-4 border-primary rounded text-primary focus:ring-primary shrink-0" />
                           <label htmlFor="agreeToTerms" className="text-xs sm:text-sm lg:text-gray-700 text-white">
                             {t("agreeToTerms.prefix")}{" "}
-                            <Link href="/Landing-page/Terms" target="_blank" rel="noopener noreferrer" className="font-medium text-white lg:text-primary hover:text-primary/80 underline transition-colors">{t("agreeToTerms.terms")}</Link>{" "}
+                            <Link href="/Terms" target="_blank" rel="noopener noreferrer" className="font-medium text-white lg:text-primary hover:text-primary/80 underline transition-colors">{t("agreeToTerms.terms")}</Link>{" "}
                             {t("agreeToTerms.and")}{" "}
-                            <Link href="/Landing-page/Privacy" target="_blank" rel="noopener noreferrer" className="font-medium text-white lg:text-primary hover:text-primary/80 underline transition-colors">{t("agreeToTerms.privacy")}</Link>
+                            <Link href="/Privacy" target="_blank" rel="noopener noreferrer" className="font-medium text-white lg:text-primary hover:text-primary/80 underline transition-colors">{t("agreeToTerms.privacy")}</Link>
                           </label>
                         </div>
                         {errors.agreeToTerms && <p role="alert" className="mt-1 text-red-500 text-xs sm:text-sm">{errors.agreeToTerms}</p>}
@@ -324,7 +437,7 @@ export default function Register() {
                   )}
 
                   <button type="submit" disabled={isSubmitting} className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3 animate-[slideInUp_0.6s_ease-out_0.85s_both]">
-                    {isSubmitting ? (otpSent ? "Verifying..." : t("registering")) : (otpSent ? "Verify Email" : t("registerButton"))}
+                    {isSubmitting ? (otpSent ? "Verifying..." : t("registering")) : (otpSent ? "Continue" : t("registerButton"))}
                   </button>
 
                   {!otpSent && (

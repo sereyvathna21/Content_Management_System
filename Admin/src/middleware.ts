@@ -6,6 +6,8 @@ const AUTH_PATHS = [
   "/Authentication/Register",
   "/Authentication/Forgetpassword",
   "/Authentication/Resetpassword",
+  "/Terms",
+  "/Privacy",
 ];
 
 export default auth((req) => {

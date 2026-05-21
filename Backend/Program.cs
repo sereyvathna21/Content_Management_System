@@ -15,6 +15,7 @@ using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
 
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -42,6 +43,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddHostedService<NotificationRetentionService>();
 builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddMemoryCache();
 
 // ---------- Rate Limiting ----------
 builder.Services.AddRateLimiter(options =>
@@ -55,6 +57,12 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0,
                 Window = TimeSpan.FromMinutes(1)
             }));
+
+    options.OnRejected = (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        return ValueTask.CompletedTask;
+    };
 
     // Applying auth limiter for sensitive endpoints
     options.AddFixedWindowLimiter("Auth", opt =>

@@ -5,6 +5,7 @@ using Backend.DTOs;
 using Backend.Models;
 using Backend.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Backend.Services
 {
@@ -14,13 +15,15 @@ namespace Backend.Services
         private readonly EmailService _email;
         private readonly IConfiguration _config;
         private readonly IMapper _mapper;
+        private readonly IMemoryCache _cache;
 
-        public UserService(ApplicationDbContext db, EmailService email, IConfiguration config, IMapper mapper)
+        public UserService(ApplicationDbContext db, EmailService email, IConfiguration config, IMapper mapper, IMemoryCache cache)
         {
             _db = db;
             _email = email;
             _config = config;
             _mapper = mapper;
+            _cache = cache;
         }
 
         public async Task<(bool Success, string Message)> RegisterAsync(RegisterRequest request)
@@ -34,27 +37,34 @@ namespace Backend.Services
             var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
             if (existing != null)
             {
-                return (false, "An account with this email already exists.");
+                if (existing.IsEmailVerified)
+                {
+                    return (false, "An account with this email already exists.");
+                }
+                else
+                {
+                    _db.Users.Remove(existing);
+                    await _db.SaveChangesAsync();
+                }
             }
 
             var otp = GenerateOtp();
             var expiryMinutes = int.Parse(_config["App:OtpExpiryMinutes"] ?? "10");
 
-            var user = new User
+            var cacheKey = $"pending_reg_{normalizedEmail}";
+            var pending = new PendingRegistration
             {
                 FullName = request.FullName,
                 Email = normalizedEmail,
-                Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                Role = RoleConstants.User,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 OtpCode = otp,
                 OtpExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes),
                 OtpAttempts = 0
             };
 
-            _db.Users.Add(user);
-            await _db.SaveChangesAsync();
+            _cache.Set(cacheKey, pending, TimeSpan.FromMinutes(expiryMinutes));
 
-            await _email.SendOtpAsync(user.Email, otp, "Verify Your Email");
+            await _email.SendOtpAsync(normalizedEmail, otp, "Verify Your Email");
 
             return (true, "Registration successful. Please check your email for the verification code.");
         }
@@ -64,38 +74,57 @@ namespace Backend.Services
             const int maxAttempts = 5;
 
             var normalizedEmail = NormalizeEmail(request.Email);
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
-            if (user == null)
-                return (false, "User not found.");
-
-            if (user.IsEmailVerified)
+            var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+            if (existing != null && existing.IsEmailVerified)
                 return (false, "Email is already verified.");
 
-            if (user.OtpCode == null || user.OtpExpiresAt < DateTime.UtcNow)
-                return (false, "Verification code has expired. Please request a new one.");
-
-            if (user.OtpAttempts >= maxAttempts)
+            var cacheKey = $"pending_reg_{normalizedEmail}";
+            if (!_cache.TryGetValue(cacheKey, out PendingRegistration? pending))
             {
-                user.OtpCode = null;
-                user.OtpExpiresAt = null;
-                user.OtpAttempts = 0;
-                await _db.SaveChangesAsync();
-                return (false, "Too many failed attempts. Please request a new verification code.");
+                return (false, "Verification session expired or not found. Please register again.");
             }
 
-            if (user.OtpCode != request.Code)
+            if (pending.OtpExpiresAt < DateTime.UtcNow)
             {
-                user.OtpAttempts++;
-                await _db.SaveChangesAsync();
-                var remaining = maxAttempts - user.OtpAttempts;
+                _cache.Remove(cacheKey);
+                return (false, "Verification code has expired. Please request a new one.");
+            }
+
+            if (pending.OtpAttempts >= maxAttempts)
+            {
+                _cache.Remove(cacheKey);
+                return (false, "Too many failed attempts. Please register again.");
+            }
+
+            if (pending.OtpCode != request.Code)
+            {
+                pending.OtpAttempts++;
+                _cache.Set(cacheKey, pending, pending.OtpExpiresAt - DateTime.UtcNow);
+                var remaining = maxAttempts - pending.OtpAttempts;
                 return (false, $"Invalid verification code. {remaining} attempt(s) remaining.");
             }
 
-            user.IsEmailVerified = true;
-            user.OtpCode = null;
-            user.OtpExpiresAt = null;
-            user.OtpAttempts = 0;
+            var user = new User
+            {
+                FullName = pending.FullName,
+                Email = pending.Email,
+                Password = pending.PasswordHash,
+                Role = RoleConstants.User,
+                IsEmailVerified = true,
+                OtpCode = null,
+                OtpExpiresAt = null,
+                OtpAttempts = 0
+            };
+
+            if (existing != null)
+            {
+                _db.Users.Remove(existing);
+            }
+
+            _db.Users.Add(user);
             await _db.SaveChangesAsync();
+
+            _cache.Remove(cacheKey);
 
             return (true, "Email verified successfully. You can now log in.");
         }
@@ -103,22 +132,42 @@ namespace Backend.Services
         public async Task<(bool Success, string Message)> ResendOtpAsync(ForgotPasswordRequest request)
         {
             var normalizedEmail = NormalizeEmail(request.Email);
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
-            if (user == null)
-                return (false, "User not found.");
-
-            if (user.IsEmailVerified)
+            var existing = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+            if (existing != null && existing.IsEmailVerified)
                 return (false, "Email is already verified.");
+
+            var cacheKey = $"pending_reg_{normalizedEmail}";
+            if (!_cache.TryGetValue(cacheKey, out PendingRegistration? pending))
+            {
+                // Cache entry expired or server restarted — recover from DB if possible
+                if (existing != null && !existing.IsEmailVerified)
+                {
+                    pending = new PendingRegistration
+                    {
+                        FullName = existing.FullName,
+                        Email = existing.Email,
+                        PasswordHash = existing.Password,
+                        OtpCode = "",
+                        OtpExpiresAt = DateTime.UtcNow,
+                        OtpAttempts = 0
+                    };
+                }
+                else
+                {
+                    return (false, "Registration session expired. Please register again.");
+                }
+            }
 
             var otp = GenerateOtp();
             var expiryMinutes = int.Parse(_config["App:OtpExpiryMinutes"] ?? "10");
 
-            user.OtpCode = otp;
-            user.OtpExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);
-            user.OtpAttempts = 0;
-            await _db.SaveChangesAsync();
+            pending.OtpCode = otp;
+            pending.OtpExpiresAt = DateTime.UtcNow.AddMinutes(expiryMinutes);
+            pending.OtpAttempts = 0;
 
-            await _email.SendOtpAsync(user.Email, otp, "Verify Your Email");
+            _cache.Set(cacheKey, pending, TimeSpan.FromMinutes(expiryMinutes));
+
+            await _email.SendOtpAsync(pending.Email, otp, "Verify Your Email");
 
             return (true, "A new verification code has been sent to your email.");
         }
@@ -285,5 +334,15 @@ namespace Backend.Services
 
         private static string NormalizeEmail(string email) =>
             email.Trim().ToLowerInvariant();
+    }
+
+    public class PendingRegistration
+    {
+        public required string FullName { get; set; }
+        public required string Email { get; set; }
+        public required string PasswordHash { get; set; }
+        public required string OtpCode { get; set; }
+        public required DateTime OtpExpiresAt { get; set; }
+        public int OtpAttempts { get; set; }
     }
 }

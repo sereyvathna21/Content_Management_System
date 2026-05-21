@@ -10,7 +10,6 @@ namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/user")]
-    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("Auth")]
     public class UserController : ControllerBase
     {
         private readonly IUserService _user;
@@ -26,6 +25,7 @@ namespace Backend.Controllers
 
         [HttpPost("register")]
         [AllowAnonymous]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             var result = await _user.RegisterAsync(request);
@@ -41,6 +41,7 @@ namespace Backend.Controllers
 
         [HttpPost("verify-email")]
         [AllowAnonymous]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequest request)
         {
             var result = await _user.VerifyEmailAsync(request);
@@ -54,6 +55,7 @@ namespace Backend.Controllers
 
         [HttpPost("resend-otp")]
         [AllowAnonymous]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> ResendOtp([FromBody] ForgotPasswordRequest request)
         {
             var result = await _user.ResendOtpAsync(request);
@@ -67,6 +69,7 @@ namespace Backend.Controllers
 
         [HttpPost("forgot-password")]
         [AllowAnonymous]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
         {
             var result = await _user.ForgotPasswordAsync(request);
@@ -75,6 +78,7 @@ namespace Backend.Controllers
 
         [HttpPost("reset-password")]
         [AllowAnonymous]
+        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
             var result = await _user.ResetPasswordAsync(request);
@@ -160,7 +164,6 @@ namespace Backend.Controllers
 
         [HttpPost("me/avatar")]
         [Authorize]
-        [EnableRateLimiting("Auth")]
         [RequestSizeLimit(5_242_880)]
         public async Task<IActionResult> UploadCurrentUserAvatar([FromForm] IFormFile? file, CancellationToken cancellationToken)
         {
@@ -246,7 +249,6 @@ namespace Backend.Controllers
 
         [HttpPut("me")]
         [Authorize]
-        [EnableRateLimiting("Auth")]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateCurrentUserRequest request)
         {
             var subject = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
