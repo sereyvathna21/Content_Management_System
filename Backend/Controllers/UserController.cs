@@ -1,5 +1,6 @@
 using Backend.DTOs;
 using Backend.Services;
+using Backend.Security;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
@@ -89,7 +90,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.UsersRead)]
         public async Task<IActionResult> GetAll([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? q = null)
         {
             var hasPaging = Request.Query.ContainsKey("page") || Request.Query.ContainsKey("pageSize") || Request.Query.ContainsKey("q");
@@ -104,7 +105,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.UsersCreate)]
         public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
         {
             var result = await _user.CreateUserAsync(request);
@@ -119,7 +120,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.UsersUpdate)]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUserRequest request)
         {
             if (!ModelState.IsValid)

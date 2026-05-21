@@ -1,10 +1,12 @@
 using System.Security.Cryptography;
+using System.Text.Json;
 using AutoMapper;
 using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
 using Backend.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Backend.Services
@@ -16,14 +18,16 @@ namespace Backend.Services
         private readonly IConfiguration _config;
         private readonly IMapper _mapper;
         private readonly IMemoryCache _cache;
+        private readonly IDistributedCache _distributedCache;
 
-        public UserService(ApplicationDbContext db, EmailService email, IConfiguration config, IMapper mapper, IMemoryCache cache)
+        public UserService(ApplicationDbContext db, EmailService email, IConfiguration config, IMapper mapper, IMemoryCache cache, IDistributedCache distributedCache)
         {
             _db = db;
             _email = email;
             _config = config;
             _mapper = mapper;
             _cache = cache;
+            _distributedCache = distributedCache;
         }
 
         public async Task<(bool Success, string Message)> RegisterAsync(RegisterRequest request)
@@ -84,6 +88,11 @@ namespace Backend.Services
                 return (false, "Verification session expired or not found. Please register again.");
             }
 
+            if (pending == null)
+            {
+                return (false, "Verification session expired or not found. Please register again.");
+            }
+
             if (pending.OtpExpiresAt < DateTime.UtcNow)
             {
                 _cache.Remove(cacheKey);
@@ -104,12 +113,18 @@ namespace Backend.Services
                 return (false, $"Invalid verification code. {remaining} attempt(s) remaining.");
             }
 
+            var role = await GetRoleByNameAsync(RoleConstants.User);
+            if (role == null)
+            {
+                return (false, "Default role not found. Please contact an administrator.");
+            }
+
             var user = new User
             {
                 FullName = pending.FullName,
                 Email = pending.Email,
                 Password = pending.PasswordHash,
-                Role = RoleConstants.User,
+                RoleId = role.Id,
                 IsEmailVerified = true,
                 OtpCode = null,
                 OtpExpiresAt = null,
@@ -156,6 +171,11 @@ namespace Backend.Services
                 {
                     return (false, "Registration session expired. Please register again.");
                 }
+            }
+
+            if (pending == null)
+            {
+                return (false, "Registration session expired. Please register again.");
             }
 
             var otp = GenerateOtp();
@@ -208,7 +228,9 @@ namespace Backend.Services
 
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
-            var users = await _db.Users.ToListAsync();
+            var users = await _db.Users
+                .Include(u => u.Role)
+                .ToListAsync();
             return _mapper.Map<IEnumerable<UserDto>>(users);
         }
 
@@ -217,7 +239,9 @@ namespace Backend.Services
             page = Math.Max(1, page);
             pageSize = Math.Max(1, pageSize);
 
-            var usersQuery = _db.Users.AsQueryable();
+            var usersQuery = _db.Users
+                .Include(u => u.Role)
+                .AsQueryable();
             if (!string.IsNullOrWhiteSpace(query))
             {
                 var q = query.Trim().ToLower();
@@ -255,12 +279,18 @@ namespace Backend.Services
                 return (false, "Role must be one of: admin, user, superadmin.", null);
             }
 
+            var role = await GetRoleByNameAsync(normalizedRole);
+            if (role == null)
+            {
+                return (false, "Specified role does not exist.", null);
+            }
+
             var user = new User
             {
                 FullName = request.FullName,
                 Email = normalizedEmail,
                 Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
-                Role = normalizedRole,
+                RoleId = role.Id,
                 Avatar = request.Avatar,
                 Phone = request.Phone,
                 Bio = request.Bio,
@@ -273,12 +303,16 @@ namespace Backend.Services
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
+            // FIX 1: Reload Role navigation property after save so mapper has it
+            await _db.Entry(user).Reference(u => u.Role).LoadAsync();
+
             return (true, "User created successfully.", _mapper.Map<UserDto>(user));
         }
 
         public async Task<(bool Success, string Message, UserDto? Data)> UpdateUserAsync(int id, UpdateUserRequest request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == id);
+            // FIX 2: Include Role so mapper has it after save
+            var user = await _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
                 return (false, "User not found.", null);
 
@@ -288,11 +322,20 @@ namespace Backend.Services
             if (!RoleConstants.TryNormalize(request.Role, out var normalizedRole))
                 return (false, "Role must be one of: admin, user, superadmin.", null);
 
+            var role = await GetRoleByNameAsync(normalizedRole);
+            if (role == null)
+            {
+                return (false, "Specified role does not exist.", null);
+            }
+
             var normalizedEmail = NormalizeEmail(request.Email);
 
             var emailExists = await _db.Users.AnyAsync(u => u.Email == normalizedEmail && u.Id != id);
             if (emailExists)
                 return (false, "An account with this email already exists.", null);
+
+            var previousRoleId = user.RoleId;
+            var previousIsBlocked = user.IsBlocked;
 
             if (request.IsBlocked != null)
             {
@@ -301,13 +344,21 @@ namespace Backend.Services
 
             user.FullName = request.FullName;
             user.Email = normalizedEmail;
-            user.Role = normalizedRole;
             user.Avatar = request.Avatar;
             user.Phone = request.Phone ?? user.Phone;
             user.Bio = request.Bio ?? user.Bio;
             user.Country = request.Country ?? user.Country;
             user.City = request.City ?? user.City;
             user.PostalCode = request.PostalCode ?? user.PostalCode;
+
+            // FIX 3: Check role/block change BEFORE updating RoleId, otherwise comparison is always false
+            var shouldRevokeTokens = role.Id != previousRoleId || user.IsBlocked != previousIsBlocked;
+            if (shouldRevokeTokens)
+            {
+                user.TokenValidAfter = DateTime.UtcNow;
+            }
+
+            user.RoleId = role.Id;
 
             if (!string.IsNullOrWhiteSpace(request.Password))
             {
@@ -316,13 +367,25 @@ namespace Backend.Services
 
             await _db.SaveChangesAsync();
 
+            if (shouldRevokeTokens && user.TokenValidAfter.HasValue)
+            {
+                await SyncUserRevocationCacheAsync(user.Id, user.TokenValidAfter.Value);
+            }
+
             return (true, "User updated successfully.", _mapper.Map<UserDto>(user));
         }
 
         public async Task<UserDto?> GetUserByIdAsync(int userId)
         {
-            var user = await _db.Users.FindAsync(userId);
+            var user = await _db.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == userId);
             return user == null ? null : _mapper.Map<UserDto>(user);
+        }
+
+        private async Task<Role?> GetRoleByNameAsync(string roleName)
+        {
+            return await _db.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
         }
 
         private static string GenerateOtp() =>
@@ -334,6 +397,27 @@ namespace Backend.Services
 
         private static string NormalizeEmail(string email) =>
             email.Trim().ToLowerInvariant();
+
+        // FIX 4: Wrapped in try/catch so a Redis outage never crashes a user request
+        private async Task SyncUserRevocationCacheAsync(int userId, DateTime revocationTime)
+        {
+            try
+            {
+                var cacheKey = $"user_revocation_time_{userId}";
+                await _distributedCache.SetStringAsync(
+                    cacheKey,
+                    JsonSerializer.Serialize(revocationTime),
+                    new DistributedCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+                    });
+            }
+            catch (Exception ex)
+            {
+                // Redis unavailable — log and continue, don't crash the request
+                Console.WriteLine($"[Cache] Failed to sync revocation cache for user {userId}: {ex.Message}");
+            }
+        }
     }
 
     public class PendingRegistration

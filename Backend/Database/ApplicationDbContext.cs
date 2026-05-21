@@ -11,6 +11,10 @@ namespace Backend.Data
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<SecurityAuditLog> SecurityAuditLogs { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Law> Laws { get; set; }
         public DbSet<LawTranslation> LawTranslations { get; set; }
@@ -33,6 +37,52 @@ namespace Backend.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Role>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.Name).IsUnique();
+                b.Property(x => x.Name).HasMaxLength(100).IsRequired();
+                b.Property(x => x.Description).HasMaxLength(500);
+            });
+
+            modelBuilder.Entity<Permission>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.Name).IsUnique();
+                b.Property(x => x.Name).HasMaxLength(120).IsRequired();
+                b.Property(x => x.Description).HasMaxLength(500);
+            });
+
+            modelBuilder.Entity<RolePermission>(b =>
+            {
+                b.HasKey(x => new { x.RoleId, x.PermissionId });
+                b.HasOne(x => x.Role)
+                    .WithMany(r => r.RolePermissions)
+                    .HasForeignKey(x => x.RoleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                b.HasOne(x => x.Permission)
+                    .WithMany(p => p.RolePermissions)
+                    .HasForeignKey(x => x.PermissionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<SecurityAuditLog>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.CreatedAt);
+                b.Property(x => x.ActorEmail).HasMaxLength(320).IsRequired();
+                b.Property(x => x.Action).HasMaxLength(100).IsRequired();
+                b.Property(x => x.TargetId).HasMaxLength(100).IsRequired();
+            });
+
+            modelBuilder.Entity<User>(b =>
+            {
+                b.HasOne(x => x.Role)
+                    .WithMany(r => r.Users)
+                    .HasForeignKey(x => x.RoleId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             modelBuilder.Entity<Law>(b =>
             {

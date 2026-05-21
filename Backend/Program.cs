@@ -1,10 +1,14 @@
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Backend.Data;
 using Backend.Services;
+using Backend.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using Backend.Hubs;
@@ -41,9 +45,17 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<ISecurityAuditService, SecurityAuditService>();
 builder.Services.AddHostedService<NotificationRetentionService>();
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddMemoryCache();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+    options.InstanceName = "NspcCms_";
+});
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 // ---------- Rate Limiting ----------
 builder.Services.AddRateLimiter(options =>
@@ -107,6 +119,58 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
             RoleClaimType = ClaimTypes.Role,
             NameClaimType = ClaimTypes.Name
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var cache = context.HttpContext.RequestServices.GetRequiredService<IDistributedCache>();
+                var userIdClaim = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var iatClaim = context.Principal?.FindFirst("iat")?.Value ??
+                               context.Principal?.FindFirst(Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames.Iat)?.Value;
+
+                if (string.IsNullOrEmpty(userIdClaim) || string.IsNullOrEmpty(iatClaim))
+                {
+                    return;
+                }
+
+                if (!long.TryParse(iatClaim, out var iatSeconds))
+                {
+                    return;
+                }
+
+                var tokenIssuedAt = DateTimeOffset.FromUnixTimeSeconds(iatSeconds).UtcDateTime;
+                var cacheKey = $"user_revocation_time_{userIdClaim}";
+
+                DateTime? revocationTime = null;
+                var cachedTimeStr = await cache.GetStringAsync(cacheKey);
+
+                if (!string.IsNullOrEmpty(cachedTimeStr))
+                {
+                    revocationTime = JsonSerializer.Deserialize<DateTime>(cachedTimeStr);
+                }
+                else if (int.TryParse(userIdClaim, out var userId))
+                {
+                    var db = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
+                    var user = await db.Users.FindAsync(userId);
+                    if (user != null)
+                    {
+                        revocationTime = user.TokenValidAfter ?? DateTime.MinValue;
+                        await cache.SetStringAsync(
+                            cacheKey,
+                            JsonSerializer.Serialize(revocationTime),
+                            new DistributedCacheEntryOptions
+                            {
+                                AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+                            });
+                    }
+                }
+
+                if (revocationTime.HasValue && tokenIssuedAt < revocationTime.Value)
+                {
+                    context.Fail("Token has been revoked because user profile or role was modified.");
+                }
+            }
         };
         // Explicitly unconfigured Custom cookie extraction to enforce Authorization: Bearer header to prevent CSRF.
     });

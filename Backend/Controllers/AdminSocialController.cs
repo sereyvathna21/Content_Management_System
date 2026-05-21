@@ -2,6 +2,7 @@ using AutoMapper;
 using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
+using Backend.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +19,6 @@ namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/admin/social")]
-    [Authorize(Roles = "Admin,SuperAdmin")]
     public class AdminSocialController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -81,6 +81,7 @@ namespace Backend.Controllers
         #region Topics CRUD
 
         [HttpGet("topics")]
+        [HasPermission(PermissionConstants.SocialRead)]
         public async Task<IActionResult> GetTopics(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
@@ -119,6 +120,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("topics/{topicId}")]
+        [HasPermission(PermissionConstants.SocialRead)]
         public async Task<IActionResult> GetTopic(Guid topicId)
         {
             var topic = await _db.SocialTopics.FindAsync(topicId);
@@ -127,6 +129,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("topics")]
+        [HasPermission(PermissionConstants.SocialCreate)]
         public async Task<IActionResult> CreateTopic([FromBody] SocialTopicCreateDto dto)
         {
             if (await _db.SocialTopics.AnyAsync(t => t.Slug == dto.Slug))
@@ -145,6 +148,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("topics/{topicId}")]
+        [HasPermission(PermissionConstants.SocialUpdate)]
         public async Task<IActionResult> UpdateTopic(Guid topicId, [FromBody] SocialTopicUpdateDto dto)
         {
             var topic = await _db.SocialTopics.FindAsync(topicId);
@@ -165,6 +169,7 @@ namespace Backend.Controllers
         }
 
         [HttpDelete("topics/{topicId}")]
+        [HasPermission(PermissionConstants.SocialDelete)]
         public async Task<IActionResult> DeleteTopic(Guid topicId)
         {
             var topic = await _db.SocialTopics
@@ -189,6 +194,7 @@ namespace Backend.Controllers
         #region Sections CRUD
 
         [HttpGet("topics/{topicId}/sections")]
+        [HasPermission(PermissionConstants.SocialRead)]
         public async Task<IActionResult> GetSections(Guid topicId)
         {
             var sections = await _db.SocialSections
@@ -204,6 +210,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("topics/{topicId}/sections")]
+        [HasPermission(PermissionConstants.SocialCreate)]
         public async Task<IActionResult> CreateSection(Guid topicId, [FromBody] SocialSectionCreateDto dto)
         {
             var topic = await _db.SocialTopics.FindAsync(topicId);
@@ -235,6 +242,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("sections/{sectionId}")]
+        [HasPermission(PermissionConstants.SocialUpdate)]
         public async Task<IActionResult> UpdateSection(Guid sectionId, [FromBody] SocialSectionUpdateDto dto)
         {
             var section = await _db.SocialSections.FindAsync(sectionId);
@@ -270,6 +278,7 @@ namespace Backend.Controllers
         }
 
         [HttpDelete("sections/{sectionId}")]
+        [HasPermission(PermissionConstants.SocialDelete)]
         public async Task<IActionResult> DeleteSection(Guid sectionId)
         {
             var section = await _db.SocialSections
@@ -286,6 +295,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("topics/{topicId}/sections/reorder")]
+        [HasPermission(PermissionConstants.SocialUpdate)]
         public async Task<IActionResult> ReorderSections(Guid topicId, [FromBody] List<SectionReorderDto> reorders)
         {
             var sectionIds = reorders.Select(r => r.SectionId).ToList();
@@ -311,6 +321,7 @@ namespace Backend.Controllers
         #region Media Actions
 
         [HttpPost("media/upload")]
+        [HasPermission(PermissionConstants.SocialCreate)]
         public async Task<IActionResult> UploadMedia([FromForm] IFormFile file)
         {
             if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
@@ -357,6 +368,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("sections/{sectionId}/media")]
+        [HasPermission(PermissionConstants.SocialCreate)]
         public async Task<IActionResult> AttachMedia(Guid sectionId, [FromBody] SocialSectionMediaCreateDto dto)
         {
             var section = await _db.SocialSections.FindAsync(sectionId);
@@ -378,6 +390,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("sections/{sectionId}/media/{sectionMediaId}")]
+        [HasPermission(PermissionConstants.SocialUpdate)]
         public async Task<IActionResult> UpdateMedia(Guid sectionId, Guid sectionMediaId, [FromBody] SocialSectionMediaUpdateDto dto)
         {
             var sectionMedia = await _db.SocialSectionMedia
@@ -395,6 +408,7 @@ namespace Backend.Controllers
         }
 
         [HttpDelete("sections/{sectionId}/media/{sectionMediaId}")]
+        [HasPermission(PermissionConstants.SocialDelete)]
         public async Task<IActionResult> DetachMedia(Guid sectionId, Guid sectionMediaId)
         {
             var sectionMedia = await _db.SocialSectionMedia
@@ -413,6 +427,7 @@ namespace Backend.Controllers
         #region Reference Files
 
         [HttpGet("topics/{topicId}/references")]
+        [HasPermission(PermissionConstants.SocialRead)]
         public async Task<IActionResult> GetReferences(Guid topicId)
         {
             var references = await _db.SocialReferences
@@ -424,6 +439,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("topics/{topicId}/references/upload")]
+        [HasPermission(PermissionConstants.SocialCreate)]
         public async Task<IActionResult> UploadReference(Guid topicId, [FromForm] IFormFile file, [FromForm] string? titleKm, [FromForm] string? titleEn, [FromForm] string? language)
         {
             var topic = await _db.SocialTopics.FindAsync(topicId);
@@ -486,6 +502,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("references/{referenceId}")]
+        [HasPermission(PermissionConstants.SocialUpdate)]
         public async Task<IActionResult> UpdateReference(Guid referenceId, [FromBody] SocialReferenceUpdateDto dto)
         {
             var reference = await _db.SocialReferences.FindAsync(referenceId);
@@ -503,6 +520,7 @@ namespace Backend.Controllers
         }
 
         [HttpDelete("references/{referenceId}")]
+        [HasPermission(PermissionConstants.SocialDelete)]
         public async Task<IActionResult> DeleteReference(Guid referenceId)
         {
             var reference = await _db.SocialReferences.FindAsync(referenceId);
@@ -522,6 +540,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("topics/{topicId}/references/reorder")]
+        [HasPermission(PermissionConstants.SocialUpdate)]
         public async Task<IActionResult> ReorderReferences(Guid topicId, [FromBody] List<SocialReferenceReorderDto> reorders)
         {
             var referenceIds = reorders.Select(r => r.ReferenceId).ToList();
@@ -546,6 +565,7 @@ namespace Backend.Controllers
         #region Governance (Publish/Unpublish)
 
         [HttpPost("topics/{topicId}/publish")]
+        [HasPermission(PermissionConstants.SocialUpdate)]
         public async Task<IActionResult> PublishTopic(Guid topicId)
         {
             var topic = await _db.SocialTopics
@@ -653,6 +673,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("topics/{topicId}/unpublish")]
+        [HasPermission(PermissionConstants.SocialUpdate)]
         public async Task<IActionResult> UnpublishTopic(Guid topicId)
         {
             var topic = await _db.SocialTopics
@@ -684,6 +705,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("topics/{topicId}/revisions")]
+        [HasPermission(PermissionConstants.SocialRead)]
         public async Task<IActionResult> GetRevisions(Guid topicId)
         {
             var revisions = await _db.SocialRevisions

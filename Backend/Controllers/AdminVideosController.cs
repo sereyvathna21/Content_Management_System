@@ -1,6 +1,7 @@
 using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
+using Backend.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,6 @@ namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/admin/videos")]
-    [Authorize(Roles = "Admin,SuperAdmin")]
     public partial class AdminVideosController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -34,6 +34,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
+        [HasPermission(PermissionConstants.VideoRead)]
         public async Task<IActionResult> List(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -84,6 +85,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
+        [HasPermission(PermissionConstants.VideoRead)]
         public async Task<IActionResult> Get(Guid id)
         {
             var video = await _db.Videos.FirstOrDefaultAsync(v => v.Id == id);
@@ -92,6 +94,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
+        [HasPermission(PermissionConstants.VideoCreate)]
         public async Task<IActionResult> Create([FromBody] VideoCreateDto request)
         {
             if (request == null) return BadRequest();
@@ -147,6 +150,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("{id}")]
+        [HasPermission(PermissionConstants.VideoUpdate)]
         public async Task<IActionResult> Update(Guid id, [FromBody] VideoUpdateDto request)
         {
             if (request == null) return BadRequest();
@@ -200,6 +204,7 @@ namespace Backend.Controllers
         }
 
         [HttpDelete("{id}")]
+        [HasPermission(PermissionConstants.VideoDelete)]
         public async Task<IActionResult> Delete(Guid id)
         {
             var video = await _db.Videos.FirstOrDefaultAsync(v => v.Id == id);
@@ -230,6 +235,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("{id}/restore")]
+        [HasPermission(PermissionConstants.VideoDelete)]
         public async Task<IActionResult> Restore(Guid id)
         {
             var video = await _db.Videos.FirstOrDefaultAsync(v => v.Id == id);

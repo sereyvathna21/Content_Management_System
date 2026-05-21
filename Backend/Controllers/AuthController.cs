@@ -1,6 +1,8 @@
 using Backend.DTOs;
 using Backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Backend.Controllers
 {
@@ -24,7 +26,7 @@ namespace Backend.Controllers
             {
                 if (result.Message.Contains("blocked") || result.Message.Contains("verify") || result.Message.Contains("Invalid"))
                     return Unauthorized(new MessageResponse { Message = result.Message });
-                
+
                 return BadRequest(new MessageResponse { Message = result.Message });
             }
 
@@ -43,6 +45,27 @@ namespace Backend.Controllers
                 SameSite = SameSiteMode.None
             });
             return Ok(new MessageResponse { Message = "Logged out successfully." });
+        }
+
+        [HttpGet("verify-session")]
+        [Authorize]
+        public async Task<IActionResult> VerifySession()
+        {
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            if (string.IsNullOrWhiteSpace(roleIdClaim) || !int.TryParse(roleIdClaim, out var roleId))
+            {
+                return Forbid();
+            }
+
+            var permissions = await _auth.GetRolePermissionsAsync(roleId);
+
+            return Ok(new
+            {
+                userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
+                    ?? User.FindFirstValue(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub),
+                role = User.FindFirstValue(ClaimTypes.Role) ?? User.FindFirstValue("role"),
+                permissions
+            });
         }
     }
 }

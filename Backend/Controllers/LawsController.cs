@@ -1,6 +1,7 @@
 using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
+using Backend.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -294,7 +295,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.LawsRead)]
         public async Task<IActionResult> List([FromQuery] string lang = "en", [FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] string? category = null, [FromQuery] string? q = null)
         {
             page = Math.Max(1, page);
@@ -352,7 +353,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.LawsRead)]
         public async Task<IActionResult> Get(Guid id, [FromQuery] string lang = "en")
         {
             var law = await _db.Laws.Include(l => l.Translations).FirstOrDefaultAsync(l => l.Id == id);
@@ -378,7 +379,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.LawsCreate)]
         [RequestSizeLimit(50_000_000)]
         public async Task<IActionResult> Create([FromForm] LawCreateDto request)
         {
@@ -456,7 +457,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.LawsUpdate)]
         [RequestSizeLimit(50_000_000)]
         public async Task<IActionResult> Update(Guid id, [FromForm] LawUpdateDto request)
         {
@@ -565,7 +566,7 @@ namespace Backend.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.LawsDelete)]
         public async Task<IActionResult> Delete(Guid id)
         {
             var law = await _db.Laws.Include(l => l.Translations).FirstOrDefaultAsync(l => l.Id == id);

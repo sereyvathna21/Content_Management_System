@@ -7,7 +7,9 @@ using Backend.DTOs;
 using Backend.Models;
 using Backend.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.IdentityModel.Tokens;
+using System.Text.Json;
 
 namespace Backend.Services
 {
@@ -16,12 +18,14 @@ namespace Backend.Services
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
         private readonly IMapper _mapper;
+        private readonly IDistributedCache _cache;
 
-        public AuthService(ApplicationDbContext db, IConfiguration config, IMapper mapper)
+        public AuthService(ApplicationDbContext db, IConfiguration config, IMapper mapper, IDistributedCache cache)
         {
             _db = db;
             _config = config;
             _mapper = mapper;
+            _cache = cache;
         }
 
         public async Task<(bool Success, string Message, LoginResponse? Data)> LoginAsync(LoginRequest request)
@@ -30,7 +34,9 @@ namespace Backend.Services
                 return (false, "Email and password are required.", null);
 
             var normalizedEmail = request.Email.Trim().ToLowerInvariant();
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+            var user = await _db.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 return (false, "Invalid email or password.", null);
 
@@ -61,13 +67,14 @@ namespace Backend.Services
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var normalizedRole = RoleConstants.NormalizeOrDefault(user.Role);
+            var normalizedRole = RoleConstants.NormalizeOrDefault(user.Role?.Name);
 
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("fullName", user.FullName ?? ""),
+                new Claim("roleId", user.RoleId.ToString()),
                 new Claim(ClaimTypes.Role, normalizedRole),
                 new Claim("role", normalizedRole),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
@@ -82,6 +89,38 @@ namespace Backend.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        public async Task<IReadOnlyCollection<string>> GetRolePermissionsAsync(int roleId)
+        {
+            var cacheKey = $"role_permissions_{roleId}";
+            var cachedJson = await _cache.GetStringAsync(cacheKey);
+
+            if (!string.IsNullOrEmpty(cachedJson))
+            {
+                var cachedPermissions = JsonSerializer.Deserialize<HashSet<string>>(cachedJson);
+                if (cachedPermissions != null)
+                {
+                    return cachedPermissions;
+                }
+            }
+
+            var dbPermissions = await _db.RolePermissions
+                .Where(rp => rp.RoleId == roleId)
+                .Select(rp => rp.Permission.Name)
+                .ToListAsync();
+
+            var permissions = new HashSet<string>(dbPermissions);
+
+            await _cache.SetStringAsync(
+                cacheKey,
+                JsonSerializer.Serialize(permissions),
+                new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+                });
+
+            return permissions;
         }
     }
 }

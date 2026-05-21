@@ -1,5 +1,6 @@
 using Backend.Data;
 using Backend.DTOs;
+using Backend.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,6 @@ namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/notifications")]
-    [Authorize(Roles = "Admin,SuperAdmin")]
     public class NotificationsController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -20,6 +20,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
+        [HasPermission(PermissionConstants.NotificationsRead)]
         public async Task<IActionResult> List([FromQuery] int take = 30)
         {
             take = Math.Clamp(take, 1, MaxTake);

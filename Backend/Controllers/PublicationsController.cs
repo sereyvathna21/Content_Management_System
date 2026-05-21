@@ -2,6 +2,7 @@ using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
 using Backend.Services;
+using Backend.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -53,7 +54,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.PublicationsRead)]
         public async Task<IActionResult> List(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -123,7 +124,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.PublicationsRead)]
         public async Task<IActionResult> Get(Guid id)
         {
             var publication = await _db.Publications
@@ -154,7 +155,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.PublicationsCreate)]
         [RequestSizeLimit(50_000_000)]
         public async Task<IActionResult> Create([FromForm] PublicationCreateDto request)
         {
@@ -225,7 +226,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.PublicationsUpdate)]
         [RequestSizeLimit(50_000_000)]
         public async Task<IActionResult> Update(Guid id, [FromForm] PublicationUpdateDto request)
         {
@@ -342,7 +343,7 @@ namespace Backend.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [HasPermission(PermissionConstants.PublicationsDelete)]
         public async Task<IActionResult> Delete(Guid id)
         {
             var publication = await _db.Publications

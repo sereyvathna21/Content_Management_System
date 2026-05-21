@@ -10,7 +10,8 @@ namespace Backend.Mappings
         {
             // CreateMap<Source, Destination>()
             CreateMap<User, UserDto>()
-                .ForMember(dest => dest.PasswordSet, opt => opt.MapFrom(src => !string.IsNullOrEmpty(src.Password)));
+                .ForMember(dest => dest.PasswordSet, opt => opt.MapFrom(src => !string.IsNullOrEmpty(src.Password)))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : string.Empty));
 
             // Social Content Mappings
             CreateMap<SocialTopic, SocialTopicDto>();

@@ -1,6 +1,7 @@
 using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
+using Backend.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,6 @@ namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/admin/news")]
-    [Authorize(Roles = "Admin,SuperAdmin")]
     public partial class AdminNewsController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
@@ -34,6 +34,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet]
+        [HasPermission(PermissionConstants.NewsRead)]
         public async Task<IActionResult> List(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
@@ -89,6 +90,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("{id}")]
+        [HasPermission(PermissionConstants.NewsRead)]
         public async Task<IActionResult> Get(Guid id)
         {
             var article = await _db.NewsArticles
@@ -100,6 +102,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost]
+        [HasPermission(PermissionConstants.NewsCreate)]
         public async Task<IActionResult> Create([FromBody] NewsArticleCreateDto request)
         {
             if (request == null) return BadRequest();
@@ -183,6 +186,7 @@ namespace Backend.Controllers
         }
 
         [HttpPut("{id}")]
+        [HasPermission(PermissionConstants.NewsUpdate)]
         public async Task<IActionResult> Update(Guid id, [FromBody] NewsArticleUpdateDto request)
         {
             if (request == null) return BadRequest();
@@ -275,6 +279,7 @@ namespace Backend.Controllers
         }
 
         [HttpDelete("{id}")]
+        [HasPermission(PermissionConstants.NewsDelete)]
         public async Task<IActionResult> Delete(Guid id)
         {
             var article = await _db.NewsArticles.FirstOrDefaultAsync(a => a.Id == id);
@@ -304,6 +309,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("{id}/restore")]
+        [HasPermission(PermissionConstants.NewsDelete)]
         public async Task<IActionResult> Restore(Guid id)
         {
             var article = await _db.NewsArticles.FirstOrDefaultAsync(a => a.Id == id);
@@ -333,6 +339,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("bulk")]
+        [HasPermission(PermissionConstants.NewsDelete)]
         public async Task<IActionResult> Bulk([FromBody] BulkActionRequest request)
         {
             if (request == null || request.Ids == null || request.Ids.Count == 0)

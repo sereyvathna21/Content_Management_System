@@ -12,7 +12,8 @@ namespace Backend.Models
         public string? Country { get; set; }
         public string? City { get; set; }
         public string? PostalCode { get; set; }
-        public string Role { get; set; } = "User";
+        public int RoleId { get; set; }
+        public Role Role { get; set; } = null!;
         public bool IsEmailVerified { get; set; }
         public string? OtpCode { get; set; }
         public DateTime? OtpExpiresAt { get; set; }
@@ -20,6 +21,7 @@ namespace Backend.Models
         public string? PasswordResetToken { get; set; }
         public DateTime? PasswordResetTokenExpiresAt { get; set; }
         public bool IsBlocked { get; set; } = false;
+        public DateTime? TokenValidAfter { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

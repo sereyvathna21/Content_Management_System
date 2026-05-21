@@ -2,6 +2,7 @@ using AutoMapper;
 using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
+using Backend.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -14,7 +15,6 @@ namespace Backend.Controllers
 {
     [ApiController]
     [Route("api/admin/media")]
-    [Authorize(Roles = "Admin,SuperAdmin")]
     public class AdminMediaController : ControllerBase
     {
         private const long MaxImageBytes = 10 * 1024 * 1024;
@@ -51,6 +51,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("upload")]
+        [HasPermission(PermissionConstants.MediaCreate)]
         [RequestSizeLimit(MaxImageBytes)]
         public async Task<IActionResult> Upload([FromForm] IFormFile file)
         {
