@@ -11,7 +11,7 @@ namespace Backend.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             // Drop the old tables (no data to preserve)
-            migrationBuilder.DropTable(name: "LawTranslations");
+            migrationBuilder.DropTable(name: "LawTranslation");
             migrationBuilder.DropTable(name: "Laws");
 
             // Recreate Laws with uuid
@@ -31,7 +31,7 @@ namespace Backend.Migrations
 
             // Recreate LawTranslations with uuid
             migrationBuilder.CreateTable(
-                name: "LawTranslations",
+                name: "LawTranslation",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -44,9 +44,9 @@ namespace Backend.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_LawTranslations", x => x.Id);
+                    table.PrimaryKey("PK_LawTranslation", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_LawTranslations_Laws_LawId",
+                        name: "FK_LawTranslation_Laws_LawId",
                         column: x => x.LawId,
                         principalTable: "Laws",
                         principalColumn: "Id",
@@ -54,15 +54,15 @@ namespace Backend.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_LawTranslations_LawId_Language",
-                table: "LawTranslations",
+                name: "IX_LawTranslation_LawId_Language",
+                table: "LawTranslation",
                 columns: new[] { "LawId", "Language" },
                 unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "LawTranslations");
+            migrationBuilder.DropTable(name: "LawTranslation");
             migrationBuilder.DropTable(name: "Laws");
         }
     }

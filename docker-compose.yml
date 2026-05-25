@@ -1,0 +1,97 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nspc}
+      POSTGRES_USER: ${POSTGRES_USER:-nspc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nspc_password}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile.dev
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://0.0.0.0:5001
+      DOTNET_USE_POLLING_FILE_WATCHER: "1"
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB:-nspc};Username=${POSTGRES_USER:-nspc};Password=${POSTGRES_PASSWORD:-nspc_password}
+      ConnectionStrings__RedisConnection: redis:6379
+      FrontendUrl: http://localhost:3001
+      App__FrontendUrl: http://localhost:3000
+      App__FrontendUrls__0: http://localhost:3000
+      App__FrontendUrls__1: http://localhost:3001
+      Jwt__Secret: ${JWT_SECRET:-change_me}
+      Jwt__Issuer: ${JWT_ISSUER:-NSPCBackend}
+      Jwt__Audience: ${JWT_AUDIENCE:-NSPCAdmin}
+      Email__SmtpHost: ${SMTP_HOST:-smtp.gmail.com}
+      Email__SmtpPort: ${SMTP_PORT:-587}
+      Email__SmtpUser: ${SMTP_USER:-}
+      Email__SmtpPassword: ${SMTP_PASSWORD:-}
+      Email__FromName: ${SMTP_FROM_NAME:-NSPC CMS}
+      Email__FromAddress: ${SMTP_FROM_ADDRESS:-no-reply@nspc.local}
+      Email__ReplyTo: ${SMTP_REPLY_TO:-support@nspc.local}
+    volumes:
+      - ./Backend:/src/Backend
+      - nuget:/root/.nuget/packages
+    ports:
+      - "5001:5001"
+    depends_on:
+      - db
+      - redis
+
+  admin:
+    build:
+      context: .
+      dockerfile: Admin/Dockerfile.dev
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_API_URL: http://localhost:5001
+      # Server-side internal URL (used by NextAuth running in the admin container)
+      BACKEND_INTERNAL_URL: http://backend:5001
+      # Public client-side URL (used by browser) — keep as localhost so browser can reach backend
+      NEXT_PUBLIC_BACKEND_URL: http://localhost:5001
+      # NextAuth / Auth.js expects a secret and a base URL. Provide both so
+      # the Admin app can run its authentication handlers in dev.
+      AUTH_SECRET: ${AUTH_SECRET:-change_me}
+      NEXTAUTH_SECRET: ${AUTH_SECRET:-change_me}
+      AUTH_URL: http://localhost:3001
+      NEXTAUTH_URL: http://localhost:3001
+    volumes:
+      - ./Admin:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Frontend/Dockerfile.dev
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_API_URL: http://localhost:5001
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      AUTH_SECRET: ${AUTH_SECRET:-change_me}
+    volumes:
+      - ./Frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  nuget:

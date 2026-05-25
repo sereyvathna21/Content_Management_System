@@ -263,4 +263,28 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<NotificationHub>("/notificationHub");
 app.MapHub<ContactHub>("/hubs/contact");
-app.Run();
+
+// Development-only seeding: create Roles and a dev admin if missing
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    if (app.Environment.IsDevelopment())
+    {
+        try
+        {
+            // Ensure database schema is up-to-date in development so local
+            // containers get the expected tables (permissions, role permissions, etc.).
+            var db = services.GetRequiredService<ApplicationDbContext>();
+            await db.Database.MigrateAsync();
+
+            await Backend.Services.DevSeeder.SeedAsync(services);
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetService<ILoggerFactory>()?.CreateLogger("DevSeeder");
+            logger?.LogError(ex, "Dev seeding failed");
+        }
+    }
+}
+
+await app.RunAsync();

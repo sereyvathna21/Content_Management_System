@@ -10,30 +10,58 @@ namespace Backend.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "Language",
-                table: "SocialReferences",
-                type: "character varying(10)",
-                maxLength: 10,
-                nullable: false,
-                defaultValue: "km");
+            // Add the column and index only if the table exists to tolerate out-of-order
+            // migrations when restoring a fresh DB.
+            migrationBuilder.Sql(@"
+    DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'SocialReferences') THEN
+            IF NOT EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'SocialReferences' AND column_name = 'Language'
+            ) THEN
+                ALTER TABLE ""SocialReferences"" ADD COLUMN IF NOT EXISTS ""Language"" character varying(10) NOT NULL DEFAULT 'km';
+            END IF;
 
-            migrationBuilder.CreateIndex(
-                name: "IX_SocialReferences_TopicId_Language",
-                table: "SocialReferences",
-                columns: new[] { "TopicId", "Language" });
+            PERFORM 1;
+
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+                WHERE c.relname = 'IX_SocialReferences_TopicId_Language'
+            ) THEN
+                CREATE INDEX IF NOT EXISTS ""IX_SocialReferences_TopicId_Language"" ON ""SocialReferences"" (""TopicId"", ""Language"");
+            END IF;
+        END IF;
+    END
+    $$;"
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_SocialReferences_TopicId_Language",
-                table: "SocialReferences");
+            // Remove column and index only if they exist
+            migrationBuilder.Sql(@"
+    DO $$
+    BEGIN
+        IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'SocialReferences') THEN
+            IF EXISTS (
+                SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+                WHERE c.relname = 'IX_SocialReferences_TopicId_Language'
+            ) THEN
+                DROP INDEX IF EXISTS ""IX_SocialReferences_TopicId_Language"";
+            END IF;
 
-            migrationBuilder.DropColumn(
-                name: "Language",
-                table: "SocialReferences");
+            IF EXISTS (
+                SELECT 1 FROM information_schema.columns
+                WHERE table_name = 'SocialReferences' AND column_name = 'Language'
+            ) THEN
+                ALTER TABLE ""SocialReferences"" DROP COLUMN IF EXISTS ""Language"";
+            END IF;
+        END IF;
+    END
+    $$;"
+            );
         }
     }
 }

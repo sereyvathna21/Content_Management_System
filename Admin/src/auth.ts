@@ -3,7 +3,10 @@ import Credentials from "next-auth/providers/credentials";
 import * as jose from "jose";
 import type { JWTEncodeParams, JWTDecodeParams } from "next-auth/jwt";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+// Use a server-only internal URL when available, otherwise fall back to the
+// public URL (used by client-side code) or localhost for local development.
+const BACKEND_URL =
+  process.env.BACKEND_INTERNAL_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
 const SESSION_MAX_AGE = 24 * 60 * 60; // 1 day
 const SESSION_DEFAULT_AGE = 24 * 60 * 60; // 1 day

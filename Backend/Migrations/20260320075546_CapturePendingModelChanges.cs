@@ -12,7 +12,7 @@ namespace Backend.Migrations
         {
             migrationBuilder.AlterColumn<string>(
                 name: "Title",
-                table: "LawTranslations",
+                table: "LawTranslation",
                 type: "text",
                 nullable: false,
                 oldClrType: typeof(string),
@@ -34,7 +34,7 @@ namespace Backend.Migrations
         {
             migrationBuilder.AlterColumn<string>(
                 name: "Title",
-                table: "LawTranslations",
+                table: "LawTranslation",
                 type: "character varying(1000)",
                 maxLength: 1000,
                 nullable: false,

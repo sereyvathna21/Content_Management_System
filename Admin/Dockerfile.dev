@@ -1,0 +1,11 @@
+FROM node:20-alpine
+
+WORKDIR /app
+COPY Admin/package.json Admin/package-lock.json* ./
+RUN npm install
+
+COPY Admin/ .
+
+ENV NEXT_TELEMETRY_DISABLED=1
+EXPOSE 3001
+CMD ["npm","run","dev","--","-p","3001","-H","0.0.0.0"]

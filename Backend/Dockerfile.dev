@@ -1,0 +1,14 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+WORKDIR /src
+COPY Backend/Backend.csproj Backend/
+RUN dotnet restore Backend/Backend.csproj
+
+COPY Backend/ Backend/
+WORKDIR /src/Backend
+
+ENV ASPNETCORE_URLS=http://0.0.0.0:5001
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+EXPOSE 5001
+CMD ["dotnet","watch","run","--project","Backend.csproj","--urls","http://0.0.0.0:5001"]

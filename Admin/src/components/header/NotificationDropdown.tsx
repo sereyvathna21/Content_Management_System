@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { getBackendUrl } from "../../lib/backend";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 
 type NotificationKind = "created" | "deleted" | "general";
@@ -81,8 +82,7 @@ export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const backendUrl =
-    (process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001").replace(/\/$/, "");
+  const backendUrl = getBackendUrl();
 
   useEffect(() => {
     if (status === "loading" || !session?.accessToken) {
