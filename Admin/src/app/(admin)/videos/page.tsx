@@ -12,11 +12,15 @@ import VideoTable, { Video } from "@/components/videos/VideoTable";
 import VideoFilters from "@/components/videos/VideoFilters";
 import { resolveBackendUrl } from "@/lib/backend";
 import { useAdminPagedList } from "@/hooks/useAdminPagedList";
+import { usePermission } from "@/hooks/usePermission";
+import RequirePermission from "@/components/auth/RequirePermission";
 
 export default function VideosPage() {
   const locale = useLocale();
   const t = useTranslations("VideoPage");
   const { data: session, status } = useSession();
+  const { can } = usePermission();
+  const canCreate = can("video:create");
 
   const {
     items: videos,
@@ -76,11 +80,10 @@ export default function VideosPage() {
     }
   }
 
-
-
   const currentLocale = locale || "en";
 
   return (
+    <RequirePermission anyOf={["video:read", "video:create", "video:update", "video:delete"]}>
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex items-start justify-between">
         <h1 className="text-2xl sm:text-3xl text-primary font-semibold mb-4">{t("title")}</h1>
@@ -100,13 +103,15 @@ export default function VideosPage() {
               status={statusFilter}
               onStatusChange={setStatusFilter}
               action={
-                <button
-                  type="button"
-                  onClick={handleOpenCreate}
-                  className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm w-full sm:w-auto whitespace-nowrap"
-                >
-                  {t("create")}
-                </button>
+                canCreate ? (
+                  <button
+                    type="button"
+                    onClick={handleOpenCreate}
+                    className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm w-full sm:w-auto whitespace-nowrap"
+                  >
+                    {t("create")}
+                  </button>
+                ) : null
               }
             />
           </div>
@@ -121,7 +126,7 @@ export default function VideosPage() {
               onEdit={(v) => { setEditingVideo(v); setCreateOpen(true); }}
               onDelete={handleDelete}
               deletingId={deletingId}
-              onCreate={handleOpenCreate}
+              onCreate={canCreate ? handleOpenCreate : undefined}
               createLabel={t("create")}
               showInlineCreate={false}
             />
@@ -177,5 +182,6 @@ export default function VideosPage() {
         )}
       </Modal>
     </div>
+    </RequirePermission>
   );
 }

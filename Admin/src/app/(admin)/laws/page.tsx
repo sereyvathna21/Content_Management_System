@@ -10,6 +10,7 @@ import LawTable, { Law as LawType } from "@/components/laws/LawTable";
 import LawFilters from "@/components/laws/LawFilters";
 import { pickTranslation } from "@/lib/pickTranslation";
 import Pagination from "@/components/tables/Pagination";
+import RequirePermission from "@/components/auth/RequirePermission";
 
 
 type LawTranslation = {
@@ -193,6 +194,7 @@ export default function LawsPage() {
   }, [query, categoryFilter]);
 
   return (
+    <RequirePermission anyOf={["laws:read", "laws:create", "laws:update", "laws:delete"]}>
     <div className="space-y-6 p-6">
       <div className="flex items-start justify-between">
         <h1 className="text-3xl text-primary font-semibold mb-4">{t("LawsPage.title") || "Laws"}</h1>
@@ -322,5 +324,6 @@ export default function LawsPage() {
         )}
       </Modal>
     </div>
+    </RequirePermission>
   );
 }

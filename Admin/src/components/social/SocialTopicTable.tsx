@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import ComponentCard from "@/components/common/ComponentCard";
 import Tooltip from "@/components/ui/Tooltip";
+import { usePermission } from "@/hooks/usePermission";
 
 import { SocialTopic } from "../../types/social.types";
 
@@ -14,6 +15,7 @@ type Props = {
   locale?: string;
   onEdit: (t: SocialTopic) => void;
   onDelete: (t: SocialTopic) => void;
+  onCreate?: () => void;
 };
 
 export default React.memo(function SocialTopicTable({
@@ -23,8 +25,13 @@ export default React.memo(function SocialTopicTable({
   locale,
   onEdit,
   onDelete,
+  onCreate,
 }: Props) {
   const t = useTranslations();
+  const { can, canAny } = usePermission();
+  const canEdit = can("social:update");
+  const canDelete = can("social:delete");
+  const canShowActions = canAny(["social:update", "social:delete"]);
 
   return (
     <div>
@@ -82,14 +89,16 @@ export default React.memo(function SocialTopicTable({
                     <div className="mt-2 text-xs text-gray-500">
                       {t("SocialTable.headers.publishedAt") || "Published Date"}: {publishedDateStr}
                     </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <button
-                        onClick={() => onEdit(tItem)}
-                        className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50"
-                      >
-                        {t("SocialTable.tooltips.edit") || "Edit"}
-                      </button>
-                      {onDelete && (
+                      <div className="mt-3 flex items-center gap-2">
+                      {canEdit && (
+                        <button
+                          onClick={() => onEdit(tItem)}
+                          className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50"
+                        >
+                          {t("SocialTable.tooltips.edit") || "Edit"}
+                        </button>
+                      )}
+                      {canDelete && onDelete && (
                         <button
                           onClick={() => onDelete(tItem)}
                           className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
@@ -121,9 +130,11 @@ export default React.memo(function SocialTopicTable({
                         <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                           {t("SocialTable.headers.publishedAt")}
                         </TableCell>
-                        <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                          {t("SocialTable.headers.actions")}
-                        </TableCell>
+                        {canShowActions && (
+                          <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                            {t("SocialTable.headers.actions")}
+                          </TableCell>
+                        )}
                       </TableRow>
                     </TableHeader>
 
@@ -164,37 +175,40 @@ export default React.memo(function SocialTopicTable({
                               {publishedDateStr}
                             </TableCell>
 
-                            <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
-                              <div className="flex items-center gap-2">
-                                <Tooltip label={t("SocialTable.tooltips.edit")}>
-                                  <button
-                                    onClick={() => onEdit(tItem)}
-                                    title={t("SocialTable.tooltips.edit")}
-                                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/10 transition text-sky-500 dark:text-sky-400"
-                                  >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                      <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                  </button>
-                                  
-                                </Tooltip>
-                               { onDelete && (
-                                  <Tooltip label={t("SocialTable.tooltips.delete")}>
-                                    <button
-                                      onClick={() => onDelete(tItem)}
-                                      title={t("SocialTable.tooltips.delete")}
-                                      className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 transition text-red-500 dark:text-red-400"
-                                    >
-                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M4 7h16M10 11v6M14 11v6M5 7l1.5 12a2 2 0 002 2h5a2 2 0 002-2L19 7M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      </svg>
-                                    </button>
-                                  </Tooltip>
-                                )}
-                                  
-                              </div>
-                            </TableCell>
+                            {canShowActions && (
+                              <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
+                                <div className="flex items-center gap-2">
+                                  {canEdit && (
+                                    <Tooltip label={t("SocialTable.tooltips.edit")}>
+                                      <button
+                                        onClick={() => onEdit(tItem)}
+                                        title={t("SocialTable.tooltips.edit")}
+                                        className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/10 transition text-sky-500 dark:text-sky-400"
+                                      >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                      </button>
+                                    </Tooltip>
+                                  )}
+
+                                  {canDelete && onDelete && (
+                                    <Tooltip label={t("SocialTable.tooltips.delete")}>
+                                      <button
+                                        onClick={() => onDelete(tItem)}
+                                        title={t("SocialTable.tooltips.delete")}
+                                        className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 transition text-red-500 dark:text-red-400"
+                                      >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                          <path d="M4 7h16M10 11v6M14 11v6M5 7l1.5 12a2 2 0 002 2h5a2 2 0 002-2L19 7M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                      </button>
+                                    </Tooltip>
+                                  )}
+                                </div>
+                              </TableCell>
+                            )}
                           </TableRow>
                         );
                       })}

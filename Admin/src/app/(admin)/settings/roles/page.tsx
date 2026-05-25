@@ -3,8 +3,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useSessionPermissionSync } from "@/hooks/useSessionPermissionSync";
+import { usePermission } from "@/hooks/usePermission";
 import ComponentCard from "@/components/common/ComponentCard";
 import { Modal } from "@/components/ui/modal";
+import RequirePermission from "@/components/auth/RequirePermission";
 
 interface Role {
   id: number;
@@ -29,6 +31,10 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:500
 export default function RolesSettingsPage() {
   const { data: session, status } = useSession();
   const { triggerImmediateSync } = useSessionPermissionSync();
+  const { can, canAny } = usePermission();
+  const canCreateRole = can("roles:create");
+  const canUpdateRole = can("roles:update");
+  const canDeleteRole = can("roles:delete");
 
   // State
   const [activeTab, setActiveTab] = useState<"matrix" | "roles">("matrix");
@@ -126,6 +132,7 @@ export default function RolesSettingsPage() {
       else if (perm.name.startsWith("laws:")) groupName = "Laws Management";
       else if (perm.name.startsWith("publications:")) groupName = "Publications Management";
       else if (perm.name.startsWith("social:")) groupName = "Social Content";
+      else if (perm.name.startsWith("contact:")) groupName = "Contact Management";
       else if (perm.name.startsWith("users:")) groupName = "Users Management";
       else if (perm.name.startsWith("roles:")) groupName = "Roles & Settings";
       else if (perm.name.startsWith("media:")) groupName = "Media Files";
@@ -360,7 +367,8 @@ export default function RolesSettingsPage() {
   const groupedPerms = groupPermissions();
 
   return (
-    <div className="space-y-6 p-6">
+    <RequirePermission anyOf={["roles:read", "roles:create", "roles:update", "roles:delete"]}>
+      <div className="space-y-6 p-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl text-primary font-semibold">Roles & Permissions</h1>
@@ -528,20 +536,22 @@ export default function RolesSettingsPage() {
             >
               Reset Changes
             </button>
-            <button
-              onClick={handleSaveMatrix}
-              disabled={saving || !isDirty()}
-              className="px-5 py-2.5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/95 hover:scale-[1.01] active:scale-[0.99] shadow-md transition-all disabled:opacity-50 text-sm flex items-center gap-2"
-            >
-              {saving ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Saving settings...
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </button>
+            {canUpdateRole && (
+              <button
+                onClick={handleSaveMatrix}
+                disabled={saving || !isDirty()}
+                className="px-5 py-2.5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/95 hover:scale-[1.01] active:scale-[0.99] shadow-md transition-all disabled:opacity-50 text-sm flex items-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Saving settings...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </button>
+            )}
           </div>
         </ComponentCard>
       )}
@@ -553,17 +563,19 @@ export default function RolesSettingsPage() {
           desc="Manage system and custom user role definitions. System roles protect basic structural tasks and cannot be removed."
         >
           <div className="flex justify-end mb-4">
-            <button
-              onClick={() => {
-                setEditingRoleId(null);
-                setRoleFormName("");
-                setRoleFormDesc("");
-                setRoleModalOpen(true);
-              }}
-              className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm whitespace-nowrap"
-            >
-              Create Custom Role
-            </button>
+            {canCreateRole && (
+              <button
+                onClick={() => {
+                  setEditingRoleId(null);
+                  setRoleFormName("");
+                  setRoleFormDesc("");
+                  setRoleModalOpen(true);
+                }}
+                className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm whitespace-nowrap"
+              >
+                Create Custom Role
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -606,7 +618,7 @@ export default function RolesSettingsPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    {!role.isSystemRole && (
+                    {!role.isSystemRole && canUpdateRole && (
                       <button
                         onClick={() => handleEditRole(role)}
                         className="px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
@@ -614,7 +626,7 @@ export default function RolesSettingsPage() {
                         Edit
                       </button>
                     )}
-                    {!role.isSystemRole && (
+                    {!role.isSystemRole && canDeleteRole && (
                       <button
                         onClick={() => setConfirmDeleteId(role.id)}
                         disabled={role.userCount > 0}
@@ -759,5 +771,6 @@ export default function RolesSettingsPage() {
         </div>
       </Modal>
     </div>
+    </RequirePermission>
   );
 }

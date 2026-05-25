@@ -126,6 +126,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         role: (token as any).role,
         accessToken: (token as any).accessToken,
         remember: rememberFlag,
+        // Persist permissions in the signed JWT so client session retains them after reload
+        permissions: (token as any).permissions ?? [],
       };
 
       return await new jose.SignJWT(payload)

@@ -102,6 +102,11 @@ namespace Backend.Services
                     Security.PermissionConstants.UsersCreate,
                     Security.PermissionConstants.UsersUpdate,
                     Security.PermissionConstants.UsersDelete,
+                    // Contact / Messages
+                    Security.PermissionConstants.ContactRead,
+                    Security.PermissionConstants.ContactCreate,
+                    Security.PermissionConstants.ContactUpdate,
+                    Security.PermissionConstants.ContactDelete,
                     // Roles
                     Security.PermissionConstants.RolesRead,
                     Security.PermissionConstants.RolesCreate,

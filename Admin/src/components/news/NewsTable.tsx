@@ -7,6 +7,7 @@ import { pickTranslation } from "@/lib/pickTranslation";
 import Tooltip from "@/components/ui/Tooltip";
 import { Modal } from "@/components/ui/modal";
 import { resolveBackendUrl } from "@/lib/backend";
+import { usePermission } from "@/hooks/usePermission";
 
 export type NewsArticleTranslation = {
   id?: string;
@@ -79,6 +80,11 @@ export default React.memo(function NewsTable({
   showInlineCreate = true,
 }: Props) {
   const t = useTranslations("NewsTable");
+  const { can, canAny } = usePermission();
+  const canCreate = can("news:create");
+  const canEdit = can("news:update");
+  const canDelete = can("news:delete");
+  const canShowActions = canAny(["news:update", "news:delete"]);
   const createText = createLabel ?? "Create";
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -87,7 +93,7 @@ export default React.memo(function NewsTable({
   return (
     <>
     <div>
-      {!loading && onCreate && showInlineCreate && news.length > 0 && (
+      {!loading && canCreate && onCreate && showInlineCreate && news.length > 0 && (
         <div className="mb-3 flex justify-end">
           <button
             type="button"
@@ -116,7 +122,7 @@ export default React.memo(function NewsTable({
               </>
             )}
 
-            {onCreate && (
+            {canCreate && onCreate && (
               <div className="mt-4 flex justify-center">
                 <button
                   type="button"
@@ -149,9 +155,11 @@ export default React.memo(function NewsTable({
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                         {t("headers.date")}
                       </TableCell>
-                      <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                        {t("headers.actions")}
-                      </TableCell>
+                      {canShowActions && (
+                        <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                          {t("headers.actions")}
+                        </TableCell>
+                      )}
                     </TableRow>
                   </TableHeader>
 
@@ -199,47 +207,51 @@ export default React.memo(function NewsTable({
                             {formatDate(n.publishAt, locale) ?? <span className="text-gray-300 italic">-</span>}
                           </TableCell>
 
-                          <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
-                            <div className="flex items-center gap-2">
-                              <Tooltip label={t("tooltips.edit")}>
-                                <button
-                                  type="button"
-                                  aria-label="Edit"
-                                  onClick={() => onEdit(n)}
-                                  title={t("tooltips.edit")}
-                                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 transition text-sky-500"
-                                >
-                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" />
-                                    <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
-                                  </svg>
-                                </button>
-                              </Tooltip>
-                              {onDelete && (
-                                <Tooltip label={t("tooltips.delete")}>
-                                  <button
-                                    type="button"
-                                    aria-label="Delete"
-                                    onClick={() => {
-                                      setDeleteId(n.id);
-                                      setIsDeleteOpen(true);
-                                    }}
-                                    title={t("tooltips.delete")}
-                                    disabled={Boolean(deletingId)}
-                                    className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50 text-red-500"}`}
-                                  >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                      <path d="M3 6h18" />
-                                      <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" />
-                                      <path d="M10 11v6" />
-                                      <path d="M14 11v6" />
-                                      <path d="M9 6V4h6v2" />
-                                    </svg>
-                                  </button>
-                                </Tooltip>
-                              )}
-                            </div>
-                          </TableCell>
+                          {canShowActions && (
+                            <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
+                              <div className="flex items-center gap-2">
+                                {canEdit && (
+                                  <Tooltip label={t("tooltips.edit")}>
+                                    <button
+                                      type="button"
+                                      aria-label="Edit"
+                                      onClick={() => onEdit(n)}
+                                      title={t("tooltips.edit")}
+                                      className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 transition text-sky-500"
+                                    >
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" />
+                                        <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                                      </svg>
+                                    </button>
+                                  </Tooltip>
+                                )}
+                                {canDelete && onDelete && (
+                                  <Tooltip label={t("tooltips.delete")}>
+                                    <button
+                                      type="button"
+                                      aria-label="Delete"
+                                      onClick={() => {
+                                        setDeleteId(n.id);
+                                        setIsDeleteOpen(true);
+                                      }}
+                                      title={t("tooltips.delete")}
+                                      disabled={Boolean(deletingId)}
+                                      className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50 text-red-500"}`}
+                                    >
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 6h18" />
+                                        <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" />
+                                        <path d="M10 11v6" />
+                                        <path d="M14 11v6" />
+                                        <path d="M9 6V4h6v2" />
+                                      </svg>
+                                    </button>
+                                  </Tooltip>
+                                )}
+                              </div>
+                            </TableCell>
+                          )}
                         </TableRow>
                       );
                     })}
@@ -295,30 +307,34 @@ export default React.memo(function NewsTable({
                       Publish Date: {formatDate(n.publishAt, locale) ?? <span className="text-gray-300 italic">-</span>}
                     </div>
 
-                    <div className="flex items-center gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(n)}
-                        className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50"
-                      >
-                        Edit
-                      </button>
-                      {onDelete && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDeleteId(n.id);
-                            setIsDeleteOpen(true);
-                          }}
-                          disabled={Boolean(deletingId)}
-                          className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition ${
-                            deletingId ? "opacity-50 cursor-not-allowed border-red-100 text-red-300" : "text-red-600 border-red-200 hover:bg-red-50"
-                          }`}
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
+                    {canShowActions && (
+                      <div className="flex items-center gap-2 pt-1">
+                        {canEdit && (
+                          <button
+                            type="button"
+                            onClick={() => onEdit(n)}
+                            className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50"
+                          >
+                            Edit
+                          </button>
+                        )}
+                        {canDelete && onDelete && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setDeleteId(n.id);
+                              setIsDeleteOpen(true);
+                            }}
+                            disabled={Boolean(deletingId)}
+                            className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition ${
+                              deletingId ? "opacity-50 cursor-not-allowed border-red-100 text-red-300" : "text-red-600 border-red-200 hover:bg-red-50"
+                            }`}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -327,7 +343,7 @@ export default React.memo(function NewsTable({
         </ComponentCard>
       )}
     </div>
-    {onDelete && (
+    {canDelete && onDelete && (
       <Modal isOpen={isDeleteOpen} onClose={() => setIsDeleteOpen(false)} className="w-[92vw] max-w-md max-h-[80vh] overflow-y-auto p-5 sm:p-6">
         <div className="flex flex-col items-center text-center">
           <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">

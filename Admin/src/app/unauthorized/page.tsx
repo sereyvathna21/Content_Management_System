@@ -2,69 +2,26 @@ import Link from "next/link";
 
 export default function UnauthorizedPage() {
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      height: "100vh",
-      textAlign: "center",
-      backgroundColor: "#f9fafb",
-      fontFamily: "var(--font-sans, sans-serif)",
-      padding: "20px"
-    }}>
-      <div style={{
-        backgroundColor: "#fff",
-        borderRadius: "12px",
-        padding: "40px",
-        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
-        maxWidth: "480px",
-        width: "100%"
-      }}>
-        <div style={{
-          width: "64px",
-          height: "64px",
-          backgroundColor: "#fee2e2",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          margin: "0 auto 20px"
-        }}>
-          <svg style={{ width: "32px", height: "32px", color: "#ef4444" }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0-6V9m0 12a9 9 0 110-18 9 9 0 010 18z" />
-          </svg>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+      <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div className="p-8 text-center">
+          <div className="mx-auto mb-6 w-20 h-20 rounded-full bg-red-50 flex items-center justify-center border border-red-100">
+            <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">You don't have the required permissions to view this page.</p>
+
+          <div className="space-y-3">
+            <Link href="/" className="inline-flex w-full items-center justify-center px-4 py-3 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition">
+              Return to Dashboard
+            </Link>
+          </div>
+
+          <div className="mt-6 text-xs text-gray-400">If you believe this is a mistake, request access or contact support.</div>
         </div>
-        <h1 style={{
-          fontSize: "24px",
-          fontWeight: "700",
-          color: "#111827",
-          marginBottom: "10px"
-        }}>
-          Access Denied
-        </h1>
-        <p style={{
-          fontSize: "14px",
-          color: "#6b7280",
-          lineHeight: "1.5",
-          marginBottom: "24px"
-        }}>
-          You do not have the required permissions to access this page. If you believe this is an error, please contact your administrator.
-        </p>
-        <Link href="/" style={{
-          display: "inline-block",
-          width: "100%",
-          padding: "12px",
-          backgroundColor: "#3b82f6",
-          color: "#fff",
-          borderRadius: "8px",
-          fontWeight: "600",
-          fontSize: "14px",
-          textDecoration: "none",
-          transition: "background-color 0.2s"
-        }}>
-          Return to Dashboard
-        </Link>
       </div>
     </div>
   );

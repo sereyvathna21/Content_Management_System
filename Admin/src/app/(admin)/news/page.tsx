@@ -13,11 +13,15 @@ import NewsFilters from "@/components/news/NewsFilters";
 import { pickTranslation } from "@/lib/pickTranslation";
 import { resolveBackendUrl } from "@/lib/backend";
 import { useAdminPagedList } from "@/hooks/useAdminPagedList";
+import { usePermission } from "@/hooks/usePermission";
+import RequirePermission from "@/components/auth/RequirePermission";
 
 export default function NewsPage() {
   const locale = useLocale();
   const t = useTranslations("NewsPage");
   const { data: session, status } = useSession();
+  const { can } = usePermission();
+  const canCreate = can("news:create");
 
   const {
     items: news,
@@ -89,6 +93,7 @@ export default function NewsPage() {
     : null;
 
   return (
+    <RequirePermission anyOf={["news:read", "news:create", "news:update", "news:delete"]}>
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex items-start justify-between">
         <h1 className="text-2xl sm:text-3xl text-primary font-semibold mb-4">{t("title")}</h1>
@@ -108,13 +113,15 @@ export default function NewsPage() {
               status={statusFilter}
               onStatusChange={setStatusFilter}
               action={
-                <button
-                  type="button"
-                  onClick={handleOpenCreate}
-                  className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm w-full sm:w-auto whitespace-nowrap"
-                >
-                  {t("create")}
-                </button>
+                canCreate ? (
+                  <button
+                    type="button"
+                    onClick={handleOpenCreate}
+                    className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm w-full sm:w-auto whitespace-nowrap"
+                  >
+                    {t("create")}
+                  </button>
+                ) : null
               }
             />
           </div>
@@ -129,7 +136,7 @@ export default function NewsPage() {
               onEdit={(n) => { setEditingNews(n); setCreateOpen(true); }}
               onDelete={handleDelete}
               deletingId={deletingId}
-              onCreate={handleOpenCreate}
+              onCreate={canCreate ? handleOpenCreate : undefined}
               createLabel={t("create")}
               showInlineCreate={false}
             />
@@ -205,5 +212,6 @@ export default function NewsPage() {
         )}
       </Modal>
     </div>
+    </RequirePermission>
   );
 }

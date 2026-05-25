@@ -3,6 +3,7 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { usePermission } from "@/hooks/usePermission";
 import Button from "@/components/ui/button/Button";
 import ComponentCard from "@/components/common/ComponentCard";
 import UserTable from "@/components/user-management/UserTable";
@@ -11,6 +12,7 @@ import CreateUserForm from "@/components/user-management/CreateUserForm";
 import EditUserForm from "@/components/user-management/EditUserForm";
 import Pagination from "@/components/tables/Pagination";
 import { updateUserData } from "@/lib/api/user";
+import RequirePermission from "@/components/auth/RequirePermission";
 
 type User = {
   id: string;
@@ -35,6 +37,8 @@ const initialUsers: User[] = [];
 export default function UsersPage() {
   const t = useTranslations();
   const { data: session, status } = useSession();
+  const { can } = usePermission();
+  const canCreate = can("users:create");
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [roles, setRoles] = useState<Role[]>([]);
   const [query, setQuery] = useState("");
@@ -302,6 +306,7 @@ export default function UsersPage() {
   }
 
   return (
+    <RequirePermission anyOf={["users:read", "users:create", "users:update", "users:delete"]}>
     <div className="space-y-6 p-6">
       <div className="flex items-start justify-between">
         <h1 className="text-3xl text-primary font-semibold mb-4">{t("UsersPage.title")}</h1>
@@ -349,12 +354,14 @@ export default function UsersPage() {
               )}
             </div>
 
-            <button
-              onClick={handleCreate}
-              className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm w-full sm:w-auto whitespace-nowrap"
-            >
-              {t("UsersPage.createButton")}
-            </button>
+            {canCreate && (
+              <button
+                onClick={handleCreate}
+                className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm w-full sm:w-auto whitespace-nowrap"
+              >
+                {t("UsersPage.createButton")}
+              </button>
+            )}
           </div>
         </div>
 
@@ -459,5 +466,6 @@ export default function UsersPage() {
         )}
       </Modal>
     </div>
+    </RequirePermission>
   );
 }

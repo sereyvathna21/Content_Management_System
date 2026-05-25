@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { usePermission } from "@/hooks/usePermission";
+import { PermissionGate as AuthPermissionGate } from "@/components/auth/PermissionGate";
 
 interface PermissionGateProps {
   permission: string;
@@ -10,11 +10,9 @@ interface PermissionGateProps {
 }
 
 export function PermissionGate({ permission, fallback = null, children }: PermissionGateProps) {
-  const { hasPermission } = usePermission();
-
-  if (!hasPermission(permission)) {
-    return <>{fallback}</>;
-  }
-
-  return <>{children}</>;
+  return (
+    <AuthPermissionGate permission={permission} fallback={fallback}>
+      {children}
+    </AuthPermissionGate>
+  );
 }

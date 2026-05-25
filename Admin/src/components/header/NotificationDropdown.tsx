@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { getBackendUrl } from "../../lib/backend";
 import { Dropdown } from "../ui/dropdown/Dropdown";
+import { usePermission } from "@/hooks/usePermission";
 
 type NotificationKind = "created" | "deleted" | "general";
 
@@ -77,8 +78,8 @@ export default function NotificationDropdown() {
   const t = useTranslations("NotificationDropdown");
   const locale = useLocale();
   const { data: session, status } = useSession();
-  const userRole = session?.user?.role?.toLowerCase() || "";
-  const canViewNotifications = userRole === "admin" || userRole === "superadmin";
+  const { can } = usePermission();
+  const canViewNotifications = can("notifications:read");
   const [isOpen, setIsOpen] = useState(false);
   const [notifying, setNotifying] = useState(true);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);

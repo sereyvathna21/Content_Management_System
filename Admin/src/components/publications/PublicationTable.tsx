@@ -7,6 +7,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 import { pickTranslation } from "@/lib/pickTranslation";
 import Tooltip from "@/components/ui/Tooltip";
 import { Modal } from "@/components/ui/modal";
+import { usePermission } from "@/hooks/usePermission";
 
 export type PublicationTranslation = {
   id?: string;
@@ -29,9 +30,9 @@ type Props = {
   publications: Publication[];
   query?: string;
   locale?: string;
-  onOpen: (publication: Publication) => void;
-  onEdit: (publication: Publication) => void;
-  onDelete?: (id: string) => Promise<void> | void;
+  onOpen: (p: Publication) => void;
+  onEdit?: (p: Publication) => void;
+  onDelete?: (id: string) => Promise<void>;
   deletingId?: string | null;
   onCreate?: () => void;
   createLabel?: string;
@@ -90,18 +91,26 @@ export default React.memo(function PublicationTable({
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const isDeleting = Boolean(deletingId && deleteId && deletingId === deleteId);
 
+  const { can, canAny } = usePermission();
+  const canCreate = can("publications:create");
+  const canEdit = can("publications:update");
+  const canDelete = can("publications:delete");
+  const canShowActions = canAny(["publications:update", "publications:delete"]);
+
   return (
     <>
       <div>
         {!loading && onCreate && showInlineCreate && publications.length > 0 && (
           <div className="mb-3 flex justify-end">
-            <button
-              type="button"
-              onClick={onCreate}
-              className="h-9 px-4 rounded-lg font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200 shadow-md text-sm"
-            >
-              {createText}
-            </button>
+            {canCreate && (
+              <button
+                type="button"
+                onClick={onCreate}
+                className="h-9 px-4 rounded-lg font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all duration-200 shadow-md text-sm"
+              >
+                {createText}
+              </button>
+            )}
           </div>
         )}
 
@@ -122,7 +131,7 @@ export default React.memo(function PublicationTable({
                 </>
               )}
 
-              {onCreate && (
+              {canCreate && onCreate && (
                 <div className="mt-4 flex justify-center">
                   <button
                     type="button"
@@ -185,14 +194,16 @@ export default React.memo(function PublicationTable({
                         </div>
                       </div>
                       <div className="flex items-center gap-2 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => onEdit(publication)}
-                          className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50"
-                        >
-                          {t("PublicationTable.tooltips.edit")}
-                        </button>
-                        {onDelete && (
+                        {canEdit && onEdit && (
+                          <button
+                            type="button"
+                            onClick={() => onEdit(publication)}
+                            className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50"
+                          >
+                            {t("PublicationTable.tooltips.edit")}
+                          </button>
+                        )}
+                        {canDelete && onDelete && (
                           <button
                             type="button"
                             onClick={() => {
@@ -228,9 +239,11 @@ export default React.memo(function PublicationTable({
                         <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                           {t("PublicationTable.headers.attachment")}
                         </TableCell>
-                        <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                          {t("PublicationTable.headers.actions")}
-                        </TableCell>
+                        {canShowActions && (
+                          <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                            {t("PublicationTable.headers.actions")}
+                          </TableCell>
+                        )}
                       </TableRow>
                     </TableHeader>
 
@@ -281,48 +294,52 @@ export default React.memo(function PublicationTable({
                               )}
                             </TableCell>
 
-                            <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
-                              <div className="flex items-center gap-2">
-                                <Tooltip label={t("PublicationTable.tooltips.edit")}>
-                                  <button
-                                    onClick={() => onEdit(publication)}
-                                    title={t("PublicationTable.tooltips.edit")}
-                                    aria-label={t("PublicationTable.tooltips.edit")}
-                                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/10 transition text-sky-500 dark:text-sky-400"
-                                  >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                      <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                  </button>
-                                </Tooltip>
+                            {canShowActions && (
+                              <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
+                                <div className="flex items-center gap-2">
+                                  {canEdit && onEdit && (
+                                    <Tooltip label={t("PublicationTable.tooltips.edit")}>
+                                      <button
+                                        onClick={() => onEdit(publication)}
+                                        title={t("PublicationTable.tooltips.edit")}
+                                        aria-label={t("PublicationTable.tooltips.edit")}
+                                        className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/10 transition text-sky-500 dark:text-sky-400"
+                                      >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                          <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                      </button>
+                                    </Tooltip>
+                                  )}
 
-                                {onDelete && (
-                                  <Tooltip label={t("PublicationTable.tooltips.delete")}>
-                                    <button
-                                      onClick={() => {
-                                        setDeleteId(publication.id);
-                                        setIsDeleteOpen(true);
-                                      }}
-                                      title={t("PublicationTable.tooltips.delete")}
-                                      aria-label={t("PublicationTable.tooltips.delete")}
-                                      disabled={Boolean(deletingId)}
-                                      className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${
-                                        deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50"
-                                      }`}
-                                    >
-                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                        <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M10 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M14 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M9 6V4h6v2" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      </svg>
-                                    </button>
-                                  </Tooltip>
-                                )}
-                              </div>
-                            </TableCell>
+                                  {canDelete && onDelete && (
+                                    <Tooltip label={t("PublicationTable.tooltips.delete")}>
+                                      <button
+                                        onClick={() => {
+                                          setDeleteId(publication.id);
+                                          setIsDeleteOpen(true);
+                                        }}
+                                        title={t("PublicationTable.tooltips.delete")}
+                                        aria-label={t("PublicationTable.tooltips.delete")}
+                                        disabled={Boolean(deletingId)}
+                                        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${
+                                          deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50"
+                                        }`}
+                                      >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                          <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M10 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M14 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M9 6V4h6v2" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                      </button>
+                                    </Tooltip>
+                                  )}
+                                </div>
+                              </TableCell>
+                            )}
                           </TableRow>
                         );
                       })}
@@ -343,7 +360,7 @@ export default React.memo(function PublicationTable({
                 <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            
+
             <h3 className="text-xl font-bold text-gray-900 mb-2">{t("PublicationTable.confirmDeleteTitle")}</h3>
             <p className="text-gray-500 mb-6">
               {t("PublicationTable.confirmDeleteText")}

@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { usePermission } from "@/hooks/usePermission";
 import { EditorSection, MediaDto, SectionMedia } from "../../types/social.types";
 import {
     IMAGE_POSITIONS,
@@ -60,6 +61,11 @@ export default function SectionMediaPanel({
     const [updatingMediaId, setUpdatingMediaId] = useState<string | null>(null);
     
     const imageInputRef = useRef<HTMLInputElement | null>(null);
+    const { can, canAny } = usePermission();
+    const canCreateMedia = can("media:create");
+    const canUpdateMedia = can("media:update");
+    const canDeleteMedia = can("media:delete");
+    const canManageMedia = canAny(["media:update", "media:delete"]);
 
     useEffect(() => {
         setPendingFile(null);
@@ -383,6 +389,7 @@ export default function SectionMediaPanel({
             ) : (
                 <div className="mt-4 space-y-6">
                     <div className="relative border-2 border-dashed rounded-xl p-4 text-center transition-all duration-200 bg-gray-50 border-gray-300">
+                        {canCreateMedia ? (
                         <input
                             ref={imageInputRef}
                             type="file"
@@ -398,6 +405,11 @@ export default function SectionMediaPanel({
                                 zIndex: 10
                             }}
                         />
+                        ) : (
+                            <div className="absolute inset-0 flex items-center justify-center z-20 text-sm text-gray-500">
+                                {t("media.errors.noPermission") || "You do not have permission to upload media."}
+                            </div>
+                        )}
                         {uploadingImage ? (
                             <div className="relative z-20 text-sm text-gray-500">{t("media.dropzone.uploading") || "Uploading image..."}</div>
                         ) : pendingMedia ? (
@@ -495,6 +507,7 @@ export default function SectionMediaPanel({
                     </div>
 
                     <div className="flex justify-end">
+                        {canCreateMedia ? (
                         <button
                             type="button"
                             onClick={handleAttachMedia}
@@ -503,6 +516,7 @@ export default function SectionMediaPanel({
                         >
                             {savingMedia ? (t("media.buttons.attaching") || "Attaching...") : (t("media.buttons.attach") || "Attach Image")}
                         </button>
+                        ) : null}
                     </div>
 
                     <div className="border-t border-gray-100 pt-4">
@@ -614,7 +628,7 @@ export default function SectionMediaPanel({
 
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                {!isEditing && (
+                                                {!isEditing && canUpdateMedia && (
                                                     <button
                                                         type="button"
                                                         onClick={() => beginEditMedia(item)}
@@ -623,14 +637,16 @@ export default function SectionMediaPanel({
                                                         {t("media.buttons.edit") || "Edit"}
                                                     </button>
                                                 )}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveMedia(item.id)}
-                                                    disabled={removingMediaId === item.id}
-                                                    className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50"
-                                                >
-                                                    {removingMediaId === item.id ? (t("media.buttons.removing") || "Removing...") : (t("media.buttons.remove") || "Remove")}
-                                                </button>
+                                                {canDeleteMedia && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemoveMedia(item.id)}
+                                                        disabled={removingMediaId === item.id}
+                                                        className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50"
+                                                    >
+                                                        {removingMediaId === item.id ? (t("media.buttons.removing") || "Removing...") : (t("media.buttons.remove") || "Remove")}
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     );

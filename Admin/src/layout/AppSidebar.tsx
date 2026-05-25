@@ -4,7 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { usePermission } from "@/hooks/usePermission";
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -20,12 +22,24 @@ import {
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
 
+type NavSubItem = {
+  name: string;
+  titleKey: string;
+  path: string;
+  pro?: boolean;
+  new?: boolean;
+  permission?: string;
+  anyOf?: string[];
+};
+
 type NavItem = {
   name: string;
   titleKey: string;
   icon: React.ReactNode;
   path?: string;
-  subItems?: { name: string; titleKey: string; path: string; pro?: boolean; new?: boolean }[];
+  permission?: string;
+  anyOf?: string[];
+  subItems?: NavSubItem[];
 };
 
 const navItems: NavItem[] = [
@@ -74,17 +88,17 @@ const navItems: NavItem[] = [
     name: "Resource",
     titleKey: "resource",
     subItems: [
-      { name: "Laws", titleKey: "laws", path: "/laws", pro: false },
-      { name: "Publications", titleKey: "publications", path: "/publications", pro: false },
-      { name: "Social Management", titleKey: "social", path: "/social", pro: false },
+      { name: "Laws", titleKey: "laws", path: "/laws", pro: false, permission: "laws:read" },
+      { name: "Publications", titleKey: "publications", path: "/publications", pro: false, permission: "publications:read" },
+      { name: "Social Management", titleKey: "social", path: "/social", pro: false, permission: "social:read" },
     ],
   },
    {
     icon: <PlugInIcon />,
     name: "News & Media",
     titleKey: "new",
-    subItems: [{ name: "News", titleKey: "news", path: "/news", pro: false },
-      { name: "Video", titleKey: "video", path: "/videos", pro: false }
+    subItems: [{ name: "News", titleKey: "news", path: "/news", pro: false, permission: "news:read" },
+      { name: "Video", titleKey: "video", path: "/videos", pro: false, permission: "video:read" }
     ],
   },
    {
@@ -92,6 +106,7 @@ const navItems: NavItem[] = [
     name: "Contact",
     titleKey: "contact",
     path: "/contact",
+    permission: "contact:read",
   },
    {
     icon: <PlugInIcon />,
@@ -134,19 +149,60 @@ const othersItems: NavItem[] = [
     name: "Role Permission",
     titleKey: "rolePermission",
     path: "/settings/roles",
+    permission: "roles:read",
   },
   {
     icon: <PlugInIcon />,
     name: "User Management",
     titleKey: "userManagement",
     path: "/users",
+    permission: "users:read",
   },
 ];
 
 const AppSidebar: React.FC = () => {
   const t = useTranslations("Sidebar");
+  const { can, canAny, permissions, isSuperAdmin } = usePermission();
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { data: session, status } = useSession();
   const pathname = usePathname();
+
+  const hasAccess = (item: { permission?: string; anyOf?: string[] }) => {
+    if (item.permission) return can(item.permission);
+    if (item.anyOf && item.anyOf.length > 0) return canAny(item.anyOf);
+    return true;
+  };
+
+  const filteredNavItems = React.useMemo(() => {
+    // While session is being restored, avoid hiding items prematurely
+    if (status === "loading") return navItems as NavItem[];
+
+    return navItems
+      .map((nav) => {
+        if (nav.subItems) {
+          const subItems = nav.subItems.filter(hasAccess);
+          if (subItems.length === 0) return null;
+          return { ...nav, subItems } as NavItem;
+        }
+        return hasAccess(nav) ? nav : null;
+      })
+      .filter(Boolean) as NavItem[];
+  }, [permissions ? permissions.join(",") : "", isSuperAdmin, status]);
+
+  const filteredOthersItems = React.useMemo(() => {
+    if (status === "loading") return othersItems as NavItem[];
+
+    return othersItems
+      .map((nav) => {
+        if (nav.subItems) {
+          const subItems = nav.subItems.filter(hasAccess);
+          if (subItems.length === 0) return null;
+          return { ...nav, subItems } as NavItem;
+        }
+        return hasAccess(nav) ? nav : null;
+      })
+      .filter(Boolean) as NavItem[];
+  }, [permissions ? permissions.join(",") : "", isSuperAdmin, status]);
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -290,14 +346,20 @@ const AppSidebar: React.FC = () => {
     // Check if the current path matches any submenu item
     let submenuMatched = false;
     ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? navItems : othersItems;
+      const items = menuType === "main" ? filteredNavItems : filteredOthersItems;
       items.forEach((nav, index) => {
         if (nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
-              setOpenSubmenu({
-                type: menuType as "main" | "others",
-                index,
+              // Avoid forcing a new object each render — only update state when it actually changes
+              setOpenSubmenu((prev) => {
+                if (prev && prev.type === (menuType as "main" | "others") && prev.index === index) {
+                  return prev;
+                }
+                return {
+                  type: menuType as "main" | "others",
+                  index,
+                };
               });
               submenuMatched = true;
             }
@@ -310,7 +372,7 @@ const AppSidebar: React.FC = () => {
     if (!submenuMatched) {
       setOpenSubmenu(null);
     }
-  }, [pathname,isActive]);
+  }, [filteredNavItems, filteredOthersItems, isActive, pathname]);
 
   useEffect(() => {
     // Set the height of the submenu items when the submenu is opened
@@ -324,6 +386,21 @@ const AppSidebar: React.FC = () => {
       }
     }
   }, [openSubmenu]);
+
+  // Recalculate submenu heights whenever the sidebar visibility changes or DOM may have updated
+  useEffect(() => {
+    const keys = Object.keys(subMenuRefs.current);
+    if (keys.length === 0) return;
+    keys.forEach((key) => {
+      const el = subMenuRefs.current[key];
+      if (!el) return;
+      const h = el.scrollHeight || 0;
+      setSubMenuHeight((prev) => {
+        if (prev[key] === h) return prev;
+        return { ...prev, [key]: h };
+      });
+    });
+  }, [isExpanded, isHovered, isMobileOpen, pathname, filteredNavItems.length, filteredOthersItems.length]);
 
   const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
     setOpenSubmenu((prevOpenSubmenu) => {
@@ -405,7 +482,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(filteredNavItems, "main")}
             </div>
 
             <div className="">
@@ -422,7 +499,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(othersItems, "others")}
+              {renderMenuItems(filteredOthersItems, "others")}
             </div>
           </div>
         </nav>

@@ -6,6 +6,7 @@ import ComponentCard from "@/components/common/ComponentCard";
 import { pickTranslation } from "@/lib/pickTranslation";
 import Tooltip from "@/components/ui/Tooltip";
 import { Modal } from "@/components/ui/modal";
+import { usePermission } from "@/hooks/usePermission";
 
 export type LawTranslation = {
   id?: string;
@@ -88,11 +89,17 @@ export default React.memo(function LawTable({
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const isDeleting = Boolean(deletingId && deleteId && deletingId === deleteId);
+  
+  const { can, canAny } = usePermission();
+  const canCreate = can("laws:create");
+  const canEdit = can("laws:update");
+  const canDelete = can("laws:delete");
+  const canShowActions = canAny(["laws:update", "laws:delete"]);
 
   return (
     <>
     <div>
-      {!loading && onCreate && showInlineCreate && laws.length > 0 && (
+      {!loading && onCreate && showInlineCreate && laws.length > 0 && canCreate && (
         <div className="mb-3 flex justify-end">
           <button
             type="button"
@@ -121,7 +128,7 @@ export default React.memo(function LawTable({
               </>
             )}
 
-            {onCreate && (
+            {onCreate && canCreate && (
               <div className="mt-4 flex justify-center">
                 <button
                   type="button"
@@ -181,25 +188,31 @@ export default React.memo(function LawTable({
                     </div>
 
                     <div className="flex items-center gap-2 pt-1">
-                      <button
-                        type="button"
-                        onClick={() => onEdit(l)}
-                        className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50"
-                      >
-                        {t("LawTable.tooltips.edit")}
-                      </button>
-                      {onDelete && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDeleteId(l.id);
-                            setIsDeleteOpen(true);
-                          }}
-                          disabled={Boolean(deletingId)}
-                          className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition ${deletingId ? "opacity-50 cursor-not-allowed border-red-100 text-red-300" : "text-red-600 border-red-200 hover:bg-red-50"}`}
-                        >
-                          {t("LawTable.tooltips.delete")}
-                        </button>
+                      {canShowActions && (
+                        <>
+                          {canEdit && (
+                            <button
+                              type="button"
+                              onClick={() => onEdit(l)}
+                              className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50"
+                            >
+                              {t("LawTable.tooltips.edit")}
+                            </button>
+                          )}
+                          {onDelete && canDelete && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDeleteId(l.id);
+                                setIsDeleteOpen(true);
+                              }}
+                              disabled={Boolean(deletingId)}
+                              className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition ${deletingId ? "opacity-50 cursor-not-allowed border-red-100 text-red-300" : "text-red-600 border-red-200 hover:bg-red-50"}`}
+                            >
+                              {t("LawTable.tooltips.delete")}
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -220,6 +233,9 @@ export default React.memo(function LawTable({
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                         {t("LawTable.headers.date")}
+                        {canShowActions && (
+                          <span>{t("LawTable.headers.actions")}</span>
+                        )}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                         {t("LawTable.headers.pdf")}
@@ -283,40 +299,46 @@ export default React.memo(function LawTable({
 
                           <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
                             <div className="flex items-center gap-2">
-                              <Tooltip label={t("LawTable.tooltips.edit")}>
-                                <button
-                                  onClick={() => onEdit(l)}
-                                  title={t("LawTable.tooltips.edit")}
-                                  aria-label={t("LawTable.tooltips.edit")}
-                                  className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/10 transition text-sky-500 dark:text-sky-400"
-                                >
-                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                    <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                  </svg>
-                                </button>
-                              </Tooltip>
-                              {onDelete && (
-                                <Tooltip label={t("LawTable.tooltips.delete")}>
-                                  <button
-                                    onClick={() => {
-                                      setDeleteId(l.id);
-                                      setIsDeleteOpen(true);
-                                    }}
-                                    title={t("LawTable.tooltips.delete")}
-                                    aria-label={t("LawTable.tooltips.delete")}
-                                    disabled={Boolean(deletingId)}
-                                    className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50"}`}
-                                  >
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                      <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M10 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M14 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                      <path d="M9 6V4h6v2" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                  </button>
-                                </Tooltip>
+                              {canShowActions && (
+                                <>
+                                  {canEdit && (
+                                    <Tooltip label={t("LawTable.tooltips.edit")}>
+                                      <button
+                                        onClick={() => onEdit(l)}
+                                        title={t("LawTable.tooltips.edit")}
+                                        aria-label={t("LawTable.tooltips.edit")}
+                                        className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/10 transition text-sky-500 dark:text-sky-400"
+                                      >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                          <path d="M3 21v-3.75L14.06 6.19l3.75 3.75L6.75 21H3z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                      </button>
+                                    </Tooltip>
+                                  )}
+                                  {onDelete && canDelete && (
+                                    <Tooltip label={t("LawTable.tooltips.delete")}>
+                                      <button
+                                        onClick={() => {
+                                          setDeleteId(l.id);
+                                          setIsDeleteOpen(true);
+                                        }}
+                                        title={t("LawTable.tooltips.delete")}
+                                        aria-label={t("LawTable.tooltips.delete")}
+                                        disabled={Boolean(deletingId)}
+                                        className={`inline-flex items-center justify-center w-9 h-9 rounded-lg transition ${deletingId ? "opacity-50 cursor-not-allowed" : "hover:bg-red-50"}`}
+                                      >
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                          <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M10 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M14 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M9 6V4h6v2" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                      </button>
+                                    </Tooltip>
+                                  )}
+                                </>
                               )}
                             </div>
                           </TableCell>

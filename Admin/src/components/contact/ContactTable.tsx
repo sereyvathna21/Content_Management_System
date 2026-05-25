@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
+import { usePermission } from "@/hooks/usePermission";
 import type { Contact } from "../../hooks/useContacts";
 import { Table, TableHeader, TableBody, TableRow, TableCell } from "../ui/table";
 
@@ -28,6 +29,10 @@ export default function ContactTable({
   onClear,
 }: Props) {
   const t = useTranslations("ContactPage");
+  const { can, canAny } = usePermission();
+  const canUpdate = can("contact:update");
+  const canDelete = can("contact:delete");
+  const canShowActions = canAny(["contact:update", "contact:delete"]);
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,11 +90,17 @@ export default function ContactTable({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
-                <button onClick={() => onOpen(c)} className="px-3 py-1.5 text-xs font-medium text-primary border border-gray-200 rounded-lg hover:bg-gray-50">{t("viewMessage")}</button>
-                <button onClick={() => onToggleRead(c.id)} className="px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50">{c.read ? t("markAsUnread") : t("markAsRead")}</button>
-                <button onClick={() => { setDeleteId(c.id); setIsModalOpen(true); }} className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50">{t("deleteMessage")}</button>
-              </div>
+                <div className="flex items-center gap-2 pt-1">
+                  {canAny(["contact:read"]) && (
+                    <button onClick={() => onOpen(c)} className="px-3 py-1.5 text-xs font-medium text-primary border border-gray-200 rounded-lg hover:bg-gray-50">{t("viewMessage")}</button>
+                  )}
+                  {canUpdate && (
+                    <button onClick={() => onToggleRead(c.id)} className="px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50">{c.read ? t("markAsUnread") : t("markAsRead")}</button>
+                  )}
+                  {canDelete && (
+                    <button onClick={() => { setDeleteId(c.id); setIsModalOpen(true); }} className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50">{t("deleteMessage")}</button>
+                  )}
+                </div>
             </div>
           ))}
         </div>
@@ -114,9 +125,11 @@ export default function ContactTable({
                   <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400 ">
                     {t("columns.status")}
                   </TableCell>
-                  <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
-                    {t("columns.actions")}
-                  </TableCell>
+                  {canShowActions && (
+                    <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                      {t("columns.actions")}
+                    </TableCell>
+                  )}
                 </TableRow>
               </TableHeader>
 
@@ -160,63 +173,71 @@ export default function ContactTable({
                         </div>
                       </TableCell>
 
-                    <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
+                            {canShowActions && (
+                              <TableCell className="px-4 py-3 text-gray-500 text-sm dark:text-gray-400">
                       <div className="flex items-center gap-2">
-                        <Tooltip label={t("viewMessage")}>
-                          <button
-                            onClick={() => onOpen(c)}
-                            title={t("viewMessage")}
-                            aria-label={t("viewMessage")}
-                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-white/3 transition text-primary"
-                          >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                              <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </button>
-                        </Tooltip>
+                                <Tooltip label={t("viewMessage")}>
+                                  {canAny(["contact:read"]) ? (
+                                  <button
+                                    onClick={() => onOpen(c)}
+                                    title={t("viewMessage")}
+                                    aria-label={t("viewMessage")}
+                                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-white/3 transition text-primary"
+                                  >
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                      <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  </button>
+                                  ) : null}
+                                </Tooltip>
 
-                        <Tooltip label={c.read ? t("markAsUnread") : t("markAsRead")}>
-                          <button
-                            onClick={() => onToggleRead(c.id)}
-                            title={c.read ? t("markAsUnread") : t("markAsRead")}
-                            aria-label={c.read ? t("markAsUnread") : t("markAsRead")}
-                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-white/3 transition"
-                          >
-                            {c.read ? (
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                <path d="M20 6L9 17l-5-5" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            ) : (
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                                <path d="M12 5v14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M5 12h14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            )}
-                          </button>
-                        </Tooltip>
+                                {canUpdate && (
+                                <Tooltip label={c.read ? t("markAsUnread") : t("markAsRead")}>
+                                  <button
+                                    onClick={() => onToggleRead(c.id)}
+                                    title={c.read ? t("markAsUnread") : t("markAsRead")}
+                                    aria-label={c.read ? t("markAsUnread") : t("markAsRead")}
+                                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 dark:hover:bg-white/3 transition"
+                                  >
+                                    {c.read ? (
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                        <path d="M20 6L9 17l-5-5" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      </svg>
+                                    ) : (
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                        <path d="M12 5v14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M5 12h14" stroke="#374151" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      </svg>
+                                    )}
+                                  </button>
+                                </Tooltip>
+                                )}
 
-                        <Tooltip label={t("deleteMessage")}>
-                          <button
-                            onClick={() => {
-                              setDeleteId(c.id);
-                              setIsModalOpen(true);
-                            }}
-                            title={t("deleteMessage")}
-                            aria-label={t("deleteMessage")}
-                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 transition"
-                          >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                              <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M10 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M14 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M9 6V4h6v2" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          </button>
-                        </Tooltip>
+                                {canDelete && (
+                                <Tooltip label={t("deleteMessage")}>
+                                  <button
+                                    onClick={() => {
+                                      setDeleteId(c.id);
+                                      setIsModalOpen(true);
+                                    }}
+                                    title={t("deleteMessage")}
+                                    aria-label={t("deleteMessage")}
+                                    className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 transition"
+                                  >
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                      <path d="M3 6h18" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      <path d="M8 6v12a2 2 0 002 2h4a2 2 0 002-2V6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      <path d="M10 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      <path d="M14 11v6" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                      <path d="M9 6V4h6v2" stroke="#DC2626" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  </button>
+                                </Tooltip>
+                                )}
                       </div>
-                    </TableCell>
+                              </TableCell>
+                            )}
                   </TableRow>
                 ))}
               </TableBody>

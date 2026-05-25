@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { usePermission } from "@/hooks/usePermission";
 import ComponentCard from "@/components/common/ComponentCard";
 import { Modal } from "@/components/ui/modal";
 import Pagination from "@/components/tables/Pagination";
@@ -10,6 +11,7 @@ import PublicationFilters from "@/components/publications/PublicationFilters";
 import PublicationTable, { Publication as PublicationType } from "@/components/publications/PublicationTable";
 import PublicationForm from "@/components/publications/PublicationForm";
 import { pickTranslation } from "@/lib/pickTranslation";
+import RequirePermission from "@/components/auth/RequirePermission";
 
 type ApiPublicationTranslation = {
 	id: string;
@@ -41,6 +43,8 @@ export default function PublicationsPage() {
 	const t = useTranslations();
 	const locale = useLocale();
 	const { data: session, status } = useSession();
+	const { can } = usePermission();
+	const canCreate = can("publications:create");
 
 	const [publications, setPublications] = useState<PublicationType[]>([]);
 	const [loading, setLoading] = useState(false);
@@ -198,6 +202,7 @@ export default function PublicationsPage() {
 		: null;
 
 	return (
+		<RequirePermission anyOf={["publications:read", "publications:create", "publications:update", "publications:delete"]}>
 		<div className="space-y-6 p-6">
 			<div className="flex items-start justify-between">
 				<h1 className="text-3xl text-primary font-semibold mb-4">{t("PublicationsPage.title") || "Publications"}</h1>
@@ -228,7 +233,7 @@ export default function PublicationsPage() {
 								setPage(1);
 							}}
 							categories={categoryOptions}
-							action={
+							action={canCreate ? (
 								<button
 									type="button"
 									onClick={handleOpenCreate}
@@ -236,7 +241,7 @@ export default function PublicationsPage() {
 								>
 									{t("PublicationsPage.create") || "New Publication"}
 								</button>
-							}
+							) : null}
 						/>
 					</div>
 
@@ -244,7 +249,7 @@ export default function PublicationsPage() {
 						<div>{t("PublicationTable.loading")}</div>
 					) : (
 						<div className="grid grid-cols-1 gap-3">
-							<PublicationTable
+														<PublicationTable
 								loading={loading}
 								publications={publications}
 								query={query}
@@ -259,7 +264,7 @@ export default function PublicationsPage() {
 								}}
 								onDelete={handleDelete}
 								deletingId={deletingId}
-								onCreate={handleOpenCreate}
+															onCreate={canCreate ? handleOpenCreate : undefined}
 								createLabel={t("PublicationsPage.create") || "New Publication"}
 								showInlineCreate={false}
 							/>
@@ -336,5 +341,6 @@ export default function PublicationsPage() {
 				)}
 			</Modal>
 		</div>
+		</RequirePermission>
 	);
 }

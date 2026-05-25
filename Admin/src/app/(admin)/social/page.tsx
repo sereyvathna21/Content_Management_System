@@ -3,6 +3,8 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { usePermission } from "@/hooks/usePermission";
+import RequirePermission from "@/components/auth/RequirePermission";
 import { useRouter } from "next/navigation";
 import ComponentCard from "@/components/common/ComponentCard";
 import { Modal } from "@/components/ui/modal";
@@ -20,6 +22,8 @@ export default function SocialPage() {
   const t = useTranslations();
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { can } = usePermission();
+  const canCreate = can("social:create");
    const [deletingId, setDeletingId] = useState<string | null>(null);
   const [topics, setTopics] = useState<SocialTopic[]>([]);
   const [loading, setLoading] = useState(false);
@@ -158,6 +162,7 @@ export default function SocialPage() {
   }
 
   return (
+    <RequirePermission anyOf={["social:read", "social:create", "social:update", "social:delete"]}>
     <div className="space-y-6 p-4 sm:p-6">
       <div className="flex items-start justify-between">
         <h1 className="text-3xl text-primary font-semibold mb-4">{t("SocialPage.title") || "Social Management"}</h1>
@@ -181,14 +186,14 @@ export default function SocialPage() {
             setQuery(value);
             setPage(1);
           }}
-          action={
+          action={canCreate ? (
             <button
               onClick={handleOpenCreate}
               className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm whitespace-nowrap"
             >
               {t("SocialPage.create") || "New Topic"}
             </button>
-          }
+          ) : null}
         />
 
         <div className="mt-2">          
@@ -203,6 +208,7 @@ export default function SocialPage() {
                 locale={locale || "en"}
                 onEdit={(t) => router.push(`/social/${t.id}`)}
                 onDelete={handleDelete}
+                onCreate={canCreate ? handleOpenCreate : undefined}
               />
 
               {totalPages > 1 && (
@@ -321,5 +327,6 @@ export default function SocialPage() {
         </div>
       </Modal>
     </div>
+    </RequirePermission>
   );
 }

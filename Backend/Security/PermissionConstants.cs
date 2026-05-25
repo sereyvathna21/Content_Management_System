@@ -35,6 +35,12 @@ namespace Backend.Security
         // Media
         public const string MediaCreate = "media:create";
 
+        // Contact / Messages
+        public const string ContactRead = "contact:read";
+        public const string ContactCreate = "contact:create";
+        public const string ContactUpdate = "contact:update";
+        public const string ContactDelete = "contact:delete";
+
         // Notifications
         public const string NotificationsRead = "notifications:read";
 

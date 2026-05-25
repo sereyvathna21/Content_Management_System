@@ -7,6 +7,7 @@ import { useContacts } from "../../../hooks/useContacts";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Pagination from "../../../components/tables/Pagination";
 import { useTranslations } from "next-intl";
+import RequirePermission from "@/components/auth/RequirePermission";
 
 
 
@@ -43,6 +44,7 @@ export default function ContactPage() {
   };
 
   return (
+    <RequirePermission anyOf={["contact:read", "contact:update", "contact:delete"]}>
     <div className="p-6">
       <div className="flex items-start justify-between">
         <h1 className="text-3xl text-primary font-semibold mb-4">{t("title")}</h1>
@@ -99,5 +101,6 @@ export default function ContactPage() {
         />
       )}
     </div>
+    </RequirePermission>
   );
 }
