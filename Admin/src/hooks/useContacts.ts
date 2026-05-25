@@ -76,6 +76,7 @@ export function useContacts() {
     const [totalCount, setTotalCount] = useState(0);
     const [loading, setLoading] = useState(false);
     const [selected, setSelected] = useState<Contact | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     // ── filter state ─────────────────────────────────────────────────────
     const [query, setQuery] = useState<string>("");
@@ -191,6 +192,7 @@ export function useContacts() {
     // ── API: load contacts (paged) ───────────────────────────────────────
     const loadContacts = useCallback(async (signal?: AbortSignal) => {
         setLoading(true);
+        setError(null);
         try {
             const params = new URLSearchParams({
                 page: String(page),
@@ -209,8 +211,7 @@ export function useContacts() {
         } catch (err) {
             if (err instanceof DOMException && err.name === "AbortError") return;
             console.error("[useContacts] loadContacts failed:", err);
-            // Surface the error to the caller — no mock fallback
-            throw err;
+            setError(err instanceof Error ? err.message : "Failed to load contacts.");
         } finally {
             setLoading(false);
         }
@@ -383,6 +384,7 @@ export function useContacts() {
         // data
         contacts,       // current page slice, always fresh
         loading,
+        error,
         selected,
 
         // actions

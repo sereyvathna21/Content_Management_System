@@ -23,6 +23,12 @@ type User = {
   avatar?: string;
 };
 
+type Role = {
+  id: number;
+  name: string;
+  description?: string | null;
+};
+
 const initialUsers: User[] = [];
 
 
@@ -30,6 +36,7 @@ export default function UsersPage() {
   const t = useTranslations();
   const { data: session, status } = useSession();
   const [users, setUsers] = useState<User[]>(initialUsers);
+  const [roles, setRoles] = useState<Role[]>([]);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -40,6 +47,7 @@ export default function UsersPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingBlockId, setPendingBlockId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const pageSize = 10;
 
   const loadUsers = useCallback(async (signal?: AbortSignal, overrides?: { page?: number; query?: string }) => {
@@ -48,6 +56,7 @@ export default function UsersPage() {
     const currentQuery = (overrides?.query ?? query).trim();
 
     setLoading(true);
+    setLoadError("");
     try {
       const params = new URLSearchParams({
         page: String(currentPage),
@@ -64,6 +73,9 @@ export default function UsersPage() {
       });
       if (!res.ok) {
         console.error("Failed to fetch users", res.status);
+        setLoadError(t("UsersPage.loadError") || "Failed to load users. Please try again.");
+        setUsers([]);
+        setTotalCount(0);
         return;
       }
       const data = await res.json();
@@ -86,19 +98,58 @@ export default function UsersPage() {
       });
       setUsers(mapped);
       setTotalCount(total);
+      setLoadError("");
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       console.error(err);
+      setLoadError(t("UsersPage.loadError") || "Failed to load users. Please try again.");
+      setUsers([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, query, session?.accessToken, status]);
+  }, [page, pageSize, query, session?.accessToken, status, t]);
+
+  const loadRoles = useCallback(async (signal?: AbortSignal) => {
+    if (status === "loading" || !session?.accessToken) return;
+    try {
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+      const res = await fetch(`${BACKEND_URL}/api/admin/roles`, {
+        headers: {
+          "Authorization": `Bearer ${session?.accessToken}`
+        },
+        signal
+      });
+      if (!res.ok) {
+        console.error("Failed to fetch roles", res.status);
+        return;
+      }
+      const data = await res.json();
+      if (signal?.aborted) return;
+      const items = Array.isArray(data) ? data : (data.items || []);
+      const mapped: Role[] = items.map((r: any) => ({
+        id: Number(r.id),
+        name: String(r.name || ""),
+        description: r.description ?? null,
+      }));
+      setRoles(mapped.filter((r) => r.name));
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+      console.error(err);
+    }
+  }, [session?.accessToken, status]);
 
   useEffect(() => {
     const controller = new AbortController();
     loadUsers(controller.signal);
     return () => controller.abort();
   }, [loadUsers]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    loadRoles(controller.signal);
+    return () => controller.abort();
+  }, [loadRoles]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
@@ -257,6 +308,13 @@ export default function UsersPage() {
       </div>
 
       <ComponentCard title={t("UsersPage.card.title")} desc={t("UsersPage.card.desc")} className="mt-2">
+        {loadError && (
+          <div className="mb-4">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+              {loadError}
+            </div>
+          </div>
+        )}
         <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
           <div />
 
@@ -376,6 +434,7 @@ export default function UsersPage() {
         open={formOpen && !editing}
         onClose={() => setFormOpen(false)}
         onSave={handleSave}
+        roles={roles}
       />
 
       {/* Edit User Form */}
@@ -385,6 +444,7 @@ export default function UsersPage() {
           onClose={() => setFormOpen(false)}
           initial={editing}
           onSave={handleSave}
+          roles={roles}
         />
       )}
 

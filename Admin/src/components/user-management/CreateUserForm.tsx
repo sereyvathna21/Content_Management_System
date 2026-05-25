@@ -18,17 +18,23 @@ interface UserPayload {
   avatar?: string;
 }
 
+interface RoleOption {
+  id: number;
+  name: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
   onSave: (user: UserPayload) => void;
+  roles: RoleOption[];
 }
 
-export default function CreateUserForm({ open, onClose, onSave }: Props) {
+export default function CreateUserForm({ open, onClose, onSave, roles }: Props) {
   const t = useTranslations();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("user");
+  const [role, setRole] = useState("User");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +46,15 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
   const liveError = error || (passwordsMismatch ? t("UserForm.passwordsMismatch") : null);
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  React.useEffect(() => {
+    if (!roles.length) return;
+    const current = role.trim();
+    const roleNames = roles.map((r) => r.name);
+    if (!current || !roleNames.includes(current)) {
+      setRole(roleNames[0]);
+    }
+  }, [roles, role]);
 
   function handleSubmit(e?: React.FormEvent) {
     e?.preventDefault();
@@ -166,11 +181,7 @@ export default function CreateUserForm({ open, onClose, onSave }: Props) {
               <Select
                 value={role}
                 onChange={(val) => setRole(val as string)}
-                options={[
-                  { label: t("UserForm.roleOptions.admin"), value: "admin" },
-                  { label: t("UserForm.roleOptions.user"), value: "user" },
-                  { label: t("UserForm.roleOptions.superAdmin"), value: "superadmin" },
-                ]}
+                options={roles.map((r) => ({ label: r.name, value: r.name }))}
               />
             </div>
 

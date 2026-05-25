@@ -44,6 +44,7 @@ export default function PublicationsPage() {
 
 	const [publications, setPublications] = useState<PublicationType[]>([]);
 	const [loading, setLoading] = useState(false);
+	const [loadError, setLoadError] = useState("");
 	const [totalCount, setTotalCount] = useState(0);
 	const [deletingId, setDeletingId] = useState<string | null>(null);
 	const [query, setQuery] = useState("");
@@ -60,6 +61,7 @@ export default function PublicationsPage() {
 		async (signal?: AbortSignal) => {
 			if (status === "loading" || !session?.accessToken) return;
 			setLoading(true);
+			setLoadError("");
 
 			try {
 				const params = new URLSearchParams({
@@ -75,7 +77,12 @@ export default function PublicationsPage() {
 					signal,
 				});
 
-				if (!res.ok) return;
+				if (!res.ok) {
+					setLoadError(t("PublicationsPage.loadError") || "Failed to load publications. Please try again.");
+					setPublications([]);
+					setTotalCount(0);
+					return;
+				}
 				const data = (await res.json()) as { total?: number; items?: ApiPublication[] };
 				if (signal?.aborted) return;
 
@@ -99,11 +106,14 @@ export default function PublicationsPage() {
 			} catch (error) {
 				if (error instanceof DOMException && error.name === "AbortError") return;
 				console.error(error);
+				setLoadError(t("PublicationsPage.loadError") || "Failed to load publications. Please try again.");
+				setPublications([]);
+				setTotalCount(0);
 			} finally {
 				setLoading(false);
 			}
 		},
-		[categoryFilter, page, pageSize, query, session?.accessToken, status],
+		[categoryFilter, page, pageSize, query, session?.accessToken, status, t],
 	);
 
 	useEffect(() => {
@@ -198,6 +208,13 @@ export default function PublicationsPage() {
 				desc={t("PublicationsPage.card.desc") || "Manage publications and translations"}
 			>
 				<div className="mt-2">
+					{loadError && (
+						<div className="mb-4">
+							<div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+								{loadError}
+							</div>
+						</div>
+					)}
 					<div className="mb-4">
 						<PublicationFilters
 							query={query}

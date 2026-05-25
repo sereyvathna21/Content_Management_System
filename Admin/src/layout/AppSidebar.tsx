@@ -133,7 +133,7 @@ const othersItems: NavItem[] = [
     icon: <PlugInIcon />,
     name: "Role Permission",
     titleKey: "rolePermission",
-    path: "/permission",
+    path: "/settings/roles",
   },
   {
     icon: <PlugInIcon />,

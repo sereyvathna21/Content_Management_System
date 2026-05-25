@@ -40,6 +40,7 @@
     "markRead": "Mark Read",
     "markUnread": "Mark Unread",
     "loading": "Loading...",
+    "loadError": "Failed to load contacts. Please refresh the page.",
     "columns": {
       "name": "Name",
       "email": "Email",
@@ -276,6 +277,7 @@
     "title": "Laws",
     "create": "New Law",
     "edit": "Edit Law",
+    "loadError": "Failed to load laws. Please try again.",
     "searchPlaceholder": "Search laws",
     "searchAria": "Search laws",
     "filters": {
@@ -365,6 +367,7 @@
     "title": "Publications",
     "create": "New Publication",
     "edit": "Edit Publication",
+    "loadError": "Failed to load publications. Please try again.",
     "searchPlaceholder": "Search publications",
     "searchAria": "Search publications",
     "filters": {
@@ -410,6 +413,7 @@
   },
   "UsersPage": {
     "title": "User Management",
+    "loadError": "Failed to load users. Please try again.",
     "card": {
       "title": "Users",
       "desc": "Manage your users"

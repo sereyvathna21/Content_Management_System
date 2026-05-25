@@ -380,7 +380,50 @@ namespace Backend.Services
             var user = await _db.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Id == userId);
-            return user == null ? null : _mapper.Map<UserDto>(user);
+            if (user == null) return null;
+
+            var dto = _mapper.Map<UserDto>(user);
+
+            var cacheKey = $"role_permissions_{user.RoleId}";
+            List<string> permissionsList;
+            try
+            {
+                var cachedJson = await _distributedCache.GetStringAsync(cacheKey);
+                if (!string.IsNullOrEmpty(cachedJson))
+                {
+                    var permissions = JsonSerializer.Deserialize<HashSet<string>>(cachedJson);
+                    permissionsList = permissions?.ToList() ?? new List<string>();
+                }
+                else
+                {
+                    permissionsList = await _db.RolePermissions
+                        .Where(rp => rp.RoleId == user.RoleId)
+                        .Select(rp => rp.Permission.Name)
+                        .ToListAsync();
+
+                    if (permissionsList.Count > 0)
+                    {
+                        var permSet = new HashSet<string>(permissionsList);
+                        await _distributedCache.SetStringAsync(
+                            cacheKey,
+                            JsonSerializer.Serialize(permSet),
+                            new DistributedCacheEntryOptions
+                            {
+                                AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(1)
+                            });
+                    }
+                }
+            }
+            catch
+            {
+                permissionsList = await _db.RolePermissions
+                    .Where(rp => rp.RoleId == user.RoleId)
+                    .Select(rp => rp.Permission.Name)
+                    .ToListAsync();
+            }
+
+            dto.Permissions = permissionsList;
+            return dto;
         }
 
         private async Task<Role?> GetRoleByNameAsync(string roleName)

@@ -19,18 +19,24 @@ interface UserPayload {
   password?: string;
 }
 
+interface RoleOption {
+  id: number;
+  name: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
   onSave: (user: UserPayload) => void;
   initial: UserPayload;
+  roles: RoleOption[];
 }
 
-export default function EditUserForm({ open, onClose, onSave, initial }: Props) {
+export default function EditUserForm({ open, onClose, onSave, initial, roles }: Props) {
   const t = useTranslations();
   const [name, setName] = useState(initial.name);
   const [email, setEmail] = useState(initial.email);
-  const [role, setRole] = useState((initial.role || "User").toLowerCase());
+  const [role, setRole] = useState(initial.role || "User");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(initial.avatar || "/images/user/default-avatar.svg");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
@@ -44,12 +50,21 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
   useEffect(() => {
     setName(initial.name);
     setEmail(initial.email);
-    setRole((initial.role || "User").toLowerCase());
+    setRole(initial.role || "User");
     setAvatarPreview(initial.avatar || "/images/user/default-avatar.svg");
     setPassword("");
     setConfirmPassword("");
     setError(null);
   }, [initial]);
+
+  useEffect(() => {
+    if (!roles.length) return;
+    const current = (role || "").trim();
+    const roleNames = roles.map((r) => r.name);
+    if (!current || !roleNames.includes(current)) {
+      setRole(roleNames[0]);
+    }
+  }, [roles, role]);
 
   useEffect(() => {
     if (!open) return;
@@ -173,11 +188,7 @@ export default function EditUserForm({ open, onClose, onSave, initial }: Props) 
               <Select
                 value={role}
                 onChange={(val) => setRole(val as string)}
-                options={[
-                  { label: t("UserForm.roleOptions.admin"), value: "Admin" },
-                  { label: t("UserForm.roleOptions.user"), value: "User" },
-                  { label: t("UserForm.roleOptions.superAdmin"), value: "SuperAdmin" },
-                ]}
+                options={roles.map((r) => ({ label: r.name, value: r.name }))}
               />
             </div>
 

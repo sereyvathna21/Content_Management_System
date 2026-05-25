@@ -15,6 +15,7 @@ export default function ContactPage() {
   const {
     contacts,
     loading,
+    error,
     selected,
     selectContact,
     toggleRead,
@@ -52,6 +53,14 @@ export default function ContactPage() {
           <div className="flex items-center justify-between">
            
           </div>
+
+          {error && (
+            <div className="mb-4">
+              <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                {t("loadError") || error}
+              </div>
+            </div>
+          )}
 
           <div className="mt-4 mb-4">
             <ContactFilters value={query} onSearch={onSearch} status={statusFilter} onStatusChange={onStatusChange} />

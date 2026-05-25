@@ -46,25 +46,49 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           role: data.user.role,
           accessToken: data.token,
           remember: credentials.remember === "true",
+          permissions: data.user.permissions || [],
         };
       },
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as { role?: string }).role;
-        token.accessToken = (user as { accessToken?: string }).accessToken;
-        token.remember = (user as { remember?: boolean }).remember;
+        token.role = (user as any).role;
+        token.accessToken = (user as any).accessToken;
+        token.remember = (user as any).remember;
+        token.permissions = (user as any).permissions || [];
+        console.log(`[NextAuth JWT] Initialized permissions for user ${user.email}:`, token.permissions);
+      }
+
+      if (trigger === "update") {
+        if (session?.permissions) {
+          token.permissions = session.permissions;
+          console.log(`[NextAuth JWT] Updated permissions from session payload:`, token.permissions);
+        } else if (token.accessToken) {
+          try {
+            const res = await fetch(`${BACKEND_URL}/api/auth/verify-session`, {
+              headers: { Authorization: `Bearer ${token.accessToken}` },
+            });
+            if (res.ok) {
+              const data = await res.json();
+              token.permissions = data.permissions || [];
+              console.log(`[NextAuth JWT] Fetched fresh permissions from backend verify-session:`, token.permissions);
+            }
+          } catch (err) {
+            console.error("[NextAuth JWT] Failed to sync permissions on update:", err);
+          }
+        }
       }
       return token;
     },
     session({ session, token }) {
       session.user.id = token.id as string;
-      (session.user as { role?: string }).role = token.role as string;
-      (session as { accessToken?: string }).accessToken = token.accessToken as string;
-      (session.user as { remember?: boolean }).remember = token.remember as boolean;
+      (session.user as any).role = token.role as string;
+      (session as any).accessToken = token.accessToken as string;
+      (session.user as any).remember = token.remember as boolean;
+      (session.user as any).permissions = (token.permissions as string[]) || [];
       return session;
     },
   },

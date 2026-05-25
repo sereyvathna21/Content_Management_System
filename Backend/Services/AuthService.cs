@@ -53,6 +53,8 @@ namespace Backend.Services
                 Token = token,
                 User = _mapper.Map<UserDto>(user)
             };
+            var permissions = await GetRolePermissionsAsync(user.RoleId);
+            response.User.Permissions = permissions.ToList();
 
             return (true, "Login successful.", response);
         }

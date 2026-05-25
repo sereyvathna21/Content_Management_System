@@ -200,6 +200,7 @@ namespace Backend.DTOs
         public string? PostalCode { get; set; }
         public bool IsBlocked { get; set; }
         public bool PasswordSet { get; set; }
+        public List<string> Permissions { get; set; } = new();
     }
 
     public class MessageResponse

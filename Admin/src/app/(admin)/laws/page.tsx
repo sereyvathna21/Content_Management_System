@@ -44,6 +44,7 @@ export default function LawsPage() {
   const { data: session, status } = useSession();
   const [laws, setLaws] = useState<Law[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const [totalCount, setTotalCount] = useState(0);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
@@ -59,6 +60,7 @@ export default function LawsPage() {
   const load = useCallback(async (signal?: AbortSignal) => {
     if (status === "loading" || !session?.accessToken) return;
     setLoading(true);
+    setLoadError("");
     try {
       const params = new URLSearchParams({
         page: String(page),
@@ -72,7 +74,12 @@ export default function LawsPage() {
         },
         signal
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        setLoadError(t("LawsPage.loadError") || "Failed to load laws. Please try again.");
+        setLaws([]);
+        setTotalCount(0);
+        return;
+      }
       const data = (await res.json()) as { total?: number; items?: Law[] };
       if (signal?.aborted) return;
       const items = data.items ?? [];
@@ -95,10 +102,13 @@ export default function LawsPage() {
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
       console.error(err);
+      setLoadError(t("LawsPage.loadError") || "Failed to load laws. Please try again.");
+      setLaws([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
-  }, [categoryFilter, page, pageSize, query, session?.accessToken, status]);
+  }, [categoryFilter, page, pageSize, query, session?.accessToken, status, t]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -192,8 +202,14 @@ export default function LawsPage() {
         title={t("LawsPage.card.title") || "Laws"}
         desc={t("LawsPage.card.desc") || "Manage laws and translations"}
       >
-       
         <div className="mt-2">
+          {loadError && (
+            <div className="mb-4">
+              <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                {loadError}
+              </div>
+            </div>
+          )}
           <div className="mb-4">
             <LawFilters
               query={query}
