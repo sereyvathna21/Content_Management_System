@@ -19,6 +19,7 @@ namespace Backend.Controllers
         private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _env;
         private readonly INotificationService _notificationService;
+        private readonly IAuditLogService _audit;
 
         private const long MaxAttachmentBytes = 50_000_000;
 
@@ -46,11 +47,12 @@ namespace Backend.Controllers
             ".com"
         };
 
-        public PublicationsController(ApplicationDbContext db, IWebHostEnvironment env, INotificationService notificationService)
+        public PublicationsController(ApplicationDbContext db, IWebHostEnvironment env, INotificationService notificationService, IAuditLogService audit)
         {
             _db = db;
             _env = env;
             _notificationService = notificationService;
+            _audit = audit;
         }
 
         [HttpGet]
@@ -222,6 +224,16 @@ namespace Backend.Controllers
             var message = $"Publication \"{titleEn}\" was created.";
             await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "created");
 
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "publication:create",
+                EntityType = "Publication",
+                EntityId = publication.Id.ToString(),
+                Summary = "Created publication",
+                Status = AuditLogStatus.Success,
+                Metadata = new { publication.Category, publication.PublicationDate, TitleKm = titleKm, TitleEn = titleEn }
+            }, HttpContext);
+
             return CreatedAtAction(nameof(Get), new { id = publication.Id }, new { id = publication.Id });
         }
 
@@ -339,6 +351,16 @@ namespace Backend.Controllers
             var message = $"Publication \"{titleEn}\" was updated.";
             await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "created");
 
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "publication:update",
+                EntityType = "Publication",
+                EntityId = publication.Id.ToString(),
+                Summary = "Updated publication",
+                Status = AuditLogStatus.Success,
+                Metadata = new { publication.Category, publication.PublicationDate, TitleKm = titleKm, TitleEn = titleEn }
+            }, HttpContext);
+
             return Ok(new { id = publication.Id });
         }
 
@@ -359,6 +381,16 @@ namespace Backend.Controllers
             // Send notification about the publication deletion BEFORE deleting
             var message = $"Publication \"{titleEn}\" was deleted.";
             await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "deleted");
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "publication:delete",
+                EntityType = "Publication",
+                EntityId = publication.Id.ToString(),
+                Summary = "Deleted publication",
+                Status = AuditLogStatus.Success,
+                Metadata = new { TitleKm = titleKm, TitleEn = titleEn }
+            }, HttpContext);
 
             _db.Publications.Remove(publication);
             await _db.SaveChangesAsync();

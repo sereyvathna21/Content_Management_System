@@ -1,5 +1,6 @@
 using Backend.DTOs;
 using Backend.Services;
+using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -12,10 +13,12 @@ namespace Backend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _auth;
+        private readonly IAuditLogService _audit;
 
-        public AuthController(IAuthService auth)
+        public AuthController(IAuthService auth, IAuditLogService audit)
         {
             _auth = auth;
+            _audit = audit;
         }
 
         [HttpPost("login")]
@@ -24,10 +27,33 @@ namespace Backend.Controllers
             var result = await _auth.LoginAsync(request);
             if (!result.Success)
             {
+                await _audit.WriteAsync(new AuditLogEntry
+                {
+                    Action = "auth:login_failed",
+                    EntityType = "Auth",
+                    Summary = "Login failed",
+                    Status = AuditLogStatus.Failure,
+                    ErrorMessage = result.Message,
+                    Metadata = new { request.Email }
+                }, HttpContext);
+
                 if (result.Message.Contains("blocked") || result.Message.Contains("verify") || result.Message.Contains("Invalid"))
                     return Unauthorized(new MessageResponse { Message = result.Message });
 
                 return BadRequest(new MessageResponse { Message = result.Message });
+            }
+
+            if (result.Data?.User != null)
+            {
+                await _audit.WriteAsync(new AuditLogEntry
+                {
+                    Action = "auth:login",
+                    EntityType = "User",
+                    EntityId = result.Data.User.Id.ToString(),
+                    Summary = "Login successful",
+                    Status = AuditLogStatus.Success,
+                    Metadata = new { result.Data.User.Email, result.Data.User.Role }
+                }, HttpContext);
             }
 
             // The frontend should read this token and pass it via Authorization: Bearer
@@ -44,6 +70,14 @@ namespace Backend.Controllers
                 Secure = true,
                 SameSite = SameSiteMode.None
             });
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "auth:logout",
+                EntityType = "Auth",
+                Summary = "Logged out",
+                Status = AuditLogStatus.Success
+            }, HttpContext);
             return Ok(new MessageResponse { Message = "Logged out successfully." });
         }
 

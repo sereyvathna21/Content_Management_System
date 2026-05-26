@@ -46,6 +46,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISecurityAuditService, SecurityAuditService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddHostedService<NotificationRetentionService>();
 builder.Services.AddAutoMapper((System.Action<AutoMapper.IMapperConfigurationExpression>?)null, System.AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddMemoryCache();

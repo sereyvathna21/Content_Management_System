@@ -2,6 +2,7 @@ using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
 using Backend.Security;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ namespace Backend.Controllers
         private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _env;
         private readonly IHubContext<NotificationHub> _hubContext; // Add SignalR Hub Context
+        private readonly IAuditLogService _audit;
         private const long MaxPdfBytes = 50_000_000;
         private static readonly HashSet<string> AllowedPdfContentTypes = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -44,11 +46,12 @@ namespace Backend.Controllers
             ".com"
         };
 
-        public LawsController(ApplicationDbContext db, IWebHostEnvironment env, IHubContext<NotificationHub> hubContext)
+        public LawsController(ApplicationDbContext db, IWebHostEnvironment env, IHubContext<NotificationHub> hubContext, IAuditLogService audit)
         {
             _db = db;
             _env = env;
             _hubContext = hubContext; // Initialize Hub Context
+            _audit = audit;
         }
 
         private static string BuildCreatedNotificationMessage(string lawTitle)
@@ -453,6 +456,16 @@ namespace Backend.Controllers
                 createdTitleKm,
                 createdTitleEn);
 
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "laws:create",
+                EntityType = "Law",
+                EntityId = law.Id.ToString(),
+                Summary = "Created law",
+                Status = AuditLogStatus.Success,
+                Metadata = new { law.Category, law.Date, TitleKm = createdTitleKm, TitleEn = createdTitleEn }
+            }, HttpContext);
+
             return CreatedAtAction(nameof(Get), new { id = law.Id }, new { id = law.Id });
         }
 
@@ -562,6 +575,16 @@ namespace Backend.Controllers
 
             await _db.SaveChangesAsync();
 
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "laws:update",
+                EntityType = "Law",
+                EntityId = law.Id.ToString(),
+                Summary = "Updated law",
+                Status = AuditLogStatus.Success,
+                Metadata = new { law.Category, law.Date }
+            }, HttpContext);
+
             return Ok(new { id = law.Id });
         }
 
@@ -598,6 +621,16 @@ namespace Backend.Controllers
                 "deleted",
                 deletedTitleKm,
                 deletedTitleEn);
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "laws:delete",
+                EntityType = "Law",
+                EntityId = law.Id.ToString(),
+                Summary = "Deleted law",
+                Status = AuditLogStatus.Success,
+                Metadata = new { TitleKm = deletedTitleKm, TitleEn = deletedTitleEn }
+            }, HttpContext);
 
             return Ok(new { id });
         }

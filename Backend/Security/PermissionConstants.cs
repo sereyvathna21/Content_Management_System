@@ -55,5 +55,9 @@ namespace Backend.Security
         public const string RolesCreate = "roles:create";
         public const string RolesUpdate = "roles:update";
         public const string RolesDelete = "roles:delete";
+
+        // Audit Logs
+        public const string AuditRead = "audit:read";
+        public const string AuditExport = "audit:export";
     }
 }

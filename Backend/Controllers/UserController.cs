@@ -1,6 +1,7 @@
 using Backend.DTOs;
 using Backend.Services;
 using Backend.Security;
+using Backend.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
@@ -16,12 +17,14 @@ namespace Backend.Controllers
         private readonly IUserService _user;
         private readonly IWebHostEnvironment _environment;
         private readonly ILogger<UserController> _logger;
+        private readonly IAuditLogService _audit;
 
-        public UserController(IUserService user, IWebHostEnvironment environment, ILogger<UserController> logger)
+        public UserController(IUserService user, IWebHostEnvironment environment, ILogger<UserController> logger, IAuditLogService audit)
         {
             _user = user;
             _environment = environment;
             _logger = logger;
+            _audit = audit;
         }
 
         [HttpPost("register")]
@@ -116,6 +119,19 @@ namespace Backend.Controllers
 
                 return BadRequest(new MessageResponse { Message = result.Message });
             }
+
+            if (result.Data != null)
+            {
+                await _audit.WriteAsync(new AuditLogEntry
+                {
+                    Action = "user:create",
+                    EntityType = "User",
+                    EntityId = result.Data.Id.ToString(),
+                    Summary = "Created user",
+                    Status = AuditLogStatus.Success,
+                    Metadata = new { result.Data.Email, result.Data.Role }
+                }, HttpContext);
+            }
             return Ok(result.Data);
         }
 
@@ -136,6 +152,19 @@ namespace Backend.Controllers
                 if (result.Message.Contains("not found")) return NotFound(new MessageResponse { Message = result.Message });
                 if (result.Message.Contains("exists")) return Conflict(new MessageResponse { Message = result.Message });
                 return BadRequest(new MessageResponse { Message = result.Message });
+            }
+
+            if (result.Data != null)
+            {
+                await _audit.WriteAsync(new AuditLogEntry
+                {
+                    Action = "user:update",
+                    EntityType = "User",
+                    EntityId = result.Data.Id.ToString(),
+                    Summary = "Updated user",
+                    Status = AuditLogStatus.Success,
+                    Metadata = new { result.Data.Email, result.Data.Role, result.Data.IsBlocked }
+                }, HttpContext);
             }
             return Ok(result.Data);
         }

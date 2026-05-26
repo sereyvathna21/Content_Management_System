@@ -55,12 +55,8 @@ services:
     environment:
       NEXT_TELEMETRY_DISABLED: "1"
       NEXT_PUBLIC_API_URL: http://localhost:5001
-      # Server-side internal URL (used by NextAuth running in the admin container)
       BACKEND_INTERNAL_URL: http://backend:5001
-      # Public client-side URL (used by browser) — keep as localhost so browser can reach backend
       NEXT_PUBLIC_BACKEND_URL: http://localhost:5001
-      # NextAuth / Auth.js expects a secret and a base URL. Provide both so
-      # the Admin app can run its authentication handlers in dev.
       AUTH_SECRET: ${AUTH_SECRET:-change_me}
       NEXTAUTH_SECRET: ${AUTH_SECRET:-change_me}
       AUTH_URL: http://localhost:3001
@@ -91,6 +87,14 @@ services:
       - "3000:3000"
     depends_on:
       - backend
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
 
 volumes:
   pgdata:

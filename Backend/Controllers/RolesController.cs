@@ -19,12 +19,14 @@ namespace Backend.Controllers
         private readonly ApplicationDbContext _db;
         private readonly IDistributedCache _cache;
         private readonly ISecurityAuditService _audit;
+        private readonly IAuditLogService _auditLog;
 
-        public RolesController(ApplicationDbContext db, IDistributedCache cache, ISecurityAuditService audit)
+        public RolesController(ApplicationDbContext db, IDistributedCache cache, ISecurityAuditService audit, IAuditLogService auditLog)
         {
             _db = db;
             _cache = cache;
             _audit = audit;
+            _auditLog = auditLog;
         }
 
         [HttpGet]
@@ -72,6 +74,16 @@ namespace Backend.Controllers
             _db.Roles.Add(role);
             await _db.SaveChangesAsync();
 
+            await _auditLog.WriteAsync(new AuditLogEntry
+            {
+                Action = "role:create",
+                EntityType = "Role",
+                EntityId = role.Id.ToString(),
+                Summary = "Created role",
+                Status = AuditLogStatus.Success,
+                Metadata = new { role.Name, role.IsSystemRole }
+            }, HttpContext);
+
             var result = new RoleDto
             {
                 Id = role.Id,
@@ -110,6 +122,16 @@ namespace Backend.Controllers
             role.Name = normalizedName;
             role.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
             await _db.SaveChangesAsync();
+
+            await _auditLog.WriteAsync(new AuditLogEntry
+            {
+                Action = "role:update",
+                EntityType = "Role",
+                EntityId = role.Id.ToString(),
+                Summary = "Updated role",
+                Status = AuditLogStatus.Success,
+                Metadata = new { role.Name, role.IsSystemRole }
+            }, HttpContext);
 
             var userCount = await _db.Users.CountAsync(u => u.RoleId == roleId);
             return Ok(new RoleDto
@@ -151,6 +173,16 @@ namespace Backend.Controllers
 
             _db.Roles.Remove(role);
             await _db.SaveChangesAsync();
+
+            await _auditLog.WriteAsync(new AuditLogEntry
+            {
+                Action = "role:delete",
+                EntityType = "Role",
+                EntityId = role.Id.ToString(),
+                Summary = "Deleted role",
+                Status = AuditLogStatus.Success,
+                Metadata = new { role.Name }
+            }, HttpContext);
 
             return Ok(new MessageResponse { Message = "Role deleted successfully." });
         }
@@ -266,6 +298,16 @@ namespace Backend.Controllers
                     OldPermissions = currentPermissionNames,
                     NewPermissions = newPermissionNames
                 });
+
+            await _auditLog.WriteAsync(new AuditLogEntry
+            {
+                Action = "role:permissions:update",
+                EntityType = "Role",
+                EntityId = roleId.ToString(),
+                Summary = "Updated role permissions",
+                Status = AuditLogStatus.Success,
+                Metadata = new { OldPermissions = currentPermissionNames, NewPermissions = newPermissionNames }
+            }, HttpContext);
 
             await _cache.RemoveAsync($"role_permissions_{roleId}");
 

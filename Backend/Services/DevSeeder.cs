@@ -112,6 +112,9 @@ namespace Backend.Services
                     Security.PermissionConstants.RolesCreate,
                     Security.PermissionConstants.RolesUpdate,
                     Security.PermissionConstants.RolesDelete,
+                    // Audit Logs
+                    Security.PermissionConstants.AuditRead,
+                    Security.PermissionConstants.AuditExport,
                 };
 
                 var existingPerms = db.Permissions.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);

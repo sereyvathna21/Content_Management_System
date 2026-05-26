@@ -2,6 +2,7 @@ using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
 using Backend.Security;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +20,13 @@ namespace Backend.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
+        private readonly IAuditLogService _audit;
 
-        public AdminNewsController(ApplicationDbContext db, IConfiguration config)
+        public AdminNewsController(ApplicationDbContext db, IConfiguration config, IAuditLogService audit)
         {
             _db = db;
             _config = config;
+            _audit = audit;
         }
 
         private int GetCurrentUserId()
@@ -182,6 +185,16 @@ namespace Backend.Controllers
                 });
             }
 
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "news:create",
+                EntityType = "News",
+                EntityId = article.Id.ToString(),
+                Summary = "Created news article",
+                Status = AuditLogStatus.Success,
+                Metadata = new { article.Slug, article.Status, article.PublishAt }
+            }, HttpContext);
+
             return CreatedAtAction(nameof(Get), new { id = article.Id }, new { id = article.Id });
         }
 
@@ -275,6 +288,16 @@ namespace Backend.Controllers
                 };
                 await TriggerFrontendRevalidationAsync(paths);
             }
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "news:update",
+                EntityType = "News",
+                EntityId = article.Id.ToString(),
+                Summary = "Updated news article",
+                Status = AuditLogStatus.Success,
+                Metadata = new { PreviousSlug = previousSlug, PreviousStatus = previousStatus, article.Slug, article.Status }
+            }, HttpContext);
             return Ok(MapAdminDto(article));
         }
 
@@ -305,6 +328,16 @@ namespace Backend.Controllers
                     $"/Landing-page/News/{Uri.EscapeDataString(article.Slug)}"
                 });
             }
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "news:delete",
+                EntityType = "News",
+                EntityId = article.Id.ToString(),
+                Summary = "Deleted news article",
+                Status = AuditLogStatus.Success,
+                Metadata = new { article.Slug }
+            }, HttpContext);
             return NoContent();
         }
 
@@ -335,6 +368,16 @@ namespace Backend.Controllers
                     $"/Landing-page/News/{Uri.EscapeDataString(article.Slug)}"
                 });
             }
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "news:restore",
+                EntityType = "News",
+                EntityId = article.Id.ToString(),
+                Summary = "Restored news article",
+                Status = AuditLogStatus.Success,
+                Metadata = new { article.Slug }
+            }, HttpContext);
             return Ok();
         }
 
@@ -440,6 +483,15 @@ namespace Backend.Controllers
             }
 
             await TriggerFrontendRevalidationAsync(paths);
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = $"bulk:news:{action}",
+                EntityType = "News",
+                Summary = "Bulk action on news",
+                Status = AuditLogStatus.Success,
+                Metadata = new { targetAction = action, affectedCount = articles.Count }
+            }, HttpContext);
             return Ok(new { count = articles.Count });
         }
 

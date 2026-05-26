@@ -3,6 +3,7 @@ using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
 using Backend.Security;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -35,12 +36,14 @@ namespace Backend.Controllers
         private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _env;
         private readonly IMapper _mapper;
+        private readonly IAuditLogService _audit;
 
-        public AdminMediaController(ApplicationDbContext db, IWebHostEnvironment env, IMapper mapper)
+        public AdminMediaController(ApplicationDbContext db, IWebHostEnvironment env, IMapper mapper, IAuditLogService audit)
         {
             _db = db;
             _env = env;
             _mapper = mapper;
+            _audit = audit;
         }
 
         private int GetCurrentUserId()
@@ -100,6 +103,16 @@ namespace Backend.Controllers
 
             _db.Media.Add(media);
             await _db.SaveChangesAsync();
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "media:upload",
+                EntityType = "Media",
+                EntityId = media.Id.ToString(),
+                Summary = "Uploaded media",
+                Status = AuditLogStatus.Success,
+                Metadata = new { media.PublicUrl, media.MimeType, media.FileSize }
+            }, HttpContext);
 
             var dto = _mapper.Map<MediaDto>(media);
             return Ok(dto);

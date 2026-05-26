@@ -15,6 +15,7 @@ namespace Backend.Data
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<SecurityAuditLog> SecurityAuditLogs { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Law> Laws { get; set; }
         public DbSet<LawTranslation> LawTranslations { get; set; }
@@ -65,6 +66,30 @@ namespace Backend.Data
                     .WithMany(p => p.RolePermissions)
                     .HasForeignKey(x => x.PermissionId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AuditLog>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.CreatedAt);
+                b.HasIndex(x => x.ActorUserId);
+                b.HasIndex(x => x.Action);
+                b.HasIndex(x => new { x.EntityType, x.EntityId });
+                b.Property(x => x.Action).HasMaxLength(120).IsRequired();
+                b.Property(x => x.EntityType).HasMaxLength(100).IsRequired();
+                b.Property(x => x.EntityId).HasMaxLength(120);
+                b.Property(x => x.Summary).HasMaxLength(500).IsRequired();
+                b.Property(x => x.Status).HasConversion<string>().HasMaxLength(20);
+                b.Property(x => x.ActorEmail).HasMaxLength(320).IsRequired();
+                b.Property(x => x.ActorRole).HasMaxLength(100);
+                b.Property(x => x.IpAddress).HasMaxLength(64);
+                b.Property(x => x.UserAgent).HasMaxLength(500);
+                b.Property(x => x.Metadata).HasColumnType("jsonb");
+                b.Property(x => x.ErrorMessage).HasMaxLength(1000);
+                b.Property(x => x.RequestId).HasMaxLength(100);
+                b.Property(x => x.CorrelationId).HasMaxLength(100);
+                b.Property(x => x.SessionId).HasMaxLength(100);
+                b.Property(x => x.TenantId).HasMaxLength(100);
             });
 
             modelBuilder.Entity<SecurityAuditLog>(b =>

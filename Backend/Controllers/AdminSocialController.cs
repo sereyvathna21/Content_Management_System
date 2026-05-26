@@ -3,6 +3,7 @@ using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
 using Backend.Security;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,13 +26,15 @@ namespace Backend.Controllers
         private readonly IMapper _mapper;
         private readonly IWebHostEnvironment _env;
         private readonly IConfiguration _config;
+        private readonly IAuditLogService _audit;
 
-        public AdminSocialController(ApplicationDbContext db, IMapper mapper, IWebHostEnvironment env, IConfiguration config)
+        public AdminSocialController(ApplicationDbContext db, IMapper mapper, IWebHostEnvironment env, IConfiguration config, IAuditLogService audit)
         {
             _db = db;
             _mapper = mapper;
             _env = env;
             _config = config;
+            _audit = audit;
         }
 
         private int GetCurrentUserId()
@@ -56,6 +59,19 @@ namespace Backend.Controllers
                 MetadataJson = metadata == null ? null : JsonSerializer.Serialize(metadata),
                 CreatedAt = DateTime.UtcNow
             });
+        }
+
+        private Task WriteAuditAsync(string action, string entityType, Guid? entityId, string summary, object? metadata = null)
+        {
+            return _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = action,
+                EntityType = entityType,
+                EntityId = entityId?.ToString(),
+                Summary = summary,
+                Status = AuditLogStatus.Success,
+                Metadata = metadata
+            }, HttpContext);
         }
 
         private async Task TriggerFrontendRevalidationAsync(string path)
@@ -144,6 +160,8 @@ namespace Backend.Controllers
             AddAudit("CreateTopic", "SocialTopic", topic.Id, topic.Id, null, new { topic.Slug, topic.TitleKm, topic.TitleEn });
             await _db.SaveChangesAsync();
 
+            await WriteAuditAsync("social:topic:create", "SocialTopic", topic.Id, "Created social topic", new { topic.Slug, topic.TitleKm, topic.TitleEn });
+
             return CreatedAtAction(nameof(GetTopic), new { topicId = topic.Id }, _mapper.Map<SocialTopicDto>(topic));
         }
 
@@ -160,6 +178,8 @@ namespace Backend.Controllers
 
             AddAudit("UpdateTopic", "SocialTopic", topic.Id, topic.Id, null, new { dto.TitleKm, dto.TitleEn, dto.SubtitleKm, dto.SubtitleEn, dto.ReferenceKm, dto.ReferenceEn, dto.SortOrder, dto.Status });
             await _db.SaveChangesAsync();
+
+            await WriteAuditAsync("social:topic:update", "SocialTopic", topic.Id, "Updated social topic", new { dto.TitleKm, dto.TitleEn, dto.SortOrder, dto.Status });
             // If this topic is published, trigger frontend revalidation so updates appear on the landing page
             if (topic.Status == TopicStatus.Published)
             {
@@ -186,6 +206,8 @@ namespace Backend.Controllers
 
             _db.SocialTopics.Remove(topic);
             await _db.SaveChangesAsync();
+
+            await WriteAuditAsync("social:topic:delete", "SocialTopic", topic.Id, "Deleted social topic", new { topic.Slug, topic.TitleKm });
             return NoContent();
         }
 
@@ -238,6 +260,8 @@ namespace Backend.Controllers
             AddAudit("CreateSection", "SocialSection", section.Id, topicId, section.Id, new { section.SectionKey, section.TitleKm, section.TitleEn, section.SortOrder, section.ParentSectionId });
             await _db.SaveChangesAsync();
 
+            await WriteAuditAsync("social:section:create", "SocialSection", section.Id, "Created social section", new { section.SectionKey, section.TitleKm, section.TitleEn, section.SortOrder, section.ParentSectionId });
+
             return Ok(_mapper.Map<SocialSectionDto>(section));
         }
 
@@ -268,6 +292,8 @@ namespace Backend.Controllers
 
             AddAudit("UpdateSection", "SocialSection", section.Id, section.TopicId, section.Id, new { dto.SectionKey, dto.TitleKm, dto.TitleEn, dto.SortOrder, dto.ParentSectionId, dto.Status });
             await _db.SaveChangesAsync();
+
+            await WriteAuditAsync("social:section:update", "SocialSection", section.Id, "Updated social section", new { dto.SectionKey, dto.TitleKm, dto.TitleEn, dto.SortOrder, dto.ParentSectionId, dto.Status });
             // If the parent topic is published, trigger frontend revalidation so section changes appear immediately
             var parentTopic = await _db.SocialTopics.FindAsync(section.TopicId);
             if (parentTopic != null && parentTopic.Status == TopicStatus.Published)
@@ -291,6 +317,8 @@ namespace Backend.Controllers
             AddAudit("DeleteSection", "SocialSection", section.Id, section.TopicId, section.Id, new { section.SectionKey, section.TitleKm, section.SortOrder, section.ParentSectionId });
             _db.SocialSections.Remove(section);
             await _db.SaveChangesAsync();
+
+            await WriteAuditAsync("social:section:delete", "SocialSection", section.Id, "Deleted social section", new { section.SectionKey, section.TitleKm, section.SortOrder, section.ParentSectionId });
             return NoContent();
         }
 
@@ -313,6 +341,8 @@ namespace Backend.Controllers
 
             AddAudit("ReorderSections", "SocialSection", null, topicId, null, reorders);
             await _db.SaveChangesAsync();
+
+            await WriteAuditAsync("social:section:reorder", "SocialSection", null, "Reordered social sections", new { topicId, affectedCount = reorders.Count });
             return Ok();
         }
 
@@ -364,6 +394,8 @@ namespace Backend.Controllers
             AddAudit("UploadMedia", "Media", media.Id, null, null, new { media.PublicUrl, media.MimeType, media.FileSize });
             await _db.SaveChangesAsync();
 
+            await WriteAuditAsync("social:media:upload", "Media", media.Id, "Uploaded social media", new { media.PublicUrl, media.MimeType, media.FileSize });
+
             return Ok(_mapper.Map<MediaDto>(media));
         }
 
@@ -386,6 +418,8 @@ namespace Backend.Controllers
             AddAudit("AttachMedia", "SocialSectionMedia", sectionMedia.Id, section.TopicId, sectionId, new { sectionMedia.MediaId, sectionMedia.Position, sectionMedia.SortOrder });
             await _db.SaveChangesAsync();
 
+            await WriteAuditAsync("social:media:attach", "SocialSectionMedia", sectionMedia.Id, "Attached media to social section", new { sectionMedia.MediaId, sectionMedia.Position, sectionMedia.SortOrder });
+
             return Ok(_mapper.Map<SocialSectionMediaDto>(sectionMedia));
         }
 
@@ -404,6 +438,8 @@ namespace Backend.Controllers
             AddAudit("UpdateMedia", "SocialSectionMedia", sectionMedia.Id, null, sectionId, new { dto.Position, dto.SortOrder });
             await _db.SaveChangesAsync();
 
+            await WriteAuditAsync("social:media:update", "SocialSectionMedia", sectionMedia.Id, "Updated social section media", new { dto.Position, dto.SortOrder });
+
             return Ok(_mapper.Map<SocialSectionMediaDto>(sectionMedia));
         }
 
@@ -419,6 +455,8 @@ namespace Backend.Controllers
             AddAudit("DetachMedia", "SocialSectionMedia", sectionMedia.Id, null, sectionId, new { sectionMedia.MediaId, sectionMedia.SortOrder });
             _db.SocialSectionMedia.Remove(sectionMedia);
             await _db.SaveChangesAsync();
+
+            await WriteAuditAsync("social:media:detach", "SocialSectionMedia", sectionMedia.Id, "Detached media from social section", new { sectionMedia.MediaId, sectionMedia.SortOrder });
             return NoContent();
         }
 
@@ -498,6 +536,8 @@ namespace Backend.Controllers
             AddAudit("UploadReference", "SocialReference", reference.Id, topicId, null, new { reference.PublicUrl, reference.FileSizeBytes, reference.SortOrder, reference.Language });
             await _db.SaveChangesAsync();
 
+            await WriteAuditAsync("social:reference:upload", "SocialReference", reference.Id, "Uploaded social reference", new { reference.PublicUrl, reference.FileSizeBytes, reference.SortOrder, reference.Language });
+
             return Ok(_mapper.Map<SocialReferenceDto>(reference));
         }
 
@@ -515,6 +555,8 @@ namespace Backend.Controllers
 
             AddAudit("UpdateReference", "SocialReference", reference.Id, reference.TopicId, null, new { dto.TitleKm, dto.TitleEn, dto.SortOrder });
             await _db.SaveChangesAsync();
+
+            await WriteAuditAsync("social:reference:update", "SocialReference", reference.Id, "Updated social reference", new { dto.TitleKm, dto.TitleEn, dto.SortOrder });
 
             return Ok(_mapper.Map<SocialReferenceDto>(reference));
         }
@@ -536,6 +578,8 @@ namespace Backend.Controllers
             AddAudit("DeleteReference", "SocialReference", reference.Id, reference.TopicId, null, new { reference.PublicUrl, reference.SortOrder });
             _db.SocialReferences.Remove(reference);
             await _db.SaveChangesAsync();
+
+            await WriteAuditAsync("social:reference:delete", "SocialReference", reference.Id, "Deleted social reference", new { reference.PublicUrl, reference.SortOrder });
             return NoContent();
         }
 
@@ -557,6 +601,8 @@ namespace Backend.Controllers
 
             AddAudit("ReorderReferences", "SocialReference", null, topicId, null, reorders);
             await _db.SaveChangesAsync();
+
+            await WriteAuditAsync("social:reference:reorder", "SocialReference", null, "Reordered social references", new { topicId, affectedCount = reorders.Count });
             return Ok();
         }
 
@@ -594,6 +640,8 @@ namespace Backend.Controllers
                 AddAudit("UnpublishTopic", "SocialTopic", topicId, topicId, null, new { topic.Slug });
                 await _db.SaveChangesAsync();
                 await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+
+                await WriteAuditAsync("social:topic:unpublish", "SocialTopic", topicId, "Unpublished social topic", new { topic.Slug });
 
                 return Ok(new { message = "Topic unpublished successfully.", action = "unpublished" });
             }
@@ -669,6 +717,8 @@ namespace Backend.Controllers
             await _db.SaveChangesAsync();
             await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
 
+            await WriteAuditAsync("social:topic:publish", "SocialTopic", topicId, "Published social topic", new { revisionNumber });
+
             return Ok(new { message = "Topic published successfully.", revisionNumber, action = "published" });
         }
 
@@ -700,6 +750,8 @@ namespace Backend.Controllers
             AddAudit("UnpublishTopic", "SocialTopic", topicId, topicId, null, new { topic.Slug });
             await _db.SaveChangesAsync();
             await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+
+            await WriteAuditAsync("social:topic:unpublish", "SocialTopic", topicId, "Unpublished social topic", new { topic.Slug });
 
             return Ok(new { message = "Topic unpublished successfully." });
         }

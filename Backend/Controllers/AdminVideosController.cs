@@ -2,6 +2,7 @@ using Backend.Data;
 using Backend.DTOs;
 using Backend.Models;
 using Backend.Security;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -19,11 +20,13 @@ namespace Backend.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
+        private readonly IAuditLogService _audit;
 
-        public AdminVideosController(ApplicationDbContext db, IConfiguration config)
+        public AdminVideosController(ApplicationDbContext db, IConfiguration config, IAuditLogService audit)
         {
             _db = db;
             _config = config;
+            _audit = audit;
         }
 
         private int GetCurrentUserId()
@@ -146,6 +149,16 @@ namespace Backend.Controllers
                 });
             }
 
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "video:create",
+                EntityType = "Video",
+                EntityId = video.Id.ToString(),
+                Summary = "Created video",
+                Status = AuditLogStatus.Success,
+                Metadata = new { video.Title, video.Status, video.PublishAt }
+            }, HttpContext);
+
             return CreatedAtAction(nameof(Get), new { id = video.Id }, new { id = video.Id });
         }
 
@@ -200,6 +213,16 @@ namespace Backend.Controllers
                     $"/Landing-page/News/videos/{video.Id}"
                 });
             }
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "video:update",
+                EntityType = "Video",
+                EntityId = video.Id.ToString(),
+                Summary = "Updated video",
+                Status = AuditLogStatus.Success,
+                Metadata = new { PreviousStatus = previousStatus, video.Status, video.Title }
+            }, HttpContext);
             return Ok(MapAdminDto(video));
         }
 
@@ -231,6 +254,16 @@ namespace Backend.Controllers
                     $"/Landing-page/News/videos/{video.Id}"
                 });
             }
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "video:delete",
+                EntityType = "Video",
+                EntityId = video.Id.ToString(),
+                Summary = "Deleted video",
+                Status = AuditLogStatus.Success,
+                Metadata = new { video.Title }
+            }, HttpContext);
             return NoContent();
         }
 
@@ -261,6 +294,16 @@ namespace Backend.Controllers
                     $"/Landing-page/News/videos/{video.Id}"
                 });
             }
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "video:restore",
+                EntityType = "Video",
+                EntityId = video.Id.ToString(),
+                Summary = "Restored video",
+                Status = AuditLogStatus.Success,
+                Metadata = new { video.Title }
+            }, HttpContext);
             return Ok();
         }
 
@@ -361,6 +404,15 @@ namespace Backend.Controllers
             }
 
             await TriggerFrontendRevalidationAsync(paths);
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = $"bulk:video:{action}",
+                EntityType = "Video",
+                Summary = "Bulk action on videos",
+                Status = AuditLogStatus.Success,
+                Metadata = new { targetAction = action, affectedCount = videos.Count }
+            }, HttpContext);
             return Ok(new { count = videos.Count });
         }
 
