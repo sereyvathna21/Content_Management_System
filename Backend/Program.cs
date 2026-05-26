@@ -47,7 +47,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISecurityAuditService, SecurityAuditService>();
 builder.Services.AddHostedService<NotificationRetentionService>();
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper((System.Action<AutoMapper.IMapperConfigurationExpression>?)null, System.AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddMemoryCache();
 builder.Services.AddStackExchangeRedisCache(options =>
 {
