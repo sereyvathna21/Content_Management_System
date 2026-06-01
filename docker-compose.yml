@@ -32,13 +32,16 @@ services:
       Jwt__Secret: ${JWT_SECRET:-change_me}
       Jwt__Issuer: ${JWT_ISSUER:-NSPCBackend}
       Jwt__Audience: ${JWT_AUDIENCE:-NSPCAdmin}
-      Email__SmtpHost: ${SMTP_HOST:-smtp.gmail.com}
-      Email__SmtpPort: ${SMTP_PORT:-587}
-      Email__SmtpUser: ${SMTP_USER:-}
-      Email__SmtpPassword: ${SMTP_PASSWORD:-}
-      Email__FromName: ${SMTP_FROM_NAME:-NSPC CMS}
-      Email__FromAddress: ${SMTP_FROM_ADDRESS:-no-reply@nspc.local}
-      Email__ReplyTo: ${SMTP_REPLY_TO:-support@nspc.local}
+      Email__SmtpHost: smtp.gmail.com
+      Email__SmtpPort: "587"
+      Email__SmtpUser: vathnaem@gmail.com
+      Email__SmtpPassword: pczpjujhhjrpgcac
+      Email__FromName: "NSPC CMS"
+      Email__FromAddress: vathnaem@gmail.com
+      Email__ReplyTo: support@nspc.local
+      Email__EnableSsl: "true"
+      Email__UseDefaultCredentials: "false"
+      Email__UserName: vathnaem@gmail.com
     volumes:
       - ./Backend:/src/Backend
       - nuget:/root/.nuget/packages

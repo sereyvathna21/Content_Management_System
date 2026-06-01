@@ -68,7 +68,16 @@ namespace Backend.Services
 
             _cache.Set(cacheKey, pending, TimeSpan.FromMinutes(expiryMinutes));
 
-            await _email.SendOtpAsync(normalizedEmail, otp, "Verify Your Email");
+            try
+            {
+                await _email.SendOtpAsync(normalizedEmail, otp, "Verify Your Email");
+            }
+            catch (Exception ex)
+            {
+                _cache.Remove(cacheKey);
+                Console.WriteLine($"[UserService] Failed to send registration OTP to {normalizedEmail}: {ex.Message}");
+                return (false, "Unable to send verification email right now. Please try again later.");
+            }
 
             return (true, "Registration successful. Please check your email for the verification code.");
         }

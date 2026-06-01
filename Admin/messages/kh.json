@@ -770,6 +770,40 @@
     "rolePermission": "សិទ្ធិតួនាទី",
     "userManagement": "ការគ្រប់គ្រងអ្នកប្រើប្រាស់"
   },
+  "AuditLogPage": {
+    "title": "កំណត់ហេតុសវនកម្ម",
+    "card": {
+      "title": "កំណត់ហេតុសវនកម្ម",
+      "desc": "ស្វែងរក និងពិនិត្យសកម្មភាពអ្នកគ្រប់គ្រង"
+    },
+    "export": "នាំចេញ CSV",
+    "refresh": "ផ្ទុកឡើងវិញ",
+    "clearFilters": "លុបតម្រង",
+    "view": "មើល",
+    "loading": "កំពុងផ្ទុក...",
+    "empty": "រកមិនឃើញកំណត់ហេតុសវនកម្មទេ។",
+    "total": "សរុប",
+    "detailTitle": "ព័ត៌មានលម្អិតកំណត់ហេតុសវនកម្ម",
+    "filters": {
+      "q": "ស្វែងរក",
+      "action": "សកម្មភាព",
+      "entityType": "ប្រភេទធាតុ",
+      "entityId": "លេខសម្គាល់ធាតុ",
+      "userId": "លេខសម្គាល់អ្នកប្រើ",
+      "statusAll": "ស្ថានភាពទាំងអស់",
+      "statusSuccess": "ជោគជ័យ",
+      "statusFailure": "បរាជ័យ"
+    },
+    "headers": {
+      "time": "ពេលវេលា",
+      "action": "សកម្មភាព",
+      "entity": "ធាតុ",
+      "actor": "អ្នកអនុវត្ត",
+      "status": "ស្ថានភាព",
+      "ip": "IP",
+      "detail": "លម្អិត"
+    }
+  },
   "SocialTable": {
     "loading": "កំពុងទាញយក...",
     "noTopicsForQuery": "រកមិនឃើញប្រធានបទសម្រាប់ '{query}'",

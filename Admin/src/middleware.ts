@@ -28,6 +28,10 @@ const BACKEND_URL =
 const middlewareCache = new Map<string, { permissions: string[]; timestamp: number }>();
 const CACHE_TTL = 60000; // 60 seconds
 
+function normalizeRole(role?: string | null) {
+  return role?.trim().toLowerCase().replace(/[_\s-]/g, "");
+}
+
 export default auth(async (req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
@@ -45,9 +49,10 @@ export default auth(async (req) => {
     const token = (req.auth as any).accessToken;
     const userId = (req.auth as any).user?.id;
     const userRole = (req.auth as any).user?.role;
+    const normalizedRole = normalizeRole(userRole);
 
     // SuperAdmin bypass
-    if (userRole === "SuperAdmin") {
+    if (normalizedRole === "superadmin") {
       return NextResponse.next();
     }
 

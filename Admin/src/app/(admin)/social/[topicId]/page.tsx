@@ -55,7 +55,12 @@ export default function TopicEditorPage() {
             const res = await fetch(`${backendUrl}/api/admin/social/topics/${topic.id}/references`, {
                 headers: { "Authorization": `Bearer ${session.accessToken}` }
             });
-            if (!res.ok) throw new Error(t("references.loadFailed") || "Failed to load references");
+            if (!res.ok) {
+                const errorText = await res.text().catch(() => "");
+                throw new Error(
+                    `${t("references.loadFailed") || "Failed to load references"} (${res.status} ${res.statusText})${errorText ? `: ${errorText}` : ""}`
+                );
+            }
             const data = await res.json();
             setReferences(Array.isArray(data) ? data : []);
         } catch (err: any) {

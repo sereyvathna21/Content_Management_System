@@ -764,6 +764,40 @@
     "rolePermission": "Role Permission",
     "userManagement": "User Management"
   },
+  "AuditLogPage": {
+    "title": "Audit Log",
+    "card": {
+      "title": "Audit Logs",
+      "desc": "Search and review admin actions"
+    },
+    "export": "Export CSV",
+    "refresh": "Refresh",
+    "clearFilters": "Clear filters",
+    "view": "View",
+    "loading": "Loading...",
+    "empty": "No audit logs found.",
+    "total": "Total",
+    "detailTitle": "Audit Log Detail",
+    "filters": {
+      "q": "Search",
+      "action": "Action",
+      "entityType": "Entity type",
+      "entityId": "Entity ID",
+      "userId": "User ID",
+      "statusAll": "All status",
+      "statusSuccess": "Success",
+      "statusFailure": "Failure"
+    },
+    "headers": {
+      "time": "Time",
+      "action": "Action",
+      "entity": "Entity",
+      "actor": "Actor",
+      "status": "Status",
+      "ip": "IP",
+      "detail": "Detail"
+    }
+  },
   "SocialTable": {
     "loading": "Loading...",
     "noTopicsForQuery": "No topics found for '{query}'",

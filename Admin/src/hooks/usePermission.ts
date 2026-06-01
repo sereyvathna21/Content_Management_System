@@ -1,11 +1,12 @@
 import { useSession } from "next-auth/react";
 
 export function usePermission() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const user = session?.user as any;
   const role = user?.role as string | undefined;
   const permissions = (user?.permissions ?? []) as string[];
-  const isSuperAdmin = role === "SuperAdmin";
+  const normalizedRole = role?.trim().toLowerCase().replace(/[_\s-]/g, "");
+  const isSuperAdmin = normalizedRole === "superadmin";
 
   const can = (permission: string) => {
     if (isSuperAdmin) return true;
@@ -28,5 +29,6 @@ export function usePermission() {
     canAll,
     permissions,
     isSuperAdmin,
+    status,
   };
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Backend.Data;
 using Backend.Models;
 using Backend.DTOs;
+using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
@@ -15,12 +16,14 @@ namespace Backend.Controllers
         private readonly ApplicationDbContext _db;
         private readonly Services.EmailService _emailService;
         private readonly Microsoft.AspNetCore.SignalR.IHubContext<Backend.Hubs.ContactHub> _hubContext;
+        private readonly IAuditLogService _audit;
 
-        public ContactController(ApplicationDbContext db, Services.EmailService emailService, Microsoft.AspNetCore.SignalR.IHubContext<Backend.Hubs.ContactHub> hubContext)
+        public ContactController(ApplicationDbContext db, Services.EmailService emailService, Microsoft.AspNetCore.SignalR.IHubContext<Backend.Hubs.ContactHub> hubContext, IAuditLogService audit)
         {
             _db = db;
             _emailService = emailService;
             _hubContext = hubContext;
+            _audit = audit;
         }
 
         [HttpPost]
@@ -168,6 +171,16 @@ namespace Backend.Controllers
             c.Read = true;
             await _db.SaveChangesAsync();
 
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "contact:reply",
+                EntityType = "Contact",
+                EntityId = c.Id.ToString(),
+                Summary = "Replied to contact message",
+                Status = AuditLogStatus.Success,
+                Metadata = new { c.Email, Subject = c.Subject }
+            }, HttpContext);
+
             try
             {
                 await _hubContext.Clients.All.SendAsync("ContactReplied", new { id = c.Id, replied = c.Replied, repliedAt = c.RepliedAt, read = c.Read });
@@ -188,6 +201,16 @@ namespace Backend.Controllers
             if (c == null) return NotFound();
             c.Read = !c.Read;
             await _db.SaveChangesAsync();
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "contact:read_toggle",
+                EntityType = "Contact",
+                EntityId = c.Id.ToString(),
+                Summary = "Toggled contact read status",
+                Status = AuditLogStatus.Success,
+                Metadata = new { c.Read }
+            }, HttpContext);
             // broadcast read toggle to connected clients
             try
             {
@@ -209,6 +232,16 @@ namespace Backend.Controllers
             if (c == null) return NotFound();
             _db.Contacts.Remove(c);
             await _db.SaveChangesAsync();
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "contact:delete",
+                EntityType = "Contact",
+                EntityId = c.Id.ToString(),
+                Summary = "Deleted contact message",
+                Status = AuditLogStatus.Success,
+                Metadata = new { c.Email, Subject = c.Subject }
+            }, HttpContext);
 
             // broadcast deletion to connected clients
             try

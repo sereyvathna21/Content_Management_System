@@ -61,7 +61,7 @@ namespace Backend.Controllers
         }
 
         [HttpPost("logout")]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
             // Clear the cookie in case one existed previously
             Response.Cookies.Delete("access_token", new CookieOptions

@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { usePermission } from "@/hooks/usePermission";
 
 type Props = {
@@ -14,9 +15,12 @@ type Props = {
 
 export default function RequirePermission({ permission, anyOf, allOf, children, fallbackPath = "/unauthorized" }: Props) {
   const router = useRouter();
+  const { status } = useSession();
   const { can, canAny, canAll, isSuperAdmin } = usePermission();
 
   useEffect(() => {
+    if (status === "loading") return;
+
     // If user is SuperAdmin, always allow
     if (isSuperAdmin) return;
 
@@ -28,7 +32,7 @@ export default function RequirePermission({ permission, anyOf, allOf, children, 
     if (!allowed) {
       router.replace(fallbackPath);
     }
-  }, [permission, anyOf ? anyOf.join(",") : undefined, allOf ? allOf.join(",") : undefined, isSuperAdmin]);
+  }, [permission, anyOf ? anyOf.join(",") : undefined, allOf ? allOf.join(",") : undefined, isSuperAdmin, router, fallbackPath, status, can, canAny, canAll]);
 
   return <>{children}</>;
 }

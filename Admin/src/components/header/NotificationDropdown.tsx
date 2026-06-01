@@ -142,15 +142,24 @@ export default function NotificationDropdown() {
   }, [backendUrl, canViewNotifications, session?.accessToken, status]);
 
   useEffect(() => {
-    if (!canViewNotifications) {
+    if (!canViewNotifications || status === "loading" || !session?.accessToken) {
       return;
     }
 
+    const accessToken = session.accessToken;
+    let isActive = true;
     const connection = new HubConnectionBuilder()
-      .withUrl(`${backendUrl}/notificationHub`)
+      .withUrl(`${backendUrl}/notificationHub`, {
+        accessTokenFactory: () => accessToken,
+      })
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
+
+    const isExpectedDisconnect = (error: unknown) => {
+      const message = error instanceof Error ? error.message : String(error ?? "");
+      return message.includes("stopped during negotiation") || message.includes("AbortError");
+    };
 
     connection.on(
       "ReceiveNotification",
@@ -193,13 +202,23 @@ export default function NotificationDropdown() {
 
     connection
       .start()
-      .then(() => console.log("SignalR Connected"))
-      .catch((err) => console.error("SignalR Connection Error: ", err));
+      .then(() => {
+        if (isActive) {
+          console.log("SignalR Connected");
+        }
+      })
+      .catch((err) => {
+        if (!isActive && isExpectedDisconnect(err)) {
+          return;
+        }
+        console.error("SignalR Connection Error: ", err);
+      });
 
     return () => {
+      isActive = false;
       connection.stop().then(() => console.log("SignalR Disconnected"));
     };
-  }, [backendUrl, canViewNotifications]);
+  }, [backendUrl, canViewNotifications, session?.accessToken, status]);
 
   if (status !== "loading" && !canViewNotifications) {
     return null;
