@@ -48,6 +48,7 @@ builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<ISecurityAuditService, SecurityAuditService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddHostedService<NotificationRetentionService>();
+builder.Services.AddHostedService<AuditLogRetentionService>();
 builder.Services.AddAutoMapper((System.Action<AutoMapper.IMapperConfigurationExpression>?)null, System.AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddMemoryCache();
 builder.Services.AddStackExchangeRedisCache(options =>
@@ -204,6 +205,14 @@ builder.Services.AddOpenApi();
 var app = builder.Build();
 
 // ---------- Middleware pipeline ----------
+var configuredUrls = builder.WebHost.GetSetting(WebHostDefaults.ServerUrlsKey) ?? string.Empty;
+var enableHttpsRedirection = configuredUrls.Contains("https://", StringComparison.OrdinalIgnoreCase);
+
+if (enableHttpsRedirection)
+{
+    app.UseHttpsRedirection();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

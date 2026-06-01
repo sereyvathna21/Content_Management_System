@@ -39,19 +39,24 @@ namespace Backend.Controllers
                 .OrderByDescending(l => l.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(l => new AuditLogListItemDto
-                {
-                    Id = l.Id,
-                    Action = l.Action,
-                    EntityType = l.EntityType,
-                    EntityId = l.EntityId,
-                    Summary = l.Summary,
-                    Status = l.Status,
-                    ActorUserId = l.ActorUserId,
-                    ActorEmail = l.ActorEmail,
-                    IpAddress = l.IpAddress,
-                    CreatedAt = l.CreatedAt
-                })
+                .Join(
+                    _db.Users.AsNoTracking(),
+                    l => l.ActorUserId,
+                    u => u.Id,
+                    (l, u) => new AuditLogListItemDto
+                    {
+                        Id = l.Id,
+                        Action = l.Action,
+                        EntityType = l.EntityType,
+                        EntityId = l.EntityId,
+                        Summary = l.Summary,
+                        Status = l.Status,
+                        ActorUserId = l.ActorUserId,
+                        ActorEmail = l.ActorEmail,
+                        ActorFullName = u.FullName,
+                        IpAddress = l.IpAddress,
+                        CreatedAt = l.CreatedAt
+                    })
                 .ToListAsync();
 
             await _audit.WriteAsync(new AuditLogEntry
@@ -83,6 +88,11 @@ namespace Backend.Controllers
                 metadata = doc.RootElement.Clone();
             }
 
+            var user = await _db.Users.AsNoTracking()
+                .Where(u => u.Id == log.ActorUserId)
+                .Select(u => u.FullName)
+                .FirstOrDefaultAsync();
+
             var dto = new AuditLogDetailDto
             {
                 Id = log.Id,
@@ -93,6 +103,7 @@ namespace Backend.Controllers
                 Status = log.Status,
                 ActorUserId = log.ActorUserId,
                 ActorEmail = log.ActorEmail,
+                ActorFullName = user ?? log.ActorEmail,
                 ActorRole = log.ActorRole,
                 IpAddress = log.IpAddress,
                 UserAgent = log.UserAgent,

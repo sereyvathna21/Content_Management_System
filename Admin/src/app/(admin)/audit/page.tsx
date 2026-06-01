@@ -21,8 +21,7 @@ type AuditLogListItem = {
   entityId?: string | null;
   summary: string;
   status: "Success" | "Failure" | string;
-  actorUserId: number;
-  actorEmail: string;
+  actorFullName: string;
   ipAddress?: string | null;
   createdAt: string;
 };
@@ -34,8 +33,7 @@ type AuditLogDetail = {
   entityId?: string | null;
   summary: string;
   status: "Success" | "Failure" | string;
-  actorUserId: number;
-  actorEmail: string;
+  actorFullName: string;
   actorRole?: string | null;
   ipAddress?: string | null;
   userAgent?: string | null;
@@ -169,7 +167,18 @@ export default function AuditLogPage() {
       if (signal?.aborted) return;
 
       const rows = Array.isArray(data.items) ? data.items : [];
-      setItems(rows as AuditLogListItem[]);
+      const mapped = rows.map((item: any) => ({
+        id: item.id,
+        action: item.action,
+        entityType: item.entityType,
+        entityId: item.entityId,
+        summary: item.summary,
+        status: item.status,
+        actorFullName: item.actorFullName || item.actorEmail || "",
+        ipAddress: item.ipAddress,
+        createdAt: item.createdAt,
+      } as AuditLogListItem));
+      setItems(mapped);
       setTotalCount(Number(data.total ?? rows.length));
     } catch (err) {
       if (err instanceof DOMException && err.name === "AbortError") return;
@@ -202,8 +211,12 @@ export default function AuditLogPage() {
         setDetail(null);
         return;
       }
-      const data = (await res.json()) as AuditLogDetail;
-      setDetail(data);
+      const raw = await res.json();
+      const mappedDetail: AuditLogDetail = {
+        ...raw,
+        actorFullName: raw.actorFullName || "N/A",
+      };
+      setDetail(mappedDetail);
     } catch (err) {
       console.error(err);
       setDetailError("Failed to load audit log detail.");
@@ -376,7 +389,7 @@ export default function AuditLogPage() {
                           {t("AuditLogPage.headers.entity") || "Entity"}
                         </TableCell>
                         <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
-                          {t("AuditLogPage.headers.actor") || "Actor"}
+                           {"Full Name"}
                         </TableCell>
                         <TableCell isHeader className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400">
                           {t("AuditLogPage.headers.status") || "Status"}
@@ -420,10 +433,9 @@ export default function AuditLogPage() {
                               </div>
                             </TableCell>
                             <TableCell className="px-5 py-4 text-gray-700 text-theme-sm">
-                              <div className="space-y-1">
-                                <div>{item.actorEmail}</div>
-                                <div className="text-xs text-gray-400">#{item.actorUserId}</div>
-                              </div>
+                               <div className="space-y-1">
+                                 <div>{item.actorFullName}</div>
+                               </div>
                             </TableCell>
                             <TableCell className="px-5 py-4 text-theme-sm">
                               <Badge size="sm" variant="light" color={statusColor(item.status)}>
@@ -497,10 +509,10 @@ export default function AuditLogPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-gray-400">Actor</div>
-                  <div className="font-medium text-gray-800">
-                    {detail.actorEmail} {detail.actorRole ? `(${detail.actorRole})` : ""}
-                  </div>
+                   <div className="text-gray-400">Full Name</div>
+                   <div className="font-medium text-gray-800">
+                     {detail.actorFullName}
+                   </div>
                 </div>
                 <div>
                   <div className="text-gray-400">Time</div>

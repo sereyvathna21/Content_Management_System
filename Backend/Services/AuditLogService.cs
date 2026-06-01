@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Backend.Data;
 using Backend.Models;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,31 @@ namespace Backend.Services
 {
     public class AuditLogService : IAuditLogService
     {
+        private static readonly HashSet<string> SensitiveMetadataKeys = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "password",
+            "newpassword",
+            "oldpassword",
+            "confirmPassword",
+            "passphrase",
+            "token",
+            "accessToken",
+            "refreshToken",
+            "idToken",
+            "secret",
+            "clientSecret",
+            "apiKey",
+            "api_key",
+            "authorization",
+            "cookie",
+            "set-cookie",
+            "session",
+            "sessionId",
+            "otp",
+            "verificationCode",
+            "code"
+        };
+
         private readonly ApplicationDbContext _db;
         private readonly HashSet<string> _trustedProxyIps;
 
@@ -150,7 +176,7 @@ namespace Backend.Services
             return remoteIp;
         }
 
-        private static string? SerializeMetadata(object? metadata)
+        private string? SerializeMetadata(object? metadata)
         {
             if (metadata == null)
             {
@@ -159,10 +185,124 @@ namespace Backend.Services
 
             if (metadata is string text)
             {
-                return string.IsNullOrWhiteSpace(text) ? null : text;
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    return null;
+                }
+
+                if (LooksLikeSensitiveToken(text))
+                {
+                    return "\"[REDACTED]\"";
+                }
+
+                if (TryParseJsonNode(text, out var parsedNode))
+                {
+                    var sanitized = SanitizeNode(parsedNode);
+                    return sanitized?.ToJsonString();
+                }
+
+                return text;
             }
 
-            return JsonSerializer.Serialize(metadata);
+            var node = JsonSerializer.SerializeToNode(metadata);
+            if (node == null)
+            {
+                return null;
+            }
+
+            var sanitizedNode = SanitizeNode(node);
+            return sanitizedNode?.ToJsonString();
+        }
+
+        private static bool TryParseJsonNode(string text, out JsonNode? node)
+        {
+            try
+            {
+                node = JsonNode.Parse(text);
+                return node != null;
+            }
+            catch (JsonException)
+            {
+                node = null;
+                return false;
+            }
+        }
+
+        private static JsonNode? SanitizeNode(JsonNode? node, string? parentKey = null)
+        {
+            if (node == null)
+            {
+                return null;
+            }
+
+            if (parentKey != null && SensitiveMetadataKeys.Contains(parentKey))
+            {
+                return JsonValue.Create("[REDACTED]");
+            }
+
+            if (node is JsonObject obj)
+            {
+                var sanitizedObject = new JsonObject();
+                foreach (var property in obj)
+                {
+                    sanitizedObject[property.Key] = SanitizeNode(property.Value, property.Key);
+                }
+
+                return sanitizedObject;
+            }
+
+            if (node is JsonArray array)
+            {
+                var sanitizedArray = new JsonArray();
+                foreach (var item in array)
+                {
+                    sanitizedArray.Add(SanitizeNode(item, parentKey));
+                }
+
+                return sanitizedArray;
+            }
+
+            if (node is JsonValue value)
+            {
+                if (parentKey != null && SensitiveMetadataKeys.Contains(parentKey))
+                {
+                    return JsonValue.Create("[REDACTED]");
+                }
+
+                if (value.TryGetValue<string>(out var stringValue) && LooksLikeSensitiveToken(stringValue))
+                {
+                    return JsonValue.Create("[REDACTED]");
+                }
+
+                return value.DeepClone();
+            }
+
+            return node.DeepClone();
+        }
+
+        private static bool LooksLikeSensitiveToken(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            var trimmed = value.Trim();
+            if (trimmed.Length >= 20 && trimmed.Contains('.') && trimmed.Count(c => c == '.') >= 2)
+            {
+                return true;
+            }
+
+            if (trimmed.Length >= 32)
+            {
+                var alphaNumeric = trimmed.All(char.IsLetterOrDigit);
+                if (alphaNumeric)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

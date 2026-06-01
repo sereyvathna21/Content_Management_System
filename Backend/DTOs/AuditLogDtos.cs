@@ -11,6 +11,7 @@ namespace Backend.DTOs
         public string EntityType { get; set; } = string.Empty;
         public string? EntityId { get; set; }
         public string Summary { get; set; } = string.Empty;
+        public string ActorFullName { get; set; } = string.Empty;
         public AuditLogStatus Status { get; set; }
         public int ActorUserId { get; set; }
         public string ActorEmail { get; set; } = string.Empty;
@@ -25,6 +26,7 @@ namespace Backend.DTOs
         public string EntityType { get; set; } = string.Empty;
         public string? EntityId { get; set; }
         public string Summary { get; set; } = string.Empty;
+        public string ActorFullName { get; set; } = string.Empty;
         public AuditLogStatus Status { get; set; }
         public int ActorUserId { get; set; }
         public string ActorEmail { get; set; } = string.Empty;

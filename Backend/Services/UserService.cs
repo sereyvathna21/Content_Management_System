@@ -19,8 +19,9 @@ namespace Backend.Services
         private readonly IMapper _mapper;
         private readonly IMemoryCache _cache;
         private readonly IDistributedCache _distributedCache;
+        private readonly IAuditLogService _auditLog;
 
-        public UserService(ApplicationDbContext db, EmailService email, IConfiguration config, IMapper mapper, IMemoryCache cache, IDistributedCache distributedCache)
+        public UserService(ApplicationDbContext db, EmailService email, IConfiguration config, IMapper mapper, IMemoryCache cache, IDistributedCache distributedCache, IAuditLogService auditLog)
         {
             _db = db;
             _email = email;
@@ -28,6 +29,7 @@ namespace Backend.Services
             _mapper = mapper;
             _cache = cache;
             _distributedCache = distributedCache;
+            _auditLog = auditLog;
         }
 
         public async Task<(bool Success, string Message)> RegisterAsync(RegisterRequest request)
@@ -318,7 +320,7 @@ namespace Backend.Services
             return (true, "User created successfully.", _mapper.Map<UserDto>(user));
         }
 
-        public async Task<(bool Success, string Message, UserDto? Data)> UpdateUserAsync(int id, UpdateUserRequest request)
+        public async Task<(bool Success, string Message, UserDto? Data)> UpdateUserAsync(int id, UpdateUserRequest request, Microsoft.AspNetCore.Http.HttpContext? httpContext = null)
         {
             // FIX 2: Include Role so mapper has it after save
             var user = await _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
@@ -379,6 +381,25 @@ namespace Backend.Services
             if (shouldRevokeTokens && user.TokenValidAfter.HasValue)
             {
                 await SyncUserRevocationCacheAsync(user.Id, user.TokenValidAfter.Value);
+
+                var reason = role.Id != previousRoleId ? "role change" : "blocked status change";
+                await _auditLog.WriteAsync(new AuditLogEntry
+                {
+                    Action = "security:token_revoked",
+                    EntityType = "User",
+                    EntityId = user.Id.ToString(),
+                    Summary = $"Revoked tokens after {reason}",
+                    Status = AuditLogStatus.Success,
+                    Metadata = new
+                    {
+                        PreviousRoleId = previousRoleId,
+                        NewRoleId = role.Id,
+                        PreviousIsBlocked = previousIsBlocked,
+                        NewIsBlocked = user.IsBlocked,
+                        RevocationTime = user.TokenValidAfter.Value,
+                        Reason = reason
+                    }
+                }, httpContext);
             }
 
             return (true, "User updated successfully.", _mapper.Map<UserDto>(user));
