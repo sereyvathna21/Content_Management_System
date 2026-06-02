@@ -1,38 +1,57 @@
-import { useEffect, useRef } from 'react';
+"use client";
+
+import { useEffect, useRef, useId, useState } from 'react';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
-import Hook = flatpickr.Options.Hook;
 import DateOption = flatpickr.Options.DateOption;
 
 type PropsType = {
-  id: string;
+  id?: string;
   mode?: "single" | "multiple" | "range" | "time";
-  onChange?: Hook | Hook[];
+  onChange?: (value: string) => void;
+  value?: string;
   defaultDate?: DateOption;
   label?: string;
   placeholder?: string;
+  className?: string;
 };
 
 export default function DatePicker({
   id,
   mode,
   onChange,
+  value,
   label,
-  defaultDate,
   placeholder,
+  className,
+  defaultDate,
 }: PropsType) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const fpRef = useRef<flatpickr.Instance | null>(null);
+  const reactId = useId();
+  
+  // 1. Add a mounted state to prevent hydration mismatches
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const fp = flatpickr(`#${id}`, {
+    setMounted(true);
+  }, []);
+
+  const stableId = id ?? `dp-${reactId}`;
+
+  useEffect(() => {
+    if (!mounted || !inputRef.current) return;
+
+    const fp = flatpickr(inputRef.current, {
       mode: mode || "single",
       monthSelectorType: "static",
       dateFormat: "d-m-Y",
-      defaultDate,
-      onChange,
+      defaultDate: value || defaultDate,
       disableMobile: true,
       closeOnSelect: true,
-      appendTo: undefined,
+      onChange: (_, dateStr) => {
+        onChange?.(dateStr);
+      },
     });
 
     fpRef.current = Array.isArray(fp) ? fp[0] : fp;
@@ -40,13 +59,22 @@ export default function DatePicker({
     return () => {
       fpRef.current?.destroy();
     };
-  }, [mode, onChange, id, defaultDate]);
+  }, [mode, mounted, defaultDate, onChange, value]);
+
+  useEffect(() => {
+    if (!fpRef.current) return;
+    if (value) {
+      fpRef.current.setDate(value, false);
+    } else {
+      fpRef.current.clear();
+    }
+  }, [value]);
 
   return (
     <div>
       {label && (
         <label
-          htmlFor={id}
+          htmlFor={stableId}
           className="block text-sm font-medium text-gray-900 mb-1"
         >
           {label}
@@ -55,16 +83,20 @@ export default function DatePicker({
 
       <div className="relative group">
         <input
-          id={id}
+          ref={inputRef}
+          // 2. Suppress hydration warning if it falls back to dynamic IDs,
+          // or pass undefined on the server pass until client mounts.
+          id={mounted ? stableId : id}
           placeholder={placeholder || "Select a date"}
           readOnly
-          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pr-10 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 outline-none transition-colors cursor-pointer hover:border-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-gray-900 dark:text-white/90 dark:border-gray-700 dark:placeholder:text-white/30 dark:focus:border-primary dark:hover:border-gray-600"
+          className={
+            className
+              ? `w-full pr-10 ${className}`
+              : "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 pr-10 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 outline-none transition-colors cursor-pointer hover:border-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 dark:bg-gray-900 dark:text-white/90 dark:border-gray-700 dark:placeholder:text-white/30 dark:focus:border-primary dark:hover:border-gray-600"
+          }
         />
 
-        {/* Calendar icon */}
-        <span
-          className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-gray-500 transition-colors dark:text-gray-500"
-        >
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-gray-500 transition-colors dark:text-gray-500">
           <svg
             className="w-4 h-4"
             fill="none"

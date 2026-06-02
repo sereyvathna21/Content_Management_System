@@ -27,6 +27,8 @@
     "axios": "^1.14.0",
     "flatpickr": "^4.6.13",
     "jsonwebtoken": "^9.0.3",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "next": "^16.1.6",
     "next-auth": "^5.0.0-beta.30",
     "next-intl": "^4.8.3",

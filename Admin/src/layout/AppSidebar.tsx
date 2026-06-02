@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState,useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -16,9 +16,15 @@ import {
   ListIcon,
   PageIcon,
   PieChartIcon,
-  PlugInIcon,
   TableIcon,
   UserCircleIcon,
+  // ADDED MATCHING ICONS BELOW:
+  FileIcon,     // For Resource
+  InfoIcon,          // For About-us
+  LockIcon,          // For Role Permission
+   TaskIcon, // For Audit Log
+  MailIcon,          // For Contact
+  VideoIcon,         // Optional: renamed or matching for News & Media
 } from "../icons/index";
 import SidebarWidget from "./SidebarWidget";
 
@@ -63,28 +69,7 @@ const navItems: NavItem[] = [
   },
 
   {
-    name: "Forms",
-    titleKey: "forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", titleKey: "formElements", path: "/form-elements", pro: false }],
-  },
-  {
-    name: "Tables",
-    titleKey: "tables",
-    icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", titleKey: "basicTables", path: "/basic-tables", pro: false }],
-  },
-  {
-    name: "Pages",
-    titleKey: "pages",
-    icon: <PageIcon />,
-    subItems: [
-      { name: "Blank Page", titleKey: "blankPage", path: "/blank", pro: false },
-      { name: "404 Error", titleKey: "error404", path: "/error-404", pro: false },
-    ],
-  },
-   {
-    icon: <PlugInIcon />,
+    icon: <FileIcon />, // matched to Resource
     name: "Resource",
     titleKey: "resource",
     subItems: [
@@ -93,23 +78,24 @@ const navItems: NavItem[] = [
       { name: "Social Management", titleKey: "social", path: "/social", pro: false, permission: "social:read" },
     ],
   },
-   {
-    icon: <PlugInIcon />,
+  {
+    icon: <VideoIcon />, // matched to News & Media
     name: "News & Media",
     titleKey: "new",
-    subItems: [{ name: "News", titleKey: "news", path: "/news", pro: false, permission: "news:read" },
+    subItems: [
+      { name: "News", titleKey: "news", path: "/news", pro: false, permission: "news:read" },
       { name: "Video", titleKey: "video", path: "/videos", pro: false, permission: "video:read" }
     ],
   },
-   {
-    icon: <PlugInIcon />,
+  {
+    icon: <MailIcon />, // matched to Contact
     name: "Contact",
     titleKey: "contact",
     path: "/contact",
     permission: "contact:read",
   },
-   {
-    icon: <PlugInIcon />,
+  {
+    icon: <InfoIcon />, // matched to About-us
     name: "About-us",
     titleKey: "aboutUs",
     path: "/about-us",
@@ -117,42 +103,22 @@ const navItems: NavItem[] = [
 ];
 
 const othersItems: NavItem[] = [
+ 
   {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    titleKey: "charts",
-    subItems: [
-      { name: "Line Chart", titleKey: "lineChart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", titleKey: "barChart", path: "/bar-chart", pro: false },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    titleKey: "uiElements",
-    subItems: [
-      { name: "Alerts", titleKey: "alerts", path: "/alerts", pro: false },
-      { name: "Avatar", titleKey: "avatar", path: "/avatars", pro: false },
-      { name: "Badge", titleKey: "badge", path: "/badge", pro: false },
-      { name: "Buttons", titleKey: "buttons", path: "/buttons", pro: false },
-      { name: "Images", titleKey: "images", path: "/images", pro: false },
-    ],
-  },
-   {
-    icon: <PlugInIcon />,
+    icon: < TaskIcon />, // matched to Audit Log
     name: "Audit Log",
     titleKey: "auditLog",
     path: "/audit",
   },
   {
-    icon: <PlugInIcon />,
+    icon: <LockIcon />, // matched to Role Permission
     name: "Role Permission",
     titleKey: "rolePermission",
     path: "/settings/roles",
     permission: "roles:read",
   },
   {
-    icon: <PlugInIcon />,
+    icon: <UserCircleIcon />, // matched to User Management
     name: "User Management",
     titleKey: "userManagement",
     path: "/users",
@@ -174,7 +140,6 @@ const AppSidebar: React.FC = () => {
   };
 
   const filteredNavItems = React.useMemo(() => {
-    // While session is being restored, avoid hiding items prematurely
     if (status === "loading") return navItems as NavItem[];
 
     return navItems
@@ -203,6 +168,85 @@ const AppSidebar: React.FC = () => {
       })
       .filter(Boolean) as NavItem[];
   }, [permissions ? permissions.join(",") : "", isSuperAdmin, status]);
+
+  const [openSubmenu, setOpenSubmenu] = useState<{
+    type: "main" | "others";
+    index: number;
+  } | null>(null);
+  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
+    {}
+  );
+  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const isActive = useCallback((path: string) => path === pathname, [pathname]);
+
+  useEffect(() => {
+    let submenuMatched = false;
+    ["main", "others"].forEach((menuType) => {
+      const items = menuType === "main" ? filteredNavItems : filteredOthersItems;
+      items.forEach((nav, index) => {
+        if (nav.subItems) {
+          nav.subItems.forEach((subItem) => {
+            if (isActive(subItem.path)) {
+              setOpenSubmenu((prev) => {
+                if (prev && prev.type === (menuType as "main" | "others") && prev.index === index) {
+                  return prev;
+                }
+                return {
+                  type: menuType as "main" | "others",
+                  index,
+                };
+              });
+              submenuMatched = true;
+            }
+          });
+        }
+      });
+    });
+
+    if (!submenuMatched) {
+      setOpenSubmenu(null);
+    }
+  }, [filteredNavItems, filteredOthersItems, isActive, pathname]);
+
+  useEffect(() => {
+    if (openSubmenu !== null) {
+      const key = `${openSubmenu.type}-${openSubmenu.index}`;
+      if (subMenuRefs.current[key]) {
+        setSubMenuHeight((prevHeights) => ({
+          ...prevHeights,
+          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
+        }));
+      }
+    }
+  }, [openSubmenu]);
+
+  useEffect(() => {
+    const keys = Object.keys(subMenuRefs.current);
+    if (keys.length === 0) return;
+    keys.forEach((key) => {
+      const el = subMenuRefs.current[key];
+      if (!el) return;
+      const h = el.scrollHeight || 0;
+      setSubMenuHeight((prev) => {
+        if (prev[key] === h) return prev;
+        return { ...prev, [key]: h };
+      });
+    });
+  }, [isExpanded, isHovered, isMobileOpen, pathname, filteredNavItems.length, filteredOthersItems.length]);
+
+  const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
+    setOpenSubmenu((prevOpenSubmenu) => {
+      if (
+        prevOpenSubmenu &&
+        prevOpenSubmenu.type === menuType &&
+        prevOpenSubmenu.index === index
+      ) {
+        return null;
+      }
+      return { type: menuType, index };
+    });
+  };
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -329,91 +373,6 @@ const AppSidebar: React.FC = () => {
       ))}
     </ul>
   );
-
-  const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "others";
-    index: number;
-  } | null>(null);
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {}
-  );
-  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  // const isActive = (path: string) => path === pathname;
-   const isActive = useCallback((path: string) => path === pathname, [pathname]);
-
-  useEffect(() => {
-    // Check if the current path matches any submenu item
-    let submenuMatched = false;
-    ["main", "others"].forEach((menuType) => {
-      const items = menuType === "main" ? filteredNavItems : filteredOthersItems;
-      items.forEach((nav, index) => {
-        if (nav.subItems) {
-          nav.subItems.forEach((subItem) => {
-            if (isActive(subItem.path)) {
-              // Avoid forcing a new object each render — only update state when it actually changes
-              setOpenSubmenu((prev) => {
-                if (prev && prev.type === (menuType as "main" | "others") && prev.index === index) {
-                  return prev;
-                }
-                return {
-                  type: menuType as "main" | "others",
-                  index,
-                };
-              });
-              submenuMatched = true;
-            }
-          });
-        }
-      });
-    });
-
-    // If no submenu item matches, close the open submenu
-    if (!submenuMatched) {
-      setOpenSubmenu(null);
-    }
-  }, [filteredNavItems, filteredOthersItems, isActive, pathname]);
-
-  useEffect(() => {
-    // Set the height of the submenu items when the submenu is opened
-    if (openSubmenu !== null) {
-      const key = `${openSubmenu.type}-${openSubmenu.index}`;
-      if (subMenuRefs.current[key]) {
-        setSubMenuHeight((prevHeights) => ({
-          ...prevHeights,
-          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
-        }));
-      }
-    }
-  }, [openSubmenu]);
-
-  // Recalculate submenu heights whenever the sidebar visibility changes or DOM may have updated
-  useEffect(() => {
-    const keys = Object.keys(subMenuRefs.current);
-    if (keys.length === 0) return;
-    keys.forEach((key) => {
-      const el = subMenuRefs.current[key];
-      if (!el) return;
-      const h = el.scrollHeight || 0;
-      setSubMenuHeight((prev) => {
-        if (prev[key] === h) return prev;
-        return { ...prev, [key]: h };
-      });
-    });
-  }, [isExpanded, isHovered, isMobileOpen, pathname, filteredNavItems.length, filteredOthersItems.length]);
-
-  const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
-    setOpenSubmenu((prevOpenSubmenu) => {
-      if (
-        prevOpenSubmenu &&
-        prevOpenSubmenu.type === menuType &&
-        prevOpenSubmenu.index === index
-      ) {
-        return null;
-      }
-      return { type: menuType, index };
-    });
-  };
 
   return (
     <aside

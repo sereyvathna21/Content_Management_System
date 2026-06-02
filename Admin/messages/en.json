@@ -727,7 +727,7 @@
       "desc": "Manage embedded video content"
     }
   },
-  "Sidebar": {
+"Sidebar": {
     "menu": "Menu",
     "others": "Others",
     "dashboard": "Dashboard",
@@ -766,9 +766,13 @@
   },
   "AuditLogPage": {
     "title": "Audit Log",
+    "exportCsv": "Export CSV",
+    "exportPdf": "Export PDF",
+    "exportOptions":"Export options",
     "card": {
       "title": "Audit Logs",
       "desc": "Search and review admin actions"
+
     },
     "export": "Export CSV",
     "refresh": "Refresh",
@@ -778,16 +782,18 @@
     "empty": "No audit logs found.",
     "total": "Total",
     "detailTitle": "Audit Log Detail",
-    "filters": {
-      "q": "Search",
-      "action": "Action",
-      "entityType": "Entity type",
-      "entityId": "Entity ID",
-      "userId": "User ID",
-      "statusAll": "All status",
-      "statusSuccess": "Success",
-      "statusFailure": "Failure"
-    },
+   "filters": {
+  "q": "Search",
+  "action": "Action",
+  "entityType": "Entity type",
+  "entityId": "Entity ID",
+  "userId": "All User",
+  "statusAll": "All status",
+  "statusSuccess": "Success",
+  "statusFailure": "Failure",
+  "from": "From date",
+  "to": "To date"
+},
     "headers": {
       "time": "Time",
       "action": "Action",

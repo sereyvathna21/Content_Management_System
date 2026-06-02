@@ -1,23 +1,23 @@
-declare module "jspdf-autotable" {
-  import { jsPDF } from "jspdf";
+import { jsPDF } from "jspdf";
 
-  interface AutoTableOptions {
-    startY?: number;
-    head?: any[][];
-    body?: any[][];
-    theme?: "striped" | "grid" | "plain";
-    headStyles?: any;
-    styles?: any;
-    columnStyles?: any;
-    margin?: any;
-    pageBreak?: string;
-    rowPageBreak?: string;
-    tableWidth?: string | number;
-  }
+// 1. Declare the options layout explicitly so you can use it inside your app codebase
+export interface AutoTableOptions {
+  startY?: number;
+  head?: any[][];
+  body?: any[][];
+  theme?: "striped" | "grid" | "plain";
+  headStyles?: any;
+  styles?: any;
+  columnStyles?: any;
+  margin?: any;
+  pageBreak?: "auto" | "avoid" | "always";
+  rowPageBreak?: "auto" | "avoid";
+  tableWidth?: "auto" | "wrap" | number;
+}
 
-  global {
-    interface jsPDF {
-      autoTable: (options: AutoTableOptions) => jsPDF;
-    }
+// 2. Augment the existing "jspdf" module namespace to add .autoTable directly onto the doc instance
+declare module "jspdf" {
+  interface jsPDF {
+    autoTable: (options: AutoTableOptions) => jsPDF;
   }
 }
