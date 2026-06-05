@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { useSessionPermissionSync } from "@/hooks/useSessionPermissionSync";
 import { usePermission } from "@/hooks/usePermission";
@@ -29,6 +30,7 @@ interface RolePermissionsMap {
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 
 export default function RolesSettingsPage() {
+  const t = useTranslations("RolesPage");
   const { data: session, status } = useSession();
   const { triggerImmediateSync } = useSessionPermissionSync();
   const { can, canAny } = usePermission();
@@ -71,7 +73,7 @@ export default function RolesSettingsPage() {
       const rolesRes = await fetch(`${BACKEND_URL}/api/admin/roles`, {
         headers: { Authorization: `Bearer ${session.accessToken}` },
       });
-      if (!rolesRes.ok) throw new Error("Failed to fetch system roles.");
+      if (!rolesRes.ok) throw new Error(t("errors.failedFetchRoles"));
       const rolesData: Role[] = await rolesRes.json();
       setRoles(rolesData);
 
@@ -79,7 +81,7 @@ export default function RolesSettingsPage() {
       const permsRes = await fetch(`${BACKEND_URL}/api/admin/permissions`, {
         headers: { Authorization: `Bearer ${session.accessToken}` },
       });
-      if (!permsRes.ok) throw new Error("Failed to fetch system permissions.");
+      if (!permsRes.ok) throw new Error(t("errors.failedFetchPermissions"));
       const permsData: Permission[] = await permsRes.json();
       setPermissions(permsData);
 
@@ -147,6 +149,7 @@ export default function RolesSettingsPage() {
 
   const getCleanPermissionLabel = (name: string) => {
     // e.g. "news:create" -> "create"
+    if (name === "users:block") return "block";
     const parts = name.split(":");
     return parts.length > 1 ? parts[1] : name;
   };
@@ -173,7 +176,7 @@ export default function RolesSettingsPage() {
   const isDirty = () => {
     let dirty = false;
     roles.forEach((role) => {
-      if (role.name === "SuperAdmin") return;
+      if (role.name === "Super Admin") return;
       const initial = initialRolePermissions[role.id] || new Set();
       const current = rolePermissions[role.id] || new Set();
       
@@ -201,7 +204,7 @@ export default function RolesSettingsPage() {
     try {
       // Find roles with changes
       const updatedRoles = roles.filter((role) => {
-        if (role.name === "SuperAdmin") return false;
+        if (role.name === "Super Admin") return false;
         const initial = initialRolePermissions[role.id] || new Set();
         const current = rolePermissions[role.id] || new Set();
         
@@ -340,15 +343,15 @@ export default function RolesSettingsPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => null);
-        throw new Error(data?.message || "Failed to delete role.");
+        throw new Error(data?.message || t("errors.failedDeleteRole"));
       }
 
-      setSuccessMsg("Role deleted successfully.");
+      setSuccessMsg(t("messages.roleDeleted"));
       setConfirmDeleteId(null);
       await loadData();
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || "Failed to delete role.");
+      setErrorMsg(err.message || t("errors.failedDeleteRole"));
     } finally {
       setDeleting(false);
     }
@@ -359,7 +362,7 @@ export default function RolesSettingsPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500 font-medium text-sm">Loading security definitions...</p>
+          <p className="text-gray-500 font-medium text-sm">{t("loading")}</p>
         </div>
       </div>
     );
@@ -373,9 +376,9 @@ export default function RolesSettingsPage() {
         <div className="flex flex-col gap-4 sm:gap-0">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl text-primary font-semibold">Roles & Permissions</h1>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                Configure dynamic Role-Based Access Control (RBAC) and assign security settings.
+              <h1 className="text-2xl sm:text-3xl text-primary font-semibold">{t("title")}</h1>
+              <p className="text-xs sm:text-sm text-gray-500 py-3">
+                {t("subtitle")}
               </p>
             </div>
           </div>
@@ -390,7 +393,7 @@ export default function RolesSettingsPage() {
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900"
               }`}
             >
-              Permissions Matrix
+              {t("tabs.matrix")}
             </button>
             <button
               onClick={() => setActiveTab("roles")}
@@ -400,7 +403,7 @@ export default function RolesSettingsPage() {
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900"
               }`}
             >
-              Role Definitions
+              {t("tabs.roles")}
             </button>
           </div>
         </div>
@@ -426,15 +429,15 @@ export default function RolesSettingsPage() {
       {/* VIEW 1: Permissions Matrix Grid */}
       {activeTab === "matrix" && (
         <ComponentCard
-          title="Dynamic Permissions Grid"
-          desc="Toggles permission attributes across roles. SuperAdmin permissions are locked for safety."
+          title={t("matrix.title")}
+          desc={t("matrix.desc")}
         >
           <div className="border border-gray-200 dark:border-gray-700 rounded-xl max-h-[70vh] overflow-auto">
             <table className="w-full text-left border-collapse min-w-[640px]">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                   <th className="sticky top-0 z-20 p-3 sm:p-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[200px] sm:w-[280px] bg-gray-50 dark:bg-gray-800">
-                    Module & Permissions
+                    {t("matrix.tableHeader")}
                   </th>
                   {roles.map((role) => (
                     <th
@@ -447,15 +450,15 @@ export default function RolesSettingsPage() {
                         </span>
                         {role.name === "SuperAdmin" ? (
                           <span className="text-[8px] sm:text-[10px] text-amber-600 bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-amber-200 flex items-center gap-0.5 font-semibold whitespace-nowrap">
-                            🔒 Locked
+                            🔒 {t("states.locked")}
                           </span>
                         ) : role.isSystemRole ? (
                           <span className="text-[8px] sm:text-[10px] text-blue-600 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-blue-200 font-semibold whitespace-nowrap">
-                            System
+                            {t("states.system")}
                           </span>
                         ) : (
                           <span className="text-[8px] sm:text-[10px] text-gray-500 bg-gray-100 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
-                            Custom
+                            {t("states.custom")}
                           </span>
                         )}
                       </div>
@@ -537,7 +540,7 @@ export default function RolesSettingsPage() {
               disabled={saving || !isDirty()}
               className="px-4 sm:px-5 py-2.5 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-[0.98] transition-all disabled:opacity-50 text-sm w-full sm:w-auto"
             >
-              Reset Changes
+              {t("matrix.actions.reset")}
             </button>
             {canUpdateRole && (
               <button
@@ -548,10 +551,10 @@ export default function RolesSettingsPage() {
                 {saving ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Saving settings...
+                    {t("matrix.actions.saving")}
                   </>
                 ) : (
-                  "Save Changes"
+                  t("matrix.actions.save")
                 )}
               </button>
             )}
@@ -562,8 +565,8 @@ export default function RolesSettingsPage() {
       {/* VIEW 2: Roles definitions management */}
       {activeTab === "roles" && (
         <ComponentCard
-          title="Role Profiles & Definitions"
-          desc="Manage system and custom user role definitions. System roles protect basic structural tasks and cannot be removed."
+          title={t("roles.title")}
+          desc={t("roles.desc")}
         >
           <div className="flex justify-end mb-4">
             {canCreateRole && (
@@ -576,7 +579,7 @@ export default function RolesSettingsPage() {
                 }}
                 className="h-10 px-4 sm:px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm whitespace-nowrap w-full sm:w-auto"
               >
-                Create Custom Role
+                {t("roles.createButton")}
               </button>
             )}
           </div>
@@ -595,28 +598,28 @@ export default function RolesSettingsPage() {
                     <div className="flex gap-1 flex-wrap justify-end">
                       {role.name === "SuperAdmin" && (
                         <span className="text-[10px] bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-semibold px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-900/40 whitespace-nowrap">
-                          🔒 Lock
+                          🔒 {t("states.locked")}
                         </span>
                       )}
                       {role.isSystemRole && (
                         <span className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-900/40 whitespace-nowrap">
-                          System
+                          {t("states.system")}
                         </span>
                       )}
                     </div>
                   </div>
                   <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-2 leading-relaxed line-clamp-3">
-                    {role.description || "No description provided."}
+                    {role.description || t("roles.noDescription")}
                   </p>
                 </div>
 
                 <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-700/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex flex-col">
                     <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">
-                      Assigned Users
+                      {t("roles.assignedUsers")}
                     </span>
                     <span className="text-gray-800 dark:text-gray-200 font-bold text-sm sm:text-base mt-0.5">
-                      {role.userCount} {role.userCount === 1 ? "user" : "users"}
+                      {role.userCount} {role.userCount === 1 ? t("roles.userSingular") : t("roles.userPlural")}
                     </span>
                   </div>
 
@@ -626,7 +629,7 @@ export default function RolesSettingsPage() {
                         onClick={() => handleEditRole(role)}
                         className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
                       >
-                        Edit
+                        {t("roles.editButton")}
                       </button>
                     )}
                     {!role.isSystemRole && canDeleteRole && (
@@ -640,11 +643,11 @@ export default function RolesSettingsPage() {
                         }`}
                         title={
                           role.userCount > 0
-                            ? "Cannot delete role while active users are assigned."
-                            : "Delete Role"
+                            ? t("roles.deleteLockedTooltip")
+                            : t("roles.deleteButton")
                         }
                       >
-                        Delete
+                        {t("roles.deleteButton")}
                       </button>
                     )}
                   </div>
@@ -669,12 +672,12 @@ export default function RolesSettingsPage() {
       >
         <form onSubmit={handleSaveRole} className="space-y-4">
           <h3 className="text-lg sm:text-xl font-bold text-gray-900">
-            {editingRoleId !== null ? "Edit Role Profile" : "Create Custom Role"}
+            {editingRoleId !== null ? t("form.editTitle") : t("form.createTitle")}
           </h3>
           
           <div className="space-y-1">
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              Role Name
+              {t("form.nameLabel")}
             </label>
             <input
               type="text"
@@ -683,20 +686,20 @@ export default function RolesSettingsPage() {
               value={roleFormName}
               onChange={(e) => setRoleFormName(e.target.value)}
               className="w-full h-10 px-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
-              placeholder="e.g. Content Editor"
+              placeholder={t("form.namePlaceholder")}
             />
           </div>
 
           <div className="space-y-1">
             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              Description
+              {t("form.descriptionLabel")}
             </label>
             <textarea
               value={roleFormDesc}
               onChange={(e) => setRoleFormDesc(e.target.value)}
               rows={3}
               className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm"
-              placeholder="Provide a summary of tasks assigned to this role profile."
+              placeholder={t("form.descriptionPlaceholder")}
             />
           </div>
 
@@ -711,13 +714,13 @@ export default function RolesSettingsPage() {
               }}
               className="order-2 sm:order-1 flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
             >
-              Cancel
+              {t("form.cancel")}
             </button>
             <button
               type="submit"
               className="order-1 sm:order-2 flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/95 transition-colors"
             >
-              Save Profile
+              {t("form.saveProfile")}
             </button>
           </div>
         </form>
@@ -743,9 +746,9 @@ export default function RolesSettingsPage() {
             </svg>
           </div>
 
-          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Delete Custom Role</h3>
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">{t("deleteModal.title")}</h3>
           <p className="text-gray-500 mb-6 text-xs sm:text-sm">
-            Are you sure you want to delete this custom role definition? This action is permanent and cannot be undone.
+            {t("deleteModal.text")}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
@@ -754,7 +757,7 @@ export default function RolesSettingsPage() {
               disabled={deleting}
               className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50"
             >
-              Cancel
+              {t("deleteModal.cancel")}
             </button>
             <button
               onClick={handleDeleteRole}
@@ -764,10 +767,10 @@ export default function RolesSettingsPage() {
               {deleting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Deleting...
+                  {t("deleteModal.deleting")}
                 </>
               ) : (
-                "Delete Role"
+                t("deleteModal.deleteButton")
               )}
             </button>
           </div>

@@ -223,6 +223,67 @@
       "general": "general"
     }
   },
+  "RolesPage": {
+    "title": "Roles & Permissions",
+    "subtitle": "Configure dynamic role-based access control and assign security settings.",
+    "loading": "Loading security definitions...",
+    "messages": {
+      "roleDeleted": "Role deleted successfully."
+    },
+    "errors": {
+      "failedFetchRoles": "Failed to fetch system roles.",
+      "failedFetchPermissions": "Failed to fetch system permissions.",
+      "failedDeleteRole": "Failed to delete role."
+    },
+    "tabs": {
+      "matrix": "Permissions Matrix",
+      "roles": "Role Definitions"
+    },
+    "matrix": {
+      "title": "Dynamic Permissions Grid",
+      "desc": "Toggle permission attributes across roles. SuperAdmin permissions are locked for safety.",
+      "tableHeader": "Module & Permissions",
+      "actions": {
+        "reset": "Reset Changes",
+        "save": "Save Changes",
+        "saving": "Saving settings..."
+      }
+    },
+    "roles": {
+      "title": "Role Profiles & Definitions",
+      "desc": "Manage system and custom user role definitions. System roles protect basic structural tasks and cannot be removed.",
+      "createButton": "Create Custom Role",
+      "noDescription": "No description provided.",
+      "assignedUsers": "Assigned Users",
+      "userSingular": "user",
+      "userPlural": "users",
+      "editButton": "Edit",
+      "deleteButton": "Delete Role",
+      "deleteLockedTooltip": "Cannot delete role while active users are assigned."
+    },
+    "form": {
+      "editTitle": "Edit Role Profile",
+      "createTitle": "Create Custom Role",
+      "nameLabel": "Role Name",
+      "namePlaceholder": "e.g. Content Editor",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Provide a summary of tasks assigned to this role profile.",
+      "cancel": "Cancel",
+      "saveProfile": "Save Profile"
+    },
+    "deleteModal": {
+      "title": "Delete Custom Role",
+      "text": "Are you sure you want to delete this custom role definition? This action is permanent and cannot be undone.",
+      "cancel": "Cancel",
+      "deleteButton": "Delete Role",
+      "deleting": "Deleting..."
+    },
+    "states": {
+      "locked": "Locked",
+      "system": "System",
+      "custom": "Custom"
+    }
+  },
   "LawForm": {
     "confirmCloseTitle": "Confirm close",
     "confirmCloseBody": "Are you sure you want to close? Unsaved changes will be lost.",

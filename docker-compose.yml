@@ -26,6 +26,8 @@ services:
       ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${POSTGRES_DB:-nspc};Username=${POSTGRES_USER:-nspc};Password=${POSTGRES_PASSWORD:-nspc_password}
       ConnectionStrings__RedisConnection: redis:6379
       FrontendUrl: http://localhost:3001
+      App__ResetPasswordUrl: http://localhost:3001
+      App__AdminUrl: http://localhost:3001
       App__FrontendUrl: http://localhost:3000
       App__FrontendUrls__0: http://localhost:3000
       App__FrontendUrls__1: http://localhost:3001

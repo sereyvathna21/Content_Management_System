@@ -32,8 +32,8 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
   const t = useTranslations();
   const { can, canAny } = usePermission();
   const canEdit = can("users:update");
-  const canDelete = can("users:delete");
-  const canShowActions = canAny(["users:update", "users:delete"]);
+  const canBlock = can("users:block");
+  const canShowActions = canAny(["users:update", "users:block"]);
   // delegate confirmation to parent; remove local confirm modal
 
   if (loading) return <div>{t("UserTable.loading")}</div>;
@@ -101,7 +101,7 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                 {canEdit && (
                   <button type="button" onClick={() => onEdit(u)} className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50">{t("UserTable.tooltips.edit")}</button>
                 )}
-                {canEdit && (
+                {canBlock && (
                   <button type="button" onClick={() => onBlockRequest(u.id)} className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition ${u.blocked ? "text-green-600 border-green-200 hover:bg-green-50" : "text-red-600 border-red-200 hover:bg-red-50"}`}>{u.blocked ? t("UserTable.tooltips.unblock") : t("UserTable.tooltips.block")}</button>
                 )}
               </div>
@@ -193,7 +193,7 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                             </Tooltip>
                           )}
 
-                          {canEdit && (
+                          {canBlock && (
                             <Tooltip label={u.blocked ? t("UserTable.tooltips.unblock") : t("UserTable.tooltips.block")}>
                               <button
                                 type="button"

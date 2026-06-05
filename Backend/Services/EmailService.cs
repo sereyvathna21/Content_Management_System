@@ -3,23 +3,23 @@ using System.Net.Mail;
 
 namespace Backend.Services
 {
-    public class EmailService
+  public class EmailService
+  {
+    private readonly IConfiguration _configuration;
+
+    public EmailService(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
+      _configuration = configuration;
+    }
 
-        public EmailService(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+    public async Task SendOtpAsync(string toEmail, string otpCode, string subject = "Your Verification Code")
+    {
+      var expiryMinutes = _configuration["App:OtpExpiryMinutes"] ?? "10";
+      var brandName = _configuration["Email:FromName"] ?? "NSPC CMS";
 
-        public async Task SendOtpAsync(string toEmail, string otpCode, string subject = "Your Verification Code")
-        {
-            var expiryMinutes = _configuration["App:OtpExpiryMinutes"] ?? "10";
-            var brandName = _configuration["Email:FromName"] ?? "NSPC CMS";
-
-            var body = WrapInLayout(
-                subject,
-                $@"
+      var body = WrapInLayout(
+          subject,
+          $@"
                 <div class=""logo-box"">
                     <svg width=""24"" height=""24"" viewBox=""0 0 24 24"" fill=""none"" stroke=""#000000"" stroke-width=""2"" stroke-linecap=""round"" stroke-linejoin=""round"">
                         <rect x=""3"" y=""11"" width=""18"" height=""11"" rx=""2"" ry=""2""/>
@@ -36,18 +36,23 @@ namespace Backend.Services
                 <p class=""hint-expiry"">This code expires in {expiryMinutes} minutes.</p>
                 <p class=""hint-ignore"">If you didn't sign up for {WebUtility.HtmlEncode(brandName)}, you can safely ignore this email. Someone else might have typed your email address by mistake.</p>");
 
-            await SendEmailAsync(toEmail, subject, body);
-        }
+      await SendEmailAsync(toEmail, subject, body);
+    }
 
-        public async Task SendPasswordResetAsync(string toEmail, string resetToken)
-        {
-            var frontendUrl = _configuration["App:FrontendUrl"] ?? "http://localhost:3000";
-            var resetLink = $"{frontendUrl}/Authentication/Resetpassword?token={Uri.EscapeDataString(resetToken)}&email={Uri.EscapeDataString(toEmail)}";
-            const string subject = "Reset Your Password";
+    public async Task SendPasswordResetAsync(string toEmail, string resetToken)
+    {
+      var frontendUrl = _configuration["App:ResetPasswordUrl"]
+          ?? _configuration["App:AdminUrl"]
+          ?? _configuration["App:FrontendUrl"]
+          ?? _configuration["FrontendUrl"]
+          ?? "http://localhost:3000";
+      frontendUrl = frontendUrl.TrimEnd('/');
+      var resetLink = $"{frontendUrl}/Authentication/Resetpassword?token={Uri.EscapeDataString(resetToken)}&email={Uri.EscapeDataString(toEmail)}";
+      const string subject = "Reset Your Password";
 
-            var body = WrapInLayout(
-                subject,
-                $@"
+      var body = WrapInLayout(
+          subject,
+          $@"
                 <div class=""logo-box"">
                     <svg width=""24"" height=""24"" viewBox=""0 0 24 24"" fill=""none"" stroke=""#000000"" stroke-width=""2"" stroke-linecap=""round"" stroke-linejoin=""round"">
                         <path d=""M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4""/>
@@ -66,21 +71,21 @@ namespace Backend.Services
                     <a href=""{resetLink}"" class=""link-break"">{resetLink}</a>
                 </p>");
 
-            await SendEmailAsync(toEmail, subject, body);
-        }
+      await SendEmailAsync(toEmail, subject, body);
+    }
 
-        public async Task SendContactReplyAsync(string toEmail, string toName, string subject, string message)
-        {
-            var replyTo = _configuration["Email:ReplyTo"];
-            var brandName = _configuration["Email:FromName"] ?? "NSPC CMS";
-            var safeName = WebUtility.HtmlEncode(toName);
-            var safeMessage = WebUtility.HtmlEncode(message)
-                .Replace("\r\n", "\n")
-                .Replace("\n", "<br />");
+    public async Task SendContactReplyAsync(string toEmail, string toName, string subject, string message)
+    {
+      var replyTo = _configuration["Email:ReplyTo"];
+      var brandName = _configuration["Email:FromName"] ?? "NSPC CMS";
+      var safeName = WebUtility.HtmlEncode(toName);
+      var safeMessage = WebUtility.HtmlEncode(message)
+          .Replace("\r\n", "\n")
+          .Replace("\n", "<br />");
 
-            var body = WrapInLayout(
-                subject,
-                $@"
+      var body = WrapInLayout(
+          subject,
+          $@"
                 <div class=""logo-box"">
                     <svg width=""24"" height=""24"" viewBox=""0 0 24 24"" fill=""none"" stroke=""#000000"" stroke-width=""2"" stroke-linecap=""round"" stroke-linejoin=""round"">
                         <path d=""M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z""/>
@@ -96,17 +101,17 @@ namespace Backend.Services
                 <div class=""divider""></div>
                 <p class=""hint-ignore"">This reply was sent from <strong>{WebUtility.HtmlEncode(brandName)}</strong>. If you have further questions, simply reply to this email.</p>");
 
-            await SendEmailAsync(toEmail, subject, body, replyTo, toName);
-        }
+      await SendEmailAsync(toEmail, subject, body, replyTo, toName);
+    }
 
-        // ─────────────────────────────────────────────────────────────
-        //  Layout wrapper — shared chrome for every email
-        // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────
+    //  Layout wrapper — shared chrome for every email
+    // ─────────────────────────────────────────────────────────────
 
-        private string WrapInLayout(string previewText, string content)
-        {
-            var brandName = _configuration["Email:FromName"] ?? "NSPC CMS";
-            return $@"<!DOCTYPE html>
+    private string WrapInLayout(string previewText, string content)
+    {
+      var brandName = _configuration["Email:FromName"] ?? "NSPC CMS";
+      return $@"<!DOCTYPE html>
 <html lang=""en"">
 <head>
   <meta charset=""UTF-8"" />
@@ -241,44 +246,44 @@ namespace Backend.Services
   </div>
 </body>
 </html>";
-        }
-
-        private async Task SendEmailAsync(
-            string toEmail,
-            string subject,
-            string htmlBody,
-            string? replyTo = null,
-            string? toName = null)
-        {
-            var smtpHost = _configuration["Email:SmtpHost"]!;
-            var smtpPort = int.Parse(_configuration["Email:SmtpPort"] ?? "587");
-            var smtpUser = _configuration["Email:SmtpUser"]!;
-            var smtpPassword = _configuration["Email:SmtpPassword"]!;
-            var fromName = _configuration["Email:FromName"] ?? "NSPC CMS";
-            var fromAddress = _configuration["Email:FromAddress"]!;
-
-            using var client = new SmtpClient(smtpHost, smtpPort)
-            {
-                Credentials = new NetworkCredential(smtpUser, smtpPassword),
-                EnableSsl = true
-            };
-
-            var message = new MailMessage
-            {
-                From = new MailAddress(fromAddress, fromName),
-                Subject = subject,
-                Body = htmlBody,
-                IsBodyHtml = true
-            };
-
-            message.To.Add(string.IsNullOrWhiteSpace(toName)
-                ? new MailAddress(toEmail)
-                : new MailAddress(toEmail, toName));
-
-            if (!string.IsNullOrWhiteSpace(replyTo))
-                message.ReplyToList.Add(new MailAddress(replyTo));
-
-            await client.SendMailAsync(message);
-        }
     }
+
+    private async Task SendEmailAsync(
+        string toEmail,
+        string subject,
+        string htmlBody,
+        string? replyTo = null,
+        string? toName = null)
+    {
+      var smtpHost = _configuration["Email:SmtpHost"]!;
+      var smtpPort = int.Parse(_configuration["Email:SmtpPort"] ?? "587");
+      var smtpUser = _configuration["Email:SmtpUser"]!;
+      var smtpPassword = _configuration["Email:SmtpPassword"]!;
+      var fromName = _configuration["Email:FromName"] ?? "NSPC CMS";
+      var fromAddress = _configuration["Email:FromAddress"]!;
+
+      using var client = new SmtpClient(smtpHost, smtpPort)
+      {
+        Credentials = new NetworkCredential(smtpUser, smtpPassword),
+        EnableSsl = true
+      };
+
+      var message = new MailMessage
+      {
+        From = new MailAddress(fromAddress, fromName),
+        Subject = subject,
+        Body = htmlBody,
+        IsBodyHtml = true
+      };
+
+      message.To.Add(string.IsNullOrWhiteSpace(toName)
+          ? new MailAddress(toEmail)
+          : new MailAddress(toEmail, toName));
+
+      if (!string.IsNullOrWhiteSpace(replyTo))
+        message.ReplyToList.Add(new MailAddress(replyTo));
+
+      await client.SendMailAsync(message);
+    }
+  }
 }
