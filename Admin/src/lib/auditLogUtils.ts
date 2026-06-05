@@ -17,7 +17,7 @@ export const formatDateTime = (dateInput?: Date | string | number): string => {
 
   if (isNaN(date.getTime())) return "-";
 
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -28,20 +28,17 @@ export const formatDateTime = (dateInput?: Date | string | number): string => {
   }).format(date);
 };
 
-const toIsoFormat = (value: string): string => {
-  const [day, month, year] = value.split("-");
-  return `${year}-${month}-${day}`;
-};
-
 export const toIsoDateStart = (value: string): string | null => {
   if (!value) return null;
-  const date = new Date(`${toIsoFormat(value)}T00:00:00Z`);
+  const [day, month, year] = value.split("-");
+  const date = new Date(Number(year), Number(month) - 1, Number(day), 0, 0, 0, 0);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 };
 
 export const toIsoDateEnd = (value: string): string | null => {
   if (!value) return null;
-  const date = new Date(`${toIsoFormat(value)}T23:59:59.999Z`);
+  const [day, month, year] = value.split("-");
+  const date = new Date(Number(year), Number(month) - 1, Number(day), 23, 59, 59, 999);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 };
 

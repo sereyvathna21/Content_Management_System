@@ -37,7 +37,7 @@ export function AuditLogDetailModal({ open, detail, loading, error, onClose }: P
 
   return (
     <Modal isOpen={open} onClose={onClose} showCloseButton>
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4">
         <div className="text-lg font-semibold text-primary border-b pb-2">
           {t("detailTitle") || "Audit Log Detail"}
         </div>
@@ -53,9 +53,9 @@ export function AuditLogDetailModal({ open, detail, loading, error, onClose }: P
         )}
 
         {detail && !loading && (
-          <div className="space-y-4 text-sm">
+          <div className="space-y-4 text-sm overflow-y-auto max-h-[60vh]">
             {/* 1. Core General Information: Easy for business clients/users to interpret */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50/50 p-3 sm:p-4 rounded-xl border border-gray-100">
               <DetailField label="Action" value={detail.action} />
               <DetailField
                 label="Status"
@@ -70,7 +70,7 @@ export function AuditLogDetailModal({ open, detail, loading, error, onClose }: P
               <DetailField
                 label="Entity"
                 value={
-                  <span className="font-mono text-xs bg-white border px-1.5 py-0.5 rounded inline-block">
+                  <span className="font-mono text-xs bg-white border px-1.5 py-0.5 rounded inline-block break-all">
                     {detail.entityType}{detail.entityId ? ` • ${detail.entityId}` : ""}
                   </span>
                 }
@@ -111,7 +111,7 @@ export function AuditLogDetailModal({ open, detail, loading, error, onClose }: P
                 <div className="mt-4 space-y-4">
                   {/* Metadata Raw Logs */}
                   <div>
-                    <div className="flex items-center justify-between text-xs text-gray-400 mb-1 font-medium uppercase tracking-wider">
+                    <div className="flex items-center justify-between text-xs text-gray-400 mb-1 font-medium uppercase tracking-wider flex-wrap gap-2">
                       <span>Metadata</span>
                       <button 
                         type="button"
@@ -121,23 +121,23 @@ export function AuditLogDetailModal({ open, detail, loading, error, onClose }: P
                         Copy JSON
                       </button>
                     </div>
-                    <pre className="max-h-48 overflow-auto rounded-xl border border-gray-200 bg-gray-950 p-3 font-mono text-xs text-green-400 shadow-inner">
+                    <pre className="max-h-48 overflow-auto rounded-xl border border-gray-200 bg-gray-950 p-2 sm:p-3 font-mono text-xs text-green-400 shadow-inner">
                       {JSON.stringify(detail.metadata ?? {}, null, 2)}
                     </pre>
                   </div>
 
                   {/* Network Telemetry Tracking IDs */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50 p-3.5 rounded-xl border border-gray-100">
-                    <DetailField label="Request ID" value={<span className="font-mono text-xs select-all text-gray-700">{detail.requestId || "-"}</span>} />
-                    <DetailField label="Correlation ID" value={<span className="font-mono text-xs select-all text-gray-700">{detail.correlationId || "-"}</span>} />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50 p-3 sm:p-3.5 rounded-xl border border-gray-100">
+                    <DetailField label="Request ID" value={<span className="font-mono text-xs select-all text-gray-700 break-all">{detail.requestId || "N/A"}</span>} />
+                    <DetailField label="Correlation ID" value={<span className="font-mono text-xs select-all text-gray-700 break-all">{detail.correlationId || "N/A"}</span>} />
                     <div className="sm:col-span-2">
-                      <DetailField label="Session ID" value={<span className="font-mono text-xs select-all text-gray-700">{detail.sessionId || "-"}</span>} />
+                      <DetailField label="Session ID" value={<span className="font-mono text-xs select-all text-gray-700 break-all">{detail.sessionId || "N/A"}</span>} />
                     </div>
                     
                     <div className="sm:col-span-2 mt-1">
                       <div className="text-gray-400 text-xs uppercase tracking-wider font-medium mb-0.5">User Agent</div>
                       <div className="font-mono text-xs text-gray-500 break-all bg-white p-2 rounded border">
-                        {detail.userAgent || "-"}
+                        {detail.userAgent || "N/A"}
                       </div>
                     </div>
                   </div>

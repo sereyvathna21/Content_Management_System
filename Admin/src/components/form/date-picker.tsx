@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useId, useState } from 'react';
 import flatpickr from 'flatpickr';
-import 'flatpickr/dist/flatpickr.css';
 import DateOption = flatpickr.Options.DateOption;
 
 type PropsType = {

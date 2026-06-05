@@ -9,6 +9,7 @@ using Backend.Data;
 using Backend.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
 
 namespace Backend.Services
 {
@@ -39,12 +40,14 @@ namespace Backend.Services
             "code"
         };
 
-        private readonly ApplicationDbContext _db;
+        private readonly AuditLogQueue _queue;
         private readonly HashSet<string> _trustedProxyIps;
+        private readonly ILogger<AuditLogService> _logger;
 
-        public AuditLogService(ApplicationDbContext db, IConfiguration config)
+        public AuditLogService(AuditLogQueue queue, IConfiguration config, ILogger<AuditLogService> logger)
         {
-            _db = db;
+            _queue = queue;
+            _logger = logger;
             _trustedProxyIps = config.GetSection("App:TrustedProxyIps").Get<string[]>()?.ToHashSet(StringComparer.OrdinalIgnoreCase)
                 ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
@@ -91,8 +94,32 @@ namespace Backend.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            _db.AuditLogs.Add(log);
-            await _db.SaveChangesAsync(cancellationToken);
+            // Enqueue for background persistence to avoid adding latency to request pipeline
+            try
+            {
+                var json = JsonSerializer.Serialize(new
+                {
+                    log.Id,
+                    log.Action,
+                    log.EntityType,
+                    log.EntityId,
+                    log.Summary,
+                    log.Status,
+                    log.ActorUserId,
+                    log.ActorEmail,
+                    log.IpAddress,
+                    log.Metadata,
+                    log.CreatedAt
+                });
+                _logger.LogInformation("AuditLog payload before enqueue: {Payload}", json);
+
+                await _queue.EnqueueAsync(log);
+                _logger.LogInformation("Enqueued audit log: {Action} Entity={EntityType} Actor={ActorEmail} ActorId={ActorUserId}", log.Action, log.EntityType, log.ActorEmail, log.ActorUserId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to enqueue audit log: {Action}", log.Action);
+            }
         }
 
         private static int? TryResolveUserId(ClaimsPrincipal? user)

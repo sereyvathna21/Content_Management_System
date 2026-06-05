@@ -89,6 +89,15 @@ namespace Backend.Controllers
             if (!result.Success)
                 return BadRequest(new MessageResponse { Message = result.Message });
 
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "user:password_reset",
+                EntityType = "User",
+                Summary = "User password reset completed",
+                Status = AuditLogStatus.Success,
+                Metadata = new { Email = request.Email }
+            }, HttpContext);
+
             return Ok(new MessageResponse { Message = result.Message });
         }
 
@@ -274,6 +283,16 @@ namespace Backend.Controllers
                 return BadRequest(new MessageResponse { Message = result.Message });
             }
 
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "user:avatar_upload",
+                EntityType = "User",
+                EntityId = userId.ToString(),
+                Summary = "User uploaded avatar",
+                Status = AuditLogStatus.Success,
+                Metadata = new { avatarUrl }
+            }, HttpContext);
+
             return Ok(new { avatarUrl });
         }
 
@@ -320,6 +339,16 @@ namespace Backend.Controllers
                 if (result.Message.Contains("exists")) return Conflict(new MessageResponse { Message = result.Message });
                 return BadRequest(new MessageResponse { Message = result.Message });
             }
+
+            await _audit.WriteAsync(new AuditLogEntry
+            {
+                Action = "user:profile_update",
+                EntityType = "User",
+                EntityId = userId.ToString(),
+                Summary = "User updated own profile",
+                Status = AuditLogStatus.Success,
+                Metadata = new { result.Data?.Email }
+            }, HttpContext);
 
             return Ok(result.Data);
         }

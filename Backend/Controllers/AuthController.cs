@@ -34,6 +34,7 @@ namespace Backend.Controllers
                     Summary = "Login failed",
                     Status = AuditLogStatus.Failure,
                     ErrorMessage = result.Message,
+                    ActorEmail = request.Email,
                     Metadata = new { request.Email }
                 }, HttpContext);
 
@@ -50,6 +51,8 @@ namespace Backend.Controllers
                     Action = "auth:login",
                     EntityType = "User",
                     EntityId = result.Data.User.Id.ToString(),
+                    ActorUserId = result.Data.User.Id,
+                    ActorEmail = result.Data.User.Email,
                     Summary = "Login successful",
                     Status = AuditLogStatus.Success,
                     Metadata = new { result.Data.User.Email, result.Data.User.Role }

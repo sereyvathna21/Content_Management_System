@@ -785,9 +785,10 @@
    "filters": {
   "q": "Search",
   "action": "Action",
+  "actionAll": "All actions",
   "entityType": "Entity type",
   "entityId": "Entity ID",
-  "userId": "All User",
+  "userId": "All users",
   "statusAll": "All status",
   "statusSuccess": "Success",
   "statusFailure": "Failure",

@@ -401,25 +401,24 @@ const AppSidebar: React.FC = () => {
                 className="dark:hidden"
                 src="/images/logo.svg"
                 alt="Logo"
-                width={200}
+                width={300}
                 height={40}
-                style={{ width: 200, height: 40 }}
+                
               />
               <Image
                 className="hidden dark:block"
                 src="/images/logo.svg"
                 alt="Logo"
-                width={200}
+                width={300}
                 height={40}
-                style={{ width: 200, height: 40 }}
               />
             </>
           ) : (
             <Image
               src="/images/favicon.svg"
               alt="Logo"
-              width={40}
-              height={40}
+              width={60}
+              height={60}
             />
           )}
         </Link>

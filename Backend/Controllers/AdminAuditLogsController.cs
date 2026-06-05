@@ -39,34 +39,28 @@ namespace Backend.Controllers
                 .OrderByDescending(l => l.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Join(
+                .GroupJoin(
                     _db.Users.AsNoTracking(),
                     l => l.ActorUserId,
                     u => u.Id,
-                    (l, u) => new AuditLogListItemDto
+                    (l, users) => new { Log = l, Users = users })
+                .SelectMany(
+                    x => x.Users.DefaultIfEmpty(),
+                    (x, u) => new AuditLogListItemDto
                     {
-                        Id = l.Id,
-                        Action = l.Action,
-                        EntityType = l.EntityType,
-                        EntityId = l.EntityId,
-                        Summary = l.Summary,
-                        Status = l.Status,
-                        ActorUserId = l.ActorUserId,
-                        ActorEmail = l.ActorEmail,
-                        ActorFullName = u.FullName,
-                        IpAddress = l.IpAddress,
-                        CreatedAt = l.CreatedAt
+                        Id = x.Log.Id,
+                        Action = x.Log.Action,
+                        EntityType = x.Log.EntityType,
+                        EntityId = x.Log.EntityId,
+                        Summary = x.Log.Summary,
+                        Status = x.Log.Status,
+                        ActorUserId = x.Log.ActorUserId,
+                        ActorEmail = x.Log.ActorEmail,
+                        ActorFullName = u != null ? u.FullName : x.Log.ActorEmail,
+                        IpAddress = x.Log.IpAddress,
+                        CreatedAt = x.Log.CreatedAt
                     })
                 .ToListAsync();
-
-            await _audit.WriteAsync(new AuditLogEntry
-            {
-                Action = PermissionConstants.AuditRead,
-                EntityType = "AuditLog",
-                Summary = "Viewed audit log list",
-                Status = AuditLogStatus.Success,
-                Metadata = new { page, pageSize }
-            }, HttpContext);
 
             return Ok(new { total, page, pageSize, items });
         }
@@ -114,15 +108,6 @@ namespace Backend.Controllers
                 CorrelationId = log.CorrelationId,
                 SessionId = log.SessionId
             };
-
-            await _audit.WriteAsync(new AuditLogEntry
-            {
-                Action = PermissionConstants.AuditRead,
-                EntityType = "AuditLog",
-                EntityId = id.ToString(),
-                Summary = "Viewed audit log detail",
-                Status = AuditLogStatus.Success
-            }, HttpContext);
 
             return Ok(dto);
         }

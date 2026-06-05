@@ -78,7 +78,7 @@ export function useAuditLogs(filters: Filters, page: number) {
           createdAt: item.createdAt,
         }));
         setItems(mapped);
-        
+
         setTotalCount(Number(data.totalCount ?? data.total ?? rows.length));
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
@@ -95,38 +95,40 @@ export function useAuditLogs(filters: Filters, page: number) {
 
   const exportCsv = useCallback(async () => {
     if (!session?.accessToken) return;
-    
-    const params = buildParams(false);
-    params.set("format", "csv");
-    
-    params.set("page", "1");
-    params.set("pageSize", "1000"); 
-
-    // ENFORCE 1-DAY LIMIT: Default to today's parameters window if empty
-    if (!params.has("from")) {
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const todayEnd = new Date();
-      todayEnd.setHours(23, 59, 59, 999);
-
-      params.set("from", todayStart.toISOString());
-      params.set("to", todayEnd.toISOString());
-    }
-
+    setLoading(true);
+    setLoadError("");
     try {
+      const params = buildParams(false);
+      params.set("page", "1");
+      params.set("pageSize", "1000");
+
+      // Default to today if no date range selected
+      if (!params.has("from")) {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const todayEnd = new Date();
+        todayEnd.setHours(23, 59, 59, 999);
+        params.set("from", todayStart.toISOString());
+        params.set("to", todayEnd.toISOString());
+      }
+
+      // Call server-side export endpoint so export is logged and capped
+      params.set("format", "csv");
       const res = await fetch(`${backendUrl}/api/admin/audit-logs/export?${params.toString()}`, {
         headers: { Authorization: `Bearer ${session.accessToken}` },
       });
+
       if (!res.ok) {
         const message = await readApiError(res, "Failed to export audit logs");
         setLoadError(message);
         return;
       }
+
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `audit-logs-1day-${new Date().toISOString().split("T")[0]}.csv`;
+      link.download = `audit-logs-${new Date().toISOString().split("T")[0]}.csv`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -134,17 +136,19 @@ export function useAuditLogs(filters: Filters, page: number) {
     } catch (err) {
       console.error(err);
       setLoadError("Failed to export audit logs.");
+    } finally {
+      setLoading(false);
     }
   }, [backendUrl, buildParams, session?.accessToken]);
 
   const exportPdf = useCallback(async () => {
     if (!session?.accessToken) return;
-    
+
     setLoading(true);
     setLoadError("");
     try {
-      const params = buildParams(false); 
-      
+      const params = buildParams(false);
+
       params.set("page", "1");
       params.set("pageSize", "1000");
 
@@ -158,8 +162,10 @@ export function useAuditLogs(filters: Filters, page: number) {
         params.set("from", todayStart.toISOString());
         params.set("to", todayEnd.toISOString());
       }
-      
-      const res = await fetch(`${backendUrl}/api/admin/audit-logs?${params.toString()}`, {
+
+      // Use server-side CSV export then convert to PDF client-side to ensure export logging
+      params.set("format", "csv");
+      const res = await fetch(`${backendUrl}/api/admin/audit-logs/export?${params.toString()}`, {
         headers: { Authorization: `Bearer ${session.accessToken}` },
       });
 
@@ -169,33 +175,28 @@ export function useAuditLogs(filters: Filters, page: number) {
         return;
       }
 
-      const data = await res.json();
-      const allRows = Array.isArray(data.items) ? data.items : [];
-
-      if (allRows.length === 0) {
+      const csvText = await res.text();
+      const lines = csvText.split(/\r?\n/).filter(Boolean);
+      if (lines.length <= 1) {
         setLoadError("No data available for the selected day.");
         return;
       }
 
+      const rows = lines.slice(1).map((line) => {
+        // naive CSV split for simple fields
+        const cols = line.split(/,(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))/);
+        return cols.map((c) => c.replace(/^\"|\"$/g, "").replace(/\"\"/g, '"'));
+      });
+
       const doc = new jsPDF("p", "pt", "a4");
-      
       doc.setFontSize(18);
       doc.text("Audit Logs Report (Single Day)", 40, 40);
       doc.setFontSize(10);
-      
-      const exportDay = params.get("from") 
-        ? new Date(params.get("from")!).toLocaleDateString() 
-        : new Date().toLocaleDateString();
+
+      const exportDay = params.get("from") ? new Date(params.get("from")!).toLocaleDateString() : new Date().toLocaleDateString();
       doc.text(`Log Date: ${exportDay} | Generated on: ${new Date().toLocaleString()}`, 40, 55);
 
-      const tableRows = allRows.map((item: any) => [
-        formatDateTime(item.createdAt),
-        item.action,
-        item.entityType,
-        item.actorFullName || item.actorEmail || "",
-        item.status,
-        item.ipAddress || "-",
-      ]);
+      const tableRows = rows.map((cols) => [cols[0] ?? "", cols[1] ?? "", cols[2] ?? "", cols[4] ?? "", cols[5] ?? "", cols[6] ?? ""]);
 
       autoTable(doc, {
         head: [["Time", "Action", "Entity", "Full Name", "Status", "IP Address"]],
@@ -203,7 +204,7 @@ export function useAuditLogs(filters: Filters, page: number) {
         startY: 70,
         theme: "striped",
         styles: { fontSize: 8 },
-        headStyles: { fillColor: [59, 130, 246] }, 
+        headStyles: { fillColor: [59, 130, 246] },
       });
 
       doc.save(`audit-logs-1day-${new Date().toISOString().split("T")[0]}.pdf`);

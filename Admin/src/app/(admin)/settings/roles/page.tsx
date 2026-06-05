@@ -128,6 +128,7 @@ export default function RolesSettingsPage() {
     permissions.forEach((perm) => {
       let groupName = "Other Modules";
       if (perm.name.startsWith("news:")) groupName = "News Management";
+      else if (perm.name.startsWith("audit:")) groupName = "Audit Log";
       else if (perm.name.startsWith("video:")) groupName = "Videos Management";
       else if (perm.name.startsWith("laws:")) groupName = "Laws Management";
       else if (perm.name.startsWith("publications:")) groupName = "Publications Management";
@@ -368,52 +369,54 @@ export default function RolesSettingsPage() {
 
   return (
     <RequirePermission anyOf={["roles:read", "roles:create", "roles:update", "roles:delete"]}>
-      <div className="space-y-6 p-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl text-primary font-semibold">Roles & Permissions</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Configure dynamic Role-Based Access Control (RBAC) and assign security settings.
-          </p>
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+        <div className="flex flex-col gap-4 sm:gap-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl text-primary font-semibold">Roles & Permissions</h1>
+              <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                Configure dynamic Role-Based Access Control (RBAC) and assign security settings.
+              </p>
+            </div>
+          </div>
+          
+          {/* Navigation Tabs */}
+          <div className="flex bg-gray-100 dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 w-full sm:w-fit">
+            <button
+              onClick={() => setActiveTab("matrix")}
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                activeTab === "matrix"
+                  ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900"
+              }`}
+            >
+              Permissions Matrix
+            </button>
+            <button
+              onClick={() => setActiveTab("roles")}
+              className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                activeTab === "roles"
+                  ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900"
+              }`}
+            >
+              Role Definitions
+            </button>
+          </div>
         </div>
-        
-        {/* Navigation Tabs */}
-        <div className="flex bg-gray-100 dark:bg-gray-800 p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 w-fit self-start md:self-auto">
-          <button
-            onClick={() => setActiveTab("matrix")}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 ${
-              activeTab === "matrix"
-                ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900"
-            }`}
-          >
-            Permissions Matrix
-          </button>
-          <button
-            onClick={() => setActiveTab("roles")}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 ${
-              activeTab === "roles"
-                ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900"
-            }`}
-          >
-            Role Definitions
-          </button>
-        </div>
-      </div>
 
       {/* Success/Error Banners */}
       {successMsg && (
-        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl flex items-center gap-3">
-          <svg className="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 sm:p-4 rounded-xl flex items-start sm:items-center gap-3">
+          <svg className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <span className="text-sm font-medium">{successMsg}</span>
         </div>
       )}
       {errorMsg && (
-        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl flex items-center gap-3">
-          <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-red-50 border border-red-200 text-red-800 p-3 sm:p-4 rounded-xl flex items-start sm:items-center gap-3">
+          <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5 sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <span className="text-sm font-medium">{errorMsg}</span>
@@ -430,28 +433,28 @@ export default function RolesSettingsPage() {
             <table className="w-full text-left border-collapse min-w-[640px]">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                  <th className="sticky top-0 z-20 p-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[280px] bg-gray-50 dark:bg-gray-800">
+                  <th className="sticky top-0 z-20 p-3 sm:p-4 text-xs font-bold text-gray-500 uppercase tracking-wider w-[200px] sm:w-[280px] bg-gray-50 dark:bg-gray-800">
                     Module & Permissions
                   </th>
                   {roles.map((role) => (
                     <th
                       key={role.id}
-                      className="sticky top-0 z-10 p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center bg-gray-50 dark:bg-gray-800"
+                      className="sticky top-0 z-10 p-2 sm:p-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-center bg-gray-50 dark:bg-gray-800"
                     >
-                      <div className="flex flex-col items-center justify-center">
-                        <span className="text-gray-900 dark:text-white font-semibold text-sm">
+                      <div className="flex flex-col items-center justify-center gap-1">
+                        <span className="text-gray-900 dark:text-white font-semibold text-xs sm:text-sm wrap-break-words max-w-20 sm:max-w-none">
                           {role.name}
                         </span>
                         {role.name === "SuperAdmin" ? (
-                          <span className="text-[10px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full mt-1 border border-amber-200 flex items-center gap-1 font-semibold">
+                          <span className="text-[8px] sm:text-[10px] text-amber-600 bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-amber-200 flex items-center gap-0.5 font-semibold whitespace-nowrap">
                             🔒 Locked
                           </span>
                         ) : role.isSystemRole ? (
-                          <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full mt-1 border border-blue-200 font-semibold">
+                          <span className="text-[8px] sm:text-[10px] text-blue-600 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-blue-200 font-semibold whitespace-nowrap">
                             System
                           </span>
                         ) : (
-                          <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full mt-1">
+                          <span className="text-[8px] sm:text-[10px] text-gray-500 bg-gray-100 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                             Custom
                           </span>
                         )}
@@ -467,7 +470,7 @@ export default function RolesSettingsPage() {
                     <tr className="bg-gray-100/50 dark:bg-gray-800/40">
                       <td
                         colSpan={roles.length + 1}
-                        className="p-3 text-xs font-bold text-primary tracking-wide uppercase border-y border-gray-200/60 dark:border-gray-700/60"
+                        className="p-2 sm:p-3 text-xs font-bold text-primary tracking-wide uppercase border-y border-gray-200/60 dark:border-gray-700/60"
                       >
                         {moduleName}
                       </td>
@@ -477,12 +480,12 @@ export default function RolesSettingsPage() {
                         key={perm.id}
                         className="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors"
                       >
-                        <td className="sticky left-0 z-10 p-4 bg-white dark:bg-gray-900">
-                          <div className="font-semibold text-gray-800 dark:text-gray-200 text-sm">
+                        <td className="sticky left-0 z-10 p-2 sm:p-4 bg-white dark:bg-gray-900">
+                          <div className="font-semibold text-gray-800 dark:text-gray-200 text-xs sm:text-sm">
                             {getCleanPermissionLabel(perm.name)}
                           </div>
                           {perm.description && (
-                            <div className="text-xs text-gray-400 mt-0.5">{perm.description}</div>
+                            <div className="text-xs text-gray-400 mt-0.5 hidden sm:block">{perm.description}</div>
                           )}
                           <div className="text-[10px] text-gray-300 font-mono mt-0.5">{perm.name}</div>
                         </td>
@@ -490,7 +493,7 @@ export default function RolesSettingsPage() {
                           const isAssigned = rolePermissions[role.id]?.has(perm.id) || false;
                           const isSuperAdmin = role.name === "SuperAdmin";
                           return (
-                            <td key={role.id} className="p-4 text-center">
+                            <td key={role.id} className="p-2 sm:p-4 text-center">
                               <div className="flex justify-center items-center">
                                 {isSuperAdmin ? (
                                   // SuperAdmin is read-only and always checkmarked
@@ -528,11 +531,11 @@ export default function RolesSettingsPage() {
           </div>
 
           {/* Matrix Actions */}
-          <div className="mt-6 flex justify-end gap-3 border-t border-gray-100 dark:border-gray-800 pt-5">
+          <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 border-t border-gray-100 dark:border-gray-800 pt-4 sm:pt-5">
             <button
               onClick={handleResetMatrix}
               disabled={saving || !isDirty()}
-              className="px-5 py-2.5 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-[0.98] transition-all disabled:opacity-50 text-sm"
+              className="px-4 sm:px-5 py-2.5 rounded-xl font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 active:scale-[0.98] transition-all disabled:opacity-50 text-sm w-full sm:w-auto"
             >
               Reset Changes
             </button>
@@ -540,7 +543,7 @@ export default function RolesSettingsPage() {
               <button
                 onClick={handleSaveMatrix}
                 disabled={saving || !isDirty()}
-                className="px-5 py-2.5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/95 hover:scale-[1.01] active:scale-[0.99] shadow-md transition-all disabled:opacity-50 text-sm flex items-center gap-2"
+                className="px-4 sm:px-5 py-2.5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/95 hover:scale-[1.01] active:scale-[0.99] shadow-md transition-all disabled:opacity-50 text-sm flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 {saving ? (
                   <>
@@ -571,57 +574,57 @@ export default function RolesSettingsPage() {
                   setRoleFormDesc("");
                   setRoleModalOpen(true);
                 }}
-                className="h-10 px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm whitespace-nowrap"
+                className="h-10 px-4 sm:px-5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-md text-sm whitespace-nowrap w-full sm:w-auto"
               >
                 Create Custom Role
               </button>
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
             {roles.map((role) => (
               <div
                 key={role.id}
-                className="bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700/80 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition-shadow duration-200"
+                className="bg-white dark:bg-gray-800 border border-gray-150 dark:border-gray-700/80 rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-md transition-shadow duration-200"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-bold text-gray-900 dark:text-white text-lg">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg wrap-break-words flex-1">
                       {role.name}
                     </h3>
-                    <div className="flex gap-1.5">
+                    <div className="flex gap-1 flex-wrap justify-end">
                       {role.name === "SuperAdmin" && (
-                        <span className="text-[10px] bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-semibold px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-900/40">
+                        <span className="text-[10px] bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-semibold px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-900/40 whitespace-nowrap">
                           🔒 Lock
                         </span>
                       )}
                       {role.isSystemRole && (
-                        <span className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-900/40">
+                        <span className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-900/40 whitespace-nowrap">
                           System
                         </span>
                       )}
                     </div>
                   </div>
-                  <p className="text-gray-500 dark:text-gray-400 text-xs mt-2 leading-relaxed">
+                  <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-2 leading-relaxed line-clamp-3">
                     {role.description || "No description provided."}
                   </p>
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700/50 flex items-center justify-between">
+                <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-700/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex flex-col">
                     <span className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">
                       Assigned Users
                     </span>
-                    <span className="text-gray-800 dark:text-gray-200 font-bold text-sm mt-0.5">
+                    <span className="text-gray-800 dark:text-gray-200 font-bold text-sm sm:text-base mt-0.5">
                       {role.userCount} {role.userCount === 1 ? "user" : "users"}
                     </span>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 w-full sm:w-auto">
                     {!role.isSystemRole && canUpdateRole && (
                       <button
                         onClick={() => handleEditRole(role)}
-                        className="px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
+                        className="flex-1 sm:flex-none px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
                       >
                         Edit
                       </button>
@@ -630,7 +633,7 @@ export default function RolesSettingsPage() {
                       <button
                         onClick={() => setConfirmDeleteId(role.id)}
                         disabled={role.userCount > 0}
-                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                        className={`flex-1 sm:flex-none px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                           role.userCount > 0
                             ? "text-gray-400 bg-gray-100 cursor-not-allowed"
                             : "text-red-600 bg-red-50 hover:bg-red-100"
@@ -661,11 +664,11 @@ export default function RolesSettingsPage() {
           setRoleFormDesc("");
           setEditingRoleId(null);
         }}
-        className="max-w-md p-6"
+        className="w-full max-w-md p-4 sm:p-6 mx-4"
         backdropClassName="fixed inset-0 h-full w-full bg-gray-400/30 backdrop-blur-sm"
       >
         <form onSubmit={handleSaveRole} className="space-y-4">
-          <h3 className="text-xl font-bold text-gray-900">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900">
             {editingRoleId !== null ? "Edit Role Profile" : "Create Custom Role"}
           </h3>
           
@@ -697,7 +700,7 @@ export default function RolesSettingsPage() {
             />
           </div>
 
-          <div className="flex gap-3 pt-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3">
             <button
               type="button"
               onClick={() => {
@@ -706,13 +709,13 @@ export default function RolesSettingsPage() {
                 setRoleFormDesc("");
                 setEditingRoleId(null);
               }}
-              className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+              className="order-2 sm:order-1 flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/95 transition-colors"
+              className="order-1 sm:order-2 flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary/95 transition-colors"
             >
               Save Profile
             </button>
@@ -724,7 +727,7 @@ export default function RolesSettingsPage() {
       <Modal
         isOpen={confirmDeleteId !== null}
         onClose={() => setConfirmDeleteId(null)}
-        className="max-w-md p-6"
+        className="w-full max-w-md p-4 sm:p-6 mx-4"
         backdropClassName="fixed inset-0 h-full w-full bg-gray-400/30 backdrop-blur-sm"
       >
         <div className="flex flex-col items-center text-center">
@@ -740,12 +743,12 @@ export default function RolesSettingsPage() {
             </svg>
           </div>
 
-          <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Custom Role</h3>
-          <p className="text-gray-500 mb-6 text-sm">
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Delete Custom Role</h3>
+          <p className="text-gray-500 mb-6 text-xs sm:text-sm">
             Are you sure you want to delete this custom role definition? This action is permanent and cannot be undone.
           </p>
 
-          <div className="flex gap-3 w-full">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
             <button
               onClick={() => setConfirmDeleteId(null)}
               disabled={deleting}

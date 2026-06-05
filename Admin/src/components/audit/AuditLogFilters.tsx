@@ -27,6 +27,9 @@ type Props = {
   onChange: (patch: Partial<Filters>) => void;
   onReset: () => void;
   onRefresh: () => void;
+  canExport?: boolean;
+  onExportCsv?: () => void;
+  onExportPdf?: () => void;
 };
 
 const inputClass =
@@ -54,8 +57,8 @@ function CustomSelect({
         onClick={() => setOpen((p) => !p)}
         className="dropdown-toggle h-10 w-full px-3 rounded-xl border border-gray-200 bg-gray-50 text-sm outline-none flex items-center justify-between gap-2 focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-gray-300 transition-colors dark:bg-gray-900 dark:border-gray-700 dark:text-white/90"
       >
-        <span className={selected ? "text-gray-800 dark:text-white/90" : "text-gray-400 dark:text-white/30"}>
-          {selected ? selected.label : placeholder}
+        <span className={selected && selected.value !== "" ? "text-gray-800 dark:text-white/90" : "text-gray-400 dark:text-white/30"}>
+          {selected && selected.value !== "" ? selected.label : placeholder}
         </span>
         <svg
           className={`w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
@@ -101,9 +104,10 @@ function CustomSelect({
 }
 
 // ─── Main filter component ───────────────────────────────────────────────────
-export function AuditLogFilters({ filters, onChange, onReset, onRefresh }: Props) {
+export function AuditLogFilters({ filters, onChange, onReset, onRefresh, canExport, onExportCsv, onExportPdf }: Props) {
   const t = useTranslations();
   const [users, setUsers] = useState<User[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -126,26 +130,30 @@ export function AuditLogFilters({ filters, onChange, onReset, onRefresh }: Props
   }, []);
 
   const actionOptions: DropdownOption[] = [
-    { value: "read",   label: "Read" },
+    { value: "",       label: t("AuditLogPage.filters.actionAll") || "All actions" },
     { value: "create", label: "Create" },
     { value: "update", label: "Update" },
     { value: "delete", label: "Delete" },
   ];
 
   const statusOptions: DropdownOption[] = [
+    { value: "",        label: t("AuditLogPage.filters.statusAll") || "All status" },
     { value: "Success", label: t("AuditLogPage.filters.statusSuccess") || "Success" },
     { value: "Failure", label: t("AuditLogPage.filters.statusFailure") || "Failure" },
   ];
 
-  const userOptions: DropdownOption[] = users.map((u) => ({
-    value: String(u.id),
-    label: u.fullName,
-    sublabel: u.email,
-  }));
+  const userOptions: DropdownOption[] = [
+    { value: "", label: t("AuditLogPage.filters.userId") || "All users" },
+    ...users.map((u) => ({
+      value: String(u.id),
+      label: u.fullName,
+      sublabel: u.email,
+    }))
+  ];
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+    <div className="space-y-3 sm:space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3">
 
         {/* Action dropdown */}
         <CustomSelect
@@ -193,13 +201,44 @@ export function AuditLogFilters({ filters, onChange, onReset, onRefresh }: Props
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button size="sm" variant="primary" onClick={onRefresh}>
-          {t("AuditLogPage.refresh") || "Refresh"}
-        </Button>
-        <Button size="sm" variant="outline" onClick={onReset}>
+      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2">
+        <Button size="sm" variant="primary" onClick={onReset} className="w-full sm:w-auto">
           {t("AuditLogPage.clearFilters") || "Clear filters"}
         </Button>
+        {canExport && onExportCsv && onExportPdf && (
+          <div className="relative w-full sm:w-auto">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="w-full flex items-center gap-2 font-medium border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-300 dark:hover:bg-gray-900 justify-center"
+            >
+              {t("AuditLogPage.exportOptions") || "Export As..."}
+            </Button>
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-xl border border-gray-100 bg-white p-1.5 shadow-xl ring-1 ring-black/5 focus:outline-none z-50 dark:border-gray-800 dark:bg-gray-950">
+                <button
+                  onClick={() => {
+                    onExportCsv();
+                    setDropdownOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 active:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900 dark:active:bg-gray-800"
+                >
+                  <span>{t("AuditLogPage.exportCsv") || "Export CSV"}</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onExportPdf();
+                    setDropdownOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 active:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-900 dark:active:bg-gray-800"
+                >
+                  <span>{t("AuditLogPage.exportPdf") || "Export PDF"}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
