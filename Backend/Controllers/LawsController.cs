@@ -22,6 +22,8 @@ namespace Backend.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly IHubContext<NotificationHub> _hubContext; // Add SignalR Hub Context
         private readonly IAuditLogService _audit;
+        private readonly IConfiguration _config;
+        private readonly TelegramSyncQueue _telegramQueue;
         private const long MaxPdfBytes = 50_000_000;
         private static readonly HashSet<string> AllowedPdfContentTypes = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -46,12 +48,14 @@ namespace Backend.Controllers
             ".com"
         };
 
-        public LawsController(ApplicationDbContext db, IWebHostEnvironment env, IHubContext<NotificationHub> hubContext, IAuditLogService audit)
+        public LawsController(ApplicationDbContext db, IWebHostEnvironment env, IHubContext<NotificationHub> hubContext, IAuditLogService audit, IConfiguration config, TelegramSyncQueue telegramQueue)
         {
             _db = db;
             _env = env;
             _hubContext = hubContext; // Initialize Hub Context
             _audit = audit;
+            _config = config;
+            _telegramQueue = telegramQueue;
         }
 
         private static string BuildCreatedNotificationMessage(string lawTitle)
@@ -456,6 +460,20 @@ namespace Backend.Controllers
                 createdTitleKm,
                 createdTitleEn);
 
+            var caption = TelegramCaptionFormatter.FormatLawCaption(law, law.Translations);
+            var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
+            var linkUrl = $"{frontendUrl}/Landing-page/Laws";
+
+            await _telegramQueue.EnqueueAsync(new TelegramSyncJob
+            {
+                Action = "Create",
+                EntityType = "Law",
+                EntityId = law.Id,
+                Caption = caption,
+                LinkUrl = linkUrl,
+                LinkText = "📄 View Laws"
+            });
+
             await _audit.WriteAsync(new AuditLogEntry
             {
                 Action = "laws:create",
@@ -597,6 +615,13 @@ namespace Backend.Controllers
 
             var (deletedTitleKm, deletedTitleEn) = GetLocalizedLawTitles(law.Translations);
             var deletedLawTitle = BuildFallbackLawTitle(deletedTitleKm, deletedTitleEn, law.Id);
+
+            await _telegramQueue.EnqueueAsync(new TelegramSyncJob
+            {
+                Action = "Delete",
+                EntityType = "Law",
+                EntityId = law.Id
+            });
 
             _db.Laws.Remove(law);
             await _db.SaveChangesAsync();

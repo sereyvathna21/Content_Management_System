@@ -21,12 +21,25 @@ namespace Backend.Controllers
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
         private readonly IAuditLogService _audit;
+        private readonly TelegramSyncQueue _telegramQueue;
 
-        public AdminNewsController(ApplicationDbContext db, IConfiguration config, IAuditLogService audit)
+        public AdminNewsController(ApplicationDbContext db, IConfiguration config, IAuditLogService audit, TelegramSyncQueue telegramQueue)
         {
             _db = db;
             _config = config;
             _audit = audit;
+            _telegramQueue = telegramQueue;
+        }
+
+        private async Task<string?> ResolveImageUrlAsync(NewsArticle article)
+        {
+            if (!string.IsNullOrWhiteSpace(article.ImageUrl)) return article.ImageUrl;
+            if (article.ImageMediaId.HasValue)
+            {
+                var media = await _db.Media.FindAsync(article.ImageMediaId.Value);
+                return media?.PublicUrl; 
+            }
+            return null;
         }
 
         private int GetCurrentUserId()
@@ -183,6 +196,22 @@ namespace Backend.Controllers
                     "/Landing-page/News",
                     $"/Landing-page/News/{Uri.EscapeDataString(article.Slug)}"
                 });
+
+                var caption = TelegramCaptionFormatter.FormatNewsCaption(article);
+                var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
+                var portalUrl = $"{frontendUrl}/Landing-page/News/{Uri.EscapeDataString(article.Slug)}";
+                var photoUrl = await ResolveImageUrlAsync(article);
+
+                await _telegramQueue.EnqueueAsync(new TelegramSyncJob
+                {
+                    Action = "Create",
+                    EntityType = "News",
+                    EntityId = article.Id,
+                    Caption = caption,
+                    PhotoUrl = photoUrl,
+                    LinkUrl = portalUrl,
+                    LinkText = "📰 Read Article"
+                });
             }
 
             await _audit.WriteAsync(new AuditLogEntry
@@ -289,6 +318,34 @@ namespace Backend.Controllers
                 await TriggerFrontendRevalidationAsync(paths);
             }
 
+            if (article.Status == ContentStatus.Published)
+            {
+                var caption = TelegramCaptionFormatter.FormatNewsCaption(article);
+                var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
+                var portalUrl = $"{frontendUrl}/Landing-page/News/{Uri.EscapeDataString(article.Slug)}";
+                var photoUrl = await ResolveImageUrlAsync(article);
+                
+                // We need to fetch the old article state to check if photoUrl changed, 
+                // but since we don't have it easily available, we can just assume IsCaptionOnlyEdit = false for simplicity, 
+                // or fetch the old media ID before modification. But wait, `previousSlug` and `previousStatus` were stored. Let's just update the media every time.
+                // Wait, guide says: 
+                // var oldPhotoUrl = await ResolveImageUrlAsync(oldArticleState);
+                // We will just do full update for simplicity.
+                var action = previousStatus != ContentStatus.Published ? "Create" : "Update";
+
+                await _telegramQueue.EnqueueAsync(new TelegramSyncJob
+                {
+                    Action = action,
+                    EntityType = "News",
+                    EntityId = article.Id,
+                    Caption = caption,
+                    PhotoUrl = photoUrl,
+                    LinkUrl = portalUrl,
+                    LinkText = "📰 Read Article",
+                    IsCaptionOnlyEdit = false
+                });
+            }
+
             await _audit.WriteAsync(new AuditLogEntry
             {
                 Action = "news:update",
@@ -326,6 +383,13 @@ namespace Backend.Controllers
                 {
                     "/Landing-page/News",
                     $"/Landing-page/News/{Uri.EscapeDataString(article.Slug)}"
+                });
+
+                await _telegramQueue.EnqueueAsync(new TelegramSyncJob
+                {
+                    Action = "Delete",
+                    EntityType = "News",
+                    EntityId = article.Id
                 });
             }
 

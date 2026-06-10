@@ -20,6 +20,8 @@ namespace Backend.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly INotificationService _notificationService;
         private readonly IAuditLogService _audit;
+        private readonly IConfiguration _config;
+        private readonly TelegramSyncQueue _telegramQueue;
 
         private const long MaxAttachmentBytes = 50_000_000;
 
@@ -47,12 +49,14 @@ namespace Backend.Controllers
             ".com"
         };
 
-        public PublicationsController(ApplicationDbContext db, IWebHostEnvironment env, INotificationService notificationService, IAuditLogService audit)
+        public PublicationsController(ApplicationDbContext db, IWebHostEnvironment env, INotificationService notificationService, IAuditLogService audit, IConfiguration config, TelegramSyncQueue telegramQueue)
         {
             _db = db;
             _env = env;
             _notificationService = notificationService;
             _audit = audit;
+            _config = config;
+            _telegramQueue = telegramQueue;
         }
 
         [HttpGet]
@@ -224,6 +228,20 @@ namespace Backend.Controllers
             var message = $"Publication \"{titleEn}\" was created.";
             await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "created");
 
+            var caption = TelegramCaptionFormatter.FormatPublicationCaption(publication, publication.Translations);
+            var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
+            var linkUrl = $"{frontendUrl}/Landing-page/Publications";
+
+            await _telegramQueue.EnqueueAsync(new TelegramSyncJob
+            {
+                Action = "Create",
+                EntityType = "Publication",
+                EntityId = publication.Id,
+                Caption = caption,
+                LinkUrl = linkUrl,
+                LinkText = "📋 View Publications"
+            });
+
             await _audit.WriteAsync(new AuditLogEntry
             {
                 Action = "publication:create",
@@ -381,6 +399,13 @@ namespace Backend.Controllers
             // Send notification about the publication deletion BEFORE deleting
             var message = $"Publication \"{titleEn}\" was deleted.";
             await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "deleted");
+
+            await _telegramQueue.EnqueueAsync(new TelegramSyncJob
+            {
+                Action = "Delete",
+                EntityType = "Publication",
+                EntityId = publication.Id
+            });
 
             await _audit.WriteAsync(new AuditLogEntry
             {

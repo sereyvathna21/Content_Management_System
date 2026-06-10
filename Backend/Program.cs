@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Backend.Data;
 using Backend.Services;
+using Backend.Models;
 using Backend.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -60,6 +61,21 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+// ── Bind Telegram config from appsettings.json ───────────────────────────
+builder.Services.Configure<TelegramOptions>(
+    builder.Configuration.GetSection("Telegram")
+);
+
+// ── Register Telegram Services ───────────────────────────────────────────
+builder.Services.AddHttpClient<ITelegramService, TelegramService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+
+// Register the queue as a singleton and the worker as a hosted service
+builder.Services.AddSingleton<TelegramSyncQueue>();
+builder.Services.AddHostedService<TelegramBackgroundWorker>();
 
 // ---------- Rate Limiting ----------
 builder.Services.AddRateLimiter(options =>

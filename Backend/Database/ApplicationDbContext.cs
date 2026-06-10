@@ -25,6 +25,7 @@ namespace Backend.Data
         public DbSet<NewsArticleTranslation> NewsArticleTranslations { get; set; }
         public DbSet<Video> Videos { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<TelegramMessageMapping> TelegramMessageMappings { get; set; }
 
         // Social Content
         public DbSet<SocialTopic> SocialTopics { get; set; }
@@ -38,6 +39,12 @@ namespace Backend.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<TelegramMessageMapping>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.EntityType, e.EntityId }).IsUnique();
+            });
 
             modelBuilder.Entity<Role>(b =>
             {
