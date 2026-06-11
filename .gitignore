@@ -1,54 +1,71 @@
-# Root-level .gitignore for the workspace
+# NSPC CMS — root .gitignore (authoritative for the monorepo)
 
-# macOS
-.DS_Store
-
-# Windows
+# macOS / Windows
+**/.DS_Store
 Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # Node / JavaScript
 node_modules/
 .pnp/
 .pnp.js
+.pnp.*
 .yarn/install-state.gz
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# Next.js / static outputs
-.next/
+# Next.js / frontend build outputs
+**/.next/
 out/
 build/
 dist/
+.turbo/
+.cache/
 
-# Vercel / Now
+# Vercel
 .vercel/
 .now/
 
-# Production
-publish/
-wwwroot/
-
-# TypeScript
+# TypeScript (generated)
 *.tsbuildinfo
 next-env.d.ts
 
-# Environment files / secrets
+# Environment files — ignore secrets, allow example templates
 .env
-.env.*
 .env.local
-appsettings.Development.json
-appsettings.Local.json
-appsettings.json
-secrets.json
+.env.*.local
+.env.development
+.env.production
+.env.test
+.env.*
+!.env.example
+!**/.env.example
+
+# Backend config / secrets (scoped to Backend/)
+Backend/appsettings.json
+Backend/appsettings.Development.json
+Backend/appsettings.Local.json
+Backend/secrets.json
+!Backend/appsettings.example.json
+
+# User-uploaded media (never commit)
+Backend/wwwroot/uploads/
+wwwroot/
 
 # Logs
 logs/
 *.log
 
-# Editor directories and IDE files
+# Editor / IDE (local per developer)
 .vscode/
 .idea/
+.cursor/
 .vs/
 *.suo
 *.user
@@ -73,9 +90,6 @@ artifacts/
 
 # Coverage and testing
 coverage/
-coverage/**
 
-# Misc
+# Certificates / keys
 *.pem
-
-# Keep project-specific .gitignore entries below in their directories if needed
