@@ -15,9 +15,11 @@ namespace Backend.Services
             var title   = TelegramService.EscapeHtml(translation.Title);
             var excerpt = TelegramService.EscapeHtml(TelegramService.SafeTruncate(translation.Excerpt ?? "", 300));
             var category = TelegramService.EscapeHtml(article.Category ?? "General");
+            var dateStr  = article.PublishAt?.ToString("yyyy-MM-dd") ?? article.CreatedAt.ToString("yyyy-MM-dd");
 
             return $"<b>📰 {title}</b>\n\n<b>Category:</b> {category}\n" +
-                   (string.IsNullOrWhiteSpace(excerpt) ? "" : $"{excerpt}\n\n") +
+                   (string.IsNullOrWhiteSpace(excerpt) ? "" : $"<b>Description:</b> {excerpt}\n") +
+                   (string.IsNullOrWhiteSpace(dateStr) ? "" : $"<b>Date:</b> {dateStr}\n\n") +
                    $"<i>Published on NSPC — tap below to read more.</i>";
         }
 
@@ -31,9 +33,11 @@ namespace Backend.Services
 
             var title    = TelegramService.EscapeHtml(translation.Title);
             var category = TelegramService.EscapeHtml(translation.Category ?? law.Category ?? "General");
+            var description = TelegramService.EscapeHtml(TelegramService.SafeTruncate(translation.Description ?? "", 300));
             var dateStr  = law.Date?.ToString("yyyy-MM-dd") ?? "";
 
             return $"<b>⚖️ {title}</b>\n\n<b>Category:</b> {category}\n" +
+                   (string.IsNullOrWhiteSpace(description) ? "" : $"<b>Description:</b> {description}\n") +
                    (string.IsNullOrWhiteSpace(dateStr) ? "" : $"<b>Date:</b> {dateStr}\n\n") +
                    $"<i>Published on NSPC — tap below to view.</i>";
         }
@@ -48,9 +52,11 @@ namespace Backend.Services
 
             var title    = TelegramService.EscapeHtml(translation.Title);
             var category = TelegramService.EscapeHtml(translation.Category ?? publication.Category ?? "General");
+            var description = TelegramService.EscapeHtml(TelegramService.SafeTruncate(translation.Summary ?? "", 300));
             var dateStr  = publication.PublicationDate?.ToString("yyyy-MM-dd") ?? "";
 
             return $"<b>📋 {title}</b>\n\n<b>Category:</b> {category}\n" +
+                   (string.IsNullOrWhiteSpace(description) ? "" : $"<b>Description:</b> {description}\n") +
                    (string.IsNullOrWhiteSpace(dateStr) ? "" : $"<b>Date:</b> {dateStr}\n\n") +
                    $"<i>Published on NSPC — tap below to view.</i>";
         }

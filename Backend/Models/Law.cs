@@ -8,6 +8,7 @@ namespace Backend.Models
         public Guid Id { get; set; } = Guid.NewGuid();
         public string Category { get; set; } = string.Empty;
         public DateTime? Date { get; set; }
+        public string? CoverImageUrl { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<LawTranslation> Translations { get; set; } = new List<LawTranslation>();
     }

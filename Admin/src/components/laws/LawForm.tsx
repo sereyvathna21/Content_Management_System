@@ -7,6 +7,7 @@ import DatePicker from "@/components/form/date-picker";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import PdfDropZone from "./PdfDropZone";
+import { extractFirstPageAsImage } from "@/lib/extractPdfCover";
 
 type LangCode = string;
 
@@ -347,6 +348,21 @@ export default function LawForm({
         }
       });
 
+      let coverImage: File | null = null;
+      try {
+        const kmTranslation = translations.find(t => t.language === "km");
+        const defaultPdf = kmTranslation?.pdfFile || translations.find(t => t.pdfFile)?.pdfFile;
+        if (defaultPdf) {
+          coverImage = await extractFirstPageAsImage(defaultPdf);
+        }
+      } catch (e) {
+        console.error("Failed to extract cover image from PDF", e);
+      }
+
+      if (coverImage) {
+        form.append("CoverImage", coverImage);
+      }
+
       const backendUrl = getBackendUrl();
       const url = isEditing && initialLaw?.id
         ? `${backendUrl}/api/laws/${initialLaw.id}`
@@ -437,7 +453,8 @@ export default function LawForm({
               label={t("publishDateLabel")}
               placeholder={t("publishDatePlaceholder")}
               defaultDate={date || undefined}
-              onChange={(_selectedDates: Date[], dateStr: string) => setDate(dateStr)}
+              value={date}
+              onChange={setDate}
             />
           </div>
         </div>

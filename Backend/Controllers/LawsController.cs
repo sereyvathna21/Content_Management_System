@@ -416,6 +416,18 @@ namespace Backend.Controllers
             var uploadsRoot = GetUploadsRoot(law.Id);
             Directory.CreateDirectory(uploadsRoot);
 
+            if (request.CoverImage != null && request.CoverImage.Length > 0)
+            {
+                var coverExt = Path.GetExtension(request.CoverImage.FileName);
+                var coverFileName = $"cover_{Guid.NewGuid():N}{coverExt}";
+                var coverFilePath = Path.Combine(uploadsRoot, coverFileName);
+                await using (var stream = System.IO.File.Create(coverFilePath))
+                {
+                    await request.CoverImage.CopyToAsync(stream);
+                }
+                law.CoverImageUrl = $"/uploads/laws/{law.Id}/{coverFileName}";
+            }
+
             foreach (var t in request.Translations)
             {
                 var normalizedLanguage = (t.Language ?? string.Empty).Trim();
@@ -460,9 +472,27 @@ namespace Backend.Controllers
                 createdTitleKm,
                 createdTitleEn);
 
-            var caption = TelegramCaptionFormatter.FormatLawCaption(law, law.Translations);
+            var lawTranslations = await _db.LawTranslations.Where(t => t.LawId == law.Id).ToListAsync();
+            var caption = TelegramCaptionFormatter.FormatLawCaption(law, lawTranslations);
             var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
             var linkUrl = $"{frontendUrl}/Landing-page/Laws";
+
+            var preferredPdf = lawTranslations.FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.PdfUrl 
+                               ?? lawTranslations.FirstOrDefault(t => !string.IsNullOrEmpty(t.PdfUrl))?.PdfUrl;
+            
+            string? localFilePath = null;
+            string fileType = "None";
+
+            if (!string.IsNullOrEmpty(law.CoverImageUrl))
+            {
+                localFilePath = Path.Combine(_env.WebRootPath, law.CoverImageUrl.TrimStart('/'));
+                fileType = "Photo";
+            }
+            else if (!string.IsNullOrEmpty(preferredPdf))
+            {
+                localFilePath = Path.Combine(_env.WebRootPath, preferredPdf.TrimStart('/'));
+                fileType = "Document";
+            }
 
             await _telegramQueue.EnqueueAsync(new TelegramSyncJob
             {
@@ -471,7 +501,9 @@ namespace Backend.Controllers
                 EntityId = law.Id,
                 Caption = caption,
                 LinkUrl = linkUrl,
-                LinkText = "📄 View Laws"
+                LinkText = "📄 View Laws",
+                LocalFilePath = localFilePath,
+                FileType = fileType
             });
 
             await _audit.WriteAsync(new AuditLogEntry
@@ -514,6 +546,24 @@ namespace Backend.Controllers
 
             var uploadsRoot = GetUploadsRoot(law.Id);
             Directory.CreateDirectory(uploadsRoot);
+
+            if (request.CoverImage != null && request.CoverImage.Length > 0)
+            {
+                if (!string.IsNullOrEmpty(law.CoverImageUrl))
+                {
+                    var oldPath = Path.Combine(_env.WebRootPath, law.CoverImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(oldPath)) System.IO.File.Delete(oldPath);
+                }
+
+                var coverExt = Path.GetExtension(request.CoverImage.FileName);
+                var coverFileName = $"cover_{Guid.NewGuid():N}{coverExt}";
+                var coverFilePath = Path.Combine(uploadsRoot, coverFileName);
+                await using (var stream = System.IO.File.Create(coverFilePath))
+                {
+                    await request.CoverImage.CopyToAsync(stream);
+                }
+                law.CoverImageUrl = $"/uploads/laws/{law.Id}/{coverFileName}";
+            }
 
             var byLanguage = law.Translations.ToDictionary(t => t.Language, StringComparer.OrdinalIgnoreCase);
             var requestedLanguages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -592,6 +642,43 @@ namespace Backend.Controllers
             }
 
             await _db.SaveChangesAsync();
+
+            var (titleKm, titleEn) = GetLocalizedLawTitles(law.Translations);
+            var lawTitle = BuildFallbackLawTitle(titleKm, titleEn, law.Id);
+            var caption = TelegramCaptionFormatter.FormatLawCaption(law, law.Translations);
+
+            var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
+            var linkUrl = $"{frontendUrl}/Landing-page/Laws";
+
+            var preferredPdf = law.Translations.FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.PdfUrl 
+                               ?? law.Translations.FirstOrDefault(t => !string.IsNullOrEmpty(t.PdfUrl))?.PdfUrl;
+            
+            string? localFilePath = null;
+            string fileType = "None";
+
+            if (!string.IsNullOrEmpty(law.CoverImageUrl))
+            {
+                localFilePath = Path.Combine(_env.WebRootPath, law.CoverImageUrl.TrimStart('/'));
+                fileType = "Photo";
+            }
+            else if (!string.IsNullOrEmpty(preferredPdf))
+            {
+                localFilePath = Path.Combine(_env.WebRootPath, preferredPdf.TrimStart('/'));
+                fileType = "Document";
+            }
+
+            await _telegramQueue.EnqueueAsync(new TelegramSyncJob
+            {
+                Action = "Update",
+                EntityType = "Law",
+                EntityId = law.Id,
+                Caption = caption,
+                LinkUrl = linkUrl,
+                LinkText = "📄 View Laws",
+                LocalFilePath = localFilePath,
+                FileType = fileType,
+                IsCaptionOnlyEdit = false
+            });
 
             await _audit.WriteAsync(new AuditLogEntry
             {

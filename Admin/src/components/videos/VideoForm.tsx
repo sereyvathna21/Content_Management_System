@@ -331,9 +331,8 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
               label={t("publishDateLabel")}
               placeholder={t("publishDatePlaceholder")}
               defaultDate={publishAt || undefined}
-              onChange={(selectedDates: Date[]) =>
-                setPublishAt(selectedDates[0] ? formatDateToIso(selectedDates[0]) : "")
-              }
+              value={publishAt}
+              onChange={setPublishAt}
             />
           </div>
         </div>

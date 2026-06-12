@@ -185,7 +185,7 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
         return;
       }
       if (tr.excerpt.length > 300) {
-        setError(`Excerpt for ${langLabel(tr.language)} cannot exceed 300 characters`);
+        setError(`Description for ${langLabel(tr.language)} cannot exceed 300 characters`);
         return;
       }
       if (tr.contentHtml.length > 20000) {
@@ -338,9 +338,8 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
               label={t("publishDateLabel")}
               placeholder={t("publishDatePlaceholder")}
               defaultDate={publishAt || undefined}
-              onChange={(selectedDates: Date[]) =>
-                setPublishAt(selectedDates[0] ? formatDateToIso(selectedDates[0]) : "")
-              }
+              value={publishAt}
+              onChange={setPublishAt}
             />
           </div>
         </div>

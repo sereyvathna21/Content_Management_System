@@ -34,7 +34,7 @@ namespace Backend.Services
                     {
                         if (mapping == null)
                         {
-                            var msgId = await telegramService.SendMessageAsync(job.Caption!, job.PhotoUrl, job.LinkUrl, job.LinkText!);
+                            var msgId = await telegramService.SendMediaAsync(job);
                             db.TelegramMessageMappings.Add(new TelegramMessageMapping
                             {
                                 EntityType = job.EntityType,
@@ -49,7 +49,7 @@ namespace Backend.Services
                         if (job.IsCaptionOnlyEdit)
                             await telegramService.EditCaptionAsync(mapping.TelegramMessageId, job.Caption!, job.LinkUrl, job.LinkText!);
                         else
-                            await telegramService.EditMediaAsync(mapping.TelegramMessageId, job.Caption!, job.PhotoUrl, job.LinkUrl, job.LinkText!);
+                            await telegramService.EditMediaAsync(mapping.TelegramMessageId, job);
 
                         mapping.SentAt = DateTime.UtcNow;
                         await db.SaveChangesAsync(stoppingToken);

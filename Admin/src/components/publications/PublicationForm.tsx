@@ -7,6 +7,7 @@ import DatePicker from "@/components/form/date-picker";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import AttachmentDropZone from "./AttachmentDropZone";
+import { extractFirstPageAsImage } from "@/lib/extractPdfCover";
 
 type LangCode = string;
 
@@ -337,6 +338,21 @@ export default function PublicationForm({
         }
       });
 
+      let coverImage: File | null = null;
+      try {
+        const kmTranslation = translations.find(t => t.language === "km");
+        const defaultPdf = kmTranslation?.attachmentFile || translations.find(t => t.attachmentFile)?.attachmentFile;
+        if (defaultPdf) {
+          coverImage = await extractFirstPageAsImage(defaultPdf);
+        }
+      } catch (e) {
+        console.error("Failed to extract cover image from PDF", e);
+      }
+
+      if (coverImage) {
+        form.append("CoverImage", coverImage);
+      }
+
       const backendUrl = getBackendUrl();
       const url = isEditing && initialPublication?.id
         ? `${backendUrl}/api/publications/${initialPublication.id}`
@@ -427,7 +443,8 @@ export default function PublicationForm({
               label={t("publishDateLabel")}
               placeholder={t("publishDatePlaceholder")}
               defaultDate={publicationDate || undefined}
-              onChange={(_selectedDates: Date[], dateStr: string) => setPublicationDate(dateStr)}
+              value={publicationDate}
+              onChange={setPublicationDate}
             />
           </div>
         </div>

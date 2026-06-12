@@ -340,7 +340,7 @@
   @apply w-full;
 }
 .flatpickr-calendar {
-  @apply mt-1 !bg-white !rounded-lg !p-3 !shadow-lg !border !border-gray-200 dark:!border-gray-800 !text-gray-500 dark:!bg-gray-dark dark:!text-gray-400 dark:!shadow-theme-xl !w-[260px] !z-[9999];
+  @apply mt-1 !bg-white !rounded-lg !p-3 !shadow-lg !border !border-gray-200 dark:!border-gray-800 !text-gray-500 dark:!bg-gray-dark dark:!text-gray-400 dark:!shadow-theme-xl !w-[260px] !z-[999999];
 }
 
 .flatpickr-months .flatpickr-prev-month:hover svg,
@@ -370,7 +370,7 @@
 }
 
 .flatpickr-calendar {
-  @apply mt-1 !bg-white !rounded-lg !p-3 !shadow-lg !border !border-gray-200 dark:!border-white/5 !text-gray-500 dark:!bg-gray-dark dark:!text-gray-400 dark:!shadow-theme-xl !w-[260px] !z-[9999];
+  @apply mt-1 !bg-white !rounded-lg !p-3 !shadow-lg !border !border-gray-200 dark:!border-white/5 !text-gray-500 dark:!bg-gray-dark dark:!text-gray-400 dark:!shadow-theme-xl !w-[260px] !z-[999999];
 }
 
 @media (max-width: 525px) {

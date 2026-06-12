@@ -202,6 +202,18 @@ namespace Backend.Controllers
                 var portalUrl = $"{frontendUrl}/Landing-page/News/{Uri.EscapeDataString(article.Slug)}";
                 var photoUrl = await ResolveImageUrlAsync(article);
 
+                string? localFilePath = null;
+                string fileType = "Photo";
+                if (!string.IsNullOrEmpty(photoUrl) && photoUrl.StartsWith("/"))
+                {
+                    var root = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                    localFilePath = Path.Combine(root, photoUrl.TrimStart('/'));
+                    if (photoUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) || photoUrl.EndsWith(".mov", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fileType = "Video";
+                    }
+                }
+
                 await _telegramQueue.EnqueueAsync(new TelegramSyncJob
                 {
                     Action = "Create",
@@ -210,7 +222,9 @@ namespace Backend.Controllers
                     Caption = caption,
                     PhotoUrl = photoUrl,
                     LinkUrl = portalUrl,
-                    LinkText = "📰 Read Article"
+                    LinkText = "📰 Read Article",
+                    LocalFilePath = localFilePath,
+                    FileType = localFilePath != null ? fileType : "None"
                 });
             }
 
@@ -324,13 +338,19 @@ namespace Backend.Controllers
                 var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
                 var portalUrl = $"{frontendUrl}/Landing-page/News/{Uri.EscapeDataString(article.Slug)}";
                 var photoUrl = await ResolveImageUrlAsync(article);
-                
-                // We need to fetch the old article state to check if photoUrl changed, 
-                // but since we don't have it easily available, we can just assume IsCaptionOnlyEdit = false for simplicity, 
-                // or fetch the old media ID before modification. But wait, `previousSlug` and `previousStatus` were stored. Let's just update the media every time.
-                // Wait, guide says: 
-                // var oldPhotoUrl = await ResolveImageUrlAsync(oldArticleState);
-                // We will just do full update for simplicity.
+
+                string? localFilePath = null;
+                string fileType = "Photo";
+                if (!string.IsNullOrEmpty(photoUrl) && photoUrl.StartsWith("/"))
+                {
+                    var root = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                    localFilePath = Path.Combine(root, photoUrl.TrimStart('/'));
+                    if (photoUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) || photoUrl.EndsWith(".mov", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fileType = "Video";
+                    }
+                }
+
                 var action = previousStatus != ContentStatus.Published ? "Create" : "Update";
 
                 await _telegramQueue.EnqueueAsync(new TelegramSyncJob
@@ -340,6 +360,8 @@ namespace Backend.Controllers
                     EntityId = article.Id,
                     Caption = caption,
                     PhotoUrl = photoUrl,
+                    LocalFilePath = localFilePath,
+                    FileType = fileType,
                     LinkUrl = portalUrl,
                     LinkText = "📰 Read Article",
                     IsCaptionOnlyEdit = false
@@ -409,7 +431,9 @@ namespace Backend.Controllers
         [HasPermission(PermissionConstants.NewsDelete)]
         public async Task<IActionResult> Restore(Guid id)
         {
-            var article = await _db.NewsArticles.FirstOrDefaultAsync(a => a.Id == id);
+            var article = await _db.NewsArticles
+                .Include(a => a.Translations)
+                .FirstOrDefaultAsync(a => a.Id == id);
             if (article == null) return NotFound();
 
             if (article.DeletedAt == null)
@@ -430,6 +454,22 @@ namespace Backend.Controllers
                 {
                     "/Landing-page/News",
                     $"/Landing-page/News/{Uri.EscapeDataString(article.Slug)}"
+                });
+
+                var caption = TelegramCaptionFormatter.FormatNewsCaption(article);
+                var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
+                var portalUrl = $"{frontendUrl}/Landing-page/News/{Uri.EscapeDataString(article.Slug)}";
+                var photoUrl = await ResolveImageUrlAsync(article);
+
+                await _telegramQueue.EnqueueAsync(new TelegramSyncJob
+                {
+                    Action = "Create",
+                    EntityType = "News",
+                    EntityId = article.Id,
+                    Caption = caption,
+                    PhotoUrl = photoUrl,
+                    LinkUrl = portalUrl,
+                    LinkText = "📰 Read Article"
                 });
             }
 

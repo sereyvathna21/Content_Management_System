@@ -29,12 +29,16 @@ export default function DatePicker({
   const fpRef = useRef<flatpickr.Instance | null>(null);
   const reactId = useId();
   
-  // 1. Add a mounted state to prevent hydration mismatches
   const [mounted, setMounted] = useState(false);
+  const onChangeRef = useRef(onChange);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   const stableId = id ?? `dp-${reactId}`;
 
@@ -44,12 +48,20 @@ export default function DatePicker({
     const fp = flatpickr(inputRef.current, {
       mode: mode || "single",
       monthSelectorType: "static",
-      dateFormat: "d-m-Y",
+      dateFormat: "Y-m-d",
       defaultDate: value || defaultDate,
       disableMobile: true,
       closeOnSelect: true,
+      // Append calendar to <body> and ensure it sits above modals
+      appendTo: undefined,
       onChange: (_, dateStr) => {
-        onChange?.(dateStr);
+        onChangeRef.current?.(dateStr);
+      },
+      onReady: (_selectedDates, _dateStr, instance) => {
+        // Force the calendar to appear above modals (z-index 99999+)
+        if (instance.calendarContainer) {
+          instance.calendarContainer.style.zIndex = "999999";
+        }
       },
     });
 
@@ -58,14 +70,17 @@ export default function DatePicker({
     return () => {
       fpRef.current?.destroy();
     };
-  }, [mode, mounted, defaultDate, onChange, value]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, mounted]);
 
   useEffect(() => {
     if (!fpRef.current) return;
-    if (value) {
-      fpRef.current.setDate(value, false);
-    } else {
-      fpRef.current.clear();
+    if (value !== undefined) {
+      if (value) {
+        fpRef.current.setDate(value, false);
+      } else {
+        fpRef.current.clear();
+      }
     }
   }, [value]);
 
@@ -83,8 +98,6 @@ export default function DatePicker({
       <div className="relative group">
         <input
           ref={inputRef}
-          // 2. Suppress hydration warning if it falls back to dynamic IDs,
-          // or pass undefined on the server pass until client mounts.
           id={mounted ? stableId : id}
           placeholder={placeholder || "Select a date"}
           readOnly

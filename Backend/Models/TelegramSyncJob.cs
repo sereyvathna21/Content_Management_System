@@ -12,6 +12,10 @@ namespace Backend.Models
         public string? LinkUrl { get; set; }
         public string? LinkText { get; set; }
         
+        // Physical file data for multipart uploads
+        public string? LocalFilePath { get; set; }
+        public string? FileType { get; set; } // "Document", "Photo", "Video", or "None"
+        
         // Indicates if it's just a caption edit (no image changed)
         public bool IsCaptionOnlyEdit { get; set; }
     }

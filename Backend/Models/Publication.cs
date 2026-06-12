@@ -9,6 +9,7 @@ namespace Backend.Models
         public string Category { get; set; } = string.Empty;
         public DateTime? PublicationDate { get; set; }
         public string? Authors { get; set; }
+        public string? CoverImageUrl { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<PublicationTranslation> Translations { get; set; } = new List<PublicationTranslation>();
     }

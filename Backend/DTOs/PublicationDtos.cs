@@ -9,6 +9,7 @@ namespace Backend.DTOs
         public string Category { get; set; } = string.Empty;
         public DateTime? PublicationDate { get; set; }
         public string? Authors { get; set; }
+        public IFormFile? CoverImage { get; set; }
         public List<PublicationTranslationCreateDto> Translations { get; set; } = new();
     }
 
@@ -17,6 +18,7 @@ namespace Backend.DTOs
         public string Category { get; set; } = string.Empty;
         public DateTime? PublicationDate { get; set; }
         public string? Authors { get; set; }
+        public IFormFile? CoverImage { get; set; }
         public List<PublicationTranslationCreateDto> Translations { get; set; } = new();
     }
 
@@ -36,6 +38,7 @@ namespace Backend.DTOs
         public string Category { get; set; } = string.Empty;
         public DateTime? PublicationDate { get; set; }
         public string? Authors { get; set; }
+        public string? CoverImageUrl { get; set; }
         public List<PublicationTranslationDto> Translations { get; set; } = new();
     }
 
@@ -56,6 +59,7 @@ namespace Backend.DTOs
         public string Category { get; set; } = string.Empty;
         public DateTime? PublicationDate { get; set; }
         public string? Authors { get; set; }
+        public string? CoverImageUrl { get; set; }
         public string Language { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string? Summary { get; set; }

@@ -6,6 +6,7 @@ import DatePicker from "@/components/form/date-picker";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import PdfDropZone from "./PdfDropZone";
+import { extractFirstPageAsImage } from "@/lib/extractPdfCover";
 
 type LangCode = string;
 
@@ -213,6 +214,21 @@ export default function LawEditForm({ initialLaw, onSaved, onClose, resetOnClose
         if (tr.pdfFile) form.append(`Translations[${i}].PdfFile`, tr.pdfFile, `${tr.language}.pdf`);
       });
 
+      let coverImage: File | null = null;
+      try {
+        const kmTranslation = translations.find(t => t.language === "km");
+        const defaultPdf = kmTranslation?.pdfFile || translations.find(t => t.pdfFile)?.pdfFile;
+        if (defaultPdf) {
+          coverImage = await extractFirstPageAsImage(defaultPdf);
+        }
+      } catch (e) {
+        console.error("Failed to extract cover image from PDF", e);
+      }
+
+      if (coverImage) {
+        form.append("CoverImage", coverImage);
+      }
+
       const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
       const res = await fetch(`${BACKEND_URL}/api/laws/${initialLaw.id}`, {
         method: "PUT",
@@ -316,11 +332,12 @@ export default function LawEditForm({ initialLaw, onSaved, onClose, resetOnClose
           </div>
           <div>
             <DatePicker
-              id="law-effective-date-edit"
+              id="law-date-edit"
               label={t("publishDateLabel")}
               placeholder={t("publishDatePlaceholder")}
               defaultDate={date || undefined}
-              onChange={(selectedDates: Date[], dateStr: string) => setDate(dateStr)}
+              value={date}
+              onChange={setDate}
             />
           </div>
         </div>

@@ -844,3 +844,45 @@ For Laws and Publications (Hard Deletes), you must enqueue the "Delete" action t
 - [ ] **News Update Image** → Changes from `ImageMediaId` or `ImageUrl` successfully trigger an `editMessageMedia` on Telegram.
 - [ ] **DELETE** → Telegram message disappears from channel.
 - [ ] **Rate limit (429)** → Worker retries silently in the background.
+
+---
+
+## 9. Current Status Report (June 2026)
+
+### ✅ WHAT IS DONE (Fully Working)
+
+#### Core Infrastructure
+- **Background Worker Queue:** Telegram API calls happen silently in the background (`TelegramBackgroundWorker.cs`). This ensures the admin dashboard never freezes or slows down when saving an article.
+- **Database Tracking:** Every single post sent to Telegram is recorded in the database (`TelegramMessageMappings` table) with a unique `TelegramMessageId`. This allows the CMS to "remember" which post is which.
+
+#### News & Announcements
+- **Create:** Posts the Cover Image/Video, Rich Text Caption, and a "📰 Read Article" button.
+- **Edit:** Silently swaps out the existing image (using multipart upload) and updates the text on Telegram without deleting the original post or buzzing users' phones.
+- **Delete / Restore:** Completely removes the post from Telegram when deleted, and brings it back if restored.
+
+#### Laws & Publications
+- **Auto-PDF to Image:** When a PDF is uploaded, the system extracts the first page and turns it into a high-quality `.jpg` cover image.
+- **Create:** Posts the auto-generated Cover Image to Telegram along with the Title, Category, Date, and Description.
+- **Edit:** Updates the existing Telegram message instantly.
+- **Delete:** Removes the post from Telegram.
+
+### ⏳ WHAT IS NOT YET DONE (Pending Server Setup)
+
+These items are fully coded but require configuration changes on the live server:
+- **Configure the Live URL:** In `appsettings.json`, `App:FrontendUrl` MUST be changed from `localhost` to the live domain (e.g., `https://nspc.gov.kh`). Once this is done, the **"📄 View Laws"** buttons will automatically appear under Telegram pictures.
+- **Set the Live Telegram Channel:** Change `Telegram:ChannelId` in settings to the real public channel ID.
+- **Production Bot Setup:** Ensure the Bot is added as an **Administrator** to the public channel so it has permission to post and edit messages.
+
+### 🚀 NEEDS IMPROVEMENT (Future Features)
+
+#### 1. Bulk Operations Syncing
+- Currently, "Bulk Delete" actions on News delete them from the website, but **do not** enqueue Delete jobs for Telegram. Background queuing for Bulk actions needs to be added.
+
+#### 2. Video Previews for Laws & Publications
+- The auto-extractor only processes **PDFs**. Uploading an `.mp4` video instead of a PDF for a Law or Publication will not extract a preview picture.
+
+#### 3. Massive File Failsafes
+- Telegram limits bots to sending files up to 50MB. Uploading a massive video might cause the post to be rejected. A "fallback mode" could be built to send just the text and a URL link if the file is too huge.
+
+#### 4. Auto-Translation Assistant
+- Since the CMS requires filling out Khmer and English forms for everything, an "Auto Translate" button using AI could be built to automatically fill the English fields based on the Khmer input.

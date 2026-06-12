@@ -8,6 +8,7 @@ namespace Backend.DTOs
     {
         public string Category { get; set; } = string.Empty;
         public DateTime? Date { get; set; }
+        public IFormFile? CoverImage { get; set; }
         public List<LawTranslationCreateDto> Translations { get; set; } = new();
     }
 
@@ -15,6 +16,7 @@ namespace Backend.DTOs
     {
         public string Category { get; set; } = string.Empty;
         public DateTime? Date { get; set; }
+        public IFormFile? CoverImage { get; set; }
         public List<LawTranslationCreateDto> Translations { get; set; } = new();
     }
 
@@ -33,6 +35,7 @@ namespace Backend.DTOs
         public Guid Id { get; set; }
         public string Category { get; set; } = string.Empty;
         public DateTime? Date { get; set; }
+        public string? CoverImageUrl { get; set; }
         public List<LawTranslationDto> Translations { get; set; } = new();
     }
 
@@ -51,6 +54,7 @@ namespace Backend.DTOs
         public Guid Id { get; set; }
         public string Category { get; set; } = string.Empty;
         public DateTime? Date { get; set; }
+        public string? CoverImageUrl { get; set; }
         public string Language { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
