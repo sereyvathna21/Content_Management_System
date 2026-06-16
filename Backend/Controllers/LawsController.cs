@@ -473,25 +473,28 @@ namespace Backend.Controllers
                 createdTitleEn);
 
             var lawTranslations = await _db.LawTranslations.Where(t => t.LawId == law.Id).ToListAsync();
-            var caption = TelegramCaptionFormatter.FormatLawCaption(law, lawTranslations);
             var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
             var linkUrl = $"{frontendUrl}/Landing-page/Laws";
 
             var preferredPdf = lawTranslations.FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.PdfUrl 
                                ?? lawTranslations.FirstOrDefault(t => !string.IsNullOrEmpty(t.PdfUrl))?.PdfUrl;
             
+            var caption = TelegramCaptionFormatter.FormatLawCaption(law, lawTranslations);
+            
             string? localFilePath = null;
             string fileType = "None";
 
-            if (!string.IsNullOrEmpty(law.CoverImageUrl))
+            var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+            if (!string.IsNullOrEmpty(preferredPdf))
             {
-                localFilePath = Path.Combine(_env.WebRootPath, law.CoverImageUrl.TrimStart('/'));
-                fileType = "Photo";
-            }
-            else if (!string.IsNullOrEmpty(preferredPdf))
-            {
-                localFilePath = Path.Combine(_env.WebRootPath, preferredPdf.TrimStart('/'));
+                localFilePath = Path.Combine(root, preferredPdf.TrimStart('/'));
                 fileType = "Document";
+            }
+            else if (!string.IsNullOrEmpty(law.CoverImageUrl))
+            {
+                localFilePath = Path.Combine(root, law.CoverImageUrl.TrimStart('/'));
+                fileType = "Photo";
             }
 
             await _telegramQueue.EnqueueAsync(new TelegramSyncJob
@@ -501,7 +504,7 @@ namespace Backend.Controllers
                 EntityId = law.Id,
                 Caption = caption,
                 LinkUrl = linkUrl,
-                LinkText = "📄 View Laws",
+                LinkText = "📄 មើលច្បាប់",
                 LocalFilePath = localFilePath,
                 FileType = fileType
             });
@@ -645,26 +648,28 @@ namespace Backend.Controllers
 
             var (titleKm, titleEn) = GetLocalizedLawTitles(law.Translations);
             var lawTitle = BuildFallbackLawTitle(titleKm, titleEn, law.Id);
-            var caption = TelegramCaptionFormatter.FormatLawCaption(law, law.Translations);
-
             var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
             var linkUrl = $"{frontendUrl}/Landing-page/Laws";
 
             var preferredPdf = law.Translations.FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.PdfUrl 
                                ?? law.Translations.FirstOrDefault(t => !string.IsNullOrEmpty(t.PdfUrl))?.PdfUrl;
             
+            var caption = TelegramCaptionFormatter.FormatLawCaption(law, law.Translations);
+            
             string? localFilePath = null;
             string fileType = "None";
 
-            if (!string.IsNullOrEmpty(law.CoverImageUrl))
+            var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+
+            if (!string.IsNullOrEmpty(preferredPdf))
             {
-                localFilePath = Path.Combine(_env.WebRootPath, law.CoverImageUrl.TrimStart('/'));
-                fileType = "Photo";
-            }
-            else if (!string.IsNullOrEmpty(preferredPdf))
-            {
-                localFilePath = Path.Combine(_env.WebRootPath, preferredPdf.TrimStart('/'));
+                localFilePath = Path.Combine(root, preferredPdf.TrimStart('/'));
                 fileType = "Document";
+            }
+            else if (!string.IsNullOrEmpty(law.CoverImageUrl))
+            {
+                localFilePath = Path.Combine(root, law.CoverImageUrl.TrimStart('/'));
+                fileType = "Photo";
             }
 
             await _telegramQueue.EnqueueAsync(new TelegramSyncJob
@@ -674,7 +679,7 @@ namespace Backend.Controllers
                 EntityId = law.Id,
                 Caption = caption,
                 LinkUrl = linkUrl,
-                LinkText = "📄 View Laws",
+                LinkText = "📄 មើលច្បាប់",
                 LocalFilePath = localFilePath,
                 FileType = fileType,
                 IsCaptionOnlyEdit = false

@@ -307,6 +307,7 @@ export default function PublicationForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    if (saving) return;
     if (!validate()) return;
     if (status === "loading" || !session?.accessToken) return;
 

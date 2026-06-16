@@ -241,27 +241,28 @@ namespace Backend.Controllers
             await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "created");
 
             var publicationTranslations = await _db.PublicationTranslations.Where(t => t.PublicationId == publication.Id).ToListAsync();
-            var caption = TelegramCaptionFormatter.FormatPublicationCaption(publication, publicationTranslations);
             var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
             var linkUrl = $"{frontendUrl}/Landing-page/Publications";
 
             var preferredAttachment = publicationTranslations.FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.AttachmentUrl 
                                ?? publicationTranslations.FirstOrDefault(t => !string.IsNullOrEmpty(t.AttachmentUrl))?.AttachmentUrl;
             
+            var caption = TelegramCaptionFormatter.FormatPublicationCaption(publication, publicationTranslations);
+            
             string? localFilePath = null;
             string fileType = "None";
 
             var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
-            if (!string.IsNullOrEmpty(publication.CoverImageUrl))
-            {
-                localFilePath = Path.Combine(root, publication.CoverImageUrl.TrimStart('/'));
-                fileType = "Photo";
-            }
-            else if (!string.IsNullOrEmpty(preferredAttachment))
+            if (!string.IsNullOrEmpty(preferredAttachment))
             {
                 localFilePath = Path.Combine(root, preferredAttachment.TrimStart('/'));
                 fileType = "Document";
+            }
+            else if (!string.IsNullOrEmpty(publication.CoverImageUrl))
+            {
+                localFilePath = Path.Combine(root, publication.CoverImageUrl.TrimStart('/'));
+                fileType = "Photo";
             }
 
             await _telegramQueue.EnqueueAsync(new TelegramSyncJob
@@ -271,7 +272,7 @@ namespace Backend.Controllers
                 EntityId = publication.Id,
                 Caption = caption,
                 LinkUrl = linkUrl,
-                LinkText = "📋 View Publications",
+                LinkText = "📋 មើលការបោះពុម្ពផ្សាយ",
                 LocalFilePath = localFilePath,
                 FileType = fileType
             });
@@ -417,28 +418,28 @@ namespace Backend.Controllers
 
             var titleKm = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "km")?.Title ?? "";
             var titleEn = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "en")?.Title ?? "";
-            var caption = TelegramCaptionFormatter.FormatPublicationCaption(publication, publication.Translations);
-
             var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
             var linkUrl = $"{frontendUrl}/Landing-page/Publications";
 
             var preferredAttachment = publication.Translations.FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.AttachmentUrl 
                                ?? publication.Translations.FirstOrDefault(t => !string.IsNullOrEmpty(t.AttachmentUrl))?.AttachmentUrl;
             
+            var caption = TelegramCaptionFormatter.FormatPublicationCaption(publication, publication.Translations);
+            
             string? localFilePath = null;
             string fileType = "None";
 
             var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
-            if (!string.IsNullOrEmpty(publication.CoverImageUrl))
-            {
-                localFilePath = Path.Combine(root, publication.CoverImageUrl.TrimStart('/'));
-                fileType = "Photo";
-            }
-            else if (!string.IsNullOrEmpty(preferredAttachment))
+            if (!string.IsNullOrEmpty(preferredAttachment))
             {
                 localFilePath = Path.Combine(root, preferredAttachment.TrimStart('/'));
                 fileType = "Document";
+            }
+            else if (!string.IsNullOrEmpty(publication.CoverImageUrl))
+            {
+                localFilePath = Path.Combine(root, publication.CoverImageUrl.TrimStart('/'));
+                fileType = "Photo";
             }
 
             await _telegramQueue.EnqueueAsync(new TelegramSyncJob
@@ -448,7 +449,7 @@ namespace Backend.Controllers
                 EntityId = publication.Id,
                 Caption = caption,
                 LinkUrl = linkUrl,
-                LinkText = "📋 View Publications",
+                LinkText = "📋 មើលការបោះពុម្ពផ្សាយ",
                 LocalFilePath = localFilePath,
                 FileType = fileType,
                 IsCaptionOnlyEdit = false

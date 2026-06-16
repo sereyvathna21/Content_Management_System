@@ -222,7 +222,7 @@ namespace Backend.Controllers
                     Caption = caption,
                     PhotoUrl = photoUrl,
                     LinkUrl = portalUrl,
-                    LinkText = "📰 Read Article",
+                    LinkText = "📰 អានអត្ថបទ",
                     LocalFilePath = localFilePath,
                     FileType = localFilePath != null ? fileType : "None"
                 });
@@ -363,7 +363,7 @@ namespace Backend.Controllers
                     LocalFilePath = localFilePath,
                     FileType = fileType,
                     LinkUrl = portalUrl,
-                    LinkText = "📰 Read Article",
+                    LinkText = "📰 អានអត្ថបទ",
                     IsCaptionOnlyEdit = false
                 });
             }
@@ -469,7 +469,7 @@ namespace Backend.Controllers
                     Caption = caption,
                     PhotoUrl = photoUrl,
                     LinkUrl = portalUrl,
-                    LinkText = "📰 Read Article"
+                    LinkText = "📰 អានអត្ថបទ"
                 });
             }
 

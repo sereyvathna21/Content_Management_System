@@ -70,7 +70,7 @@ builder.Services.Configure<TelegramOptions>(
 // ── Register Telegram Services ───────────────────────────────────────────
 builder.Services.AddHttpClient<ITelegramService, TelegramService>(client =>
 {
-    client.Timeout = TimeSpan.FromSeconds(15);
+    client.Timeout = TimeSpan.FromSeconds(120);
 });
 
 // Register the queue as a singleton and the worker as a hosted service

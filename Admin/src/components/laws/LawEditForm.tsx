@@ -198,6 +198,8 @@ export default function LawEditForm({ initialLaw, onSaved, onClose, resetOnClose
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (saving) return;
     if (!validate()) return;
     if (status === "loading" || !session?.accessToken) return;
 

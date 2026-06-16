@@ -14,6 +14,7 @@ namespace Backend.Models
         
         // Physical file data for multipart uploads
         public string? LocalFilePath { get; set; }
+        public string? ThumbnailPath { get; set; }
         public string? FileType { get; set; } // "Document", "Photo", "Video", or "None"
         
         // Indicates if it's just a caption edit (no image changed)

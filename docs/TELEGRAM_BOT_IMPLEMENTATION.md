@@ -851,38 +851,47 @@ For Laws and Publications (Hard Deletes), you must enqueue the "Delete" action t
 
 ### ✅ WHAT IS DONE (Fully Working)
 
-#### Core Infrastructure
-- **Background Worker Queue:** Telegram API calls happen silently in the background (`TelegramBackgroundWorker.cs`). This ensures the admin dashboard never freezes or slows down when saving an article.
-- **Database Tracking:** Every single post sent to Telegram is recorded in the database (`TelegramMessageMappings` table) with a unique `TelegramMessageId`. This allows the CMS to "remember" which post is which.
+#### Core Infrastructure & Reliability
+- **Background Worker Queue:** Telegram API calls happen silently in the background (`TelegramBackgroundWorker.cs`). This ensures the admin dashboard never freezes when saving an article.
+- **Database Tracking:** Every post sent to Telegram is recorded in `TelegramMessageMappings` with a unique ID, allowing the CMS to "remember" which post is which.
+- **Anti-Spam & Retry Logic:** The system uses intelligent retries (max 3 times) for network failures but explicitly **aborts on timeouts** to prevent sending duplicate "spam" messages to the channel. 
+- **50MB File Size Guard:** Built-in validation checks if a file exceeds Telegram's 50MB bot upload limit. If it does, the bot gracefully falls back to sending a text-only message with a download link instead of crashing.
 
-#### News & Announcements
-- **Create:** Posts the Cover Image/Video, Rich Text Caption, and a "📰 Read Article" button.
-- **Edit:** Silently swaps out the existing image (using multipart upload) and updates the text on Telegram without deleting the original post or buzzing users' phones.
-- **Delete / Restore:** Completely removes the post from Telegram when deleted, and brings it back if restored.
+#### News & Announcements (Style A)
+- **Format:** Posts the Cover Image, rich text caption (with modern professional formatting), and a "📰 Read Article" inline button.
+- **Features:** Supports Create, Edit (swapping images via multipart upload), Delete, and Restore.
 
-#### Laws & Publications
-- **Auto-PDF to Image:** When a PDF is uploaded, the system extracts the first page and turns it into a high-quality `.jpg` cover image.
-- **Create:** Posts the auto-generated Cover Image to Telegram along with the Title, Category, Date, and Description.
-- **Edit:** Updates the existing Telegram message instantly.
-- **Delete:** Removes the post from Telegram.
+#### Laws & Publications (Style B)
+- **Format:** Natively uploads the **actual PDF document** directly to Telegram, allowing users to download it inside the app. It includes a professional, structured caption with category and date.
+- **Features:** Supports Create, Edit, and Delete instantly synced with the Telegram channel.
+
+---
 
 ### ⏳ WHAT IS NOT YET DONE (Pending Server Setup)
 
-These items are fully coded but require configuration changes on the live server:
-- **Configure the Live URL:** In `appsettings.json`, `App:FrontendUrl` MUST be changed from `localhost` to the live domain (e.g., `https://nspc.gov.kh`). Once this is done, the **"📄 View Laws"** buttons will automatically appear under Telegram pictures.
-- **Set the Live Telegram Channel:** Change `Telegram:ChannelId` in settings to the real public channel ID.
-- **Production Bot Setup:** Ensure the Bot is added as an **Administrator** to the public channel so it has permission to post and edit messages.
+These items are fully coded but require configuration changes on your live production server:
+1. **Configure the Live URL:** In `appsettings.json`, `App:FrontendUrl` MUST be changed from `localhost` to the live domain (e.g., `https://nspc.gov.kh`). 
+2. **Set the Live Telegram Channel:** Change `Telegram:ChannelId` in settings to the real public channel ID (e.g. `@NSPCCambodia`).
+3. **Production Bot Setup:** Ensure the Bot is added as an **Administrator** to the public channel with permission to post and edit messages.
 
-### 🚀 NEEDS IMPROVEMENT (Future Features)
+---
 
-#### 1. Bulk Operations Syncing
-- Currently, "Bulk Delete" actions on News delete them from the website, but **do not** enqueue Delete jobs for Telegram. Background queuing for Bulk actions needs to be added.
+### 🚀 NEEDS IMPROVEMENT (Future Logic & Security Enhancements)
 
-#### 2. Video Previews for Laws & Publications
-- The auto-extractor only processes **PDFs**. Uploading an `.mp4` video instead of a PDF for a Law or Publication will not extract a preview picture.
+While the bot is highly robust, here is what should be implemented next to make it bulletproof:
 
-#### 3. Massive File Failsafes
-- Telegram limits bots to sending files up to 50MB. Uploading a massive video might cause the post to be rejected. A "fallback mode" could be built to send just the text and a URL link if the file is too huge.
+#### 1. Bulk Operations Syncing (Logic)
+- **Current state:** Selecting multiple News items and clicking "Bulk Delete" deletes them from the CMS database, but **does not** delete them from Telegram.
+- **Improvement needed:** Update the `BulkDelete` methods in the controllers to loop through the selected items and enqueue `Delete` jobs to the `TelegramSyncQueue`.
 
-#### 4. Auto-Translation Assistant
-- Since the CMS requires filling out Khmer and English forms for everything, an "Auto Translate" button using AI could be built to automatically fill the English fields based on the Khmer input.
+#### 2. Admin Error Notifications (Logic & UX)
+- **Current state:** If the Telegram background worker permanently fails to send a message (e.g., the Telegram API is down globally), it logs an error to the backend console.
+- **Improvement needed:** Integrate the worker with the `NotificationService` so that if a Telegram sync fails, the admin who created the post receives a bell notification in the CMS dashboard saying: *"Failed to sync Law X to Telegram."*
+
+#### 3. Idempotency & Concurrency (Security & Logic)
+- **Current state:** Fast, repeated clicking of the "Save" button on the frontend can theoretically enqueue multiple creation jobs before the database mapping is saved.
+- **Improvement needed:** Implement a frontend debounce/loading state on the Save buttons. On the backend, add a Redis or memory lock inside `TelegramBackgroundWorker` to ensure two threads don't accidentally process the same entity ID simultaneously.
+
+#### 4. Video Previews & Rich Media (Feature)
+- **Current state:** The system handles Images and PDFs natively.
+- **Improvement needed:** Support extracting thumbnails for `.mp4` video uploads, or automatically compressing large videos to ensure they fit within Telegram's native player constraints.

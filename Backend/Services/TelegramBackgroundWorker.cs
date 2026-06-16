@@ -30,7 +30,10 @@ namespace Backend.Services
                     var mapping = await db.TelegramMessageMappings
                         .FirstOrDefaultAsync(m => m.EntityType == job.EntityType && m.EntityId == job.EntityId, stoppingToken);
 
-                    if (job.Action == "Create")
+                    _logger.LogInformation("TelegramWorker: Action={Action} EntityType={EntityType} EntityId={EntityId} MappingExists={MappingExists} FileType={FileType} LocalFile={LocalFile}",
+                        job.Action, job.EntityType, job.EntityId, mapping != null, job.FileType, job.LocalFilePath);
+
+                    if (job.Action == "Create" || (job.Action == "Update" && mapping == null))
                     {
                         if (mapping == null)
                         {
@@ -42,6 +45,11 @@ namespace Backend.Services
                                 TelegramMessageId = msgId
                             });
                             await db.SaveChangesAsync(stoppingToken);
+                            _logger.LogInformation("TelegramWorker: Successfully sent new message. MsgId={MsgId}", msgId);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("TelegramWorker: Skipping Create because mapping already exists for {EntityType}/{EntityId}", job.EntityType, job.EntityId);
                         }
                     }
                     else if (job.Action == "Update" && mapping != null)
@@ -53,6 +61,7 @@ namespace Backend.Services
 
                         mapping.SentAt = DateTime.UtcNow;
                         await db.SaveChangesAsync(stoppingToken);
+                        _logger.LogInformation("TelegramWorker: Successfully updated message {MsgId}", mapping.TelegramMessageId);
                     }
                     else if (job.Action == "Delete" && mapping != null)
                     {
