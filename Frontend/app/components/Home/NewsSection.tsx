@@ -12,11 +12,17 @@ const backendUrl =
 
 const getFullImageUrl = (url: string | null | undefined) => {
   if (!url) return "/images/placeholder.svg";
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
-    return url;
+  
+  let finalUrl = url;
+  if (finalUrl.startsWith("http://backend:5001")) {
+    finalUrl = finalUrl.replace("http://backend:5001", backendUrl);
   }
-  if (url.startsWith("/")) {
-    return `${backendUrl}${url}`;
+
+  if (finalUrl.startsWith("http://") || finalUrl.startsWith("https://") || finalUrl.startsWith("data:")) {
+    return finalUrl;
+  }
+  if (finalUrl.startsWith("/")) {
+    return `${backendUrl}${finalUrl}`;
   }
   return `${backendUrl}/${url}`;
 };

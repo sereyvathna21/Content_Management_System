@@ -33,6 +33,12 @@ const nextConfig: NextConfig = {
         port: "5001",
         pathname: "/**",
       },
+      {
+        protocol: "http",
+        hostname: "backend",
+        port: "5001",
+        pathname: "/**",
+      },
     ],
   },
 };

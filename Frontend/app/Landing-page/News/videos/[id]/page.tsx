@@ -8,8 +8,8 @@ import Navigation from "@/app/components/Home/Navigation";
 import Breadcrumbs from "@/app/components/New/Breadcrumbs";
 import AllVideosPlayer from "@/app/components/New/AllVideosPlayer";
 
-const backendUrl =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+const internalBackendUrl =
+  process.env.BACKEND_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 export default async function VideoPage({
   params,
@@ -28,7 +28,7 @@ export default async function VideoPage({
   let apiVideos: any[] = [];
   try {
     const res = await fetch(
-      `${backendUrl}/api/public/videos?lang=${lang}&page=1&pageSize=100`,
+      `${internalBackendUrl}/api/public/videos?lang=${lang}&page=1&pageSize=100`,
       { cache: "no-store" },
     );
     if (res.ok) {

@@ -11,19 +11,29 @@ import ShareControls from "@/app/components/ShareControls";
 import Breadcrumbs from "@/app/components/New/Breadcrumbs";
 import Link from "next/link";
 import { NewsArticle, PaginatedResponse } from "@/types/api";
+import ImageSlideshow from "@/app/components/ImageSlideshow";
 
-const backendUrl =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5001";
+const internalBackendUrl =
+  process.env.BACKEND_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+const publicBackendUrl = 
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
 
 const getFullImageUrl = (url: string | null | undefined) => {
   if (!url) return "/images/placeholder.svg";
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
-    return url;
+  
+  let finalUrl = url;
+  // If the backend API returned an absolute URL using the internal Docker hostname, rewrite it to the public one
+  if (finalUrl.startsWith("http://backend:5001")) {
+    finalUrl = finalUrl.replace("http://backend:5001", publicBackendUrl);
   }
-  if (url.startsWith("/")) {
-    return `${backendUrl}${url}`;
+
+  if (finalUrl.startsWith("http://") || finalUrl.startsWith("https://") || finalUrl.startsWith("data:")) {
+    return finalUrl;
   }
-  return `${backendUrl}/${url}`;
+  if (finalUrl.startsWith("/")) {
+    return `${publicBackendUrl}${finalUrl}`;
+  }
+  return `${publicBackendUrl}/${finalUrl}`;
 };
 
 export default async function ArticlePage({
@@ -42,7 +52,7 @@ export default async function ArticlePage({
   let article: NewsArticle | null = null;
   try {
     const res = await fetch(
-      `${backendUrl}/api/public/news/${encodeURIComponent(id)}?lang=${lang}`,
+      `${internalBackendUrl}/api/public/news/${encodeURIComponent(id)}?lang=${lang}`,
       { cache: "no-store" },
     );
     if (res.ok) {
@@ -58,7 +68,7 @@ export default async function ArticlePage({
   let relatedArticles: NewsArticle[] = [];
   try {
     const res = await fetch(
-      `${backendUrl}/api/public/news?lang=${lang}&page=1&pageSize=6`,
+      `${internalBackendUrl}/api/public/news?lang=${lang}&page=1&pageSize=6`,
       { cache: "no-store" },
     );
     if (res.ok) {
@@ -107,36 +117,9 @@ export default async function ArticlePage({
           <article className="grid lg:grid-cols-3 gap-10 items-start max-w-6xl mx-auto">
             <header className="lg:col-span-2">
               <div className="relative rounded-xl overflow-hidden shadow-lg ">
-                {imageUrls.length > 1 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 w-full h-72 sm:h-96">
-                    <div className="w-full h-full relative">
-                      <Image src={imageUrls[0]} alt={displayedTitle} fill className="object-cover" />
-                    </div>
-                    <div className="grid grid-cols-2 grid-rows-2 gap-1 h-full hidden sm:grid">
-                      {imageUrls.slice(1, 5).map((img, idx) => (
-                        <div key={idx} className="w-full h-full relative">
-                          <Image src={img} alt={`${displayedTitle} ${idx + 1}`} fill className="object-cover" />
-                          {idx === 3 && imageUrls.length > 5 && (
-                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                              <span className="text-white text-xl font-bold">+{imageUrls.length - 5}</span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative w-full h-72 sm:h-96">
-                    <Image
-                      src={imageUrls[0]}
-                      alt={displayedTitle}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 text-white">
+                <ImageSlideshow images={imageUrls} alt={displayedTitle} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+                <div className="absolute bottom-6 left-6 right-6 text-white pointer-events-none">
                   <div className="flex items-center gap-3">
                     <span
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(article.category)}`}
