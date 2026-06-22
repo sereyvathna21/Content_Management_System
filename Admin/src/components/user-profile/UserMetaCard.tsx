@@ -162,7 +162,10 @@ export default function UserMetaCard() {
               }}
             >
               {displayAvatar.startsWith("data:") || displayAvatar.startsWith("blob:") ? (
-                <img src={displayAvatar} alt="user" className="h-full w-full object-cover" />
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={displayAvatar} alt="user" className="h-full w-full object-cover" />
+                </>
               ) : (
                 <Image width={80} height={80} src={displayAvatar} alt="user" className="h-full w-full object-cover" unoptimized />
               )}
@@ -205,7 +208,10 @@ export default function UserMetaCard() {
           <div className="flex items-center gap-4">
             <div className="h-16 w-16 overflow-hidden rounded-full border border-gray-200 dark:border-gray-700">
               {avatarDraft.startsWith("data:") || avatarDraft.startsWith("blob:") ? (
-                <img src={avatarDraft} alt="Avatar preview" className="h-full w-full object-cover" />
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={avatarDraft} alt="Avatar preview" className="h-full w-full object-cover" />
+                </>
               ) : (
                 <Image src={avatarDraft} alt="Avatar preview" width={64} height={64} className="h-full w-full object-cover" unoptimized />
               )}

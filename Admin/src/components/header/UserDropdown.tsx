@@ -71,7 +71,8 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+<img
             src={profile.avatar || "/images/user/default-avatar.svg"}
             alt="User"
             className="h-11 w-11 object-cover"

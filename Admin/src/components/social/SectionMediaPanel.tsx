@@ -91,6 +91,7 @@ export default function SectionMediaPanel({
             sortOrder: activeSectionData ? getNextSortOrder(activeSectionData.media) : 0
         });
         if (imageInputRef.current) imageInputRef.current.value = "";
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeSectionData?.id]);
 
     function resetPendingUpload() {
@@ -414,7 +415,8 @@ export default function SectionMediaPanel({
                             <div className="relative z-20 text-sm text-gray-500">{t("media.dropzone.uploading") || "Uploading image..."}</div>
                         ) : pendingMedia ? (
                             <div className="relative z-20 flex flex-col sm:flex-row items-center gap-4 text-left">
-                                <img
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+<img
                                     src={resolveMediaUrl(backendUrl, pendingMedia.publicUrl)}
                                     alt={pendingFile?.name || (t("media.dropzone.pendingAlt") || "Pending upload")}
                                     className="h-20 w-20 rounded-lg object-cover border border-gray-200"
@@ -533,7 +535,10 @@ export default function SectionMediaPanel({
                                         <div key={item.id} className="flex flex-col sm:flex-row gap-4 rounded-lg border border-gray-100 p-3">
                                             <div className="h-20 w-20 rounded-lg border border-gray-200 bg-gray-50 overflow-hidden">
                                                 {mediaUrl ? (
-                                                    <img src={mediaUrl} alt={(item.altKm || item.altEn) || (t("media.list.imageAlt") || "Section image")} className="h-full w-full object-cover" />
+                                                    <>
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={mediaUrl} alt={(item.altKm || item.altEn) || (t("media.list.imageAlt") || "Section image")} className="h-full w-full object-cover" />
+                                                    </>
                                                 ) : (
                                                     <div className="h-full w-full flex items-center justify-center text-xs text-gray-400">{t("media.list.noPreview") || "No preview"}</div>
                                                 )}

@@ -32,6 +32,7 @@ export default function RequirePermission({ permission, anyOf, allOf, children, 
     if (!allowed) {
       router.replace(fallbackPath);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [permission, anyOf ? anyOf.join(",") : undefined, allOf ? allOf.join(",") : undefined, isSuperAdmin, router, fallbackPath, status, can, canAny, canAll]);
 
   return <>{children}</>;

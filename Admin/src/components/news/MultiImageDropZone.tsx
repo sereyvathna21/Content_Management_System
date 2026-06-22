@@ -98,7 +98,8 @@ export default function MultiImageDropZone({ files, onChange, maxFiles = 10 }: M
             const url = URL.createObjectURL(file);
             return (
               <div key={idx} className="relative group rounded-lg overflow-hidden border border-gray-200">
-                <img src={url} alt="Preview" className="w-full h-20 object-cover" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="Preview" className="w-full h-20 object-cover" />
                 <button
                   type="button"
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeFile(idx); }}

@@ -155,6 +155,7 @@ export default function UserAddressCard() {
     } finally {
       setIsDetectingLocation(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

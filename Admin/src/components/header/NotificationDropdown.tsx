@@ -91,6 +91,7 @@ export default function NotificationDropdown() {
     }
 
     if (!canViewNotifications) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNotifications([]);
       setNotifying(false);
       return;

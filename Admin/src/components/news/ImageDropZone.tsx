@@ -62,7 +62,10 @@ export default function ImageDropZone({ file, onChange }: { file: File | null; o
         <div className="flex items-center justify-between w-full p-2 bg-white rounded-lg shadow-sm border border-green-100 z-20 relative">
           <div className="flex items-center gap-2">
             {previewUrl ? (
-              <img src={previewUrl} alt="Preview" className="w-10 h-10 object-cover rounded" />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={previewUrl} alt="Preview" className="w-10 h-10 object-cover rounded" />
+              </>
             ) : (
               <div className="w-10 h-10 rounded bg-green-100 flex items-center justify-center text-green-600 shrink-0">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">

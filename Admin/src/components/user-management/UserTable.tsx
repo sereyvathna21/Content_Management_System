@@ -78,8 +78,11 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                     {(() => {
                       const raw = (u.avatar ?? "").toString().trim();
                       const src = raw && raw !== "null" && raw !== "undefined" ? raw : "";
+                      // eslint-disable-next-line @next/next/no-img-element
                       if (!src) return <img src="/images/user/default-avatar.svg" alt={u.name} className="w-full h-full object-cover" />;
+                      // eslint-disable-next-line @next/next/no-img-element
                       if (src.startsWith("data:") || src.startsWith("blob:")) return <img src={src} alt={u.name} className="w-full h-full object-cover" />;
+                      // eslint-disable-next-line @next/next/no-img-element
                       return <img src={src} alt={u.name} className="w-full h-full object-cover" onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/images/user/default-avatar.svg"; }} />;
                     })()}
                   </div>
@@ -135,21 +138,26 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                               const raw = (u.avatar ?? "").toString().trim();
                               const src = raw && raw !== "null" && raw !== "undefined" ? raw : "";
                               if (!src) {
+                                // eslint-disable-next-line @next/next/no-img-element
                                 return <img src="/images/user/default-avatar.svg" alt={u.name} className="w-full h-full object-cover" />;
                               }
                               if (src.startsWith("data:") || src.startsWith("blob:")) {
+                                // eslint-disable-next-line @next/next/no-img-element
                                 return <img src={src} alt={u.name} className="w-full h-full object-cover" />;
                               }
 
                               return (
-                                <img
-                                  src={src}
-                                  alt={u.name}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    (e.currentTarget as HTMLImageElement).src = "/images/user/default-avatar.svg";
-                                  }}
-                                />
+                                <>
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img
+                                    src={src}
+                                    alt={u.name}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.currentTarget as HTMLImageElement).src = "/images/user/default-avatar.svg";
+                                    }}
+                                  />
+                                </>
                               );
                             })()}
                           </div>

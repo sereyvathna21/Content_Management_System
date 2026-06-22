@@ -12,7 +12,7 @@ export default function UnauthorizedPage() {
           </div>
 
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">You don't have the required permissions to view this page.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">You don&apos;t have permission to access this page.</p>
 
           <div className="space-y-3">
             <Link href="/" className="inline-flex w-full items-center justify-center px-4 py-3 rounded-xl bg-red-500 text-white font-semibold hover:bg-red-600 transition">

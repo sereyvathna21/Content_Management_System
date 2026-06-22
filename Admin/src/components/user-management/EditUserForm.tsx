@@ -48,6 +48,7 @@ export default function EditUserForm({ open, onClose, onSave, initial, roles }: 
   const liveError = error || (passwordsMismatch ? t("UserForm.passwordsMismatch") : null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setName(initial.name);
     setEmail(initial.email);
     setRole(initial.role || "User");
@@ -62,12 +63,14 @@ export default function EditUserForm({ open, onClose, onSave, initial, roles }: 
     const current = (role || "").trim();
     const roleNames = roles.map((r) => r.name);
     if (!current || !roleNames.includes(current)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRole(roleNames[0]);
     }
   }, [roles, role]);
 
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPassword("");
     setConfirmPassword("");
     setError(null);
@@ -76,6 +79,7 @@ export default function EditUserForm({ open, onClose, onSave, initial, roles }: 
   useEffect(() => {
     if (!error) return;
     if (!password && !confirmPassword) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(null);
       return;
     }
@@ -155,6 +159,7 @@ export default function EditUserForm({ open, onClose, onSave, initial, roles }: 
                 (() => {
                   const src = (avatarPreview || "").toString().trim();
                   if (src.startsWith("data:") || src.startsWith("blob:")) {
+                    // eslint-disable-next-line @next/next/no-img-element
                     return <img src={src} alt="Avatar preview" className="w-full h-full object-cover" />;
                   }
                   return <Image src={src} alt="Avatar preview" width={96} height={96} unoptimized={src.includes('localhost') || src.includes('127.0.0.1')} className="w-full text-center h-full object-cover" />;

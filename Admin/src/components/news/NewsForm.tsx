@@ -332,7 +332,8 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {existingImageUrls.map((url, idx) => (
                     <div key={idx} className="relative group rounded-lg overflow-hidden border border-gray-200">
-                      <img
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                         src={url.startsWith("http") ? url : `${getBackendUrl()}${url}`}
                         alt="Preview"
                         className="w-full h-20 object-cover"

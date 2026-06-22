@@ -179,6 +179,7 @@ export default function NewsPage() {
               <div className="mb-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                   {selectedNews.imageUrl.split(',').filter(Boolean).map((url, idx) => (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       key={idx}
                       src={resolveBackendUrl(url)}

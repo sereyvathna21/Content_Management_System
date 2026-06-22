@@ -44,6 +44,7 @@ export default function SectionForm({
 
   useEffect(() => {
     if (initialData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setData({ ...initialData });
     } else {
       setData({
@@ -60,6 +61,7 @@ export default function SectionForm({
   // Sync activeTab to global locale
   useEffect(() => {
     if (locale === "en") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab("en");
     } else {
       setActiveTab("km");

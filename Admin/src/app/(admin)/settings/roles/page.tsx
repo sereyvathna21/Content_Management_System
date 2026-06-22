@@ -118,7 +118,7 @@ export default function RolesSettingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [session?.accessToken, status]);
+  }, [session?.accessToken, status, t]);
 
   useEffect(() => {
     loadData();

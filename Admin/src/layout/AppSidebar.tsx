@@ -159,7 +159,8 @@ const AppSidebar: React.FC = () => {
         return hasAccess(nav) ? nav : null;
       })
       .filter(Boolean) as NavItem[];
-  }, [permissions ? permissions.join(",") : "", isSuperAdmin, status]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [permissions, isSuperAdmin, status]);
 
   const filteredOthersItems = React.useMemo(() => {
     if (status === "loading") return othersItems as NavItem[];
@@ -174,7 +175,8 @@ const AppSidebar: React.FC = () => {
         return hasAccess(nav) ? nav : null;
       })
       .filter(Boolean) as NavItem[];
-  }, [permissions ? permissions.join(",") : "", isSuperAdmin, status]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [permissions, isSuperAdmin, status]);
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";

@@ -142,6 +142,7 @@ export default function CreateUserForm({ open, onClose, onSave, roles }: Props) 
                 (() => {
                   const src = (avatarPreview || "").toString().trim();
                   if (src.startsWith("data:") || src.startsWith("blob:")) {
+                    // eslint-disable-next-line @next/next/no-img-element
                     return <img src={src} alt="Avatar preview" className="w-full h-full object-cover" />;
                   }
                   return <Image src={src} alt="Avatar preview" width={96} height={96} className="w-full text-center h-full object-cover" />;

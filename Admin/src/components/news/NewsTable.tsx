@@ -182,7 +182,10 @@ export default React.memo(function NewsTable({
                             >
                               <div className="flex items-center gap-3">
                                 {imageUrl && (
-                                  <img src={imageUrl} alt="" className="w-10 h-10 object-cover rounded-md shrink-0" />
+                                  <>
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={imageUrl} alt="" className="w-10 h-10 object-cover rounded-md shrink-0" />
+                                  </>
                                 )}
                                 <div className="font-medium line-clamp-2 text-left max-w-[250px] sm:max-w-[350px] md:max-w-[450px] lg:max-w-[600px] xl:max-w-[800px] whitespace-normal wrap-break-words">{tr.title}</div>
                               </div>
@@ -281,7 +284,10 @@ export default React.memo(function NewsTable({
                       <button type="button" className="text-left w-full" onClick={() => onOpen(n)}>
                         <div className="flex items-center gap-3">
                           {imageUrl ? (
-                            <img src={imageUrl} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                            <>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={imageUrl} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                            </>
                           ) : (
                             <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 text-gray-400">
                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>

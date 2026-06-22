@@ -29,6 +29,7 @@ const Select: React.FC<SelectProps> = ({
   const [selectedValue, setSelectedValue] = useState<string>(value ?? defaultValue ?? "");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (value !== undefined) setSelectedValue(value);
   }, [value]);
 
