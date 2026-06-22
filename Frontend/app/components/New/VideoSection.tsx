@@ -2,7 +2,7 @@
 
 import React from "react";
 import VideoCard from "./VideoCard";
-import { useTranslations } from "next-intl";
+
 
 interface Video {
   id?: string;
@@ -27,7 +27,7 @@ const VideoSection: React.FC<VideoSectionProps> = ({
     currentPage * videosPerPage,
   );
 
-  const t = useTranslations("NewsPage");
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

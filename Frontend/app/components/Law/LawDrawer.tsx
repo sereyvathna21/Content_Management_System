@@ -24,24 +24,24 @@ export default function LawDrawer({
   law?: LawItem | null;
   onClose: () => void;
 }) {
-  if (!open || !law) return null;
+
 
   const t = useTranslations("LawsPage");
-  const titleKey = law.id ? `content.items.${law.id}.title` : "";
+  const titleKey = law?.id ? `content.items.${law?.id}.title` : "";
   const translatedTitle = titleKey && t.has(titleKey) ? t(titleKey) : "";
-  const rawTitle = translatedTitle || law.title;
+  const rawTitle = translatedTitle || law?.title;
 
-  const descriptionKey = law.id ? `content.items.${law.id}.description` : "";
+  const descriptionKey = law?.id ? `content.items.${law?.id}.description` : "";
   const translatedDescription =
     descriptionKey && t.has(descriptionKey) ? t(descriptionKey) : "";
-  const rawDescription = translatedDescription || law.description;
+  const rawDescription = translatedDescription || law?.description;
 
-  const categoryKey = law.category ? `categoryLabels.${law.category}` : "";
+  const categoryKey = law?.category ? `categoryLabels.${law?.category}` : "";
   const translatedCategory =
     categoryKey && t.has(categoryKey) ? t(categoryKey) : "";
-  const rawCategory = translatedCategory || law.category;
+  const rawCategory = translatedCategory || law?.category;
 
-  const pdfUrl = law.pdf;
+  const pdfUrl = law?.pdf;
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -111,7 +111,7 @@ export default function LawDrawer({
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${(law.title || "document")
+        a.download = `${(law?.title || "document")
           .replace(/[^a-z0-9\s\-_.]/gi, "")
           .trim()
           .replace(/\s+/g, "-")}.pdf`;
@@ -154,19 +154,19 @@ export default function LawDrawer({
                   className="text-sm md:text-base text-gray-600 mt-1 whitespace-normal break-words"
                   title={rawDescription}
                 >
-                  {rawDescription}
+                  {truncatedDescription}
                 </div>
               )}
               <div className="flex items-center gap-2 mt-2">
                 <span
                   className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getCategoryBadgeClasses(
-                    law.category || "",
+                    law?.category || "",
                   )}`}
                 >
                   {rawCategory}
                 </span>
                 <span className="text-xs text-gray-500">·</span>
-                <span className="text-xs text-gray-500">{law.date}</span>
+                <span className="text-xs text-gray-500">{law?.date}</span>
               </div>
             </div>
           </div>
@@ -205,6 +205,7 @@ export default function LawDrawer({
     </div>
   );
 
+  if (!open || !law) return null;
   if (typeof document === "undefined") return null;
   const confirmMessage =
     t("actions.confirmDownload") &&

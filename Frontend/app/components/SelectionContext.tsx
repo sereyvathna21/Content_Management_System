@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useContext, useMemo, useState, useCallback } from "react";
 
 type SelectedItem = {
   key: string; // type:id
@@ -22,7 +22,7 @@ const SelectionContext = createContext<SelectionContextValue | null>(null);
 export function SelectionProvider({ children }: { children: React.ReactNode }) {
   const [selected, setSelected] = useState<Record<string, SelectedItem>>({});
 
-  const toggle = (item: SelectedItem) => {
+  const toggle = useCallback((item: SelectedItem) => {
     setSelected((prev) => {
       const copy = { ...prev };
       if (copy[item.key]) {
@@ -32,13 +32,13 @@ export function SelectionProvider({ children }: { children: React.ReactNode }) {
       }
       return copy;
     });
-  };
+  }, []);
 
-  const clear = () => setSelected({});
+  const clear = useCallback(() => setSelected({}), []);
 
-  const list = () => Object.values(selected);
+  const list = useCallback(() => Object.values(selected), [selected]);
 
-  const value = useMemo(() => ({ selected, toggle, clear, list }), [selected]);
+  const value = useMemo(() => ({ selected, toggle, clear, list }), [selected, toggle, clear, list]);
 
   return (
     <SelectionContext.Provider value={value}>

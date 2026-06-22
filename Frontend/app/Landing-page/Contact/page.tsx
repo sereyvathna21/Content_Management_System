@@ -162,7 +162,7 @@ export default function Contact() {
       setFormData({ name: "", email: "", subject: "", message: "" });
       setErrors({ name: "", email: "", subject: "", message: "" });
       setTouched({ name: false, email: false, subject: false, message: false });
-    } catch (e) {
+    } catch {
       setSubmitStatus({ type: "error", message: t("form.errorMessage") });
     } finally {
       setIsSubmitting(false);

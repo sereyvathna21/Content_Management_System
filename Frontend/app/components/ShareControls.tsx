@@ -5,11 +5,11 @@ import { useTranslations } from "next-intl";
 
 export default function ShareControls() {
   const t = useTranslations("NewsPage");
-  const [copied, setCopied] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [currentUrl, setCurrentUrl] = useState("");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentUrl(window.location.href);
   }, []);
 
@@ -19,24 +19,9 @@ export default function ShareControls() {
     const url = getUrl();
     try {
       await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     } catch (e) {
       // fallback: select and copy
       console.error("Copy failed", e);
-    }
-  };
-
-  const shareGeneric = async () => {
-    const url = getUrl();
-    if (typeof navigator !== "undefined" && "share" in navigator) {
-      try {
-        await (navigator as any).share({ title: document.title, url });
-      } catch (e) {
-        console.error("Web Share failed", e);
-      }
-    } else {
-      await copyLink();
     }
   };
 

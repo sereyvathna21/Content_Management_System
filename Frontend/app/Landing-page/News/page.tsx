@@ -13,25 +13,9 @@ import SearchBar from "@/app/components/SearchBar";
 import HeroCover from "@/app/components/HeroCover";
 import ListSkeleton from "@/app/components/ListSkeleton";
 import { compareText } from "@/app/lib/searchUtils";
+import { NewsArticle, Video, PaginatedResponse } from "@/types/api";
 
-interface NewsArticle {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string;
-  publishAt: string;
-  category: string;
-  imageUrl: string;
-}
-
-interface Video {
-  id: string;
-  embedUrl: string;
-  title: string;
-  description: string;
-  category: string;
-  publishAt: string;
-}
+// Using types from @/types/api
 
 const newsPerPage = 9;
 const videosPerPage = 3;
@@ -84,7 +68,7 @@ export default function News() {
           { cache: "no-store" },
         );
         if (newsRes.ok) {
-          const newsData = await newsRes.json();
+          const newsData: PaginatedResponse<NewsArticle> = await newsRes.json();
           setNewsArticles(newsData.items || newsData.data || []);
         }
 
@@ -94,7 +78,7 @@ export default function News() {
           { cache: "no-store" },
         );
         if (videosRes.ok) {
-          const videosData = await videosRes.json();
+          const videosData: PaginatedResponse<Video> = await videosRes.json();
           setVideos(videosData.items || videosData.data || []);
         }
       } catch (error) {
@@ -166,11 +150,14 @@ export default function News() {
   );
 
   // Convert publishAt to date string for display
-  const articlesForDisplay = paginatedArticles.map((article) => ({
-    ...article,
-    image: getFullImageUrl(article.imageUrl),
-    date: article.publishAt?.split("T")[0] || "",
-  }));
+  const articlesForDisplay = paginatedArticles.map((article) => {
+    const firstImgUrl = article.imageUrl ? article.imageUrl.split(",")[0].trim() : "";
+    return {
+      ...article,
+      image: getFullImageUrl(firstImgUrl),
+      date: article.publishAt?.split("T")[0] || "",
+    };
+  });
 
   if (!mounted || loading) {
     return (

@@ -47,7 +47,7 @@ function parseFilenameFromContentDisposition(header: string | null) {
 }
 
 export default function ExportBar() {
-  const { selected, clear, list } = useSelection();
+  const { list, clear } = useSelection();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -24,6 +24,7 @@ export default async function VideoPage({
   const lang = locale === "kh" ? "km" : locale;
 
   // Fetch videos from public API
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let apiVideos: any[] = [];
   try {
     const res = await fetch(
@@ -39,6 +40,7 @@ export default async function VideoPage({
   }
 
   // Map API fields to properties expected by page components
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mappedVideos = apiVideos.map((video: any) => ({
     id: video.id,
     title: video.title,

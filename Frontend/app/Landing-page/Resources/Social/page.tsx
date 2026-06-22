@@ -5,22 +5,22 @@ import Navigation from "@/app/components/Home/Navigation";
 import Footer from "@/app/components/Home/Footer";
 import HeroCover from "@/app/components/HeroCover";
 import SocialContentRenderer from "@/app/components/Resource/SocialContentRenderer";
-import { ContentSection, SocialTopic } from "@/app/data/socialContent";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
+import { ApiSocialSection, ApiSocialTopic, ApiSocialMedia, ApiTopicReference, SocialTopic, SocialContentSection } from "@/types/api";
 
 // Helper to map API section to the format expected by the renderer
-function mapApiSections(apiSections: any[]): ContentSection[] {
+function mapApiSections(apiSections: ApiSocialSection[] | undefined): SocialContentSection[] {
   if (!apiSections || !Array.isArray(apiSections)) return [];
   return apiSections.map((s) => {
-    let image: ContentSection["image"] = undefined;
-    let images: ContentSection["images"] = undefined;
+    let image: SocialContentSection["image"] = undefined;
+    let images: SocialContentSection["images"] = undefined;
 
     const validMedia = Array.isArray(s.media)
       ? s.media.filter(
-          (m: any) =>
+          (m: ApiSocialMedia) =>
             typeof m?.publicUrl === "string" && m.publicUrl.trim().length > 0,
         )
       : [];
@@ -31,11 +31,11 @@ function mapApiSections(apiSections: any[]): ContentSection[] {
           src: validMedia[0].publicUrl,
           alt: validMedia[0].alt || "",
           caption: validMedia[0].caption,
-          position: (validMedia[0].position || "top") as any,
+          position: (validMedia[0].position || "top") as "top" | "bottom" | "left" | "right" | "full",
           width: validMedia[0].width || 100,
         };
       } else {
-        images = validMedia.map((m: any) => ({
+        images = validMedia.map((m: ApiSocialMedia) => ({
           src: m.publicUrl,
           alt: m.alt || "",
           caption: m.caption,
@@ -65,7 +65,7 @@ function mapApiSections(apiSections: any[]): ContentSection[] {
 }
 
 // Helper to map API topic to the format expected by the renderer
-function mapApiTopicToRenderer(apiTopic: any): SocialTopic {
+function mapApiTopicToRenderer(apiTopic: ApiSocialTopic): SocialTopic {
   return {
     id: apiTopic.slug,
     title: apiTopic.title || "",
@@ -79,14 +79,14 @@ function mapApiTopicToRenderer(apiTopic: any): SocialTopic {
           : "Security",
     reference: apiTopic.reference || "",
     referenceFilesKm: Array.isArray(apiTopic.referencesKm)
-      ? apiTopic.referencesKm.map((ref: any) => ({
+      ? apiTopic.referencesKm.map((ref: ApiTopicReference) => ({
           title: ref.title || "Document.pdf",
           publicUrl: ref.publicUrl,
           fileSizeBytes: ref.fileSizeBytes,
         }))
       : [],
     referenceFilesEn: Array.isArray(apiTopic.referencesEn)
-      ? apiTopic.referencesEn.map((ref: any) => ({
+      ? apiTopic.referencesEn.map((ref: ApiTopicReference) => ({
           title: ref.title || "Document.pdf",
           publicUrl: ref.publicUrl,
           fileSizeBytes: ref.fileSizeBytes,
@@ -105,7 +105,7 @@ export default function Social() {
   // Read URL params for initial state
   const urlTopic = searchParams.get("topic");
 
-  const [topicsSummary, setTopicsSummary] = useState<any[]>([]);
+  const [topicsSummary, setTopicsSummary] = useState<{slug: string, title: string}[]>([]);
   const [selectedTopicId, setSelectedTopicId] = useState<string>(
     urlTopic || "governance",
   );

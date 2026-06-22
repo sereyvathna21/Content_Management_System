@@ -17,7 +17,8 @@ export default function HeroCover({
 }: Props) {
   return (
     <div className="relative w-full animate-fade-in overflow-hidden">
-      <img
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
         src={image}
         alt="cover"
         className={`absolute inset-0 w-full ${heightClass} object-cover pointer-events-none transition-transform duration-700 ease-out`}

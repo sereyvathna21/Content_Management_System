@@ -42,7 +42,7 @@ function useOnClickOutside<T extends HTMLElement>(
   ref: React.RefObject<T>,
   handler: (e: Event) => void,
 ) {
-  const stableHandler = useCallback(handler, [handler]);
+  const stableHandler = useCallback((e: Event) => handler(e), [handler]);
 
   useEffect(() => {
     function handle(e: Event) {
@@ -141,12 +141,14 @@ const DesktopDropdown = memo(function DesktopDropdown({
   useOnClickOutside(ref as React.RefObject<HTMLElement>, closeDropdown);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(false);
     setHoveredItem(null);
   }, [pathname]);
 
   useEffect(() => {
     if (!isNavVisible) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(false);
       setHoveredItem(null);
     }
@@ -588,6 +590,7 @@ export default function Navigation() {
 
   // Close mobile menu when pathname changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileMenuOpen(false);
     mobileDropdownState.resetState();
   }, [pathname, mobileDropdownState.resetState]);

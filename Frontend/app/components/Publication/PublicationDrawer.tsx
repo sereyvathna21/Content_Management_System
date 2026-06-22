@@ -24,7 +24,7 @@ export default function PublicationDrawer({
   pub?: Pub | null;
   onClose: () => void;
 }) {
-  if (!open || !pub) return null;
+
 
   const t = useTranslations("PublicationPage");
   const hasTranslation = (key: string) => {
@@ -34,22 +34,22 @@ export default function PublicationDrawer({
       : false;
   };
 
-  const titleKey = pub.id ? `content.items.${pub.id}.title` : "";
-  const descriptionKey = pub.id ? `content.items.${pub.id}.description` : "";
-  const categoryKey = pub.category ? `categoryLabels.${pub.category}` : "";
+  const titleKey = pub?.id ? `content.items.${pub?.id}.title` : "";
+  const descriptionKey = pub?.id ? `content.items.${pub?.id}.description` : "";
+  const categoryKey = pub?.category ? `categoryLabels.${pub?.category}` : "";
 
   const rawTitle =
-    titleKey && hasTranslation(titleKey) ? t(titleKey) : pub.title;
+    titleKey && hasTranslation(titleKey) ? t(titleKey) : pub?.title;
 
   const rawDescription =
     descriptionKey && hasTranslation(descriptionKey)
       ? t(descriptionKey)
-      : pub.description;
+      : pub?.description;
 
   const rawCategory =
-    categoryKey && hasTranslation(categoryKey) ? t(categoryKey) : pub.category;
+    categoryKey && hasTranslation(categoryKey) ? t(categoryKey) : pub?.category;
 
-  const pdfUrl = typeof pub.pdf === "string" ? pub.pdf : undefined;
+  const pdfUrl = typeof pub?.pdf === "string" ? pub?.pdf : undefined;
 
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -112,14 +112,15 @@ export default function PublicationDrawer({
 
   const performDownload = async () => {
     try {
-      if (typeof pub.pdf === "string") {
-        const res = await fetch(pub.pdf);
+      const p = pub?.pdf;
+      if (typeof p === "string") {
+        const res = await fetch(p);
         if (!res.ok) throw new Error("Failed to fetch PDF");
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${(pub.title || "document")
+        a.download = `${(pub?.title || "document")
           .replace(/[^a-z0-9\s\-_.]/gi, "")
           .trim()
           .replace(/\s+/g, "-")}.pdf`;
@@ -127,11 +128,11 @@ export default function PublicationDrawer({
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
-      } else if (pub.pdf instanceof File) {
-        const url = URL.createObjectURL(pub.pdf);
+      } else if (p instanceof File) {
+        const url = URL.createObjectURL(p);
         const a = document.createElement("a");
         a.href = url;
-        a.download = pub.pdf.name || "document.pdf";
+        a.download = p.name || "document.pdf";
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -177,13 +178,13 @@ export default function PublicationDrawer({
               <div className="flex items-center gap-2 mt-2">
                 <span
                   className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getCategoryBadgeClasses(
-                    pub.category || "",
+                    pub?.category || "",
                   )}`}
                 >
                   {rawCategory}
                 </span>
                 <span className="text-xs text-gray-500">·</span>
-                <span className="text-xs text-gray-500">{pub.date}</span>
+                <span className="text-xs text-gray-500">{pub?.date}</span>
               </div>
             </div>
           </div>
@@ -222,6 +223,7 @@ export default function PublicationDrawer({
     </div>
   );
 
+  if (!open || !pub) return null;
   if (typeof document === "undefined") return null;
   const confirmMessage =
     t("actions.confirmDownload") &&

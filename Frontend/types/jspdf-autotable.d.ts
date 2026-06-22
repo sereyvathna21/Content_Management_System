@@ -1,15 +1,16 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { jsPDF } from "jspdf";
 
 // 1. Declare the options layout explicitly so you can use it inside your app codebase
 export interface AutoTableOptions {
   startY?: number;
-  head?: any[][];
-  body?: any[][];
+  head?: unknown[][];
+  body?: unknown[][];
   theme?: "striped" | "grid" | "plain";
-  headStyles?: any;
-  styles?: any;
-  columnStyles?: any;
-  margin?: any;
+  headStyles?: unknown;
+  styles?: unknown;
+  columnStyles?: unknown;
+  margin?: unknown;
   pageBreak?: "auto" | "avoid" | "always";
   rowPageBreak?: "auto" | "avoid";
   tableWidth?: "auto" | "wrap" | number;

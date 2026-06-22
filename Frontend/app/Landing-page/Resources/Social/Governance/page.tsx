@@ -1,17 +1,18 @@
 "use client";
 
 import SocialContentRenderer from "@/app/components/Resource/SocialContentRenderer";
-import { ContentSection, SocialTopic } from "@/app/data/socialContent";
+
 import { useState, useEffect } from "react";
 import { useLocale } from "next-intl";
 import axios from "axios";
+import { ApiSocialSection, ApiSocialMedia, ApiSocialTopic, SocialTopic, SocialContentSection } from "@/types/api";
 
 // Helper to map API section to the format expected by the renderer
-function mapApiSections(apiSections: any[]): ContentSection[] {
+function mapApiSections(apiSections: ApiSocialSection[] | undefined): SocialContentSection[] {
   if (!apiSections || !Array.isArray(apiSections)) return [];
   return apiSections.map((s) => {
-    let image: ContentSection["image"] = undefined;
-    let images: ContentSection["images"] = undefined;
+    let image: SocialContentSection["image"] = undefined;
+    let images: SocialContentSection["images"] = undefined;
 
     if (s.media && s.media.length > 0) {
       if (s.media.length === 1) {
@@ -19,10 +20,10 @@ function mapApiSections(apiSections: any[]): ContentSection[] {
           src: s.media[0].publicUrl,
           alt: s.media[0].alt || "",
           caption: s.media[0].caption,
-          position: (s.media[0].position || "top") as any,
+          position: (s.media[0].position || "top") as "top" | "bottom" | "left" | "right" | "full",
         };
       } else {
-        images = s.media.map((m: any) => ({
+        images = s.media.map((m: ApiSocialMedia) => ({
           src: m.publicUrl,
           alt: m.alt || "",
           caption: m.caption,
@@ -46,7 +47,7 @@ function mapApiSections(apiSections: any[]): ContentSection[] {
   });
 }
 
-function mapApiTopicToRenderer(apiTopic: any): SocialTopic {
+function mapApiTopicToRenderer(apiTopic: ApiSocialTopic): SocialTopic {
   return {
     id: apiTopic.slug,
     title: apiTopic.title || "",

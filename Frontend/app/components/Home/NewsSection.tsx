@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import NewsCard from "@/app/components/New/NewsCard";
 import ListSkeleton from "@/app/components/ListSkeleton";
+import { NewsArticle, PaginatedResponse } from "@/types/api";
 
 const backendUrl =
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5001";
@@ -20,12 +21,11 @@ const getFullImageUrl = (url: string | null | undefined) => {
   return `${backendUrl}/${url}`;
 };
 
-export default function NewsSection() {
+export default function NewsSection({ locale }: { locale: string }) {
   const t = useTranslations("NewsPage");
-  const locale = useLocale();
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [newsItems, setNewsItems] = useState<any[]>([]);
+  const [newsItems, setNewsItems] = useState<(NewsArticle & { image: string; date: string })[]>([]);
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -55,15 +55,17 @@ export default function NewsSection() {
           { cache: "no-store" },
         );
         if (res.ok) {
-          const data = await res.json();
+          const data: PaginatedResponse<NewsArticle> = await res.json();
           const items = data.items || data.data || [];
-          setNewsItems(
-            items.map((item: any) => ({
+          const formattedNews = items.map((item) => {
+            const firstImgUrl = item.imageUrl ? item.imageUrl.split(",")[0].trim() : "";
+            return {
               ...item,
-              image: getFullImageUrl(item.imageUrl),
+              image: getFullImageUrl(firstImgUrl),
               date: item.publishAt ? item.publishAt.split("T")[0] : "",
-            })),
-          );
+            };
+          });
+          setNewsItems(formattedNews);
         }
       } catch (error) {
         console.error("Failed to fetch landing news:", error);

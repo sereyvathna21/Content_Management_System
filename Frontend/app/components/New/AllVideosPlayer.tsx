@@ -29,6 +29,7 @@ export default function AllVideosPlayer({
   useEffect(() => {
     const filtered = videos.filter((v) => v.id !== selected.id);
     const shuffled = filtered.sort(() => Math.random() - 0.5);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDisplayVideos(shuffled);
   }, [selected, videos]);
 
@@ -98,11 +99,14 @@ export default function AllVideosPlayer({
               >
                 <div className="w-40 sm:w-48 lg:w-44 xl:w-52 shrink-0 aspect-video rounded-xl overflow-hidden bg-gray-100 relative">
                   {ytId ? (
-                    <img
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
                       src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`}
                       alt={displayedTitle}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
+                    </>
                   ) : (
                     <iframe
                       title={displayedTitle}

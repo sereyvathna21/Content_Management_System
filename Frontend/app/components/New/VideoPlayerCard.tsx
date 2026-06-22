@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-import { useTranslations, useLocale } from "next-intl";
+
 
 type Video = {
   id: string;
@@ -13,10 +13,7 @@ type Video = {
 };
 
 export default function VideoPlayerCard({ video }: { video: Video }) {
-  const t = useTranslations();
 
-  const locale = useLocale();
-  const dateLocale = locale === "kh" ? "km-KH" : locale || "en-US";
 
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">

@@ -1,10 +1,10 @@
 import React from "react";
 import Image from "next/image";
-import { ContentSection, SocialTopic } from "../../data/socialContent";
+import { SocialTopic, SocialContentSection } from "@/types/api";
 import { useLocale, useTranslations } from "next-intl";
 
 interface SectionRendererProps {
-  section: ContentSection;
+  section: SocialContentSection;
   level?: number;
 }
 
@@ -20,14 +20,7 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
     return text[locale] || text.en || "";
   };
 
-  const formatBytes = (bytes?: number) => {
-    if (bytes === undefined || bytes === null) return "";
-    if (bytes < 1024) return `${bytes} B`;
-    const kb = bytes / 1024;
-    if (kb < 1024) return `${kb.toFixed(1)} KB`;
-    const mb = kb / 1024;
-    return `${mb.toFixed(1)} MB`;
-  };
+
 
   // Helper function to get localized content
   const getLocalizedContent = (
@@ -98,7 +91,7 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
     );
   };
 
-  const renderImage = (image: ContentSection["image"]) => {
+  const renderImage = (image: SocialContentSection["image"]) => {
     if (!image) return null;
 
     const widthClass =
@@ -113,7 +106,7 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
         className={`relative overflow-hidden rounded-lg ${widthClass} mx-auto`}
       >
         <Image
-          src={image.src}
+          src={getLocalizedText(image.src)}
           alt={getLocalizedText(image.alt)}
           width={800}
           height={500}
@@ -131,7 +124,7 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
     return imageElement;
   };
 
-  const renderImages = (images?: ContentSection["images"]) => {
+  const renderImages = (images?: SocialContentSection["images"]) => {
     if (!images || images.length === 0) return null;
 
     return (

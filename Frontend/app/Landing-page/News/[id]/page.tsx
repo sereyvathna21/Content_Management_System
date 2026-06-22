@@ -4,11 +4,13 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import Header from "@/app/components/Home/Header";
 import Image from "next/image";
+
 import Footer from "@/app/components/Home/Footer";
 import Navigation from "@/app/components/Home/Navigation";
 import ShareControls from "@/app/components/ShareControls";
 import Breadcrumbs from "@/app/components/New/Breadcrumbs";
 import Link from "next/link";
+import { NewsArticle, PaginatedResponse } from "@/types/api";
 
 const backendUrl =
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:5001";
@@ -37,7 +39,7 @@ export default async function ArticlePage({
   const lang = locale === "kh" ? "km" : locale;
 
   // Fetch article from public API
-  let article: any = null;
+  let article: NewsArticle | null = null;
   try {
     const res = await fetch(
       `${backendUrl}/api/public/news/${encodeURIComponent(id)}?lang=${lang}`,
@@ -53,17 +55,17 @@ export default async function ArticlePage({
   if (!article) return notFound();
 
   // Fetch related articles
-  let relatedArticles: any[] = [];
+  let relatedArticles: NewsArticle[] = [];
   try {
     const res = await fetch(
       `${backendUrl}/api/public/news?lang=${lang}&page=1&pageSize=6`,
       { cache: "no-store" },
     );
     if (res.ok) {
-      const newsData = await res.json();
+      const newsData: PaginatedResponse<NewsArticle> = await res.json();
       const items = newsData.items || newsData.data || [];
       relatedArticles = items
-        .filter((a: any) => a.id !== article.id)
+        .filter((a: NewsArticle) => a.id !== article!.id)
         .slice(0, 5);
     }
   } catch (error) {
@@ -89,7 +91,9 @@ export default async function ArticlePage({
   const displayedSubtitle = article.subtitle;
   const displayedExcerpt = article.excerpt;
   const displayedContent = article.contentHtml || article.contentMd;
-  const imageUrl = getFullImageUrl(article.imageUrl);
+  const imageUrls = article.imageUrl 
+    ? article.imageUrl.split(",").map(url => getFullImageUrl(url.trim())) 
+    : ["/images/placeholder.svg"];
 
   return (
     <>
@@ -103,12 +107,35 @@ export default async function ArticlePage({
           <article className="grid lg:grid-cols-3 gap-10 items-start max-w-6xl mx-auto">
             <header className="lg:col-span-2">
               <div className="relative rounded-xl overflow-hidden shadow-lg ">
-                <img
-                  src={imageUrl}
-                  alt={displayedTitle}
-                  className="w-full h-72 sm:h-96 object-cover rounded-xl"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+                {imageUrls.length > 1 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 w-full h-72 sm:h-96">
+                    <div className="w-full h-full relative">
+                      <Image src={imageUrls[0]} alt={displayedTitle} fill className="object-cover" />
+                    </div>
+                    <div className="grid grid-cols-2 grid-rows-2 gap-1 h-full hidden sm:grid">
+                      {imageUrls.slice(1, 5).map((img, idx) => (
+                        <div key={idx} className="w-full h-full relative">
+                          <Image src={img} alt={`${displayedTitle} ${idx + 1}`} fill className="object-cover" />
+                          {idx === 3 && imageUrls.length > 5 && (
+                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                              <span className="text-white text-xl font-bold">+{imageUrls.length - 5}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative w-full h-72 sm:h-96">
+                    <Image
+                      src={imageUrls[0]}
+                      alt={displayedTitle}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6 text-white">
                   <div className="flex items-center gap-3">
                     <span
@@ -158,18 +185,22 @@ export default async function ArticlePage({
                   <ul className="space-y-4">
                     {relatedArticles.map((a) => {
                       const relatedTitle = a.title;
-                      const relatedImg = getFullImageUrl(a.imageUrl);
+                      const firstImgUrl = a.imageUrl ? a.imageUrl.split(",")[0].trim() : "";
+                      const relatedImg = getFullImageUrl(firstImgUrl);
                       return (
                         <li key={a.id}>
                           <Link
                             href={`/Landing-page/News/${encodeURIComponent(a.slug || a.id)}`}
                             className="flex items-center gap-3 py-2"
                           >
-                            <img
-                              src={relatedImg}
-                              alt={relatedTitle}
-                              className="w-28 h-16 object-cover rounded"
-                            />
+                            <div className="relative w-28 h-16 shrink-0 rounded overflow-hidden">
+                              <Image
+                                src={relatedImg}
+                                alt={relatedTitle}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
                             <div className="text-base">
                               <div className="font-medium text-gray-800 line-clamp-2">
                                 {relatedTitle}

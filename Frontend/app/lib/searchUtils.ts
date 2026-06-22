@@ -12,7 +12,7 @@ export function normalizeText(input?: string) {
     const normalized = cleaned.normalize("NFC");
     // Use regular toLowerCase as toLocaleLowerCase() can be unreliable for Khmer
     return normalized.toLowerCase();
-  } catch (err) {
+  } catch {
     return cleaned.toLowerCase();
   }
 }
@@ -37,9 +37,10 @@ export function compareText(a?: string, b?: string, locale = "km") {
   const nb = normalizeText(b);
   try {
     return na.localeCompare(nb, locale, { sensitivity: "base" });
-  } catch (e) {
+  } catch {
     return na.localeCompare(nb);
   }
 }
 
-export default { normalizeText, matchesSearch, compareText };
+const searchUtils = { normalizeText, matchesSearch, compareText };
+export default searchUtils;

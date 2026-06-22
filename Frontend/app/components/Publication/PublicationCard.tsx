@@ -52,6 +52,7 @@ export default function PublicationCard({
   useEffect(() => {
     if (pub.pdf && typeof pub.pdf !== "string" && pub.pdf instanceof File) {
       const url = URL.createObjectURL(pub.pdf);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setObjectUrl(url);
       return () => URL.revokeObjectURL(url);
     }

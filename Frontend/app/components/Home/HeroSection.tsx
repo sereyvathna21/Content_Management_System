@@ -12,7 +12,7 @@ export default function HeroSection() {
       setCurrentHero((prev) => (prev + 1) % heroImages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [heroImages.length]);
 
   return (
     <>
@@ -50,6 +50,7 @@ export default function HeroSection() {
       <div className="pt-24 sm:pt-28 md:pt-32 lg:pt-36 xl:pt-40">
         <section className="relative w-full overflow-hidden h-[220px] sm:h-[300px] md:h-[380px] lg:h-[460px] xl:h-[540px]">
           {/* Background image */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             key={currentHero}
             src={heroImages[currentHero]}

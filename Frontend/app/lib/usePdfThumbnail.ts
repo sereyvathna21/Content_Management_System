@@ -14,12 +14,13 @@ export default function usePdfThumbnail(source?: PdfSource, scale = 1.5) {
     }
 
     let cancelled = false;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let loadingTask: any = null;
 
     (async () => {
       try {
         const pdfjsLib = await import("pdfjs-dist");
-        (pdfjsLib as any).GlobalWorkerOptions.workerSrc = new URL(
+        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
           "pdfjs-dist/build/pdf.worker.mjs",
           import.meta.url,
         ).href;
@@ -36,9 +37,11 @@ export default function usePdfThumbnail(source?: PdfSource, scale = 1.5) {
           throw new Error("Unsupported PDF source");
         }
 
-        loadingTask = (pdfjsLib as any).getDocument({ data: arrayBuffer });
-        const pdf = await loadingTask.promise;
-        const page = await pdf.getPage(1);
+        loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pdf: any = await loadingTask.promise;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const page: any = await pdf.getPage(1);
         const viewport = page.getViewport({ scale });
 
         const canvas = document.createElement("canvas");
@@ -61,7 +64,7 @@ export default function usePdfThumbnail(source?: PdfSource, scale = 1.5) {
       cancelled = true;
       try {
         loadingTask?.destroy?.();
-      } catch (e) {
+      } catch {
         // ignore
       }
     };

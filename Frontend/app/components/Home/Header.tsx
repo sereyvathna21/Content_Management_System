@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -10,19 +10,13 @@ export default function Header() {
   const currentLocale = useLocale();
   const t = useTranslations("Common");
   const router = useRouter();
-  const [lang, setLang] = useState<"en" | "kh">(currentLocale as "en" | "kh");
+  const lang = currentLocale as "en" | "kh";
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-
-  // Update lang state when locale changes
-  useEffect(() => {
-    setLang(currentLocale as "en" | "kh");
-  }, [currentLocale]);
 
   const changeLocale = (newLocale: "en" | "kh") => {
     // Set cookie
     document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
-    setLang(newLocale);
     setDropdownOpen(false);
     // Refresh server components to pick up new locale without a full page reload
     router.refresh();

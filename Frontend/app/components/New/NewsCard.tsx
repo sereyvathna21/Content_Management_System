@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
+
 import { useLocale, useTranslations } from "next-intl";
 import CardSkeleton from "@/app/components/CardSkeleton";
 
@@ -60,6 +60,7 @@ function ClientFormattedDate({
         month: "short",
         day: "numeric",
       });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDisplayed(formatted);
     } catch {
       setDisplayed(new Date(date).toISOString().slice(0, 10));
@@ -103,6 +104,7 @@ export default function NewsCard({
       <article className="group bg-gray-50 rounded-xl overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-100 h-full flex flex-col">
         {/* Image Section */}
         <div className="relative w-full aspect-video overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imgSrc}
             alt={title}

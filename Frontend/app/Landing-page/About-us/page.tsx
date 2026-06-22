@@ -7,7 +7,7 @@ import HeroCover from "@/app/components/HeroCover";
 import AboutContentRenderer from "@/app/components/About/AboutContentRenderer";
 import { aboutContent, AboutTopic } from "@/app/data/aboutContent";
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
 
 const mainTopics = [
@@ -18,7 +18,6 @@ const mainTopics = [
 
 export default function AboutUs() {
   const t = useTranslations("AboutUsPage");
-  const locale = useLocale() as "en" | "kh";
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -51,7 +50,6 @@ export default function AboutUs() {
     [selectedMain],
   );
   const effectiveSubId = selectedSubId || subTopics[0]?.id || null;
-  const selectedSubIndex = subTopics.findIndex((t) => t.id === effectiveSubId);
 
   // Update state when URL params change (e.g., from navbar)
   useEffect(() => {
@@ -64,6 +62,7 @@ export default function AboutUs() {
       const newMainId = urlTopic || mainTopics[0]?.id || "";
       const newSubId = urlSubtopic || null;
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedMainId(newMainId);
       setSelectedSubId(newSubId);
     }
@@ -76,7 +75,7 @@ export default function AboutUs() {
         clearTimeout(animationTimerRef.current);
       }
     };
-  }, []);
+  }, [urlTopic, urlSubtopic]);
 
   const handleMainTabChange = useCallback(
     (id: string) => {
