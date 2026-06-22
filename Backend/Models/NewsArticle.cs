@@ -11,6 +11,8 @@ namespace Backend.Models
         public ContentStatus Status { get; set; } = ContentStatus.Draft;
         public DateTime? PublishAt { get; set; }
         public bool IsPublishedSyncTriggered { get; set; } = false;
+        public TelegramSyncStatus TelegramSyncStatus { get; set; } = TelegramSyncStatus.NotSynced;
+        public string? TelegramSyncErrorMessage { get; set; }
         public string? ImageUrl { get; set; }
         public Guid? ImageMediaId { get; set; }
         public Media? ImageMedia { get; set; }

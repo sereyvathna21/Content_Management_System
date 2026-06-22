@@ -209,7 +209,12 @@ namespace Backend.Services
             }
 
             _logger.LogInformation("SendMediaAsync: Local file not found or exceeded size limit. Falling back to URL/text message.");
-            var textMsgId = await SendMessageAsync(caption, job.PhotoUrl, job.LinkUrl, job.LinkText ?? "View");
+            var fallbackCaption = caption;
+            if (!string.IsNullOrWhiteSpace(job.PublicFileUrl))
+            {
+                fallbackCaption += $"\n\n⬇️ <a href=\"{job.PublicFileUrl}\">ទាញយកឯកសារ (Download File)</a>";
+            }
+            var textMsgId = await SendMessageAsync(fallbackCaption, job.PhotoUrl, job.LinkUrl, job.LinkText ?? "View");
             return new[] { textMsgId };
         }
 

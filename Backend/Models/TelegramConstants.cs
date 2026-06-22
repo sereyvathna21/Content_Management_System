@@ -11,7 +11,9 @@ namespace Backend.Models
     {
         News,
         Law,
-        Publication
+        Publication,
+        Video,
+        SocialTopic
     }
 
     public enum TelegramFileType

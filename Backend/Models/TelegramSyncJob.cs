@@ -22,5 +22,8 @@ namespace Backend.Models
         
         // Indicates if it's just a caption edit (no image changed)
         public bool IsCaptionOnlyEdit { get; set; }
+
+        // The public URL of the file to fall back on if file size is too large
+        public string? PublicFileUrl { get; set; }
     }
 }

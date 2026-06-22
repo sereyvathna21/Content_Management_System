@@ -138,10 +138,24 @@ namespace Backend.Services
                             }
                             await db.SaveChangesAsync(stoppingToken);
                         }
+
+                        // Success tracking
+                        if (job.Action != TelegramSyncAction.Delete)
+                        {
+                            await UpdateSyncStatusAsync(db, job.EntityType, job.EntityId, TelegramSyncStatus.Success, null, stoppingToken);
+                        }
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Background Telegram sync failed for {Action} {EntityType} {EntityId}", job.Action, job.EntityType, job.EntityId);
+                        _logger.LogError(ex, "TelegramWorker: Error processing job {Action} for {EntityType}/{EntityId}",
+                            job.Action, job.EntityType, job.EntityId);
+
+                        // Failure tracking
+                        if (job.Action != TelegramSyncAction.Delete)
+                        {
+                            await UpdateSyncStatusAsync(db, job.EntityType, job.EntityId, TelegramSyncStatus.Failed, ex.Message, stoppingToken);
+                        }
+
                         try
                         {
                             await notificationService.SendAdminErrorNotificationAsync($"Failed to sync {job.EntityType} to Telegram: {ex.Message}");
@@ -163,6 +177,41 @@ namespace Backend.Services
                         CleanupUnusedLocks();
                     }
                 }
+            }
+        }
+
+        private async Task UpdateSyncStatusAsync(ApplicationDbContext db, TelegramEntityType entityType, Guid entityId, TelegramSyncStatus status, string? errorMessage, CancellationToken ct)
+        {
+            try
+            {
+                switch (entityType)
+                {
+                    case TelegramEntityType.News:
+                        var news = await db.NewsArticles.FindAsync(new object[] { entityId }, ct);
+                        if (news != null) { news.TelegramSyncStatus = status; news.TelegramSyncErrorMessage = errorMessage; }
+                        break;
+                    case TelegramEntityType.Law:
+                        var law = await db.Laws.FindAsync(new object[] { entityId }, ct);
+                        if (law != null) { law.TelegramSyncStatus = status; law.TelegramSyncErrorMessage = errorMessage; }
+                        break;
+                    case TelegramEntityType.Publication:
+                        var pub = await db.Publications.FindAsync(new object[] { entityId }, ct);
+                        if (pub != null) { pub.TelegramSyncStatus = status; pub.TelegramSyncErrorMessage = errorMessage; }
+                        break;
+                    case TelegramEntityType.Video:
+                        var vid = await db.Videos.FindAsync(new object[] { entityId }, ct);
+                        if (vid != null) { vid.TelegramSyncStatus = status; vid.TelegramSyncErrorMessage = errorMessage; }
+                        break;
+                    case TelegramEntityType.SocialTopic:
+                        var topic = await db.SocialTopics.FindAsync(new object[] { entityId }, ct);
+                        if (topic != null) { topic.TelegramSyncStatus = status; topic.TelegramSyncErrorMessage = errorMessage; }
+                        break;
+                }
+                await db.SaveChangesAsync(ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "TelegramWorker: Failed to update sync status {Status} for {Type}/{Id}", status, entityType, entityId);
             }
         }
 

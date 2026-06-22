@@ -257,6 +257,8 @@ namespace Backend.Controllers
 
             var previousSlug = article.Slug;
             var previousStatus = article.Status;
+            var previousImageUrl = article.ImageUrl;
+            var previousImageMediaId = article.ImageMediaId;
 
             var normalizedSlug = NormalizeSlug(request.Slug);
             var originalSlug = normalizedSlug;
@@ -326,8 +328,9 @@ namespace Backend.Controllers
             if (article.Status == ContentStatus.Published && (article.PublishAt == null || article.PublishAt <= DateTime.UtcNow))
             {
                 var action = previousStatus != ContentStatus.Published ? TelegramSyncAction.Create : TelegramSyncAction.Update;
+                var isCaptionOnlyEdit = previousImageUrl == article.ImageUrl && previousImageMediaId == article.ImageMediaId;
 
-                var job = await _telegramJobBuilder.BuildNewsJobAsync(article, action);
+                var job = await _telegramJobBuilder.BuildNewsJobAsync(article, action, isCaptionOnlyEdit);
                 await _telegramQueue.EnqueueAsync(job);
                 
                 article.IsPublishedSyncTriggered = true;

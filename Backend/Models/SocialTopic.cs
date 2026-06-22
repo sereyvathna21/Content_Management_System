@@ -20,6 +20,9 @@ namespace Backend.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public int? UpdatedByUserId { get; set; }
 
+        public TelegramSyncStatus TelegramSyncStatus { get; set; } = TelegramSyncStatus.NotSynced;
+        public string? TelegramSyncErrorMessage { get; set; }
+
         public ICollection<SocialSection> Sections { get; set; } = new List<SocialSection>();
         public ICollection<SocialRevision> Revisions { get; set; } = new List<SocialRevision>();
         public ICollection<SocialReference> References { get; set; } = new List<SocialReference>();

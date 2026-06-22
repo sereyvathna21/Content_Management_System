@@ -120,7 +120,8 @@ namespace Backend.Services
                 LinkText = "📄 មើលច្បាប់",
                 LocalFilePath = localFilePath,
                 FileType = fileType,
-                DisplayFileName = fileType == TelegramFileType.Document ? $"{lawTitle}.pdf" : null
+                DisplayFileName = fileType == TelegramFileType.Document ? $"{lawTitle}.pdf" : null,
+                PublicFileUrl = !string.IsNullOrEmpty(preferredPdf) ? $"{frontendUrl}{preferredPdf}" : null
             });
         }
 
@@ -174,7 +175,8 @@ namespace Backend.Services
                 LinkText = "📋 មើលការបោះពុម្ពផ្សាយ",
                 LocalFilePath = localFilePath,
                 FileType = fileType,
-                DisplayFileName = fileType == TelegramFileType.Document ? $"{titleEn}.pdf" : null
+                DisplayFileName = fileType == TelegramFileType.Document ? $"{titleEn}.pdf" : null,
+                PublicFileUrl = !string.IsNullOrEmpty(preferredAttachment) ? $"{frontendUrl}{preferredAttachment}" : null
             });
         }
 
