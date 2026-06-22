@@ -6,6 +6,7 @@ using Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Backend.Controllers
 {
@@ -17,22 +18,59 @@ namespace Backend.Controllers
         private readonly Services.EmailService _emailService;
         private readonly Microsoft.AspNetCore.SignalR.IHubContext<Backend.Hubs.ContactHub> _hubContext;
         private readonly IAuditLogService _audit;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _configuration;
 
-        public ContactController(ApplicationDbContext db, Services.EmailService emailService, Microsoft.AspNetCore.SignalR.IHubContext<Backend.Hubs.ContactHub> hubContext, IAuditLogService audit)
+        public ContactController(
+            ApplicationDbContext db, 
+            Services.EmailService emailService, 
+            Microsoft.AspNetCore.SignalR.IHubContext<Backend.Hubs.ContactHub> hubContext, 
+            IAuditLogService audit,
+            IHttpClientFactory httpClientFactory,
+            IConfiguration configuration)
         {
             _db = db;
             _emailService = emailService;
             _hubContext = hubContext;
             _audit = audit;
+            _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
         }
 
         [HttpPost]
         [AllowAnonymous]
+        [EnableRateLimiting("Feedback")]
         public async Task<IActionResult> Create([FromBody] ContactCreateDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Message))
             {
                 return BadRequest("Name, email and message are required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(dto.RecaptchaToken))
+            {
+                return BadRequest("CAPTCHA token is missing.");
+            }
+
+            var secretKey = _configuration["Recaptcha:SecretKey"];
+            if (!string.IsNullOrWhiteSpace(secretKey))
+            {
+                var client = _httpClientFactory.CreateClient();
+                var response = await client.PostAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secretKey}&response={dto.RecaptchaToken}", null);
+                
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    using var doc = System.Text.Json.JsonDocument.Parse(json);
+                    if (!doc.RootElement.GetProperty("success").GetBoolean())
+                    {
+                        return BadRequest("CAPTCHA validation failed.");
+                    }
+                }
+                else
+                {
+                    return BadRequest("Failed to verify CAPTCHA with the provider.");
+                }
             }
 
             var contact = new Contact

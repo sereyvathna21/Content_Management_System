@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Phone, Mail, MapPin, Facebook, Send } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Header from "@/app/components/Home/Header";
@@ -7,6 +7,7 @@ import Navigation from "@/app/components/Home/Navigation";
 import Footer from "@/app/components/Home/Footer";
 import FormAlert from "@/app/components/FormAlert";
 import HeroCover from "@/app/components/HeroCover";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function Contact() {
   const t = useTranslations("ContactPage");
@@ -47,6 +48,8 @@ export default function Contact() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [submitStatus, setSubmitStatus] = useState<{
     type: "success" | "error" | "warning" | null;
     message: string;
@@ -140,12 +143,39 @@ export default function Contact() {
       return;
     }
 
+    let currentToken = recaptchaToken;
+    if (!currentToken) {
+      try {
+        currentToken = await recaptchaRef.current?.executeAsync() || null;
+        if (currentToken) {
+          setRecaptchaToken(currentToken);
+        }
+      } catch (err) {
+        setIsSubmitting(false);
+        setSubmitStatus({
+          type: "error",
+          message: "CAPTCHA verification failed. Please try again.",
+        });
+        return;
+      }
+    }
+
+    if (!currentToken) {
+      setIsSubmitting(false);
+      setSubmitStatus({
+        type: "error",
+        message: t("form.captchaRequired") || "Please complete the CAPTCHA.",
+      });
+      return;
+    }
+
     // Simulate form submission
     try {
+      const payload = { ...formData, recaptchaToken: currentToken };
       const resp = await fetch(`${API_BASE}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!resp.ok) {
@@ -162,6 +192,8 @@ export default function Contact() {
       setFormData({ name: "", email: "", subject: "", message: "" });
       setErrors({ name: "", email: "", subject: "", message: "" });
       setTouched({ name: false, email: false, subject: false, message: false });
+      setRecaptchaToken(null);
+      recaptchaRef.current?.reset();
     } catch {
       setSubmitStatus({ type: "error", message: t("form.errorMessage") });
     } finally {
@@ -171,6 +203,7 @@ export default function Contact() {
 
   return (
     <>
+      <style>{`.grecaptcha-badge { visibility: hidden !important; }`}</style>
       <Header />
       <Navigation />
       <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
@@ -400,6 +433,14 @@ export default function Contact() {
                   />
                 )}
 
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  size="invisible"
+                  badge="bottomright"
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"}
+                  onChange={(token) => setRecaptchaToken(token)}
+                />
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -436,6 +477,11 @@ export default function Contact() {
                     </>
                   )}
                 </button>
+                <p className="text-[10px] sm:text-xs text-gray-400 text-center mt-4">
+                  This site is protected by reCAPTCHA and the Google{" "}
+                  <a href="https://policies.google.com/privacy" className="text-blue-500 hover:underline">Privacy Policy</a> and{" "}
+                  <a href="https://policies.google.com/terms" className="text-blue-500 hover:underline">Terms of Service</a> apply.
+                </p>
               </form>
             </div>
 

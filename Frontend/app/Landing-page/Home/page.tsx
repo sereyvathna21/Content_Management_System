@@ -8,8 +8,10 @@ import Footer from "@/app/components/Home/Footer";
 import GoalsSection from "@/app/components/Home/GoalsSection";
 import VisionSection from "@/app/components/Home/VisionSection";
 import PartnerSection from "@/app/components/Home/PartnerSection";
+import { useLocale } from "next-intl";
 
 export default function Home() {
+  const locale = useLocale();
   return (
     <div className="min-h-screen bg-white">
       <Header />
@@ -19,7 +21,7 @@ export default function Home() {
       <VisionSection />
       <GoalsSection />
       <ObjectivesSection />
-      <NewsSection />
+      <NewsSection locale={locale} />
       <PartnerSection />
       <Footer />
     </div>

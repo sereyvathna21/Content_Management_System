@@ -79,6 +79,8 @@ builder.Services.AddHostedService<TelegramBackgroundWorker>();
 builder.Services.AddHostedService<ScheduledPublishWorker>();
 builder.Services.AddScoped<ITelegramJobBuilder, TelegramJobBuilder>();
 
+builder.Services.AddHttpClient();
+
 // ---------- Rate Limiting ----------
 builder.Services.AddRateLimiter(options =>
 {
@@ -103,6 +105,13 @@ builder.Services.AddRateLimiter(options =>
     {
         opt.Window = TimeSpan.FromMinutes(1);
         opt.PermitLimit = 10;
+        opt.QueueLimit = 0;
+    });
+
+    options.AddFixedWindowLimiter("Feedback", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 3;
         opt.QueueLimit = 0;
     });
 });
