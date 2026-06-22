@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using Backend.Models;
 
 namespace Backend.DTOs
 {
@@ -8,6 +9,8 @@ namespace Backend.DTOs
     {
         public string Category { get; set; } = string.Empty;
         public DateTime? PublicationDate { get; set; }
+        public ContentStatus Status { get; set; } = ContentStatus.Draft;
+        public DateTime? PublishAt { get; set; }
         public string? Authors { get; set; }
         public IFormFile? CoverImage { get; set; }
         public List<PublicationTranslationCreateDto> Translations { get; set; } = new();
@@ -17,6 +20,8 @@ namespace Backend.DTOs
     {
         public string Category { get; set; } = string.Empty;
         public DateTime? PublicationDate { get; set; }
+        public ContentStatus Status { get; set; } = ContentStatus.Draft;
+        public DateTime? PublishAt { get; set; }
         public string? Authors { get; set; }
         public IFormFile? CoverImage { get; set; }
         public List<PublicationTranslationCreateDto> Translations { get; set; } = new();
@@ -37,6 +42,8 @@ namespace Backend.DTOs
         public Guid Id { get; set; }
         public string Category { get; set; } = string.Empty;
         public DateTime? PublicationDate { get; set; }
+        public ContentStatus Status { get; set; } = ContentStatus.Draft;
+        public DateTime? PublishAt { get; set; }
         public string? Authors { get; set; }
         public string? CoverImageUrl { get; set; }
         public List<PublicationTranslationDto> Translations { get; set; } = new();

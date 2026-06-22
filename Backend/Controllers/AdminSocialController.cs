@@ -27,14 +27,16 @@ namespace Backend.Controllers
         private readonly IWebHostEnvironment _env;
         private readonly IConfiguration _config;
         private readonly IAuditLogService _audit;
+        private readonly INotificationService _notificationService;
 
-        public AdminSocialController(ApplicationDbContext db, IMapper mapper, IWebHostEnvironment env, IConfiguration config, IAuditLogService audit)
+        public AdminSocialController(ApplicationDbContext db, IMapper mapper, IWebHostEnvironment env, IConfiguration config, IAuditLogService audit, INotificationService notificationService)
         {
             _db = db;
             _mapper = mapper;
             _env = env;
             _config = config;
             _audit = audit;
+            _notificationService = notificationService;
         }
 
         private int GetCurrentUserId()
@@ -162,6 +164,9 @@ namespace Backend.Controllers
 
             await WriteAuditAsync("social:topic:create", "SocialTopic", topic.Id, "Created social topic", new { topic.Slug, topic.TitleKm, topic.TitleEn });
 
+            var effectiveTitle = !string.IsNullOrWhiteSpace(topic.TitleKm) ? topic.TitleKm : topic.TitleEn;
+            await _notificationService.SendGeneralNotificationAsync(topic.TitleKm ?? "", topic.TitleEn ?? "", $"Social Topic \"{effectiveTitle}\" was created.", "created");
+
             return CreatedAtAction(nameof(GetTopic), new { topicId = topic.Id }, _mapper.Map<SocialTopicDto>(topic));
         }
 
@@ -208,6 +213,10 @@ namespace Backend.Controllers
             await _db.SaveChangesAsync();
 
             await WriteAuditAsync("social:topic:delete", "SocialTopic", topic.Id, "Deleted social topic", new { topic.Slug, topic.TitleKm });
+
+            var effectiveTitle = !string.IsNullOrWhiteSpace(topic.TitleKm) ? topic.TitleKm : topic.TitleEn;
+            await _notificationService.SendGeneralNotificationAsync(topic.TitleKm ?? "", topic.TitleEn ?? "", $"Social Topic \"{effectiveTitle}\" was deleted.", "deleted");
+
             return NoContent();
         }
 

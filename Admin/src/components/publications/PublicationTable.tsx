@@ -22,6 +22,8 @@ export type Publication = {
   id: string;
   category?: string;
   publicationDate?: string;
+  status?: string;
+  publishAt?: string;
   translations: PublicationTranslation[];
 };
 
@@ -182,6 +184,16 @@ export default React.memo(function PublicationTable({
                           <span className="font-medium text-gray-700">{t("PublicationTable.headers.date")}: </span>
                           {formatDate(publication.publicationDate, locale) ?? <span className="text-gray-300 italic">-</span>}
                         </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-gray-700">{t("PublicationTable.headers.status") || "Status"}: </span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            publication.status === "Published" ? "bg-green-100 text-green-700" :
+                            publication.status === "Draft" ? "bg-gray-100 text-gray-700" :
+                            "bg-yellow-100 text-yellow-700"
+                          }`}>
+                            {publication.status || "Draft"}
+                          </span>
+                        </div>
                         <div>
                           <span className="font-medium text-gray-700">{t("PublicationTable.headers.attachment")}: </span>
                           {attachmentHref ? (
@@ -234,6 +246,9 @@ export default React.memo(function PublicationTable({
                           {t("PublicationTable.headers.category")}
                         </TableCell>
                         <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                          {t("PublicationTable.headers.status")}
+                        </TableCell>
+                        <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                           {t("PublicationTable.headers.date")}
                         </TableCell>
                         <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
@@ -278,6 +293,16 @@ export default React.memo(function PublicationTable({
 
                             <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
                               {formatCategory(translation.category ?? publication.category, t) ?? <span className="text-gray-300 italic">-</span>}
+                            </TableCell>
+
+                            <TableCell className="px-4 py-3 text-start text-sm">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                publication.status === "Published" ? "bg-green-100 text-green-700" :
+                                publication.status === "Draft" ? "bg-gray-100 text-gray-700" :
+                                "bg-yellow-100 text-yellow-700"
+                              }`}>
+                                {publication.status || "Draft"}
+                              </span>
                             </TableCell>
 
                             <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">

@@ -15,27 +15,32 @@
 Follow these steps **in order**. Each phase builds on the previous one.
 
 ### Phase 1: Setup & Credentials
+
 1. **Create Telegram bot & get credentials** in the Telegram app via BotFather. ([Jump to §2](#2-prerequisites))
 2. **Add Telegram config** to `appsettings.json` and `appsettings.Development.json`. ([Jump to §2.4](#24-store-config-in-appsettingsjson))
 3. **Create Configuration POCO** by adding `Models/TelegramOptions.cs`. ([Jump to §4.1](#41-configuration-poco))
 
 ### Phase 2: Database Layer
+
 4. **Create the Entity Model** by adding `Models/TelegramMessageMapping.cs`. ([Jump to §3.2](#32-ef-core-entity-model))
 5. **Register the mapping table** in `Database/ApplicationDbContext.cs`. ([Jump to §4.3](#43-dbcontext-changes))
 6. **Run EF Core migration** to apply the changes to your PostgreSQL database. ([Jump to §4.3](#43-dbcontext-changes))
 
 ### Phase 3: Service Layer (Background Queue)
+
 7. **Create the Bot API client** by adding `Services/TelegramService.cs`. ([Jump to §4.4](#44-telegramservice))
 8. **Create the Caption Formatter** by adding `Services/TelegramCaptionFormatter.cs`. ([Jump to §4.5](#45-caption-formatters))
 9. **Create the Background Queue** by adding `TelegramSyncQueue.cs` and `TelegramBackgroundWorker.cs`. ([Jump to §4.6](#46-background-queue-non-blocking))
 10. **Register all services** and the background worker in `Program.cs`. ([Jump to §4.7](#47-programcs-registration))
 
 ### Phase 4: Controller Integration
+
 11. **Add Telegram hooks** to `Controllers/AdminNewsController.cs`. ([Jump to §4.8](#48-controller-integration--news))
 12. **Add Telegram hooks** to `Controllers/LawsController.cs`. ([Jump to §4.9](#49-controller-integration--laws))
 13. **Add Telegram hooks** to `Controllers/PublicationsController.cs`. ([Jump to §4.10](#410-controller-integration--publications))
 
 ### Phase 5: Verification
+
 14. **Test each flow** (Create / Update / Delete) via Swagger UI or the admin dashboard. ([Jump to §8](#8-testing-checklist))
 
 > **Estimated time:** ~3–5 hours for a developer familiar with the codebase.
@@ -410,7 +415,7 @@ namespace Backend.Services
                     var result = JsonSerializer.Deserialize<TelegramApiResponse<T>>(body, JsonOpts);
 
                     if (result == null) throw new Exception($"Null response from Telegram [{endpoint}]");
-                    
+
                     if (!result.Ok)
                     {
                         if ((int)response.StatusCode == 429)
@@ -515,13 +520,13 @@ namespace Backend.Models
         public string Action { get; set; } = string.Empty; // "Create", "Update", "Delete"
         public string EntityType { get; set; } = string.Empty; // "News", "Law", "Publication"
         public Guid EntityId { get; set; }
-        
+
         // Data needed for creating/updating
         public string? Caption { get; set; }
         public string? PhotoUrl { get; set; }
         public string? LinkUrl { get; set; }
         public string? LinkText { get; set; }
-        
+
         // Indicates if it's just a caption edit (no image changed)
         public bool IsCaptionOnlyEdit { get; set; }
     }
@@ -670,7 +675,7 @@ private async Task<string?> ResolveImageUrlAsync(NewsArticle article)
     if (article.ImageMediaId.HasValue)
     {
         var media = await _db.Media.FindAsync(article.ImageMediaId.Value);
-        return media?.Url; 
+        return media?.Url;
     }
     return null;
 }
@@ -708,7 +713,7 @@ if (article.Status == ContentStatus.Published)
     var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
     var portalUrl = $"{frontendUrl}/Landing-page/News/{Uri.EscapeDataString(article.Slug)}";
     var photoUrl = await ResolveImageUrlAsync(article);
-    
+
     // Check if the image changed to determine Edit type
     var oldPhotoUrl = await ResolveImageUrlAsync(oldArticleState);
     var isCaptionOnlyEdit = (photoUrl == oldPhotoUrl);
@@ -820,9 +825,11 @@ Next.js **never calls Telegram directly**. The existing admin dashboard calls al
 ## 6. Error Handling & Reliability
 
 ### Background Queue Benefits
+
 Because of the `TelegramBackgroundWorker`, any temporary Telegram API downtime (e.g., 429 Rate Limits, 502 Bad Gateway) will not crash your API requests. The background worker handles retries while the CMS user goes about their business.
 
 ### Critical Ordering Rule
+
 For Laws and Publications (Hard Deletes), you must enqueue the "Delete" action to `TelegramSyncQueue` **before** you execute `_db.Laws.Remove(law)`. The background worker needs the `TelegramMessageMapping` to know which message to delete.
 
 ---
@@ -852,16 +859,19 @@ For Laws and Publications (Hard Deletes), you must enqueue the "Delete" action t
 ### ✅ WHAT IS DONE (Fully Working)
 
 #### Core Infrastructure & Reliability
+
 - **Background Worker Queue:** Telegram API calls happen silently in the background (`TelegramBackgroundWorker.cs`). This ensures the admin dashboard never freezes when saving an article.
 - **Database Tracking:** Every post sent to Telegram is recorded in `TelegramMessageMappings` with a unique ID, allowing the CMS to "remember" which post is which.
-- **Anti-Spam & Retry Logic:** The system uses intelligent retries (max 3 times) for network failures but explicitly **aborts on timeouts** to prevent sending duplicate "spam" messages to the channel. 
+- **Anti-Spam & Retry Logic:** The system uses intelligent retries (max 3 times) for network failures but explicitly **aborts on timeouts** to prevent sending duplicate "spam" messages to the channel.
 - **50MB File Size Guard:** Built-in validation checks if a file exceeds Telegram's 50MB bot upload limit. If it does, the bot gracefully falls back to sending a text-only message with a download link instead of crashing.
 
 #### News & Announcements (Style A)
+
 - **Format:** Posts the Cover Image, rich text caption (with modern professional formatting), and a "📰 Read Article" inline button.
 - **Features:** Supports Create, Edit (swapping images via multipart upload), Delete, and Restore.
 
 #### Laws & Publications (Style B)
+
 - **Format:** Natively uploads the **actual PDF document** directly to Telegram, allowing users to download it inside the app. It includes a professional, structured caption with category and date.
 - **Features:** Supports Create, Edit, and Delete instantly synced with the Telegram channel.
 
@@ -870,7 +880,8 @@ For Laws and Publications (Hard Deletes), you must enqueue the "Delete" action t
 ### ⏳ WHAT IS NOT YET DONE (Pending Server Setup)
 
 These items are fully coded but require configuration changes on your live production server:
-1. **Configure the Live URL:** In `appsettings.json`, `App:FrontendUrl` MUST be changed from `localhost` to the live domain (e.g., `https://nspc.gov.kh`). 
+
+1. **Configure the Live URL:** In `appsettings.json`, `App:FrontendUrl` MUST be changed from `localhost` to the live domain (e.g., `https://nspc.gov.kh`).
 2. **Set the Live Telegram Channel:** Change `Telegram:ChannelId` in settings to the real public channel ID (e.g. `@NSPCCambodia`).
 3. **Production Bot Setup:** Ensure the Bot is added as an **Administrator** to the public channel with permission to post and edit messages.
 
@@ -881,17 +892,21 @@ These items are fully coded but require configuration changes on your live produ
 While the bot is highly robust, here is what should be implemented next to make it bulletproof:
 
 #### 1. Bulk Operations Syncing (Logic)
+
 - **Current state:** Selecting multiple News items and clicking "Bulk Delete" deletes them from the CMS database, but **does not** delete them from Telegram.
 - **Improvement needed:** Update the `BulkDelete` methods in the controllers to loop through the selected items and enqueue `Delete` jobs to the `TelegramSyncQueue`.
 
 #### 2. Admin Error Notifications (Logic & UX)
+
 - **Current state:** If the Telegram background worker permanently fails to send a message (e.g., the Telegram API is down globally), it logs an error to the backend console.
-- **Improvement needed:** Integrate the worker with the `NotificationService` so that if a Telegram sync fails, the admin who created the post receives a bell notification in the CMS dashboard saying: *"Failed to sync Law X to Telegram."*
+- **Improvement needed:** Integrate the worker with the `NotificationService` so that if a Telegram sync fails, the admin who created the post receives a bell notification in the CMS dashboard saying: _"Failed to sync Law X to Telegram."_
 
 #### 3. Idempotency & Concurrency (Security & Logic)
+
 - **Current state:** Fast, repeated clicking of the "Save" button on the frontend can theoretically enqueue multiple creation jobs before the database mapping is saved.
 - **Improvement needed:** Implement a frontend debounce/loading state on the Save buttons. On the backend, add a Redis or memory lock inside `TelegramBackgroundWorker` to ensure two threads don't accidentally process the same entity ID simultaneously.
 
 #### 4. Video Previews & Rich Media (Feature)
+
 - **Current state:** The system handles Images and PDFs natively.
 - **Improvement needed:** Support extracting thumbnails for `.mp4` video uploads, or automatically compressing large videos to ensure they fit within Telegram's native player constraints.

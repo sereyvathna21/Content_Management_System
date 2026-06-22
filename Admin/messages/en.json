@@ -291,8 +291,16 @@
     "confirm": "Confirm",
     "categoryLabel": "Category",
     "categoryPlaceholder": "Select category…",
-    "publishDateLabel": "Publish Date",
-    "publishDatePlaceholder": "DD-MM-YYYY",
+    "documentDateLabel": "Document Date",
+    "documentDatePlaceholder": "DD-MM-YYYY",
+    "publishDateLabel": "Scheduled Publish Time",
+    "publishDatePlaceholder": "Select publish time",
+    "statusLabel": "Status",
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
     "languageButton": "Language",
     "defaultBadge": "Default",
     "removeLanguage": "Remove language",
@@ -366,6 +374,7 @@
     "headers": {
       "title": "Title",
       "category": "Category",
+      "status": "Status",
       "date": "Date",
       "pdf": "PDF",
       "actions": "Actions"
@@ -384,8 +393,16 @@
   "PublicationForm": {
     "categoryLabel": "Category",
     "categoryPlaceholder": "Select or type category...",
-    "publishDateLabel": "Publish Date",
-    "publishDatePlaceholder": "DD-MM-YYYY",
+    "documentDateLabel": "Document Date",
+    "documentDatePlaceholder": "DD-MM-YYYY",
+    "publishDateLabel": "Scheduled Publish Time",
+    "publishDatePlaceholder": "Select publish time",
+    "statusLabel": "Status",
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
     "authorsLabel": "Authors",
     "authorsPlaceholder": "Author names",
     "languageButton": "Language",
@@ -457,6 +474,7 @@
     "headers": {
       "title": "Title",
       "category": "Category",
+      "status": "Status",
       "date": "Date",
       "attachment": "Attachment",
       "actions": "Actions"
@@ -823,6 +841,7 @@
     "videos": "Videos",
     "auditLog": "Audit Log",
     "rolePermission": "Role Permission",
+    "telegramConfig": "Telegram Config",
     "userManagement": "User Management"
   },
   "AuditLogPage": {

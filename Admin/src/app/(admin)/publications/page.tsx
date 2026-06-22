@@ -25,6 +25,8 @@ type ApiPublication = {
 	id: string;
 	category?: string;
 	publicationDate?: string;
+	status?: string;
+	publishAt?: string;
 	translations: ApiPublicationTranslation[];
 };
 
@@ -96,6 +98,8 @@ export default function PublicationsPage() {
 						id: item.id,
 						category: item.category,
 						publicationDate: item.publicationDate,
+						status: item.status,
+						publishAt: item.publishAt,
 						translations: (item.translations ?? []).map((translation) => ({
 							id: translation.id,
 							language: translation.language,
@@ -293,6 +297,8 @@ export default function PublicationsPage() {
 									id: editingPublication.id,
 								category: editingPublication.category,
 									publicationDate: editingPublication.publicationDate,
+									status: editingPublication.status,
+									publishAt: editingPublication.publishAt,
 									translations: editingPublication.translations.map((translation) => ({
 										language: translation.language,
 										title: translation.title,

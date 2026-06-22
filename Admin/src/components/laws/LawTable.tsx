@@ -21,6 +21,8 @@ export type Law = {
   id: string;
   category?: string;
   date?: string;
+  status?: string;
+  publishAt?: string;
   translations: LawTranslation[];
 };
 
@@ -171,6 +173,16 @@ export default React.memo(function LawTable({
                         <span className="font-medium text-gray-700">{t("LawTable.headers.category")}: </span>
                         {formatCategory(tr.category ?? l.category, t) ?? <span className="text-gray-300 italic">-</span>}
                       </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-700">{t("LawTable.headers.status") || "Status"}: </span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                          l.status === "Published" ? "bg-green-100 text-green-700" :
+                          l.status === "Draft" ? "bg-gray-100 text-gray-700" :
+                          "bg-yellow-100 text-yellow-700"
+                        }`}>
+                          {l.status || "Draft"}
+                        </span>
+                      </div>
                       <div>
                         <span className="font-medium text-gray-700">{t("LawTable.headers.date")}: </span>
                         {formatDate(l.date, locale) ?? <span className="text-gray-300 italic">-</span>}
@@ -232,10 +244,10 @@ export default React.memo(function LawTable({
                         {t("LawTable.headers.category")}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
+                        {t("LawTable.headers.status")}
+                      </TableCell>
+                      <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                         {t("LawTable.headers.date")}
-                        {canShowActions && (
-                          <span>{t("LawTable.headers.actions")}</span>
-                        )}
                       </TableCell>
                       <TableCell isHeader className="px-5 py-3 font-medium text-primary text-start text-lg dark:text-gray-400">
                         {t("LawTable.headers.pdf")}
@@ -276,6 +288,16 @@ export default React.memo(function LawTable({
 
                           <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">
                             {formatCategory(tr.category ?? l.category, t) ?? <span className="text-gray-300 italic">-</span>}
+                          </TableCell>
+
+                          <TableCell className="px-4 py-3 text-start text-sm">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              l.status === "Published" ? "bg-green-100 text-green-700" :
+                              l.status === "Draft" ? "bg-gray-100 text-gray-700" :
+                              "bg-yellow-100 text-yellow-700"
+                            }`}>
+                              {l.status || "Draft"}
+                            </span>
                           </TableCell>
 
                           <TableCell className="px-4 py-3 text-gray-500 text-start text-sm dark:text-gray-400">

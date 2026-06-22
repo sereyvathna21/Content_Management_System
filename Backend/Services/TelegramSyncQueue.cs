@@ -9,8 +9,9 @@ namespace Backend.Services
 
         public TelegramSyncQueue()
         {
-            _channel = Channel.CreateUnbounded<TelegramSyncJob>(new UnboundedChannelOptions
+            _channel = Channel.CreateBounded<TelegramSyncJob>(new BoundedChannelOptions(500)
             {
+                FullMode = BoundedChannelFullMode.Wait,
                 SingleReader = true,
                 SingleWriter = false
             });
@@ -20,3 +21,4 @@ namespace Backend.Services
         public IAsyncEnumerable<TelegramSyncJob> ReadAllAsync(CancellationToken cancellationToken) => _channel.Reader.ReadAllAsync(cancellationToken);
     }
 }
+

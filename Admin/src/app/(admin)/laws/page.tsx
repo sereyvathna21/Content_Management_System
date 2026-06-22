@@ -26,6 +26,8 @@ type Law = {
   id: string;
   category?: string;
   date?: string;
+  status?: string;
+  publishAt?: string;
   translations: LawTranslation[];
 };
 
@@ -89,6 +91,8 @@ export default function LawsPage() {
           id: item.id,
           category: item.category,
           date: item.date,
+          status: item.status,
+          publishAt: item.publishAt,
           translations: (item.translations ?? []).map((translation) => ({
             id: translation.id,
             language: translation.language,
@@ -276,6 +280,8 @@ export default function LawsPage() {
                   id: editingLaw.id,
                   category: editingLaw.category,
                   date: editingLaw.date,
+                  status: editingLaw.status,
+                  publishAt: editingLaw.publishAt,
                   translations: editingLaw.translations.map((translation) => ({
                     language: translation.language,
                     title: translation.title,

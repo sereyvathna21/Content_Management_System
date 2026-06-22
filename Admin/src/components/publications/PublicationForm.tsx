@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import DatePicker from "@/components/form/date-picker";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
+import Select from "@/components/form/Select";
 import AttachmentDropZone from "./AttachmentDropZone";
 import { extractFirstPageAsImage } from "@/lib/extractPdfCover";
 
@@ -29,6 +30,8 @@ type InitialPublication = {
   id: string;
   category?: string;
   publicationDate?: string;
+  status?: string;
+  publishAt?: string;
   translations: Array<{
     language: string;
     title: string;
@@ -158,6 +161,8 @@ export default function PublicationForm({
 
   // category is now per-translation; top-level category will be derived from default translation on submit
   const [publicationDate, setPublicationDate] = useState(initialPublication?.publicationDate?.split("T")[0] ?? "");
+  const [publicationStatus, setPublicationStatus] = useState(initialPublication?.status ?? "Draft");
+  const [publishAt, setPublishAt] = useState(initialPublication?.publishAt?.split("T")[0] ?? "");
   const [activeTab, setActiveTab] = useState<LangCode>(DEFAULT_LANGUAGE);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
@@ -167,6 +172,8 @@ export default function PublicationForm({
 
   useEffect(() => {
     setPublicationDate(initialPublication?.publicationDate?.split("T")[0] ?? "");
+    setPublicationStatus(initialPublication?.status ?? "Draft");
+    setPublishAt(initialPublication?.publishAt?.split("T")[0] ?? "");
     setTranslations(buildInitialTranslations(initialPublication));
     setActiveTab(initialPublication?.translations?.find((tr) => tr.language === DEFAULT_LANGUAGE)?.language ?? DEFAULT_LANGUAGE);
     setErrors({});
@@ -296,6 +303,8 @@ export default function PublicationForm({
 
   function resetForm() {
     setPublicationDate(initialPublication?.publicationDate?.split("T")[0] ?? "");
+    setPublicationStatus(initialPublication?.status ?? "Draft");
+    setPublishAt(initialPublication?.publishAt?.split("T")[0] ?? "");
     setTranslations(buildInitialTranslations(initialPublication));
     setActiveTab(DEFAULT_LANGUAGE);
     setCatDropdownOpen(false);
@@ -324,7 +333,9 @@ export default function PublicationForm({
         (translations[0]?.categoryLabel && translations[0]?.categoryLabel.trim()) ||
         "";
       form.append("Category", defaultCategory);
+      form.append("Status", publicationStatus);
       if (publicationDate) form.append("PublicationDate", publicationDate);
+      if (publishAt) form.append("PublishAt", new Date(`${publishAt}T00:00:00Z`).toISOString());
 
       translations.forEach((translation, index) => {
         form.append(`Translations[${index}].Language`, translation.language);
@@ -441,11 +452,39 @@ export default function PublicationForm({
           <div>
             <DatePicker
               id={isEditing ? "publication-date-edit" : "publication-date"}
-              label={t("publishDateLabel")}
-              placeholder={t("publishDatePlaceholder")}
+              label={t("documentDateLabel") || "Document Date"}
+              placeholder={t("documentDatePlaceholder") || "Select document date"}
               defaultDate={publicationDate || undefined}
               value={publicationDate}
               onChange={setPublicationDate}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-1">
+              {t("statusLabel") || "Status"}
+            </label>
+            <div className="relative z-10">
+              <Select
+                value={publicationStatus}
+                onChange={setPublicationStatus}
+                options={[
+                  { value: "Draft", label: t("status.draft") || "Draft" },
+                  { value: "Published", label: t("status.published") || "Published" },
+                  { value: "Archived", label: t("status.archived") || "Archived" }
+                ]}
+              />
+            </div>
+          </div>
+
+          <div>
+            <DatePicker
+              id={isEditing ? "publication-publish-date-edit" : "publication-publish-date"}
+              label={t("publishDateLabel") || "Scheduled Publish Time"}
+              placeholder={t("publishDatePlaceholder") || "Select publish time"}
+              defaultDate={publishAt || undefined}
+              value={publishAt}
+              onChange={setPublishAt}
             />
           </div>
         </div>

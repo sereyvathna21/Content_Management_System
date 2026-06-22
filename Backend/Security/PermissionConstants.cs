@@ -59,5 +59,9 @@ namespace Backend.Security
         // Audit Logs
         public const string AuditRead = "audit:read";
         public const string AuditExport = "audit:export";
+
+        // System Settings
+        public const string SettingsRead = "settings:read";
+        public const string SettingsUpdate = "settings:update";
     }
 }

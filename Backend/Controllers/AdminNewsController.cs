@@ -22,13 +22,17 @@ namespace Backend.Controllers
         private readonly IConfiguration _config;
         private readonly IAuditLogService _audit;
         private readonly TelegramSyncQueue _telegramQueue;
+        private readonly ITelegramJobBuilder _telegramJobBuilder;
+        private readonly INotificationService _notificationService;
 
-        public AdminNewsController(ApplicationDbContext db, IConfiguration config, IAuditLogService audit, TelegramSyncQueue telegramQueue)
+        public AdminNewsController(ApplicationDbContext db, IConfiguration config, IAuditLogService audit, TelegramSyncQueue telegramQueue, ITelegramJobBuilder telegramJobBuilder, INotificationService notificationService)
         {
             _db = db;
             _config = config;
             _audit = audit;
             _telegramQueue = telegramQueue;
+            _telegramJobBuilder = telegramJobBuilder;
+            _notificationService = notificationService;
         }
 
         private async Task<string?> ResolveImageUrlAsync(NewsArticle article)
@@ -138,9 +142,12 @@ namespace Backend.Controllers
             }
 
             var normalizedSlug = NormalizeSlug(request.Slug);
-            if (await _db.NewsArticles.AnyAsync(a => a.Slug.ToLower() == normalizedSlug))
+            var originalSlug = normalizedSlug;
+            int counter = 1;
+            while (await _db.NewsArticles.AnyAsync(a => a.Slug.ToLower() == normalizedSlug))
             {
-                return BadRequest(new { message = "Slug already exists." });
+                normalizedSlug = $"{originalSlug}-{counter}";
+                counter++;
             }
 
             var userId = GetCurrentUserId();
@@ -189,7 +196,7 @@ namespace Backend.Controllers
 
             await _db.SaveChangesAsync();
 
-            if (article.Status == ContentStatus.Published)
+            if (article.Status == ContentStatus.Published && (article.PublishAt == null || article.PublishAt <= DateTime.UtcNow))
             {
                 await TriggerFrontendRevalidationAsync(new[]
                 {
@@ -197,35 +204,11 @@ namespace Backend.Controllers
                     $"/Landing-page/News/{Uri.EscapeDataString(article.Slug)}"
                 });
 
-                var caption = TelegramCaptionFormatter.FormatNewsCaption(article);
-                var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
-                var portalUrl = $"{frontendUrl}/Landing-page/News/{Uri.EscapeDataString(article.Slug)}";
-                var photoUrl = await ResolveImageUrlAsync(article);
-
-                string? localFilePath = null;
-                string fileType = "Photo";
-                if (!string.IsNullOrEmpty(photoUrl) && photoUrl.StartsWith("/"))
-                {
-                    var root = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-                    localFilePath = Path.Combine(root, photoUrl.TrimStart('/'));
-                    if (photoUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) || photoUrl.EndsWith(".mov", StringComparison.OrdinalIgnoreCase))
-                    {
-                        fileType = "Video";
-                    }
-                }
-
-                await _telegramQueue.EnqueueAsync(new TelegramSyncJob
-                {
-                    Action = "Create",
-                    EntityType = "News",
-                    EntityId = article.Id,
-                    Caption = caption,
-                    PhotoUrl = photoUrl,
-                    LinkUrl = portalUrl,
-                    LinkText = "📰 អានអត្ថបទ",
-                    LocalFilePath = localFilePath,
-                    FileType = localFilePath != null ? fileType : "None"
-                });
+                var job = await _telegramJobBuilder.BuildNewsJobAsync(article, TelegramSyncAction.Create);
+                await _telegramQueue.EnqueueAsync(job);
+                
+                article.IsPublishedSyncTriggered = true;
+                await _db.SaveChangesAsync();
             }
 
             await _audit.WriteAsync(new AuditLogEntry
@@ -237,6 +220,11 @@ namespace Backend.Controllers
                 Status = AuditLogStatus.Success,
                 Metadata = new { article.Slug, article.Status, article.PublishAt }
             }, HttpContext);
+
+            var titleKm = request.Translations.FirstOrDefault(t => t.Language.ToLower() == "km" || t.Language.ToLower() == "kh")?.Title;
+            var titleEn = request.Translations.FirstOrDefault(t => t.Language.ToLower() == "en")?.Title;
+            var effectiveTitle = titleKm ?? titleEn ?? "News Article";
+            await _notificationService.SendGeneralNotificationAsync(titleKm ?? "", titleEn ?? "", $"News \"{effectiveTitle}\" was created.", "created");
 
             return CreatedAtAction(nameof(Get), new { id = article.Id }, new { id = article.Id });
         }
@@ -271,9 +259,12 @@ namespace Backend.Controllers
             var previousStatus = article.Status;
 
             var normalizedSlug = NormalizeSlug(request.Slug);
-            if (await _db.NewsArticles.AnyAsync(a => a.Id != id && a.Slug.ToLower() == normalizedSlug))
+            var originalSlug = normalizedSlug;
+            int counter = 1;
+            while (await _db.NewsArticles.AnyAsync(a => a.Id != id && a.Slug.ToLower() == normalizedSlug))
             {
-                return BadRequest(new { message = "Slug already exists." });
+                normalizedSlug = $"{originalSlug}-{counter}";
+                counter++;
             }
 
             var userId = GetCurrentUserId();
@@ -332,40 +323,27 @@ namespace Backend.Controllers
                 await TriggerFrontendRevalidationAsync(paths);
             }
 
-            if (article.Status == ContentStatus.Published)
+            if (article.Status == ContentStatus.Published && (article.PublishAt == null || article.PublishAt <= DateTime.UtcNow))
             {
-                var caption = TelegramCaptionFormatter.FormatNewsCaption(article);
-                var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
-                var portalUrl = $"{frontendUrl}/Landing-page/News/{Uri.EscapeDataString(article.Slug)}";
-                var photoUrl = await ResolveImageUrlAsync(article);
+                var action = previousStatus != ContentStatus.Published ? TelegramSyncAction.Create : TelegramSyncAction.Update;
 
-                string? localFilePath = null;
-                string fileType = "Photo";
-                if (!string.IsNullOrEmpty(photoUrl) && photoUrl.StartsWith("/"))
+                var job = await _telegramJobBuilder.BuildNewsJobAsync(article, action);
+                await _telegramQueue.EnqueueAsync(job);
+                
+                article.IsPublishedSyncTriggered = true;
+                await _db.SaveChangesAsync();
+            }
+            else if (previousStatus == ContentStatus.Published && article.Status == ContentStatus.Draft)
+            {
+                var job = new TelegramSyncJob
                 {
-                    var root = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-                    localFilePath = Path.Combine(root, photoUrl.TrimStart('/'));
-                    if (photoUrl.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) || photoUrl.EndsWith(".mov", StringComparison.OrdinalIgnoreCase))
-                    {
-                        fileType = "Video";
-                    }
-                }
-
-                var action = previousStatus != ContentStatus.Published ? "Create" : "Update";
-
-                await _telegramQueue.EnqueueAsync(new TelegramSyncJob
-                {
-                    Action = action,
-                    EntityType = "News",
-                    EntityId = article.Id,
-                    Caption = caption,
-                    PhotoUrl = photoUrl,
-                    LocalFilePath = localFilePath,
-                    FileType = fileType,
-                    LinkUrl = portalUrl,
-                    LinkText = "📰 អានអត្ថបទ",
-                    IsCaptionOnlyEdit = false
-                });
+                    Action = TelegramSyncAction.Delete,
+                    EntityType = TelegramEntityType.News,
+                    EntityId = article.Id
+                };
+                await _telegramQueue.EnqueueAsync(job);
+                article.IsPublishedSyncTriggered = false;
+                await _db.SaveChangesAsync();
             }
 
             await _audit.WriteAsync(new AuditLogEntry
@@ -384,7 +362,9 @@ namespace Backend.Controllers
         [HasPermission(PermissionConstants.NewsDelete)]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var article = await _db.NewsArticles.FirstOrDefaultAsync(a => a.Id == id);
+            var article = await _db.NewsArticles
+                .Include(a => a.Translations)
+                .FirstOrDefaultAsync(a => a.Id == id);
             if (article == null) return NotFound();
 
             if (article.DeletedAt != null)
@@ -409,8 +389,8 @@ namespace Backend.Controllers
 
                 await _telegramQueue.EnqueueAsync(new TelegramSyncJob
                 {
-                    Action = "Delete",
-                    EntityType = "News",
+                    Action = TelegramSyncAction.Delete,
+                    EntityType = TelegramEntityType.News,
                     EntityId = article.Id
                 });
             }
@@ -424,6 +404,12 @@ namespace Backend.Controllers
                 Status = AuditLogStatus.Success,
                 Metadata = new { article.Slug }
             }, HttpContext);
+
+            var titleKm = article.Translations.FirstOrDefault(t => t.Language.ToLower() == "km" || t.Language.ToLower() == "kh")?.Title;
+            var titleEn = article.Translations.FirstOrDefault(t => t.Language.ToLower() == "en")?.Title;
+            var effectiveTitle = titleKm ?? titleEn ?? "News Article";
+            await _notificationService.SendGeneralNotificationAsync(titleKm ?? "", titleEn ?? "", $"News \"{effectiveTitle}\" was deleted.", "deleted");
+
             return NoContent();
         }
 
@@ -456,21 +442,8 @@ namespace Backend.Controllers
                     $"/Landing-page/News/{Uri.EscapeDataString(article.Slug)}"
                 });
 
-                var caption = TelegramCaptionFormatter.FormatNewsCaption(article);
-                var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
-                var portalUrl = $"{frontendUrl}/Landing-page/News/{Uri.EscapeDataString(article.Slug)}";
-                var photoUrl = await ResolveImageUrlAsync(article);
-
-                await _telegramQueue.EnqueueAsync(new TelegramSyncJob
-                {
-                    Action = "Create",
-                    EntityType = "News",
-                    EntityId = article.Id,
-                    Caption = caption,
-                    PhotoUrl = photoUrl,
-                    LinkUrl = portalUrl,
-                    LinkText = "📰 អានអត្ថបទ"
-                });
+                var job = await _telegramJobBuilder.BuildNewsJobAsync(article, TelegramSyncAction.Create);
+                await _telegramQueue.EnqueueAsync(job);
             }
 
             await _audit.WriteAsync(new AuditLogEntry
@@ -588,6 +561,22 @@ namespace Backend.Controllers
 
             await TriggerFrontendRevalidationAsync(paths);
 
+            foreach (var article in articles)
+            {
+                if (action == "publish")
+                {
+                    await EnqueueTelegramSyncJobAsync(article, "Create");
+                }
+                else if (action == "unpublish" || action == "delete")
+                {
+                    await EnqueueTelegramSyncJobAsync(article, "Delete");
+                }
+                else if (action == "restore" && article.Status == ContentStatus.Published)
+                {
+                    await EnqueueTelegramSyncJobAsync(article, "Create");
+                }
+            }
+
             await _audit.WriteAsync(new AuditLogEntry
             {
                 Action = $"bulk:news:{action}",
@@ -597,6 +586,19 @@ namespace Backend.Controllers
                 Metadata = new { targetAction = action, affectedCount = articles.Count }
             }, HttpContext);
             return Ok(new { count = articles.Count });
+        }
+
+        private async Task EnqueueTelegramSyncJobAsync(NewsArticle article, string action, bool isCaptionOnlyEdit = false)
+        {
+            var syncAction = action switch
+            {
+                "Delete" => TelegramSyncAction.Delete,
+                "Update" => TelegramSyncAction.Update,
+                _ => TelegramSyncAction.Create
+            };
+
+            var job = await _telegramJobBuilder.BuildNewsJobAsync(article, syncAction, isCaptionOnlyEdit);
+            await _telegramQueue.EnqueueAsync(job);
         }
 
         public class BulkActionRequest

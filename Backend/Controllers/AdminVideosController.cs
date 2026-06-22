@@ -21,12 +21,14 @@ namespace Backend.Controllers
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
         private readonly IAuditLogService _audit;
+        private readonly INotificationService _notificationService;
 
-        public AdminVideosController(ApplicationDbContext db, IConfiguration config, IAuditLogService audit)
+        public AdminVideosController(ApplicationDbContext db, IConfiguration config, IAuditLogService audit, INotificationService notificationService)
         {
             _db = db;
             _config = config;
             _audit = audit;
+            _notificationService = notificationService;
         }
 
         private int GetCurrentUserId()
@@ -159,6 +161,8 @@ namespace Backend.Controllers
                 Metadata = new { video.Title, video.Status, video.PublishAt }
             }, HttpContext);
 
+            await _notificationService.SendGeneralNotificationAsync(video.Title, video.Title, $"Video \"{video.Title}\" was created.", "created");
+
             return CreatedAtAction(nameof(Get), new { id = video.Id }, new { id = video.Id });
         }
 
@@ -264,6 +268,9 @@ namespace Backend.Controllers
                 Status = AuditLogStatus.Success,
                 Metadata = new { video.Title }
             }, HttpContext);
+
+            await _notificationService.SendGeneralNotificationAsync(video.Title, video.Title, $"Video \"{video.Title}\" was deleted.", "deleted");
+
             return NoContent();
         }
 

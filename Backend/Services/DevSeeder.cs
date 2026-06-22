@@ -115,6 +115,9 @@ namespace Backend.Services
                     // Audit Logs
                     Security.PermissionConstants.AuditRead,
                     Security.PermissionConstants.AuditExport,
+                    // System Settings
+                    Security.PermissionConstants.SettingsRead,
+                    Security.PermissionConstants.SettingsUpdate,
                 };
 
                 var existingPerms = db.Permissions.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -158,6 +161,14 @@ namespace Backend.Services
                 }
 
                 await db.SaveChangesAsync();
+
+                // Clear Redis cache for roles so they pick up new permissions
+                var cache = provider.GetService<Microsoft.Extensions.Caching.Distributed.IDistributedCache>();
+                if (cache != null)
+                {
+                    if (adminRoleEntity != null) await cache.RemoveAsync($"role_permissions_{adminRoleEntity.Id}");
+                    if (superRoleEntity != null) await cache.RemoveAsync($"role_permissions_{superRoleEntity.Id}");
+                }
             }
             catch (Exception ex)
             {

@@ -1,7 +1,11 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Backend.Data;
 using Backend.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Backend.Services
@@ -12,7 +16,7 @@ namespace Backend.Services
     public interface ITelegramService
     {
         Task<long> SendMessageAsync(string caption, string? photoUrl, string? linkUrl, string linkText);
-        Task<long> SendMediaAsync(TelegramSyncJob job);
+        Task<long[]> SendMediaAsync(TelegramSyncJob job);
         Task EditCaptionAsync(long messageId, string caption, string? linkUrl, string linkText);
         Task EditMediaAsync(long messageId, TelegramSyncJob job);
         Task DeleteMessageAsync(long messageId);
@@ -21,6 +25,7 @@ namespace Backend.Services
     public class TelegramService : ITelegramService
     {
         private readonly HttpClient _http;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly TelegramOptions _options;
         private readonly ILogger<TelegramService> _logger;
 
@@ -32,53 +37,280 @@ namespace Backend.Services
 
         public TelegramService(
             HttpClient http,
+            IServiceScopeFactory scopeFactory,
             IOptions<TelegramOptions> options,
             ILogger<TelegramService> logger)
         {
             _http = http;
+            _scopeFactory = scopeFactory;
             _options = options.Value;
             _logger = logger;
-            _http.BaseAddress = new Uri($"https://api.telegram.org/bot{_options.BotToken}/");
         }
 
-        public async Task<long> SendMediaAsync(TelegramSyncJob job)
+        private async Task<(string BotToken, string ChannelId)> GetConfigAsync()
         {
+            using var scope = _scopeFactory.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var cache = scope.ServiceProvider.GetRequiredService<IMemoryCache>();
+
+            var botToken = await cache.GetOrCreateAsync("SystemSetting_TelegramBotToken", async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+                var setting = await db.SystemSettings.FirstOrDefaultAsync(s => s.Key == "TelegramBotToken");
+                return setting?.Value;
+            });
+
+            var channelId = await cache.GetOrCreateAsync("SystemSetting_TelegramChannelId", async entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+                var setting = await db.SystemSettings.FirstOrDefaultAsync(s => s.Key == "TelegramChannelId");
+                return setting?.Value;
+            });
+
+            var finalBotToken = !string.IsNullOrWhiteSpace(botToken) ? botToken : _options.BotToken;
+            var finalChannelId = !string.IsNullOrWhiteSpace(channelId) ? channelId : _options.ChannelId;
+
+            return (finalBotToken ?? string.Empty, finalChannelId ?? string.Empty);
+        }
+
+        public async Task<long[]> SendMediaAsync(TelegramSyncJob job)
+        {
+            var (botToken, channelId) = await GetConfigAsync();
+            if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(channelId))
+            {
+                _logger.LogWarning("Telegram bot token or channel ID is missing. Skipping SendMediaAsync.");
+                return Array.Empty<long>();
+            }
+
             var caption = job.Caption ?? "";
             
             _logger.LogInformation("SendMediaAsync: FileType={FileType}, LocalFilePath={LocalFilePath}, FileExists={FileExists}", 
                 job.FileType, job.LocalFilePath, 
                 !string.IsNullOrWhiteSpace(job.LocalFilePath) && File.Exists(job.LocalFilePath));
             
-            if (!string.IsNullOrWhiteSpace(job.LocalFilePath) && File.Exists(job.LocalFilePath))
+            var existingFilePaths = job.LocalFilePaths?
+                .Where(p => !string.IsNullOrWhiteSpace(p) && File.Exists(p))
+                .ToList() ?? new List<string>();
+
+            // Fallback for single file job
+            if (existingFilePaths.Count == 0 && !string.IsNullOrWhiteSpace(job.LocalFilePath) && File.Exists(job.LocalFilePath))
             {
-                // Telegram bots can only upload files up to 50 MB.
-                // If the file is larger, skip the upload and fall through to text-only.
+                existingFilePaths.Add(job.LocalFilePath);
+            }
+
+            if (existingFilePaths.Count > 0)
+            {
                 const long MaxTelegramFileSize = 50 * 1024 * 1024; // 50 MB
-                var fileInfo = new FileInfo(job.LocalFilePath);
-                if (fileInfo.Length > MaxTelegramFileSize)
+                var firstFileInfo = new FileInfo(existingFilePaths.First());
+                
+                if (firstFileInfo.Length > MaxTelegramFileSize)
                 {
                     _logger.LogWarning("SendMediaAsync: File {FileName} is {SizeMB:F1} MB which exceeds Telegram's 50 MB limit. Falling back to text-only message.",
-                        Path.GetFileName(job.LocalFilePath), fileInfo.Length / (1024.0 * 1024.0));
-                    // Fall through to text-only fallback below
+                        Path.GetFileName(existingFilePaths.First()), firstFileInfo.Length / (1024.0 * 1024.0));
+                }
+                else if (existingFilePaths.Count > 1)
+                {
+                    // MediaGroup branch
+                    var endpoint = "sendMediaGroup";
+                    _logger.LogInformation("SendMediaAsync: Using endpoint={Endpoint} for {Count} files", endpoint, existingFilePaths.Count);
+                    
+                    var appendedCaption = caption;
+                    if (!string.IsNullOrWhiteSpace(job.LinkUrl))
+                    {
+                        appendedCaption += $"\n\n<a href=\"{job.LinkUrl}\">{job.LinkText ?? "📰 អានអត្ថបទ"}</a>";
+                    }
+
+                    var messages = await PostMultipartWithRetryAsync<TelegramMessage[]>(botToken, endpoint, () =>
+                    {
+                        var form = new MultipartFormDataContent();
+                        form.Add(new StringContent(channelId), "chat_id");
+                        
+                        var mediaArray = new List<object>();
+                        for (int i = 0; i < existingFilePaths.Count && i < 10; i++) // Max 10 per album
+                        {
+                            var path = existingFilePaths[i];
+                            if (i == 0)
+                            {
+                                mediaArray.Add(new { type = "photo", media = $"attach://file_{i}", caption = SafeTruncate(appendedCaption, 1024), parse_mode = "HTML" });
+                            }
+                            else
+                            {
+                                mediaArray.Add(new { type = "photo", media = $"attach://file_{i}" });
+                            }
+
+                            var fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                            var streamContent = new StreamContent(fileStream);
+                            form.Add(streamContent, $"file_{i}", Path.GetFileName(path));
+                        }
+
+                        var mediaJson = JsonSerializer.Serialize(mediaArray);
+                        form.Add(new StringContent(mediaJson), "media");
+
+                        return form;
+                    });
+
+                    return messages.Select(m => m.MessageId).ToArray();
                 }
                 else
                 {
+                    // Single file branch
+                    var singleFilePath = existingFilePaths.First();
                     var endpoint = job.FileType switch
                     {
-                        "Document" => "sendDocument",
-                        "Video" => "sendVideo",
+                        TelegramFileType.Document => "sendDocument",
+                        TelegramFileType.Video => "sendVideo",
                         _ => "sendPhoto"
                     };
 
-                    _logger.LogInformation("SendMediaAsync: Using endpoint={Endpoint} for file={FileName} ({SizeMB:F1} MB)", 
-                        endpoint, Path.GetFileName(job.LocalFilePath), fileInfo.Length / (1024.0 * 1024.0));
+                    _logger.LogInformation("SendMediaAsync: Using endpoint={Endpoint} for file={FileName}", 
+                        endpoint, Path.GetFileName(singleFilePath));
 
-                    var message = await PostMultipartWithRetryAsync<TelegramMessage>(endpoint, () =>
+                    var message = await PostMultipartWithRetryAsync<TelegramMessage>(botToken, endpoint, () =>
                     {
                         var form = new MultipartFormDataContent();
-                        form.Add(new StringContent(_options.ChannelId), "chat_id");
+                        form.Add(new StringContent(channelId), "chat_id");
                         form.Add(new StringContent(SafeTruncate(caption, 1024)), "caption");
                         form.Add(new StringContent("HTML"), "parse_mode");
+
+                        var replyMarkup = BuildInlineKeyboardJson(job.LinkUrl, job.LinkText ?? "View");
+                        if (replyMarkup != null)
+                        {
+                            form.Add(new StringContent(replyMarkup), "reply_markup");
+                        }
+
+                        var fileStream = new FileStream(singleFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        var streamContent = new StreamContent(fileStream);
+                        
+                        var fieldName = job.FileType switch
+                        {
+                            TelegramFileType.Document => "document",
+                            TelegramFileType.Video => "video",
+                            _ => "photo"
+                        };
+                        
+                        var fileNameToUpload = string.IsNullOrWhiteSpace(job.DisplayFileName) 
+                            ? Path.GetFileName(singleFilePath) 
+                            : job.DisplayFileName;
+                            
+                        form.Add(streamContent, fieldName, fileNameToUpload);
+
+                        if (job.FileType == TelegramFileType.Video && !string.IsNullOrWhiteSpace(job.ThumbnailPath) && File.Exists(job.ThumbnailPath))
+                        {
+                            var thumbStream = new FileStream(job.ThumbnailPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                            var thumbContent = new StreamContent(thumbStream);
+                            form.Add(thumbContent, "thumbnail", Path.GetFileName(job.ThumbnailPath));
+                        }
+
+                        return form;
+                    });
+
+                    return new[] { message.MessageId };
+                }
+            }
+
+            _logger.LogInformation("SendMediaAsync: Local file not found or exceeded size limit. Falling back to URL/text message.");
+            var textMsgId = await SendMessageAsync(caption, job.PhotoUrl, job.LinkUrl, job.LinkText ?? "View");
+            return new[] { textMsgId };
+        }
+
+        public async Task<long> SendMessageAsync(string caption, string? photoUrl, string? linkUrl, string linkText)
+        {
+            var (botToken, channelId) = await GetConfigAsync();
+            if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(channelId))
+            {
+                _logger.LogWarning("Telegram bot token or channel ID is missing. Skipping SendMessageAsync.");
+                return 0;
+            }
+
+            if (!string.IsNullOrWhiteSpace(photoUrl) && 
+                (photoUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
+                 photoUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)))
+            {
+                var photoPayload = new
+                {
+                    chat_id = channelId,
+                    photo = photoUrl,
+                    caption = SafeTruncate(caption, 1024),
+                    parse_mode = "HTML",
+                    reply_markup = BuildInlineKeyboard(linkUrl, linkText)
+                };
+
+                try
+                {
+                    var photoMsg = await PostWithRetryAsync<TelegramMessage>(botToken, "sendPhoto", photoPayload);
+                    return photoMsg.MessageId;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to send photo by URL. Falling back to text message. PhotoUrl={PhotoUrl}", photoUrl);
+                }
+            }
+
+            var payload = new
+            {
+                chat_id = channelId,
+                text = SafeTruncate(caption, 4096),
+                parse_mode = "HTML",
+                reply_markup = BuildInlineKeyboard(linkUrl, linkText)
+            };
+
+            var message = await PostWithRetryAsync<TelegramMessage>(botToken, "sendMessage", payload);
+            return message.MessageId;
+        }
+
+        public async Task EditCaptionAsync(long messageId, string caption, string? linkUrl, string linkText)
+        {
+            var (botToken, channelId) = await GetConfigAsync();
+            if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(channelId)) return;
+
+            var payload = new
+            {
+                chat_id = channelId,
+                message_id = messageId,
+                caption = SafeTruncate(caption, 1024),
+                parse_mode = "HTML",
+                reply_markup = BuildInlineKeyboard(linkUrl, linkText)
+            };
+
+            try
+            {
+                await PostWithRetryAsync<object>(botToken, "editMessageCaption", payload);
+            }
+            catch (Exception ex) when (ex.Message.Contains("message is not modified"))
+            {
+                _logger.LogDebug("Telegram caption unchanged for MessageId={MsgId}, skipping.", messageId);
+            }
+        }
+
+        public async Task EditMediaAsync(long messageId, TelegramSyncJob job)
+        {
+            var (botToken, channelId) = await GetConfigAsync();
+            if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(channelId)) return;
+
+            if (!string.IsNullOrEmpty(job.LocalFilePath) && System.IO.File.Exists(job.LocalFilePath))
+            {
+                try
+                {
+                    await PostMultipartWithRetryAsync<JsonElement>(botToken, "editMessageMedia", () =>
+                    {
+                        var form = new MultipartFormDataContent();
+                        
+                        var mediaPayload = new
+                        {
+                            type = job.FileType switch
+                            {
+                                TelegramFileType.Document => "document",
+                                TelegramFileType.Video => "video",
+                                _ => "photo"
+                            },
+                            media = "attach://uploaded_media",
+                            caption = SafeTruncate(job.Caption ?? "", 1024),
+                            parse_mode = "HTML"
+                        };
+
+                        form.Add(new StringContent(channelId), "chat_id");
+                        form.Add(new StringContent(messageId.ToString()), "message_id");
+                        form.Add(new StringContent(JsonSerializer.Serialize(mediaPayload, JsonOpts)), "media");
 
                         var replyMarkup = BuildInlineKeyboardJson(job.LinkUrl, job.LinkText ?? "View");
                         if (replyMarkup != null)
@@ -89,135 +321,55 @@ namespace Backend.Services
                         var fileStream = new FileStream(job.LocalFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
                         var streamContent = new StreamContent(fileStream);
                         
-                        var fieldName = job.FileType switch
-                        {
-                            "Document" => "document",
-                            "Video" => "video",
-                            _ => "photo"
-                        };
+                        var fileNameToUpload = string.IsNullOrWhiteSpace(job.DisplayFileName) 
+                            ? Path.GetFileName(job.LocalFilePath) 
+                            : job.DisplayFileName;
+                            
+                        form.Add(streamContent, "uploaded_media", fileNameToUpload);
                         
-                        form.Add(streamContent, fieldName, Path.GetFileName(job.LocalFilePath));
-
                         return form;
                     });
-
-                    return message.MessageId;
                 }
-            }
-
-            // Fallback to URL or text
-            // Telegram API rejects relative URLs. Only pass photoUrl if it is an absolute HTTP/HTTPS link.
-            string? absolutePhotoUrl = null;
-            if (!string.IsNullOrWhiteSpace(job.PhotoUrl) && job.PhotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                absolutePhotoUrl = job.PhotoUrl;
-            }
-
-            return await SendMessageAsync(caption, absolutePhotoUrl, job.LinkUrl, job.LinkText ?? "View");
-        }
-
-        public async Task<long> SendMessageAsync(string caption, string? photoUrl, string? linkUrl, string linkText)
-        {
-            if (!string.IsNullOrWhiteSpace(photoUrl))
-            {
-                var payload = new
+                catch (Exception ex) when (ex.Message.Contains("message is not modified"))
                 {
-                    chat_id = _options.ChannelId,
-                    photo = photoUrl,
-                    caption = SafeTruncate(caption, 1024),
-                    parse_mode = "HTML",
-                    reply_markup = BuildInlineKeyboard(linkUrl, linkText)
-                };
-
-                var message = await PostWithRetryAsync<TelegramMessage>("sendPhoto", payload);
-                return message.MessageId;
-            }
-            else
-            {
-                var payload = new
-                {
-                    chat_id = _options.ChannelId,
-                    text = SafeTruncate(caption, 4096),
-                    parse_mode = "HTML",
-                    reply_markup = BuildInlineKeyboard(linkUrl, linkText)
-                };
-
-                var message = await PostWithRetryAsync<TelegramMessage>("sendMessage", payload);
-                return message.MessageId;
-            }
-        }
-
-        public async Task EditCaptionAsync(long messageId, string caption, string? linkUrl, string linkText)
-        {
-            var payload = new
-            {
-                chat_id = _options.ChannelId,
-                message_id = messageId,
-                caption = SafeTruncate(caption, 1024),
-                parse_mode = "HTML",
-                reply_markup = BuildInlineKeyboard(linkUrl, linkText)
-            };
-
-            try
-            {
-                await PostWithRetryAsync<JsonElement>("editMessageCaption", payload);
-            }
-            catch (Exception ex) when (ex.Message.Contains("message is not modified"))
-            {
-                _logger.LogDebug("Telegram caption unchanged for MessageId={MsgId}, skipping.", messageId);
-            }
-        }
-
-        public async Task EditMediaAsync(long messageId, TelegramSyncJob job)
-        {
-            if (!string.IsNullOrEmpty(job.LocalFilePath) && System.IO.File.Exists(job.LocalFilePath))
-            {
-                await PostMultipartWithRetryAsync<JsonElement>("editMessageMedia", () =>
-                {
-                    var form = new MultipartFormDataContent();
-                    
-                    var mediaPayload = new
-                    {
-                        type = job.FileType switch
-                        {
-                            "Document" => "document",
-                            "Video" => "video",
-                            _ => "photo"
-                        },
-                        media = $"attach://{Path.GetFileName(job.LocalFilePath)}",
-                        caption = SafeTruncate(job.Caption ?? "", 1024),
-                        parse_mode = "HTML"
-                    };
-
-                    form.Add(new StringContent(_options.ChannelId), "chat_id");
-                    form.Add(new StringContent(messageId.ToString()), "message_id");
-                    form.Add(new StringContent(JsonSerializer.Serialize(mediaPayload, JsonOpts)), "media");
-
-                    var replyMarkup = BuildInlineKeyboardJson(job.LinkUrl, job.LinkText ?? "View");
-                    if (replyMarkup != null)
-                    {
-                        form.Add(new StringContent(replyMarkup), "reply_markup");
-                    }
-
-                    var fileStream = new FileStream(job.LocalFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-                    var streamContent = new StreamContent(fileStream);
-                    form.Add(streamContent, Path.GetFileName(job.LocalFilePath), Path.GetFileName(job.LocalFilePath));
-                    
-                    return form;
-                });
+                    _logger.LogDebug("Telegram media/caption unchanged for MessageId={MsgId}, skipping.", messageId);
+                }
                 return;
             }
 
-            // Fallback to URL-based edit (only if URL is absolute)
-            if (!string.IsNullOrWhiteSpace(job.PhotoUrl) && !job.PhotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrWhiteSpace(job.PhotoUrl) || !job.PhotoUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
-                // Cannot edit media with a relative URL. Fallback to just editing the caption.
-                await EditCaptionAsync(messageId, job.Caption ?? "", job.LinkUrl, job.LinkText ?? "View");
+                // We have no valid external photo URL to edit the media with.
+                // We just need to edit the text/caption. Since we don't know if the original message 
+                // was text or media, we try editMessageText first, then editMessageCaption.
+                var textPayload = new
+                {
+                    chat_id = channelId,
+                    message_id = messageId,
+                    text = SafeTruncate(job.Caption ?? "", 4096),
+                    parse_mode = "HTML",
+                    reply_markup = BuildInlineKeyboard(job.LinkUrl, job.LinkText ?? "View")
+                };
+
+                try
+                {
+                    await PostWithRetryAsync<object>(botToken, "editMessageText", textPayload);
+                }
+                catch (Exception ex) when (ex.Message.Contains("message is not modified"))
+                {
+                    _logger.LogDebug("Telegram text unchanged for MessageId={MsgId}, skipping.", messageId);
+                }
+                catch (Exception ex) when (ex.Message.Contains("there is no text in the message to edit"))
+                {
+                    // It was a media message. Edit the caption instead.
+                    await EditCaptionAsync(messageId, job.Caption ?? "", job.LinkUrl, job.LinkText ?? "View");
+                }
                 return;
             }
+
             var payload = new
             {
-                chat_id = _options.ChannelId,
+                chat_id = channelId,
                 message_id = messageId,
                 media = new
                 {
@@ -229,20 +381,23 @@ namespace Backend.Services
                 reply_markup = BuildInlineKeyboard(job.LinkUrl, job.LinkText ?? "View")
             };
 
-            await PostWithRetryAsync<JsonElement>("editMessageMedia", payload);
+            await PostWithRetryAsync<JsonElement>(botToken, "editMessageMedia", payload);
         }
 
         public async Task DeleteMessageAsync(long messageId)
         {
+            var (botToken, channelId) = await GetConfigAsync();
+            if (string.IsNullOrWhiteSpace(botToken) || string.IsNullOrWhiteSpace(channelId)) return;
+
             var payload = new
             {
-                chat_id = _options.ChannelId,
+                chat_id = channelId,
                 message_id = messageId
             };
 
             try
             {
-                await PostWithRetryAsync<JsonElement>("deleteMessage", payload);
+                await PostWithRetryAsync<object>(botToken, "deleteMessage", payload);
             }
             catch (Exception ex) when (ex.Message.Contains("message to delete not found"))
             {
@@ -284,15 +439,16 @@ namespace Backend.Services
             return lastSpace > 0 ? cut[..lastSpace] + "…" : cut + "…";
         }
 
-        private async Task<T> PostWithRetryAsync<T>(string endpoint, object payload, int maxRetries = 3)
+        private async Task<T> PostWithRetryAsync<T>(string botToken, string endpoint, object payload, int maxRetries = 3)
         {
+            var url = $"https://api.telegram.org/bot{botToken}/{endpoint}";
             for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
                 try
                 {
                     var json = JsonSerializer.Serialize(payload, JsonOpts);
                     var content = new StringContent(json, Encoding.UTF8, "application/json");
-                    var response = await _http.PostAsync(endpoint, content);
+                    var response = await _http.PostAsync(url, content);
                     var body = await response.Content.ReadAsStringAsync();
 
                     var result = JsonSerializer.Deserialize<TelegramApiResponse<T>>(body, JsonOpts);
@@ -303,8 +459,10 @@ namespace Backend.Services
                     {
                         if ((int)response.StatusCode == 429)
                         {
-                            var retryAfter = 5;
-                            throw new Exception($"Telegram rate limited. Retry after {retryAfter}s");
+                            var retryAfterSeconds = response.Headers.RetryAfter?.Delta?.TotalSeconds ?? 5;
+                            _logger.LogWarning("Telegram rate limited on [{Endpoint}]. Waiting {RetryAfter}s before retry.", endpoint, retryAfterSeconds);
+                            await Task.Delay(TimeSpan.FromSeconds(retryAfterSeconds));
+                            continue;
                         }
                         throw new Exception($"Telegram API error [{endpoint}]: {result.Description ?? body}");
                     }
@@ -323,15 +481,16 @@ namespace Backend.Services
             throw new Exception("Telegram call failed after retries.");
         }
 
-        private async Task<T> PostMultipartWithRetryAsync<T>(string endpoint, Func<MultipartFormDataContent> contentFactory, int maxRetries = 3)
+        private async Task<T> PostMultipartWithRetryAsync<T>(string botToken, string endpoint, Func<MultipartFormDataContent> contentFactory, int maxRetries = 3)
         {
+            var url = $"https://api.telegram.org/bot{botToken}/{endpoint}";
             for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
                 MultipartFormDataContent? content = null;
                 try
                 {
                     content = contentFactory();
-                    var response = await _http.PostAsync(endpoint, content);
+                    var response = await _http.PostAsync(url, content);
                     var body = await response.Content.ReadAsStringAsync();
 
                     var result = JsonSerializer.Deserialize<TelegramApiResponse<T>>(body, JsonOpts);
@@ -342,8 +501,10 @@ namespace Backend.Services
                     {
                         if ((int)response.StatusCode == 429)
                         {
-                            var retryAfter = 5;
-                            throw new Exception($"Telegram rate limited. Retry after {retryAfter}s");
+                            var retryAfterSeconds = response.Headers.RetryAfter?.Delta?.TotalSeconds ?? 5;
+                            _logger.LogWarning("Telegram rate limited on [{Endpoint}]. Waiting {RetryAfter}s before retry.", endpoint, retryAfterSeconds);
+                            await Task.Delay(TimeSpan.FromSeconds(retryAfterSeconds));
+                            continue;
                         }
                         throw new Exception($"Telegram API error [{endpoint}]: {result.Description ?? body}");
                     }

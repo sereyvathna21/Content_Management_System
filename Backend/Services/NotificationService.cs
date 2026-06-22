@@ -47,12 +47,12 @@ namespace Backend.Services
             }
         }
 
-        public async Task SendGeneralNotificationAsync(string titleKm, string titleEn, string message)
+        public async Task SendGeneralNotificationAsync(string titleKm, string titleEn, string message, string kind = "general")
         {
             try
             {
                 // Create and save notification to database
-                var notification = await CreateNotificationAsync(message, "general", titleKm, titleEn);
+                var notification = await CreateNotificationAsync(message, kind, titleKm, titleEn);
 
                 // Send real-time notification to all connected clients
                 await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
@@ -61,15 +61,41 @@ namespace Backend.Services
                     titleKm = titleKm,
                     titleEn = titleEn,
                     message = message,
-                    kind = "general",
+                    kind = kind,
                     createdAt = notification.CreatedAt
                 });
 
-                _logger.LogInformation("General notification sent");
+                _logger.LogInformation($"General notification sent with kind {kind}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error sending general notification");
+            }
+        }
+
+        public async Task SendAdminErrorNotificationAsync(string message)
+        {
+            try
+            {
+                var titleKm = "បញ្ហាក្នុងការភ្ជាប់ Telegram";
+                var titleEn = "Telegram Sync Error";
+                var notification = await CreateNotificationAsync(message, "error", titleKm, titleEn);
+
+                await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
+                {
+                    id = notification.Id,
+                    titleKm = titleKm,
+                    titleEn = titleEn,
+                    message = message,
+                    kind = "error",
+                    createdAt = notification.CreatedAt
+                });
+
+                _logger.LogInformation("Admin error notification sent");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending admin error notification");
             }
         }
 

@@ -36,6 +36,8 @@ namespace Backend.Data
         public DbSet<SocialAuditLog> SocialAuditLogs { get; set; }
         public DbSet<SocialReference> SocialReferences { get; set; }
 
+        public DbSet<SystemSetting> SystemSettings { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -43,7 +45,7 @@ namespace Backend.Data
             modelBuilder.Entity<TelegramMessageMapping>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.HasIndex(e => new { e.EntityType, e.EntityId }).IsUnique();
+                entity.HasIndex(e => new { e.EntityType, e.EntityId });
             });
 
             modelBuilder.Entity<Role>(b =>

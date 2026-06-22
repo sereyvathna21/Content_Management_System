@@ -1,0 +1,187 @@
+"use client";
+
+import React, { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import ComponentCard from "@/components/common/ComponentCard";
+import RequirePermission from "@/components/auth/RequirePermission";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+
+export default function TelegramSettingsPage() {
+  const { data: session, status } = useSession();
+
+  // State
+  const [botToken, setBotToken] = useState("");
+  const [channelId, setChannelId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const loadData = useCallback(async () => {
+    if (status === "loading" || !session?.accessToken) return;
+    setLoading(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
+        headers: { Authorization: `Bearer ${session.accessToken}` },
+      });
+      if (!res.ok) throw new Error("Failed to load settings.");
+      const data = await res.json();
+      
+      if (data["TelegramBotToken"]) setBotToken(data["TelegramBotToken"]);
+      if (data["TelegramChannelId"]) setChannelId(data["TelegramChannelId"]);
+
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || "Failed to load telegram settings.");
+    } finally {
+      setLoading(false);
+    }
+  }, [session?.accessToken, status]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!session?.accessToken) return;
+
+    setSaving(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      const payload = {
+        TelegramBotToken: botToken.trim(),
+        TelegramChannelId: channelId.trim(),
+      };
+
+      const res = await fetch(`${BACKEND_URL}/api/settings`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message || "Failed to update settings.");
+      }
+
+      setSuccessMsg("Telegram configuration updated successfully!");
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || "Failed to update telegram settings.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 font-medium text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <RequirePermission anyOf={["settings:read", "settings:update"]}>
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+        <div className="flex flex-col gap-4 sm:gap-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl text-primary font-semibold">Telegram Configuration</h1>
+              <p className="text-xs sm:text-sm text-gray-500 py-3">
+                Manage the Telegram Bot Token and Channel ID used for syncing content to your channel.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {successMsg && (
+          <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 sm:p-4 rounded-xl flex items-start sm:items-center gap-3">
+            <svg className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5 sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-sm font-medium">{successMsg}</span>
+          </div>
+        )}
+        {errorMsg && (
+          <div className="bg-red-50 border border-red-200 text-red-800 p-3 sm:p-4 rounded-xl flex items-start sm:items-center gap-3">
+            <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5 sm:mt-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span className="text-sm font-medium">{errorMsg}</span>
+          </div>
+        )}
+
+        <ComponentCard
+          title="Bot Credentials"
+          desc="Update the Bot Token generated by @BotFather and the Channel ID where messages will be sent."
+        >
+          <form onSubmit={handleSave} className="space-y-6 max-w-2xl">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Bot Token
+              </label>
+              <input
+                type="text"
+                value={botToken}
+                onChange={(e) => setBotToken(e.target.value)}
+                className="w-full h-11 px-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm font-mono"
+                placeholder="e.g. 1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+              />
+              <p className="text-xs text-gray-400">
+                You can get this token by talking to @BotFather on Telegram.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                Channel ID
+              </label>
+              <input
+                type="text"
+                value={channelId}
+                onChange={(e) => setChannelId(e.target.value)}
+                className="w-full h-11 px-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition bg-gray-50 dark:bg-gray-800 dark:border-gray-700 text-sm font-mono"
+                placeholder="e.g. @my_channel or -100123456789"
+              />
+              <p className="text-xs text-gray-400">
+                The @username of a public channel or the numeric ID of a private channel. The bot must be an admin in this channel.
+              </p>
+            </div>
+
+            <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+              <RequirePermission anyOf={["settings:update"]}>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-6 py-2.5 rounded-xl font-semibold text-white bg-primary hover:bg-primary/95 active:scale-[0.98] transition-all disabled:opacity-50 shadow-md text-sm flex items-center justify-center gap-2 min-w-[120px]"
+                >
+                  {saving ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </RequirePermission>
+            </div>
+          </form>
+        </ComponentCard>
+      </div>
+    </RequirePermission>
+  );
+}

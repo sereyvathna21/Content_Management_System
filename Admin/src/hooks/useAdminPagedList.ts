@@ -66,6 +66,7 @@ export function useAdminPagedList<TItem>(options: Options<TItem>) {
 
                 const res = await fetch(`${getBackendUrl()}${endpoint}?${params.toString()}`, {
                     headers: { Authorization: `Bearer ${accessToken}` },
+                    cache: "no-store",
                     signal,
                 });
 

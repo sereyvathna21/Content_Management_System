@@ -149,12 +149,18 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
     e.preventDefault();
     
     const kmTrans = getTranslation(DEFAULT_LANGUAGE);
-    if (!slug.trim() || !category || !kmTrans.title.trim() || !kmTrans.excerpt.trim()) {
+    if (!category || !kmTrans.title.trim() || !kmTrans.excerpt.trim()) {
       setError(t("errors.required", { language: langLabel(DEFAULT_LANGUAGE) }));
       return;
     }
 
-    if (slug.length > 150) {
+    let finalSlug = slug.trim();
+    if (!isEditing && !finalSlug) {
+      const enTitle = translations.find((tr) => tr.language === "en")?.title || "";
+      finalSlug = normalizeSlugInput(enTitle || kmTrans.title || `news-${Date.now()}`);
+    }
+
+    if (finalSlug.length > 150) {
       setError("Slug cannot exceed 150 characters");
       return;
     }
@@ -168,15 +174,6 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
         setError(t("errors.imageRequired"));
         return;
       }
-      if (!imageAlt.trim()) {
-        setError(t("errors.imageAltRequired"));
-        return;
-      }
-    }
-
-    if (imageAlt.length > 200) {
-      setError("Image Alt text cannot exceed 200 characters");
-      return;
     }
 
     for (const tr of translations) {
@@ -226,14 +223,14 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
       }
 
       const payload = {
-        slug: slug.trim(),
+        slug: finalSlug,
         category,
         status: newsStatus,
         publishAt: publishAt ? new Date(`${publishAt}T00:00:00Z`).toISOString() : null,
         imageUrl: finalUrls.join(","),
         imageMediaId: null, // Multiple images cannot use a single ID
-        imageAltKh: imageAlt.trim() || null,
-        imageAltEn: imageAlt.trim() || null,
+        imageAltKh: null,
+        imageAltEn: null,
         featured: false,
         translations: translations.filter(tr => tr.title.trim() || tr.excerpt.trim()).map(tr => ({
           language: tr.language,
@@ -275,27 +272,6 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
     <div className="bg-white rounded-xl p-4 sm:p-5">
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-gray-900">
-                {t("slugLabel")} <span className="text-red-500">*</span>
-              </label>
-              <span className="text-[11px] text-gray-400">
-                {(slug || "").length}/150
-              </span>
-            </div>
-            <input
-              type="text"
-              maxLength={150}
-              value={slug}
-              onChange={(e) => setSlug(normalizeSlugInput(e.target.value))}
-              placeholder={t("slugPlaceholder")}
-              autoCapitalize="none"
-              autoCorrect="off"
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-            />
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-1">
               {t("categoryLabel")} <span className="text-red-500">*</span>
@@ -379,25 +355,6 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
           </div>
 
           <MultiImageDropZone files={imageFiles} onChange={setImageFiles} />
-        </div>
-
-        <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-          <div className="flex items-center justify-between mb-1">
-            <label className="block text-sm font-medium text-gray-900">
-              {t("imageAltLabel")} <span className="text-red-500">{newsStatus === "Published" ? "*" : ""}</span>
-            </label>
-            <span className="text-[11px] text-gray-400">
-              {(imageAlt || "").length}/200
-            </span>
-          </div>
-          <input
-            type="text"
-            maxLength={200}
-            value={imageAlt}
-            onChange={(e) => setImageAlt(e.target.value)}
-            placeholder={t("imageAltPlaceholder")}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
-          />
         </div>
 
         <div className="border-b border-gray-200">

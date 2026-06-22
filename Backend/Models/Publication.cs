@@ -10,6 +10,11 @@ namespace Backend.Models
         public DateTime? PublicationDate { get; set; }
         public string? Authors { get; set; }
         public string? CoverImageUrl { get; set; }
+        
+        public ContentStatus Status { get; set; } = ContentStatus.Draft;
+        public DateTime? PublishAt { get; set; }
+        public bool IsPublishedSyncTriggered { get; set; } = false;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<PublicationTranslation> Translations { get; set; } = new List<PublicationTranslation>();
     }

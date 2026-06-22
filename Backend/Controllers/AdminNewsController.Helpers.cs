@@ -108,14 +108,6 @@ namespace Backend.Controllers
                     return false;
                 }
 
-                if (!string.IsNullOrWhiteSpace(imageUrl) || imageMediaId != null)
-                {
-                    if (string.IsNullOrWhiteSpace(imageAltKh))
-                    {
-                        error = "ImageAltKh is required when an image is set.";
-                        return false;
-                    }
-                }
 
                 if (!languages.Contains("km"))
                 {
@@ -155,14 +147,6 @@ namespace Backend.Controllers
                 return false;
             }
 
-            if (!string.IsNullOrWhiteSpace(article.ImageUrl) || article.ImageMediaId != null)
-            {
-                if (string.IsNullOrWhiteSpace(article.ImageAltKh))
-                {
-                    error = "ImageAltKh is required when an image is set.";
-                    return false;
-                }
-            }
 
             var hasKm = article.Translations.Any(t =>
                 string.Equals(NormalizeLang(t.Language), "km", StringComparison.OrdinalIgnoreCase));

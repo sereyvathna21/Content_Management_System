@@ -10,6 +10,7 @@ namespace Backend.Models
         public string Category { get; set; } = string.Empty;
         public ContentStatus Status { get; set; } = ContentStatus.Draft;
         public DateTime? PublishAt { get; set; }
+        public bool IsPublishedSyncTriggered { get; set; } = false;
         public string? ImageUrl { get; set; }
         public Guid? ImageMediaId { get; set; }
         public Media? ImageMedia { get; set; }

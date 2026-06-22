@@ -12,11 +12,16 @@ namespace Backend.Services
         /// <summary>
         /// Sends a general notification to all connected users
         /// </summary>
-        Task SendGeneralNotificationAsync(string titleKm, string titleEn, string message);
+        Task SendGeneralNotificationAsync(string titleKm, string titleEn, string message, string kind = "general");
 
         /// <summary>
         /// Saves a notification to the database
         /// </summary>
         Task<Notification> CreateNotificationAsync(string message, string kind, string? titleKm, string? titleEn, Guid? publicationId = null);
+
+        /// <summary>
+        /// Sends an error notification to admins
+        /// </summary>
+        Task SendAdminErrorNotificationAsync(string message);
     }
 }

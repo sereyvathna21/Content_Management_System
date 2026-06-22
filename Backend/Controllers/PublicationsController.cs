@@ -22,6 +22,7 @@ namespace Backend.Controllers
         private readonly IAuditLogService _audit;
         private readonly IConfiguration _config;
         private readonly TelegramSyncQueue _telegramQueue;
+        private readonly ITelegramJobBuilder _telegramJobBuilder;
 
         private const long MaxAttachmentBytes = 50_000_000;
 
@@ -49,7 +50,7 @@ namespace Backend.Controllers
             ".com"
         };
 
-        public PublicationsController(ApplicationDbContext db, IWebHostEnvironment env, INotificationService notificationService, IAuditLogService audit, IConfiguration config, TelegramSyncQueue telegramQueue)
+        public PublicationsController(ApplicationDbContext db, IWebHostEnvironment env, INotificationService notificationService, IAuditLogService audit, IConfiguration config, TelegramSyncQueue telegramQueue, ITelegramJobBuilder telegramJobBuilder)
         {
             _db = db;
             _env = env;
@@ -57,6 +58,7 @@ namespace Backend.Controllers
             _audit = audit;
             _config = config;
             _telegramQueue = telegramQueue;
+            _telegramJobBuilder = telegramJobBuilder;
         }
 
         [HttpGet]
@@ -113,7 +115,10 @@ namespace Backend.Controllers
                 Id = publication.Id,
                 Category = publication.Category ?? string.Empty,
                 PublicationDate = publication.PublicationDate,
+                Status = publication.Status,
+                PublishAt = publication.PublishAt,
                 Authors = publication.Authors,
+                CoverImageUrl = publication.CoverImageUrl,
                 Translations = publication.Translations.Select(t => new PublicationTranslationDto
                 {
                     Id = t.Id,
@@ -144,7 +149,10 @@ namespace Backend.Controllers
                 Id = publication.Id,
                 Category = publication.Category,
                 PublicationDate = publication.PublicationDate,
+                Status = publication.Status,
+                PublishAt = publication.PublishAt,
                 Authors = publication.Authors,
+                CoverImageUrl = publication.CoverImageUrl,
                 Translations = publication.Translations.Select(t => new PublicationTranslationDto
                 {
                     Id = t.Id,
@@ -175,6 +183,8 @@ namespace Backend.Controllers
             {
                 Category = request.Category?.Trim() ?? string.Empty,
                 PublicationDate = request.PublicationDate,
+                Status = request.Status,
+                PublishAt = request.PublishAt,
                 Authors = string.IsNullOrWhiteSpace(request.Authors) ? null : request.Authors.Trim()
             };
 
@@ -235,47 +245,21 @@ namespace Backend.Controllers
             await _db.SaveChangesAsync();
 
             // Send notification about the new publication
-            var titleKm = request.Translations.FirstOrDefault(t => t.Language?.ToLower() == "km")?.Title ?? "";
+            var titleKm = request.Translations.FirstOrDefault(t => t.Language?.ToLower() == "km" || t.Language?.ToLower() == "kh")?.Title ?? "";
             var titleEn = request.Translations.FirstOrDefault(t => t.Language?.ToLower() == "en")?.Title ?? "";
-            var message = $"Publication \"{titleEn}\" was created.";
+            var effectiveTitle = !string.IsNullOrWhiteSpace(titleKm) ? titleKm : titleEn;
+            var message = $"Publication \"{effectiveTitle}\" was created.";
             await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "created");
 
             var publicationTranslations = await _db.PublicationTranslations.Where(t => t.PublicationId == publication.Id).ToListAsync();
-            var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
-            var linkUrl = $"{frontendUrl}/Landing-page/Publications";
 
-            var preferredAttachment = publicationTranslations.FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.AttachmentUrl 
-                               ?? publicationTranslations.FirstOrDefault(t => !string.IsNullOrEmpty(t.AttachmentUrl))?.AttachmentUrl;
-            
-            var caption = TelegramCaptionFormatter.FormatPublicationCaption(publication, publicationTranslations);
-            
-            string? localFilePath = null;
-            string fileType = "None";
-
-            var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-
-            if (!string.IsNullOrEmpty(preferredAttachment))
+            if (publication.Status == ContentStatus.Published && (publication.PublishAt == null || publication.PublishAt <= DateTime.UtcNow))
             {
-                localFilePath = Path.Combine(root, preferredAttachment.TrimStart('/'));
-                fileType = "Document";
+                var job = await _telegramJobBuilder.BuildPublicationJobAsync(publication, publicationTranslations, TelegramSyncAction.Create);
+                await _telegramQueue.EnqueueAsync(job);
+                publication.IsPublishedSyncTriggered = true;
+                await _db.SaveChangesAsync();
             }
-            else if (!string.IsNullOrEmpty(publication.CoverImageUrl))
-            {
-                localFilePath = Path.Combine(root, publication.CoverImageUrl.TrimStart('/'));
-                fileType = "Photo";
-            }
-
-            await _telegramQueue.EnqueueAsync(new TelegramSyncJob
-            {
-                Action = "Create",
-                EntityType = "Publication",
-                EntityId = publication.Id,
-                Caption = caption,
-                LinkUrl = linkUrl,
-                LinkText = "📋 មើលការបោះពុម្ពផ្សាយ",
-                LocalFilePath = localFilePath,
-                FileType = fileType
-            });
 
             await _audit.WriteAsync(new AuditLogEntry
             {
@@ -284,7 +268,7 @@ namespace Backend.Controllers
                 EntityId = publication.Id.ToString(),
                 Summary = "Created publication",
                 Status = AuditLogStatus.Success,
-                Metadata = new { publication.Category, publication.PublicationDate, TitleKm = titleKm, TitleEn = titleEn }
+                Metadata = new { publication.Category, publication.PublicationDate, publication.Status, publication.PublishAt, TitleKm = titleKm, TitleEn = titleEn }
             }, HttpContext);
 
             return CreatedAtAction(nameof(Get), new { id = publication.Id }, new { id = publication.Id });
@@ -307,8 +291,12 @@ namespace Backend.Controllers
 
             if (publication == null) return NotFound();
 
+            var previousStatus = publication.Status;
+
             publication.Category = request.Category?.Trim() ?? string.Empty;
             publication.PublicationDate = request.PublicationDate;
+            publication.Status = request.Status;
+            publication.PublishAt = request.PublishAt;
             publication.Authors = string.IsNullOrWhiteSpace(request.Authors) ? null : request.Authors.Trim();
 
             var uploadsRoot = GetUploadsRoot(publication.Id);
@@ -416,47 +404,32 @@ namespace Backend.Controllers
 
             await _db.SaveChangesAsync();
 
-            var titleKm = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "km")?.Title ?? "";
-            var titleEn = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "en")?.Title ?? "";
-            var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
-            var linkUrl = $"{frontendUrl}/Landing-page/Publications";
-
-            var preferredAttachment = publication.Translations.FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.AttachmentUrl 
-                               ?? publication.Translations.FirstOrDefault(t => !string.IsNullOrEmpty(t.AttachmentUrl))?.AttachmentUrl;
-            
-            var caption = TelegramCaptionFormatter.FormatPublicationCaption(publication, publication.Translations);
-            
-            string? localFilePath = null;
-            string fileType = "None";
-
-            var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-
-            if (!string.IsNullOrEmpty(preferredAttachment))
+            if (publication.Status == ContentStatus.Published && (publication.PublishAt == null || publication.PublishAt <= DateTime.UtcNow))
             {
-                localFilePath = Path.Combine(root, preferredAttachment.TrimStart('/'));
-                fileType = "Document";
+                var action = previousStatus != ContentStatus.Published ? TelegramSyncAction.Create : TelegramSyncAction.Update;
+                var job = await _telegramJobBuilder.BuildPublicationJobAsync(publication, publication.Translations, action);
+                await _telegramQueue.EnqueueAsync(job);
+                publication.IsPublishedSyncTriggered = true;
+                await _db.SaveChangesAsync();
             }
-            else if (!string.IsNullOrEmpty(publication.CoverImageUrl))
+            else if (previousStatus == ContentStatus.Published && publication.Status == ContentStatus.Draft)
             {
-                localFilePath = Path.Combine(root, publication.CoverImageUrl.TrimStart('/'));
-                fileType = "Photo";
+                var job = new TelegramSyncJob
+                {
+                    Action = TelegramSyncAction.Delete,
+                    EntityType = TelegramEntityType.Publication,
+                    EntityId = publication.Id
+                };
+                await _telegramQueue.EnqueueAsync(job);
+                publication.IsPublishedSyncTriggered = false;
+                await _db.SaveChangesAsync();
             }
-
-            await _telegramQueue.EnqueueAsync(new TelegramSyncJob
-            {
-                Action = "Update",
-                EntityType = "Publication",
-                EntityId = publication.Id,
-                Caption = caption,
-                LinkUrl = linkUrl,
-                LinkText = "📋 មើលការបោះពុម្ពផ្សាយ",
-                LocalFilePath = localFilePath,
-                FileType = fileType,
-                IsCaptionOnlyEdit = false
-            });
 
             // Send notification about the publication update
-            var message = $"Publication \"{titleEn}\" was updated.";
+            var titleKm = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "km" || t.Language?.ToLower() == "kh")?.Title ?? "";
+            var titleEn = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "en")?.Title ?? "";
+            var effectiveTitle = !string.IsNullOrWhiteSpace(titleKm) ? titleKm : titleEn;
+            var message = $"Publication \"{effectiveTitle}\" was updated.";
             await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "created");
 
             await _audit.WriteAsync(new AuditLogEntry
@@ -466,7 +439,7 @@ namespace Backend.Controllers
                 EntityId = publication.Id.ToString(),
                 Summary = "Updated publication",
                 Status = AuditLogStatus.Success,
-                Metadata = new { publication.Category, publication.PublicationDate, TitleKm = titleKm, TitleEn = titleEn }
+                Metadata = new { publication.Category, publication.PublicationDate, publication.Status, publication.PublishAt, TitleKm = titleKm, TitleEn = titleEn }
             }, HttpContext);
 
             return Ok(new { id = publication.Id });
@@ -483,17 +456,16 @@ namespace Backend.Controllers
             if (publication == null) return NotFound();
 
             // Capture titles before deletion for notification
-            var titleKm = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "km")?.Title ?? "";
+            var titleKm = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "km" || t.Language?.ToLower() == "kh")?.Title ?? "";
             var titleEn = publication.Translations.FirstOrDefault(t => t.Language?.ToLower() == "en")?.Title ?? "";
-
-            // Send notification about the publication deletion BEFORE deleting
-            var message = $"Publication \"{titleEn}\" was deleted.";
+            var effectiveTitle = !string.IsNullOrWhiteSpace(titleKm) ? titleKm : titleEn;
+            var message = $"Publication \"{effectiveTitle}\" was deleted.";
             await _notificationService.SendPublicationNotificationAsync(publication, titleKm, titleEn, message, "deleted");
 
             await _telegramQueue.EnqueueAsync(new TelegramSyncJob
             {
-                Action = "Delete",
-                EntityType = "Publication",
+                Action = TelegramSyncAction.Delete,
+                EntityType = TelegramEntityType.Publication,
                 EntityId = publication.Id
             });
 

@@ -292,8 +292,16 @@
     "confirm": "បញ្ជាក់",
     "categoryLabel": "ប្រភេទ",
     "categoryPlaceholder": "ជ្រើសប្រភេទ…",
-    "publishDateLabel": "កាលបរិច្ឆេទបោះពុម្ពផ្សាយ",
-    "publishDatePlaceholder": "DD-MM-YYYY",
+    "documentDateLabel": "កាលបរិច្ឆេទឯកសារ",
+    "documentDatePlaceholder": "DD-MM-YYYY",
+    "publishDateLabel": "កាលបរិច្ឆេទបោះពុម្ពផ្សាយតាមកាលវិភាគ",
+    "publishDatePlaceholder": "ជ្រើសកាលបរិច្ឆេទ",
+    "statusLabel": "ស្ថានភាព",
+    "status": {
+      "draft": "ព្រាង",
+      "published": "ផ្សាយផ្ទាល់",
+      "archived": "ប័ណ្ណសារ"
+    },
     "languageButton": "ភាសា",
     "defaultBadge": "លំនាំដើម",
     "removeLanguage": "លុបភាសា",
@@ -369,6 +377,7 @@
     "headers": {
       "title": "ចំណងជើង",
       "category": "ប្រភេទ",
+      "status": "ស្ថានភាព",
       "date": "កាលបរិច្ឆេទ",
       "pdf": "ឯកសារ PDF",
       "actions": "សកម្មភាព"
@@ -388,8 +397,16 @@
   "PublicationForm": {
     "categoryLabel": "ប្រភេទ",
     "categoryPlaceholder": "ជ្រើស ឬ វាយប្រភេទ...",
-    "publishDateLabel": "កាលបរិច្ឆេទបោះពុម្ពផ្សាយ",
-    "publishDatePlaceholder": "DD-MM-YYYY",
+    "documentDateLabel": "កាលបរិច្ឆេទឯកសារ",
+    "documentDatePlaceholder": "DD-MM-YYYY",
+    "publishDateLabel": "កាលបរិច្ឆេទបោះពុម្ពផ្សាយតាមកាលវិភាគ",
+    "publishDatePlaceholder": "ជ្រើសកាលបរិច្ឆេទ",
+    "statusLabel": "ស្ថានភាព",
+    "status": {
+      "draft": "ព្រាង",
+      "published": "ផ្សាយផ្ទាល់",
+      "archived": "ប័ណ្ណសារ"
+    },
     "authorsLabel": "អ្នកនិពន្ធ",
     "authorsPlaceholder": "ឈ្មោះអ្នកនិពន្ធ",
     "languageButton": "ភាសា",
@@ -460,6 +477,7 @@
     "headers": {
       "title": "ចំណងជើង",
       "category": "ប្រភេទ",
+      "status": "ស្ថានភាព",
       "date": "កាលបរិច្ឆេទ",
       "attachment": "ឯកសារភ្ជាប់",
       "actions": "សកម្មភាព"
@@ -827,8 +845,9 @@
     "buttons": "ប៊ូតុង",
     "images": "រូបភាព",
     "videos": "វីដេអូ",
-    "auditLog": "កំណត់ហេតុសវនកម្ម",
+    "auditLog": "កំណត់ហេតុត្រួតពិនិត្យ",
     "rolePermission": "សិទ្ធិតួនាទី",
+    "telegramConfig": "ការកំណត់តេឡេក្រាម",
     "userManagement": "ការគ្រប់គ្រងអ្នកប្រើប្រាស់"
   },
   "AuditLogPage": {

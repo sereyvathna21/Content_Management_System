@@ -35,7 +35,9 @@ namespace Backend.Controllers
             page = Math.Max(1, page);
             pageSize = Math.Max(1, pageSize);
 
+            var now = DateTime.UtcNow;
             var baseQuery = _db.Laws
+                .Where(l => l.Status == ContentStatus.Published && (l.PublishAt == null || l.PublishAt <= now))
                 .Where(l => l.Translations.Any(t => t.Language.ToLower() == requestedLang));
 
             var categories = await baseQuery
@@ -94,7 +96,9 @@ namespace Backend.Controllers
         public async Task<IActionResult> Get(Guid id, [FromQuery] string lang = "en")
         {
             var requestedLang = NormalizeLang(lang);
-            var law = await _db.Laws.Include(l => l.Translations).FirstOrDefaultAsync(l => l.Id == id);
+            var now = DateTime.UtcNow;
+            var law = await _db.Laws.Include(l => l.Translations)
+                .FirstOrDefaultAsync(l => l.Id == id && l.Status == ContentStatus.Published && (l.PublishAt == null || l.PublishAt <= now));
             if (law == null) return NotFound();
 
             var translation = PickTranslation(law.Translations, requestedLang);

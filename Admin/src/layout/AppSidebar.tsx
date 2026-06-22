@@ -118,6 +118,13 @@ const othersItems: NavItem[] = [
     permission: "roles:read",
   },
   {
+    icon: <InfoIcon />, // Using InfoIcon or any available icon
+    name: "Telegram Config",
+    titleKey: "telegramConfig",
+    path: "/settings/telegram",
+    permission: "settings:read",
+  },
+  {
     icon: <UserCircleIcon />, // matched to User Management
     name: "User Management",
     titleKey: "userManagement",

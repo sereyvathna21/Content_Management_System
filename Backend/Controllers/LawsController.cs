@@ -9,8 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.SignalR;
-using Backend.Hubs;
 
 namespace Backend.Controllers
 {
@@ -20,10 +18,11 @@ namespace Backend.Controllers
     {
         private readonly ApplicationDbContext _db;
         private readonly IWebHostEnvironment _env;
-        private readonly IHubContext<NotificationHub> _hubContext; // Add SignalR Hub Context
+        private readonly INotificationService _notificationService;
         private readonly IAuditLogService _audit;
         private readonly IConfiguration _config;
         private readonly TelegramSyncQueue _telegramQueue;
+        private readonly ITelegramJobBuilder _telegramJobBuilder;
         private const long MaxPdfBytes = 50_000_000;
         private static readonly HashSet<string> AllowedPdfContentTypes = new(StringComparer.OrdinalIgnoreCase)
         {
@@ -48,14 +47,15 @@ namespace Backend.Controllers
             ".com"
         };
 
-        public LawsController(ApplicationDbContext db, IWebHostEnvironment env, IHubContext<NotificationHub> hubContext, IAuditLogService audit, IConfiguration config, TelegramSyncQueue telegramQueue)
+        public LawsController(ApplicationDbContext db, IWebHostEnvironment env, INotificationService notificationService, IAuditLogService audit, IConfiguration config, TelegramSyncQueue telegramQueue, ITelegramJobBuilder telegramJobBuilder)
         {
             _db = db;
             _env = env;
-            _hubContext = hubContext; // Initialize Hub Context
+            _notificationService = notificationService;
             _audit = audit;
             _config = config;
             _telegramQueue = telegramQueue;
+            _telegramJobBuilder = telegramJobBuilder;
         }
 
         private static string BuildCreatedNotificationMessage(string lawTitle)
@@ -103,26 +103,7 @@ namespace Backend.Controllers
 
         private async Task CreateAndBroadcastNotificationAsync(string message, string kind, string? titleKm = null, string? titleEn = null)
         {
-            var notification = new Notification
-            {
-                Message = message,
-                Kind = kind,
-                TitleKm = titleKm,
-                TitleEn = titleEn,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _db.Notifications.Add(notification);
-            await _db.SaveChangesAsync();
-
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification", new
-            {
-                message = notification.Message,
-                kind = notification.Kind,
-                titleKm = notification.TitleKm,
-                titleEn = notification.TitleEn,
-                createdAt = notification.CreatedAt
-            });
+            await _notificationService.SendGeneralNotificationAsync(titleKm ?? "", titleEn ?? "", message, kind);
         }
 
         private string GetUploadsRoot(Guid lawId)
@@ -340,6 +321,9 @@ namespace Backend.Controllers
                     Id = law.Id,
                     Category = law.Category ?? string.Empty,
                     Date = law.Date,
+                    Status = law.Status,
+                    PublishAt = law.PublishAt,
+                    CoverImageUrl = law.CoverImageUrl,
                     Translations = law.Translations.Select(t => new LawTranslationDto
                     {
                         Id = t.Id,
@@ -371,6 +355,9 @@ namespace Backend.Controllers
                 Id = law.Id,
                 Category = law.Category,
                 Date = law.Date,
+                Status = law.Status,
+                PublishAt = law.PublishAt,
+                CoverImageUrl = law.CoverImageUrl,
                 Translations = law.Translations.Select(t => new LawTranslationDto
                 {
                     Id = t.Id,
@@ -407,7 +394,9 @@ namespace Backend.Controllers
             var law = new Law
             {
                 Category = normalizedCategory,
-                Date = request.Date
+                Date = request.Date,
+                Status = request.Status,
+                PublishAt = request.PublishAt
             };
 
             _db.Laws.Add(law);
@@ -473,41 +462,14 @@ namespace Backend.Controllers
                 createdTitleEn);
 
             var lawTranslations = await _db.LawTranslations.Where(t => t.LawId == law.Id).ToListAsync();
-            var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
-            var linkUrl = $"{frontendUrl}/Landing-page/Laws";
 
-            var preferredPdf = lawTranslations.FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.PdfUrl 
-                               ?? lawTranslations.FirstOrDefault(t => !string.IsNullOrEmpty(t.PdfUrl))?.PdfUrl;
-            
-            var caption = TelegramCaptionFormatter.FormatLawCaption(law, lawTranslations);
-            
-            string? localFilePath = null;
-            string fileType = "None";
-
-            var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-
-            if (!string.IsNullOrEmpty(preferredPdf))
+            if (law.Status == ContentStatus.Published && (law.PublishAt == null || law.PublishAt <= DateTime.UtcNow))
             {
-                localFilePath = Path.Combine(root, preferredPdf.TrimStart('/'));
-                fileType = "Document";
+                var job = await _telegramJobBuilder.BuildLawJobAsync(law, lawTranslations, TelegramSyncAction.Create);
+                await _telegramQueue.EnqueueAsync(job);
+                law.IsPublishedSyncTriggered = true;
+                await _db.SaveChangesAsync();
             }
-            else if (!string.IsNullOrEmpty(law.CoverImageUrl))
-            {
-                localFilePath = Path.Combine(root, law.CoverImageUrl.TrimStart('/'));
-                fileType = "Photo";
-            }
-
-            await _telegramQueue.EnqueueAsync(new TelegramSyncJob
-            {
-                Action = "Create",
-                EntityType = "Law",
-                EntityId = law.Id,
-                Caption = caption,
-                LinkUrl = linkUrl,
-                LinkText = "📄 មើលច្បាប់",
-                LocalFilePath = localFilePath,
-                FileType = fileType
-            });
 
             await _audit.WriteAsync(new AuditLogEntry
             {
@@ -516,7 +478,7 @@ namespace Backend.Controllers
                 EntityId = law.Id.ToString(),
                 Summary = "Created law",
                 Status = AuditLogStatus.Success,
-                Metadata = new { law.Category, law.Date, TitleKm = createdTitleKm, TitleEn = createdTitleEn }
+                Metadata = new { law.Category, law.Date, law.Status, law.PublishAt, TitleKm = createdTitleKm, TitleEn = createdTitleEn }
             }, HttpContext);
 
             return CreatedAtAction(nameof(Get), new { id = law.Id }, new { id = law.Id });
@@ -544,8 +506,12 @@ namespace Backend.Controllers
                     .FirstOrDefault(c => !string.IsNullOrWhiteSpace(c)) ?? string.Empty;
             }
 
+            var previousStatus = law.Status;
+
             law.Category = normalizedCategory;
             law.Date = request.Date;
+            law.Status = request.Status;
+            law.PublishAt = request.PublishAt;
 
             var uploadsRoot = GetUploadsRoot(law.Id);
             Directory.CreateDirectory(uploadsRoot);
@@ -646,44 +612,26 @@ namespace Backend.Controllers
 
             await _db.SaveChangesAsync();
 
-            var (titleKm, titleEn) = GetLocalizedLawTitles(law.Translations);
-            var lawTitle = BuildFallbackLawTitle(titleKm, titleEn, law.Id);
-            var frontendUrl = _config["App:FrontendUrl"]?.TrimEnd('/') ?? "https://domain.com";
-            var linkUrl = $"{frontendUrl}/Landing-page/Laws";
-
-            var preferredPdf = law.Translations.FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.PdfUrl 
-                               ?? law.Translations.FirstOrDefault(t => !string.IsNullOrEmpty(t.PdfUrl))?.PdfUrl;
-            
-            var caption = TelegramCaptionFormatter.FormatLawCaption(law, law.Translations);
-            
-            string? localFilePath = null;
-            string fileType = "None";
-
-            var root = _env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-
-            if (!string.IsNullOrEmpty(preferredPdf))
+            if (law.Status == ContentStatus.Published && (law.PublishAt == null || law.PublishAt <= DateTime.UtcNow))
             {
-                localFilePath = Path.Combine(root, preferredPdf.TrimStart('/'));
-                fileType = "Document";
+                var action = previousStatus != ContentStatus.Published ? TelegramSyncAction.Create : TelegramSyncAction.Update;
+                var job = await _telegramJobBuilder.BuildLawJobAsync(law, law.Translations, action);
+                await _telegramQueue.EnqueueAsync(job);
+                law.IsPublishedSyncTriggered = true;
+                await _db.SaveChangesAsync();
             }
-            else if (!string.IsNullOrEmpty(law.CoverImageUrl))
+            else if (previousStatus == ContentStatus.Published && law.Status == ContentStatus.Draft)
             {
-                localFilePath = Path.Combine(root, law.CoverImageUrl.TrimStart('/'));
-                fileType = "Photo";
+                var job = new TelegramSyncJob
+                {
+                    Action = TelegramSyncAction.Delete,
+                    EntityType = TelegramEntityType.Law,
+                    EntityId = law.Id
+                };
+                await _telegramQueue.EnqueueAsync(job);
+                law.IsPublishedSyncTriggered = false;
+                await _db.SaveChangesAsync();
             }
-
-            await _telegramQueue.EnqueueAsync(new TelegramSyncJob
-            {
-                Action = "Update",
-                EntityType = "Law",
-                EntityId = law.Id,
-                Caption = caption,
-                LinkUrl = linkUrl,
-                LinkText = "📄 មើលច្បាប់",
-                LocalFilePath = localFilePath,
-                FileType = fileType,
-                IsCaptionOnlyEdit = false
-            });
 
             await _audit.WriteAsync(new AuditLogEntry
             {
@@ -692,7 +640,7 @@ namespace Backend.Controllers
                 EntityId = law.Id.ToString(),
                 Summary = "Updated law",
                 Status = AuditLogStatus.Success,
-                Metadata = new { law.Category, law.Date }
+                Metadata = new { law.Category, law.Date, law.Status, law.PublishAt }
             }, HttpContext);
 
             return Ok(new { id = law.Id });
@@ -708,12 +656,8 @@ namespace Backend.Controllers
             var (deletedTitleKm, deletedTitleEn) = GetLocalizedLawTitles(law.Translations);
             var deletedLawTitle = BuildFallbackLawTitle(deletedTitleKm, deletedTitleEn, law.Id);
 
-            await _telegramQueue.EnqueueAsync(new TelegramSyncJob
-            {
-                Action = "Delete",
-                EntityType = "Law",
-                EntityId = law.Id
-            });
+            var deleteJob = await _telegramJobBuilder.BuildLawJobAsync(law, law.Translations, TelegramSyncAction.Delete);
+            await _telegramQueue.EnqueueAsync(deleteJob);
 
             _db.Laws.Remove(law);
             await _db.SaveChangesAsync();

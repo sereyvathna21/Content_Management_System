@@ -76,6 +76,8 @@ builder.Services.AddHttpClient<ITelegramService, TelegramService>(client =>
 // Register the queue as a singleton and the worker as a hosted service
 builder.Services.AddSingleton<TelegramSyncQueue>();
 builder.Services.AddHostedService<TelegramBackgroundWorker>();
+builder.Services.AddHostedService<ScheduledPublishWorker>();
+builder.Services.AddScoped<ITelegramJobBuilder, TelegramJobBuilder>();
 
 // ---------- Rate Limiting ----------
 builder.Services.AddRateLimiter(options =>
@@ -142,6 +144,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
         options.Events = new JwtBearerEvents
         {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            },
             OnTokenValidated = async context =>
             {
                 var cache = context.HttpContext.RequestServices.GetRequiredService<IDistributedCache>();
@@ -304,6 +316,18 @@ using (var scope = app.Services.CreateScope())
             // containers get the expected tables (permissions, role permissions, etc.).
             var db = services.GetRequiredService<ApplicationDbContext>();
             await db.Database.MigrateAsync();
+
+            // HOTFIX: Drop the unique constraint index from TelegramMessageMappings manually
+            try 
+            {
+                await db.Database.ExecuteSqlRawAsync("DROP INDEX IF EXISTS \"IX_TelegramMessageMappings_EntityType_EntityId\";");
+                await db.Database.ExecuteSqlRawAsync("CREATE INDEX IF NOT EXISTS \"IX_TelegramMessageMappings_EntityType_EntityId_NonUnique\" ON \"TelegramMessageMappings\" (\"EntityType\", \"EntityId\");");
+            } 
+            catch (Exception ex) 
+            {
+                var logger = services.GetService<ILoggerFactory>()?.CreateLogger("Hotfix");
+                logger?.LogWarning(ex, "Failed to drop unique index, it might already be dropped.");
+            }
 
             await Backend.Services.DevSeeder.SeedAsync(services);
         }

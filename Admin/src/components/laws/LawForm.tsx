@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import DatePicker from "@/components/form/date-picker";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
+import Select from "@/components/form/Select";
 import PdfDropZone from "./PdfDropZone";
 import { extractFirstPageAsImage } from "@/lib/extractPdfCover";
 
@@ -29,6 +30,8 @@ type InitialLaw = {
   id: string;
   category?: string;
   date?: string;
+  status?: string;
+  publishAt?: string;
   translations: Array<{
     language: string;
     title: string;
@@ -160,6 +163,8 @@ export default function LawForm({
   }, []);
 
   const [date, setDate] = useState(initialLaw?.date?.split("T")[0] ?? "");
+  const [lawStatus, setLawStatus] = useState(initialLaw?.status ?? "Draft");
+  const [publishAt, setPublishAt] = useState(initialLaw?.publishAt?.split("T")[0] ?? "");
   const [activeTab, setActiveTab] = useState<LangCode>(DEFAULT_LANGUAGE);
   const [catDropdownOpen, setCatDropdownOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
@@ -169,6 +174,8 @@ export default function LawForm({
 
   useEffect(() => {
     setDate(initialLaw?.date?.split("T")[0] ?? "");
+    setLawStatus(initialLaw?.status ?? "Draft");
+    setPublishAt(initialLaw?.publishAt?.split("T")[0] ?? "");
     setTranslations(buildInitialTranslations(initialLaw));
     setActiveTab(initialLaw?.translations?.find((translation) => translation.language === DEFAULT_LANGUAGE)?.language ?? DEFAULT_LANGUAGE);
     setErrors({});
@@ -301,6 +308,8 @@ export default function LawForm({
 
   function resetForm() {
     setDate(initialLaw?.date?.split("T")[0] ?? "");
+    setLawStatus(initialLaw?.status ?? "Draft");
+    setPublishAt(initialLaw?.publishAt?.split("T")[0] ?? "");
     setTranslations(buildInitialTranslations(initialLaw));
     setActiveTab(DEFAULT_LANGUAGE);
     setCatDropdownOpen(false);
@@ -329,7 +338,9 @@ export default function LawForm({
         "";
 
       form.append("Category", defaultCategory);
+      form.append("Status", lawStatus);
       if (date) form.append("Date", date);
+      if (publishAt) form.append("PublishAt", new Date(`${publishAt}T00:00:00Z`).toISOString());
 
       translations.forEach((translation, index) => {
         form.append(`Translations[${index}].Language`, translation.language);
@@ -451,11 +462,39 @@ export default function LawForm({
           <div>
             <DatePicker
               id={isEditing ? "law-date-edit" : "law-date"}
-              label={t("publishDateLabel")}
-              placeholder={t("publishDatePlaceholder")}
+              label={t("documentDateLabel") || "Document Date"}
+              placeholder={t("documentDatePlaceholder") || "Select document date"}
               defaultDate={date || undefined}
               value={date}
               onChange={setDate}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-900 mb-1">
+              {t("statusLabel") || "Status"}
+            </label>
+            <div className="relative z-10">
+              <Select
+                value={lawStatus}
+                onChange={setLawStatus}
+                options={[
+                  { value: "Draft", label: t("status.draft") || "Draft" },
+                  { value: "Published", label: t("status.published") || "Published" },
+                  { value: "Archived", label: t("status.archived") || "Archived" }
+                ]}
+              />
+            </div>
+          </div>
+
+          <div>
+            <DatePicker
+              id={isEditing ? "law-publish-date-edit" : "law-publish-date"}
+              label={t("publishDateLabel") || "Scheduled Publish Time"}
+              placeholder={t("publishDatePlaceholder") || "Select publish time"}
+              defaultDate={publishAt || undefined}
+              value={publishAt}
+              onChange={setPublishAt}
             />
           </div>
         </div>
