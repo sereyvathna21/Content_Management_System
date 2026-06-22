@@ -109,6 +109,7 @@ const othersItems: NavItem[] = [
     name: "Audit Log",
     titleKey: "auditLog",
     path: "/audit",
+    permission: "audit:read",
   },
   {
     icon: <LockIcon />, // matched to Role Permission
@@ -122,7 +123,7 @@ const othersItems: NavItem[] = [
     name: "Telegram Config",
     titleKey: "telegramConfig",
     path: "/settings/telegram",
-    permission: "settings:read",
+    permission: "telegram:read",
   },
   {
     icon: <UserCircleIcon />, // matched to User Management

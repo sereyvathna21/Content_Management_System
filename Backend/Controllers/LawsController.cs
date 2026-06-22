@@ -610,6 +610,7 @@ namespace Backend.Controllers
                 _db.LawTranslations.RemoveRange(toRemove);
             }
 
+            var changes = Backend.Helpers.AuditHelper.GetChanges(_db.Entry(law));
             await _db.SaveChangesAsync();
 
             if (law.Status == ContentStatus.Published && (law.PublishAt == null || law.PublishAt <= DateTime.UtcNow))
@@ -640,7 +641,7 @@ namespace Backend.Controllers
                 EntityId = law.Id.ToString(),
                 Summary = "Updated law",
                 Status = AuditLogStatus.Success,
-                Metadata = new { law.Category, law.Date, law.Status, law.PublishAt }
+                Metadata = changes ?? new { law.Category, law.Date, law.Status, law.PublishAt }
             }, HttpContext);
 
             return Ok(new { id = law.Id });

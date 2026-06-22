@@ -97,11 +97,11 @@ namespace Backend.Services
                     Security.PermissionConstants.MediaCreate,
                     // Notifications
                     Security.PermissionConstants.NotificationsRead,
-                    // Users Management
                     Security.PermissionConstants.UsersRead,
                     Security.PermissionConstants.UsersCreate,
                     Security.PermissionConstants.UsersUpdate,
                     Security.PermissionConstants.UsersDelete,
+                    Security.PermissionConstants.UsersBlock,
                     // Contact / Messages
                     Security.PermissionConstants.ContactRead,
                     Security.PermissionConstants.ContactCreate,
@@ -118,6 +118,9 @@ namespace Backend.Services
                     // System Settings
                     Security.PermissionConstants.SettingsRead,
                     Security.PermissionConstants.SettingsUpdate,
+                    // Telegram Config
+                    Security.PermissionConstants.TelegramRead,
+                    Security.PermissionConstants.TelegramUpdate,
                 };
 
                 var existingPerms = db.Permissions.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);

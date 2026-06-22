@@ -207,6 +207,7 @@ namespace Backend.Controllers
             video.UpdatedAt = DateTime.UtcNow;
             video.UpdatedByUserId = userId;
 
+            var changes = Backend.Helpers.AuditHelper.GetChanges(_db.Entry(video));
             await _db.SaveChangesAsync();
 
             if (previousStatus == ContentStatus.Published || video.Status == ContentStatus.Published)
@@ -225,7 +226,7 @@ namespace Backend.Controllers
                 EntityId = video.Id.ToString(),
                 Summary = "Updated video",
                 Status = AuditLogStatus.Success,
-                Metadata = new { PreviousStatus = previousStatus, video.Status, video.Title }
+                Metadata = changes ?? new { PreviousStatus = previousStatus, video.Status, video.Title }
             }, HttpContext);
             return Ok(MapAdminDto(video));
         }

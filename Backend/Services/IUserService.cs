@@ -14,7 +14,8 @@ namespace Backend.Services
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<(IEnumerable<UserDto> Items, int Total)> GetUsersAsync(int page, int pageSize, string? query);
         Task<(bool Success, string Message, UserDto? Data)> CreateUserAsync(CreateUserRequest request);
-        Task<(bool Success, string Message, UserDto? Data)> UpdateUserAsync(int id, UpdateUserRequest request, Microsoft.AspNetCore.Http.HttpContext? httpContext = null);
+        Task<(bool Success, string Message, UserDto? Data, object? Changes)> UpdateUserAsync(int id, UpdateUserRequest request, Microsoft.AspNetCore.Http.HttpContext? httpContext = null);
+        Task<(bool Success, string Message)> DeleteUserAsync(int id, Microsoft.AspNetCore.Http.HttpContext? httpContext = null);
         Task<UserDto?> GetUserByIdAsync(int userId);
     }
 }

@@ -402,6 +402,7 @@ namespace Backend.Controllers
                 _db.PublicationTranslations.RemoveRange(toRemove);
             }
 
+            var changes = Backend.Helpers.AuditHelper.GetChanges(_db.Entry(publication));
             await _db.SaveChangesAsync();
 
             if (publication.Status == ContentStatus.Published && (publication.PublishAt == null || publication.PublishAt <= DateTime.UtcNow))
@@ -439,7 +440,7 @@ namespace Backend.Controllers
                 EntityId = publication.Id.ToString(),
                 Summary = "Updated publication",
                 Status = AuditLogStatus.Success,
-                Metadata = new { publication.Category, publication.PublicationDate, publication.Status, publication.PublishAt, TitleKm = titleKm, TitleEn = titleEn }
+                Metadata = changes ?? new { publication.Category, publication.PublicationDate, publication.Status, publication.PublishAt, TitleKm = titleKm, TitleEn = titleEn }
             }, HttpContext);
 
             return Ok(new { id = publication.Id });

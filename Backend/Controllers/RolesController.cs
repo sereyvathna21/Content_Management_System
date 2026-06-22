@@ -121,6 +121,7 @@ namespace Backend.Controllers
 
             role.Name = normalizedName;
             role.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+            var changes = Backend.Helpers.AuditHelper.GetChanges(_db.Entry(role));
             await _db.SaveChangesAsync();
 
             await _auditLog.WriteAsync(new AuditLogEntry
@@ -130,7 +131,7 @@ namespace Backend.Controllers
                 EntityId = role.Id.ToString(),
                 Summary = "Updated role",
                 Status = AuditLogStatus.Success,
-                Metadata = new { role.Name, role.IsSystemRole }
+                Metadata = changes
             }, HttpContext);
 
             var userCount = await _db.Users.CountAsync(u => u.RoleId == roleId);

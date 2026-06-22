@@ -312,6 +312,7 @@ namespace Backend.Controllers
                 });
             }
 
+            var changes = Backend.Helpers.AuditHelper.GetChanges(_db.Entry(article));
             await _db.SaveChangesAsync();
 
             if (previousStatus == ContentStatus.Published || article.Status == ContentStatus.Published)
@@ -356,7 +357,7 @@ namespace Backend.Controllers
                 EntityId = article.Id.ToString(),
                 Summary = "Updated news article",
                 Status = AuditLogStatus.Success,
-                Metadata = new { PreviousSlug = previousSlug, PreviousStatus = previousStatus, article.Slug, article.Status }
+                Metadata = changes
             }, HttpContext);
             return Ok(MapAdminDto(article));
         }

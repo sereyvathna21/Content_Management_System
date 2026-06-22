@@ -25,15 +25,17 @@ type Props = {
   onOpen: (u: User) => void;
   onEdit: (u: User) => void;
   onBlockRequest: (id: string) => void;
+  onDeleteRequest: (id: string) => void;
   onClear?: () => void;
 };
 
-export default function UserTable({ loading, users, query, onOpen, onEdit, onBlockRequest, onClear }: Props) {
+export default function UserTable({ loading, users, query, onOpen, onEdit, onBlockRequest, onDeleteRequest, onClear }: Props) {
   const t = useTranslations();
   const { can, canAny } = usePermission();
   const canEdit = can("users:update");
   const canBlock = can("users:block");
-  const canShowActions = canAny(["users:update", "users:block"]);
+  const canDelete = can("users:delete");
+  const canShowActions = canAny(["users:update", "users:block", "users:delete"]);
   // delegate confirmation to parent; remove local confirm modal
 
   if (loading) return <div>{t("UserTable.loading")}</div>;
@@ -105,7 +107,10 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                   <button type="button" onClick={() => onEdit(u)} className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50">{t("UserTable.tooltips.edit")}</button>
                 )}
                 {canBlock && (
-                  <button type="button" onClick={() => onBlockRequest(u.id)} className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition ${u.blocked ? "text-green-600 border-green-200 hover:bg-green-50" : "text-red-600 border-red-200 hover:bg-red-50"}`}>{u.blocked ? t("UserTable.tooltips.unblock") : t("UserTable.tooltips.block")}</button>
+                  <button type="button" onClick={() => onBlockRequest(u.id)} className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition ${u.blocked ? "text-green-600 border-green-200 hover:bg-green-50" : "text-amber-600 border-amber-200 hover:bg-amber-50"}`}>{u.blocked ? t("UserTable.tooltips.unblock") : t("UserTable.tooltips.block")}</button>
+                )}
+                {canDelete && u.role !== "SuperAdmin" && (
+                  <button type="button" onClick={() => onDeleteRequest(u.id)} className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50">{t("UserTable.tooltips.delete") || "Delete"}</button>
                 )}
               </div>
             </div>
@@ -221,6 +226,22 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                                     <rect x="3" y="11" width="18" height="10" rx="2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                                   </svg>
                                 )}
+                              </button>
+                            </Tooltip>
+                          )}
+
+                          {canDelete && u.role !== "SuperAdmin" && (
+                            <Tooltip label={t("UserTable.tooltips.delete") || "Delete"}>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onDeleteRequest(u.id); }}
+                                title={t("UserTable.tooltips.delete") || "Delete"}
+                                aria-label={t("UserTable.tooltips.delete") || "Delete"}
+                                className="inline-flex items-center justify-center w-9 h-9 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 transition text-red-600 dark:text-red-400"
+                              >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                                  <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
                               </button>
                             </Tooltip>
                           )}

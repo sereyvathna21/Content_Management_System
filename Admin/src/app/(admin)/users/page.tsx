@@ -49,7 +49,9 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [viewOpen, setViewOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [pendingBlockId, setPendingBlockId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
   const pageSize = 10;
@@ -305,6 +307,41 @@ export default function UsersPage() {
     })();
   }
 
+  function requestDelete(id: string) {
+    setPendingDeleteId(id);
+    setConfirmDeleteOpen(true);
+  }
+
+  function handleDeleteConfirmed() {
+    const id = pendingDeleteId;
+    if (!id) return;
+
+    (async () => {
+      const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/user/${id}`, {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${session?.accessToken}`
+          },
+        });
+
+        if (!res.ok) {
+          console.error("Failed to delete user", res.status);
+          return;
+        }
+
+        setUsers((prev) => prev.filter((p) => p.id !== id));
+        setTotalCount((prev) => prev - 1);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setPendingDeleteId(null);
+        setConfirmDeleteOpen(false);
+      }
+    })();
+  }
+
   return (
     <RequirePermission anyOf={["users:read", "users:create", "users:update", "users:delete"]}>
     <div className="space-y-6 p-6">
@@ -373,6 +410,7 @@ export default function UsersPage() {
             onOpen={(u) => { setSelectedUser(u); setViewOpen(true); }}
             onEdit={handleEdit}
             onBlockRequest={requestBlock}
+            onDeleteRequest={requestDelete}
             onClear={() => {
               setQuery("");
               setPage(1);
@@ -429,6 +467,50 @@ export default function UsersPage() {
               className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-colors ${pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"}`}
             >
               {pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked ? (t("UsersPage.confirmUnblock") || "Unblock User") : (t("UsersPage.confirmBlock") || "Block User")}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Confirm delete modal */}
+      <Modal
+        isOpen={confirmDeleteOpen}
+        onClose={() => {
+          setConfirmDeleteOpen(false);
+          setPendingDeleteId(null);
+        }}
+        className="max-w-md p-6"
+        backdropClassName="fixed inset-0 h-full w-full bg-gray-400/30 backdrop-blur-sm"
+      >
+        <div className="flex flex-col items-center text-center">
+          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-red-500">
+              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            {t("UsersPage.confirmDelete") || "Delete User"}
+          </h3>
+          <p className="text-gray-500 mb-6">
+            {t("UsersPage.confirmDeleteText") || "Are you sure you want to delete this user? This action cannot be undone."}
+          </p>
+
+          <div className="flex gap-3 w-full">
+            <button
+              onClick={() => {
+                setConfirmDeleteOpen(false);
+                setPendingDeleteId(null);
+              }}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+            >
+              {t("UsersPage.cancel") || "Cancel"}
+            </button>
+            <button
+              onClick={handleDeleteConfirmed}
+              className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-xl transition-colors"
+            >
+              {t("UsersPage.confirmDelete") || "Delete User"}
             </button>
           </div>
         </div>

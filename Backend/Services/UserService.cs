@@ -314,36 +314,66 @@ namespace Backend.Services
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
 
-            // FIX 1: Reload Role navigation property after save so mapper has it
-            await _db.Entry(user).Reference(u => u.Role).LoadAsync();
-
-            return (true, "User created successfully.", _mapper.Map<UserDto>(user));
+            var created = await _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == user.Id);
+            return (true, "User created successfully.", created != null ? _mapper.Map<UserDto>(created) : null);
         }
 
-        public async Task<(bool Success, string Message, UserDto? Data)> UpdateUserAsync(int id, UpdateUserRequest request, Microsoft.AspNetCore.Http.HttpContext? httpContext = null)
+        public async Task<(bool Success, string Message)> DeleteUserAsync(int id, Microsoft.AspNetCore.Http.HttpContext? httpContext = null)
+        {
+            var user = await _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                return (false, "User not found.");
+            }
+
+            if (user.Role?.Name == RoleConstants.SuperAdmin)
+            {
+                return (false, "SuperAdmin cannot be deleted.");
+            }
+
+            _db.Users.Remove(user);
+            await _db.SaveChangesAsync();
+
+            if (httpContext != null)
+            {
+                await _auditLog.WriteAsync(new AuditLogEntry
+                {
+                    Action = "user:delete",
+                    EntityType = "User",
+                    EntityId = id.ToString(),
+                    Summary = "Deleted user",
+                    Status = AuditLogStatus.Success,
+                    Metadata = new { user.Email, Role = user.Role?.Name }
+                }, httpContext);
+            }
+
+            return (true, "User deleted successfully.");
+        }
+
+        public async Task<(bool Success, string Message, UserDto? Data, object? Changes)> UpdateUserAsync(int id, UpdateUserRequest request, Microsoft.AspNetCore.Http.HttpContext? httpContext = null)
         {
             // FIX 2: Include Role so mapper has it after save
             var user = await _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
-                return (false, "User not found.", null);
+                return (false, "User not found.", null, null);
 
             if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.FullName))
-                return (false, "Full name and email are required.", null);
+                return (false, "Full name and email are required.", null, null);
 
             if (!RoleConstants.TryNormalize(request.Role, out var normalizedRole))
-                return (false, "Role must be one of: admin, user, superadmin.", null);
+                return (false, "Role must be one of: admin, user, superadmin.", null, null);
 
             var role = await GetRoleByNameAsync(normalizedRole);
             if (role == null)
             {
-                return (false, "Specified role does not exist.", null);
+                return (false, "Specified role does not exist.", null, null);
             }
 
             var normalizedEmail = NormalizeEmail(request.Email);
 
             var emailExists = await _db.Users.AnyAsync(u => u.Email == normalizedEmail && u.Id != id);
             if (emailExists)
-                return (false, "An account with this email already exists.", null);
+                return (false, "An account with this email already exists.", null, null);
 
             var previousRoleId = user.RoleId;
             var previousIsBlocked = user.IsBlocked;
@@ -376,6 +406,8 @@ namespace Backend.Services
                 user.Password = BCrypt.Net.BCrypt.HashPassword(request.Password);
             }
 
+            var changes = Backend.Helpers.AuditHelper.GetChanges(_db.Entry(user));
+
             await _db.SaveChangesAsync();
 
             if (shouldRevokeTokens && user.TokenValidAfter.HasValue)
@@ -402,7 +434,7 @@ namespace Backend.Services
                 }, httpContext);
             }
 
-            return (true, "User updated successfully.", _mapper.Map<UserDto>(user));
+            return (true, "User updated successfully.", _mapper.Map<UserDto>(user), changes);
         }
 
         public async Task<UserDto?> GetUserByIdAsync(int userId)

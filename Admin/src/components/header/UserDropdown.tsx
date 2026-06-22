@@ -8,8 +8,10 @@ import {
   USER_PROFILE_UPDATED_EVENT,
   UserProfileUpdatedDetail,
 } from "../../lib/api/user";
+import { useTranslations } from "next-intl";
 
 export default function UserDropdown() {
+  const t = useTranslations("UserDropdown");
   const [isOpen, setIsOpen] = useState(false);
   const [profile, setProfile] = useState({
     name: "User",
@@ -138,7 +140,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
                   fill=""
                 />
               </svg>
-              Edit profile
+              {t("editProfile")}
             </DropdownItem>
           </li>
           <li>
@@ -163,7 +165,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
                   fill=""
                 />
               </svg>
-              Account settings
+              {t("accountSettings")}
             </DropdownItem>
           </li>
           <li>
@@ -188,7 +190,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
                   fill=""
                 />
               </svg>
-              Support
+              {t("support")}
             </DropdownItem>
           </li>
         </ul>
@@ -214,7 +216,7 @@ function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
               fill=""
             />
           </svg>
-          Sign out
+          {t("signOut")}
         </button>
       </Dropdown>
     </div>

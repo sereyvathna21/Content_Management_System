@@ -49,6 +49,7 @@ namespace Backend.Security
         public const string UsersCreate = "users:create";
         public const string UsersUpdate = "users:update";
         public const string UsersDelete = "users:delete";
+        public const string UsersBlock = "users:block";
 
         // Roles & Security Settings
         public const string RolesRead = "roles:read";
@@ -63,5 +64,9 @@ namespace Backend.Security
         // System Settings
         public const string SettingsRead = "settings:read";
         public const string SettingsUpdate = "settings:update";
+
+        // Telegram Config
+        public const string TelegramRead = "telegram:read";
+        public const string TelegramUpdate = "telegram:update";
     }
 }

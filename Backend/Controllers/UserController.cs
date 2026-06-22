@@ -172,10 +172,23 @@ namespace Backend.Controllers
                     EntityId = result.Data.Id.ToString(),
                     Summary = "Updated user",
                     Status = AuditLogStatus.Success,
-                    Metadata = new { result.Data.Email, result.Data.Role, result.Data.IsBlocked }
+                    Metadata = result.Changes ?? new { result.Data.Email, result.Data.Role, result.Data.IsBlocked }
                 }, HttpContext);
             }
             return Ok(result.Data);
+        }
+
+        [HttpDelete("{id:int}")]
+        [HasPermission(PermissionConstants.UsersDelete)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _user.DeleteUserAsync(id, HttpContext);
+            if (!result.Success)
+            {
+                if (result.Message.Contains("not found")) return NotFound(new MessageResponse { Message = result.Message });
+                return BadRequest(new MessageResponse { Message = result.Message });
+            }
+            return Ok(new MessageResponse { Message = result.Message });
         }
 
         [HttpGet("me")]
@@ -347,7 +360,7 @@ namespace Backend.Controllers
                 EntityId = userId.ToString(),
                 Summary = "User updated own profile",
                 Status = AuditLogStatus.Success,
-                Metadata = new { result.Data?.Email }
+                Metadata = result.Changes ?? new { result.Data?.Email }
             }, HttpContext);
 
             return Ok(result.Data);

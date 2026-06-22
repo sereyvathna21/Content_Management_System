@@ -1,67 +1,66 @@
 {
- 
- "ContactPage": {
-"title": "មតិប្រតិកម្មទំនាក់ទំនង",
-"messagesTitle": "សារ",
-"messagesDesc": "គ្រប់គ្រងការដាក់ស្នើទម្រង់ទំនាក់ទំនង",
-"searchPlaceholder": "ស្វែងរកតាមឈ្មោះ អ៊ីមែល ឬប្រធានបទ",
-"searchAria": "ស្វែងរកទំនាក់ទំនង",
-"exportButton": "នាំចេញ",
-"exportConfirmTitle": "បញ្ជាក់ការនាំចេញ",
-"exportConfirmText": "នាំចេញសារដែលអាចមើលឃើញទៅជា CSV? វានឹងទាញយកជួរដេកដែលអាចមើលឃើញបច្ចុប្បន្ន។",
-"confirmDeleteTitle": "បញ្ជាក់ការលុប",
-"confirmDeleteText": "តើអ្នកប្រាកដថាអ្នកចង់លុបសារនេះទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
-"cancel": "បោះបង់",
-"confirm": "បញ្ជាក់",
-"close": "បិទ",
-"delete": "លុប",
-"clearFilters": "លុបតម្រង",
-"noResultsFor": "គ្មានលទ្ធផលសម្រាប់ \"{query}\"",
-"tryDifferentSearch": "សាកល្បងពាក្យស្វែងរកផ្សេង ឬលុបតម្រង។",
-"noContactsFound": "រកមិនឃើញទំនាក់ទំនងទេ",
-"tryAdjustFilters": "សាកល្បងកែសម្រួលតម្រង ឬពាក្យស្វែងរក ដើម្បីស្វែងរកសារ។",
-"from": "ពី",
-"reply": "ឆ្លើយតប",
-"replied": "បានឆ្លើយតប",
-"repliedOn": "បានឆ្លើយតបនៅ",
-"replyTitle": "ឆ្លើយតបសារ",
-"replyTo": "ទៅកាន់",
-"replyFrom": "ពី",
-"replyFromValue": "ការគាំទ្រ NSPC CMS",
-"replyNote": "សារនេះនឹងត្រូវបានផ្ញើពីអ៊ីមែលប្រព័ន្ធដែលបានកំណត់។",
-"replySubject": "ប្រធានបទ",
-"replySubjectPlaceholder": "ប្រធានបទ",
-"replyMessage": "សារ",
-"replyMessagePlaceholder": "វាយសារឆ្លើយតប...",
-"replyMessageHelp": "សរសេរឲ្យច្បាស់ និងខ្លី។",
-"replySend": "ផ្ញើការឆ្លើយតប",
-"replySending": "កំពុងផ្ញើ...",
-"replyMessageRequired": "ត្រូវការសារឆ្លើយតប",
-"replySendError": "ផ្ញើការឆ្លើយតបបរាជ័យ។ សូមសាកល្បងម្ដងទៀត។",
-"markRead": "សម្គាល់ថាបានអានហើយ",
-"markUnread": "សម្គាល់ថាមិនទាន់អាន",
-"loading": "កំពុងផ្ទុក...",
-"loadError": "មិនអាចទាញយកទំនាក់ទំនងបានទេ។ សូមធ្វើការធ្វើបច្ចុប្បន្នភាពទំព័រឡើងវិញ។",
-"columns": {
-"name": "ឈ្មោះ",
-"email": "អ៊ីមែល",
-"subject": "ប្រធានបទ",
-"date": "កាលបរិច្ឆេទ",
-"status": "ស្ថានភាព",
-"actions": "សកម្មភាព"
-},
-"viewMessage": "មើលសារ",
-"markAsRead": "សម្គាល់ថាបានអានហើយ",
-"markAsUnread": "សម្គាល់ថាមិនទាន់អាន",
-"deleteMessage": "លុបសារ",
-"status": {
-"all": "ទាំងអស់",
-"read": "បានអាន",
-"unread": "មិនទាន់អាន",
-"replied": "បានឆ្លើយតប"
-}
-},
- "LoginPage": {
+  "ContactPage": {
+    "title": "មតិប្រតិកម្មទំនាក់ទំនង",
+    "messagesTitle": "សារ",
+    "messagesDesc": "គ្រប់គ្រងការដាក់ស្នើទម្រង់ទំនាក់ទំនង",
+    "searchPlaceholder": "ស្វែងរកតាមឈ្មោះ អ៊ីមែល ឬប្រធានបទ",
+    "searchAria": "ស្វែងរកទំនាក់ទំនង",
+    "exportButton": "នាំចេញ",
+    "exportConfirmTitle": "បញ្ជាក់ការនាំចេញ",
+    "exportConfirmText": "នាំចេញសារដែលអាចមើលឃើញទៅជា CSV? វានឹងទាញយកជួរដេកដែលអាចមើលឃើញបច្ចុប្បន្ន។",
+    "confirmDeleteTitle": "បញ្ជាក់ការលុប",
+    "confirmDeleteText": "តើអ្នកប្រាកដថាអ្នកចង់លុបសារនេះទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+    "cancel": "បោះបង់",
+    "confirm": "បញ្ជាក់",
+    "close": "បិទ",
+    "delete": "លុប",
+    "clearFilters": "លុបតម្រង",
+    "noResultsFor": "គ្មានលទ្ធផលសម្រាប់ \"{query}\"",
+    "tryDifferentSearch": "សាកល្បងពាក្យស្វែងរកផ្សេង ឬលុបតម្រង។",
+    "noContactsFound": "រកមិនឃើញទំនាក់ទំនងទេ",
+    "tryAdjustFilters": "សាកល្បងកែសម្រួលតម្រង ឬពាក្យស្វែងរក ដើម្បីស្វែងរកសារ។",
+    "from": "ពី",
+    "reply": "ឆ្លើយតប",
+    "replied": "បានឆ្លើយតប",
+    "repliedOn": "បានឆ្លើយតបនៅ",
+    "replyTitle": "ឆ្លើយតបសារ",
+    "replyTo": "ទៅកាន់",
+    "replyFrom": "ពី",
+    "replyFromValue": "ការគាំទ្រ NSPC CMS",
+    "replyNote": "សារនេះនឹងត្រូវបានផ្ញើពីអ៊ីមែលប្រព័ន្ធដែលបានកំណត់។",
+    "replySubject": "ប្រធានបទ",
+    "replySubjectPlaceholder": "ប្រធានបទ",
+    "replyMessage": "សារ",
+    "replyMessagePlaceholder": "វាយសារឆ្លើយតប...",
+    "replyMessageHelp": "សរសេរឲ្យច្បាស់ និងខ្លី។",
+    "replySend": "ផ្ញើការឆ្លើយតប",
+    "replySending": "កំពុងផ្ញើ...",
+    "replyMessageRequired": "ត្រូវការសារឆ្លើយតប",
+    "replySendError": "ផ្ញើការឆ្លើយតបបរាជ័យ។ សូមសាកល្បងម្ដងទៀត។",
+    "markRead": "សម្គាល់ថាបានអានហើយ",
+    "markUnread": "សម្គាល់ថាមិនទាន់អាន",
+    "loading": "កំពុងផ្ទុក...",
+    "loadError": "មិនអាចទាញយកទំនាក់ទំនងបានទេ។ សូមធ្វើការធ្វើបច្ចុប្បន្នភាពទំព័រឡើងវិញ។",
+    "columns": {
+      "name": "ឈ្មោះ",
+      "email": "អ៊ីមែល",
+      "subject": "ប្រធានបទ",
+      "date": "កាលបរិច្ឆេទ",
+      "status": "ស្ថានភាព",
+      "actions": "សកម្មភាព"
+    },
+    "viewMessage": "មើលសារ",
+    "markAsRead": "សម្គាល់ថាបានអានហើយ",
+    "markAsUnread": "សម្គាល់ថាមិនទាន់អាន",
+    "deleteMessage": "លុបសារ",
+    "status": {
+      "all": "ទាំងអស់",
+      "read": "បានអាន",
+      "unread": "មិនទាន់អាន",
+      "replied": "បានឆ្លើយតប"
+    }
+  },
+  "LoginPage": {
     "signIn": {
       "title": "ចូលគណនី",
       "subtitle": "បញ្ចូលពត៌មានសម្គាត់របស់អ្នកដើម្បីចូលគណនី",
@@ -330,7 +329,6 @@
       "titleRequired": "តម្រូវឱ្យមានចំណងជើង",
       "defaultTitleRequired": "តម្រូវឱ្យមានចំណងជើងភាសាខ្មែរ"
     },
- 
     "categories": {
       "royalDegree": "ព្រះរាជក្រឹត្យ",
       "subDegree": "អនុក្រឹត្យ",
@@ -342,8 +340,7 @@
       "administrativeLaw": "ច្បាប់រដ្ឋបាល",
       "commercialLaw": "ច្បាប់ពាណិជ្ជកម្ម"
     }
-  }
-  ,
+  },
   "LawsPage": {
     "title": "ច្បាប់",
     "create": "បង្កើតច្បាប់ថ្មី",
@@ -366,8 +363,7 @@
       "desc": "គ្រប់គ្រងច្បាប់ និងការបកប្រែ"
     },
     "viewPdf": "មើល PDF"
-  }
-  ,
+  },
   "LawTable": {
     "loading": "កំពុងផ្ទុក...",
     "noLawsForQuery": "រកមិនឃើញច្បាប់សម្រាប់ \"{query}\"",
@@ -392,8 +388,7 @@
       "edit": "កែប្រែ",
       "delete": "លុប"
     }
-  }
-  ,
+  },
   "PublicationForm": {
     "categoryLabel": "ប្រភេទ",
     "categoryPlaceholder": "ជ្រើស ឬ វាយប្រភេទ...",
@@ -492,8 +487,7 @@
       "edit": "កែប្រែ",
       "delete": "លុប"
     }
-  }
-  ,
+  },
   "UsersPage": {
     "title": "គ្រប់គ្រងអ្នកប្រើប្រាស់",
     "loadError": "មិនអាចទាញយកអ្នកប្រើប្រាស់បានទេ។ សូមសាកល្បងម្ដងទៀត។",
@@ -513,9 +507,11 @@
     "roleLabel": "តួនាទី:",
     "blockedLabel": "ត្រូវបានចាក់ទោស:",
     "yes": "បាទ/ចាស",
-    "no": "ទេ"
-  }
-  ,
+    "no": "ទេ",
+    "delete": "បញ្ជាក់ការលុប",
+    "confirmDeleteText": "តើអ្នកពិតជាចង់លុបអ្នកប្រើប្រាស់នេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+    "confirmDelete": "លុបអ្នកប្រើប្រាស់"
+  },
   "UserForm": {
     "createTitle": "បង្កើតអ្នកប្រើប្រាស់",
     "createSubtitle": "បញ្ចូលពត៌មានអ្នកប្រើក្រោមនេះ។",
@@ -563,10 +559,10 @@
     "tooltips": {
       "edit": "កែប្រែ",
       "block": "ចាក់ទោស",
-      "unblock": "ដោះចាក់ទោស"
+      "unblock": "ដោះចាក់ទោស",
+      "delete": "លុប"
     }
-  }
-  ,
+  },
   "ProfilePage": {
     "profileManagement": "គ្រប់គ្រងប្រវត្តិ",
     "personalInformation": "ពត៌មានផ្ទាល់ខ្លួន",
@@ -601,7 +597,7 @@
     "unnamedUser": "ឈ្មោះមិនបានកំណត់",
     "notAvailable": "មិនមាន"
   },
-    "SocialPage": {
+  "SocialPage": {
     "title": "ការគ្រប់គ្រងមាតិកាសង្គម",
     "create": "បង្កើតប្រធានបទថ្មី",
     "edit": "កែប្រែប្រធានបទ",
@@ -812,7 +808,7 @@
       "desc": "គ្រប់គ្រងមាតិកាវីដេអូក្រាប់"
     }
   },
- "Sidebar": {
+  "Sidebar": {
     "menu": "បញ្ជីមុខងារ",
     "others": "ផ្សេងៗ",
     "dashboard": "ផ្ទាំងគ្រប់គ្រង",
@@ -851,10 +847,10 @@
     "userManagement": "ការគ្រប់គ្រងអ្នកប្រើប្រាស់"
   },
   "AuditLogPage": {
-    "title": "កំណត់ហេតុសវនកម្ម", 
+    "title": "កំណត់ហេតុសវនកម្ម",
     "exportCsv": "ទាញយកជា CSV",
-      "exportPdf": "ទាញយកជា PDF",
-      "exportOptions":"ជ្រើសរើសទ្រង់ទ្រាយនាំចេញ",
+    "exportPdf": "ទាញយកជា PDF",
+    "exportOptions": "ជ្រើសរើសទ្រង់ទ្រាយនាំចេញ",
     "card": {
       "title": "កំណត់ហេតុសវនកម្ម",
       "desc": "ស្វែងរក និងពិនិត្យសកម្មភាពអ្នកគ្រប់គ្រង"
@@ -868,19 +864,19 @@
     "empty": "រកមិនឃើញកំណត់ហេតុសវនកម្មទេ។",
     "total": "សរុប",
     "detailTitle": "ព័ត៌មានលម្អិតកំណត់ហេតុសវនកម្ម",
-   "filters": {
-  "q": "ស្វែងរក",
-  "action": "សកម្មភាព",
-  "actionAll": "សកម្មភាពទាំងអស់",
-  "entityType": "ប្រភេទធាតុ",
-  "entityId": "លេខសម្គាល់ធាតុ",
-  "userId": "អ្នកប្រើទាំងអស់",
-  "statusAll": "ស្ថានភាពទាំងអស់",
-  "statusSuccess": "ជោគជ័យ",
-  "statusFailure": "បរាជ័យ",
-  "from": "ចាប់ពីថ្ងៃ",
-  "to": "រហូតដល់ថ្ងៃ"
-},
+    "filters": {
+      "q": "ស្វែងរក",
+      "action": "សកម្មភាព",
+      "actionAll": "សកម្មភាពទាំងអស់",
+      "entityType": "ប្រភេទធាតុ",
+      "entityId": "លេខសម្គាល់ធាតុ",
+      "userId": "អ្នកប្រើទាំងអស់",
+      "statusAll": "ស្ថានភាពទាំងអស់",
+      "statusSuccess": "ជោគជ័យ",
+      "statusFailure": "បរាជ័យ",
+      "from": "ចាប់ពីថ្ងៃ",
+      "to": "រហូតដល់ថ្ងៃ"
+    },
     "headers": {
       "time": "ពេលវេលា",
       "action": "សកម្មភាព",
@@ -889,6 +885,30 @@
       "status": "ស្ថានភាព",
       "ip": "IP",
       "detail": "លម្អិត"
+    },
+    "detail": {
+      "action": "សកម្មភាព",
+      "status": "ស្ថានភាព",
+      "entity": "ធាតុ",
+      "user": "អ្នកប្រើ",
+      "time": "ពេលវេលា",
+      "ip": "IP",
+      "summary": "សង្ខេប",
+      "errorMessage": "សារកំហុស",
+      "changes": "ការប្រែប្រួល",
+      "before": "មុន",
+      "after": "ក្រោយ",
+      "field": "វាល",
+      "rawMetadata": "ទិន្នន័យ Metadata",
+      "copyJson": "ចម្លង JSON",
+      "showTechnical": "បង្ហាញព័ត៌មានបច្ចេកទេស",
+      "hideTechnical": "លាក់ព័ត៌មានបច្ចេកទេស",
+      "requestId": "លេខសម្គាល់សំណើ",
+      "correlationId": "លេខ Correlation",
+      "sessionId": "លេខ Session",
+      "userAgent": "User Agent",
+      "fieldsModified": "បានកែប្រែ {count} វាល",
+      "fieldsModifiedPlural": "បានកែប្រែ {count} វាល"
     }
   },
   "SocialTable": {
@@ -1078,12 +1098,55 @@
         "full": "ពេញទំហំ"
       }
     },
-    
     "addSection": "បន្ថែមផ្នែកថ្មី",
     "sectionTitle": "ចំណងជើងផ្នែក",
     "sectionContent": "មាតិកា",
     "sectionKey": "លេខកូដផ្នែក",
     "confirmDeleteSecTitle": "លុបផ្នែក?",
     "confirmDeleteSecText": "តើអ្នកប្រាកដងថាចង់លុបផ្នែកនេះទេ?"
+  },
+  "TelegramPage": {
+    "title": "ការកំណត់ Telegram",
+    "subtitle": "គ្រប់គ្រង Bot Token និង Channel ID របស់ Telegram សម្រាប់ការផ្ញើខ្លឹមសារទៅ Channel របស់អ្នក។",
+    "statusUnknown": "មិនស្គាល់",
+    "statusConnected": "បានភ្ជាប់",
+    "statusNotConfigured": "មិនទាន់កំណត់",
+    "statusError": "ការភ្ជាប់បរាជ័យ",
+    "lastSaved": "បានរក្សាទុកចុងក្រោយ",
+    "successSaved": "ការកំណត់ Telegram ត្រូវបានរក្សាទុកដោយជោគជ័យ!",
+    "setupGuideTitle": "របៀបដំឡើង Telegram Bot",
+    "setupStep1": "បើក Telegram ហើយស្វែងរក @BotFather",
+    "setupStep2": "ផ្ញើ /newbot ហើយធ្វើតាមការណែនាំ",
+    "setupStep3": "ចម្លង API Token ហើយបិទភ្ជាប់ខាងក្រោម",
+    "setupStep4": "បន្ថែម Bot ជា Admin នៅ Channel គោលដៅ",
+    "setupStep5": "ប្រើ @username ឬ ID លេខ Channel",
+    "credentialsTitle": "ព័ត៌មានសម្ងាត់ Bot",
+    "credentialsDesc": "ធ្វើបច្ចុប្បន្នភាព Bot Token ដែលបានទទួលពី @BotFather និង Channel ID ដែលសារនឹងត្រូវបានផ្ញើ។",
+    "botTokenLabel": "Bot Token",
+    "botTokenPlaceholder": "ឧ. 1234567890:ABCdefGHIjklMNOpqrsTUVwxyz",
+    "botTokenHelp": "ទទួល Token នេះពី @BotFather នៅ Telegram។",
+    "channelIdLabel": "Channel ID",
+    "channelIdPlaceholder": "ឧ. @my_channel ឬ -100123456789",
+    "channelIdHelp": "@username នៃ Channel សាធារណៈ ឬ ID លេខ Channel ឯកជន។ Bot ត្រូវតែជា Admin នៅទីនោះ។",
+    "showToken": "បង្ហាញ Token",
+    "hideToken": "លាក់ Token",
+    "testConnection": "សាកល្បងការភ្ជាប់",
+    "testing": "កំពុងសាកល្បង...",
+    "saveChanges": "រក្សាទុកការផ្លាស់ប្តូរ",
+    "saving": "កំពុងរក្សាទុក...",
+    "testSuccess": "បានភ្ជាប់ទៅ @{botName}។ Bot Token មានសុពលភាព!",
+    "testInvalidToken": "Bot Token មិនត្រឹមត្រូវ: {description}",
+    "testNetworkError": "មិនអាចភ្ជាប់ Telegram API បានទេ។ សូមពិនិត្យការតភ្ជាប់ Network របស់អ្នក។",
+    "testFillFields": "សូមបំពេញទាំង Bot Token និង Channel ID មុនពេលសាកល្បង។",
+    "errors": {
+      "loadFailed": "មិនអាចទាញយកការកំណត់ Telegram បានទេ។",
+      "saveFailed": "មិនអាចធ្វើបច្ចុប្បន្នភាពការកំណត់បានទេ។"
+    }
+  },
+  "UserDropdown": {
+    "editProfile": "កែប្រែប្រវត្តិរូប",
+    "accountSettings": "ការកំណត់គណនី",
+    "support": "ជំនួយ",
+    "signOut": "ចាកចេញ"
   }
 }
