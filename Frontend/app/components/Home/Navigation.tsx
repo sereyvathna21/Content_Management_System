@@ -535,29 +535,10 @@ const MENU_ITEMS = {
       descKey: "resourcesDropdown.publication.description",
     },
     {
+      href: "/Landing-page/Resources/Social",
       icon: <Shield className="w-6 h-6" />,
       titleKey: "resourcesDropdown.social.title",
       descKey: "resourcesDropdown.social.description",
-      subItems: [
-        {
-          href: "/Landing-page/Resources/Social?topic=governance",
-          icon: <Building2 className="w-5 h-5" />,
-          titleKey: "resourcesDropdown.social.governance.title",
-          descKey: "resourcesDropdown.social.governance.description",
-        },
-        {
-          href: "/Landing-page/Resources/Social?topic=assistance",
-          icon: <Heart className="w-5 h-5" />,
-          titleKey: "resourcesDropdown.social.assistance.title",
-          descKey: "resourcesDropdown.social.assistance.description",
-        },
-        {
-          href: "/Landing-page/Resources/Social?topic=security",
-          icon: <Shield className="w-5 h-5" />,
-          titleKey: "resourcesDropdown.social.security.title",
-          descKey: "resourcesDropdown.social.security.description",
-        },
-      ],
     },
   ] as MenuItem[],
 };

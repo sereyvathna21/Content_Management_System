@@ -149,7 +149,7 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
     e.preventDefault();
     
     const kmTrans = getTranslation(DEFAULT_LANGUAGE);
-    if (!category || !kmTrans.title.trim() || !kmTrans.excerpt.trim()) {
+    if (!category || !kmTrans.title.trim() || !kmTrans.contentHtml.trim()) {
       setError(t("errors.required", { language: langLabel(DEFAULT_LANGUAGE) }));
       return;
     }
@@ -177,12 +177,8 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
     }
 
     for (const tr of translations) {
-      if (tr.title.length > 150) {
-        setError(`Title for ${langLabel(tr.language)} cannot exceed 150 characters`);
-        return;
-      }
-      if (tr.excerpt.length > 300) {
-        setError(`Description for ${langLabel(tr.language)} cannot exceed 300 characters`);
+      if (tr.title.length > 300) {
+        setError(`Title for ${langLabel(tr.language)} cannot exceed 300 characters`);
         return;
       }
       if (tr.contentHtml.length > 20000) {
@@ -192,8 +188,8 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
 
       if (tr.language === DEFAULT_LANGUAGE) continue;
       const hasTitle = Boolean(tr.title.trim());
-      const hasExcerpt = Boolean(tr.excerpt.trim());
-      if (hasTitle !== hasExcerpt) {
+      const hasContent = Boolean(tr.contentHtml.trim());
+      if (hasTitle !== hasContent) {
         setError(t("errors.translationIncomplete", { language: langLabel(tr.language) }));
         return;
       }
@@ -232,12 +228,16 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
         imageAltKh: null,
         imageAltEn: null,
         featured: false,
-        translations: translations.filter(tr => tr.title.trim() || tr.excerpt.trim()).map(tr => ({
-          language: tr.language,
-          title: tr.title.trim(),
-          excerpt: tr.excerpt.trim(),
-          contentHtml: tr.contentHtml.trim(),
-        })),
+        translations: translations.filter(tr => tr.title.trim() || tr.contentHtml.trim()).map(tr => {
+          const stripped = tr.contentHtml.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ').trim();
+          const autoExcerpt = stripped.length > 300 ? stripped.substring(0, 297) + "..." : stripped;
+          return {
+            language: tr.language,
+            title: tr.title.trim(),
+            excerpt: autoExcerpt,
+            contentHtml: tr.contentHtml.trim(),
+          };
+        }),
       };
 
       const url = isEditing && initialNews?.id
@@ -392,12 +392,12 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
                 {t("titleLabel")} <span className="text-red-500">*</span>
               </label>
               <span className="text-[11px] text-gray-400">
-                {(activeTranslation.title || "").length}/150
+                {(activeTranslation.title || "").length}/300
               </span>
             </div>
             <input
               type="text"
-              maxLength={150}
+              maxLength={300}
               value={activeTranslation.title}
               onChange={(e) => updateTranslation(activeTab, { title: e.target.value })}
               className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors"
@@ -408,24 +408,6 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
             <div className="flex items-center justify-between mb-1">
               <label className="block text-sm font-medium text-gray-900">
                 {t("excerptLabel")} <span className="text-red-500">*</span>
-              </label>
-              <span className="text-[11px] text-gray-400">
-                {(activeTranslation.excerpt || "").length}/300
-              </span>
-            </div>
-            <textarea
-              value={activeTranslation.excerpt}
-              maxLength={300}
-              onChange={(e) => updateTranslation(activeTab, { excerpt: e.target.value })}
-              rows={2}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 shadow-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-colors resize-y"
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-gray-900">
-                {t("contentLabel")} (HTML)
               </label>
               <span className="text-[11px] text-gray-400">
                 {(activeTranslation.contentHtml || "").length}/20000

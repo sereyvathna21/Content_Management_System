@@ -118,28 +118,28 @@ export default async function ArticlePage({
             <header className="lg:col-span-2">
               <div className="relative rounded-xl overflow-hidden shadow-lg ">
                 <ImageSlideshow images={imageUrls} alt={displayedTitle} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
-                <div className="absolute bottom-6 left-6 right-6 text-white pointer-events-none">
+              </div>
+
+              <div className="mt-6 flex flex-col gap-4">
+                <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-3">
                     <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(article.category)}`}
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-white ${getCategoryColor(article.category)}`}
                     >
                       {t(`categories.${article.category.toLowerCase()}`)}
                     </span>
-                    <p className="text-xs text-gray-200">
+                    <p className="text-sm font-medium text-gray-500">
                       {new Date(article.publishAt || new Date()).toLocaleDateString(
                         locale === "kh" ? "km-KH" : locale || "en-US",
-                        { year: "numeric", month: "short", day: "numeric" },
+                        { year: "numeric", month: "long", day: "numeric" },
                       )}
                     </p>
                   </div>
-                  <h1 className="mt-3 text-3xl sm:text-5xl font-extrabold leading-tight">
-                    {displayedTitle}
-                  </h1>
+                  <ShareControls />
                 </div>
-              </div>
-              <div className="mb-4 items-center flex justify-end">
-                <ShareControls />
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-primary">
+                  {displayedTitle}
+                </h1>
               </div>
               <div className="mt-6 bg-white rounded-xl shadow-md p-4 prose prose-neutral max-w-none text-gray-800">
                 {displayedSubtitle ? (
@@ -147,7 +147,9 @@ export default async function ArticlePage({
                     {displayedSubtitle}
                   </h2>
                 ) : null}
-                <p className="mt-2 text-lg text-gray-700">{displayedExcerpt}</p>
+                {!displayedContent && displayedExcerpt ? (
+                  <p className="mt-2 text-lg text-gray-700">{displayedExcerpt}</p>
+                ) : null}
                 {displayedContent ? (
                   <div
                     className="mt-4"
@@ -174,18 +176,19 @@ export default async function ArticlePage({
                         <li key={a.id}>
                           <Link
                             href={`/Landing-page/News/${encodeURIComponent(a.slug || a.id)}`}
-                            className="flex items-center gap-3 py-2"
+                            className="flex items-center gap-4 py-3 group"
                           >
-                            <div className="relative w-28 h-16 shrink-0 rounded overflow-hidden">
+                            <div className="relative w-36 h-24 shrink-0 rounded-md overflow-hidden shadow-sm">
                               <Image
                                 src={relatedImg}
                                 alt={relatedTitle}
                                 fill
-                                className="object-cover"
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                unoptimized
                               />
                             </div>
-                            <div className="text-base">
-                              <div className="font-medium text-gray-800 line-clamp-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-base font-semibold text-gray-800 line-clamp-2 group-hover:text-primary transition-colors">
                                 {relatedTitle}
                               </div>
                               <div className="text-xs text-gray-500">

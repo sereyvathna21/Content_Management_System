@@ -5,7 +5,8 @@ import Header from "@/app/components/Home/Header";
 import Navigation from "@/app/components/Home/Navigation";
 import Footer from "@/app/components/Home/Footer";
 import LawCard from "@/app/components/Law/LawCard";
-import LawControlBar from "@/app/components/Law/LawControlBar";
+import ResourceControlBar from "@/app/components/Resource/ResourceControlBar";
+import EmptyState from "@/app/components/Resource/EmptyState";
 import HeroCover from "@/app/components/HeroCover";
 import Pagination from "@/app/components/Pagination";
 import dynamic from "next/dynamic";
@@ -137,7 +138,7 @@ export default function Laws() {
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
 
-  // Show loading skeleton while mounting
+  // Show minimum skeleton on initial mount, but keep HeroCover visible
   if (!mounted) {
     return (
       <>
@@ -146,15 +147,16 @@ export default function Laws() {
         <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
         <div className="min-h-screen bg-white">
           <div className="relative w-full">
-            <div
-              className="w-full h-64 bg-gray-100 animate-pulse"
-              style={{ animationDuration: "1.5s" }}
+            <HeroCover
+              image="/hero1.svg"
+              title={t("hero.title")}
+              subtitle={t("hero.subtitle")}
             />
           </div>
           <div className="min-h-screen bg-gray-50/50">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="max-w-6xl mx-auto">
-                <ListSkeleton count={9} />
+                <ListSkeleton count={pageSize} />
               </div>
             </div>
           </div>
@@ -185,15 +187,14 @@ export default function Laws() {
             <div className="max-w-6xl mx-auto">
               {/* Control Bar */}
               <div className="mb-6">
-                <LawControlBar
+                <ResourceControlBar
                   categories={categoryLabels}
                   selectedCategory={activeCategory}
                   searchQuery={searchQuery}
-                  selectedCount={0}
                   onCategoryChange={setActiveCategory}
                   onSearchChange={setSearchQuery}
-                  onExportList={noop}
-                  onExportSelected={noop}
+                  searchPlaceholderKey="LawsPage.control.searchPlaceholder"
+                  categoryPrefixKey="LawsPage.categoryLabels."
                 />
               </div>
 
@@ -231,17 +232,21 @@ export default function Laws() {
                     </div>
                   ))
                 )}
-                {!loading && !error && laws.length === 0 && (
-                  <div className="col-span-full text-center text-gray-500">
-                    {t("noResults")}
-                  </div>
-                )}
-                {error && (
-                  <div className="col-span-full text-center text-red-600">
-                    {error}
-                  </div>
-                )}
               </div>
+              
+              {!loading && !error && laws.length === 0 && (
+                <EmptyState
+                  onClear={() => {
+                    setSearchQuery("");
+                    setActiveCategory("All");
+                  }}
+                />
+              )}
+              {error && (
+                <div className="text-center text-red-600 mt-8">
+                  {error}
+                </div>
+              )}
               {/* Pagination */}
               <div className="mt-6 mb-4 flex justify-center sm:justify-end animate-fade-in-up">
                 <Pagination

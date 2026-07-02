@@ -156,6 +156,7 @@
       "viewAll": "See more"
     },
     "categories": {
+      "All": "All",
       "events": "Events",
       "programs": "Programs",
       "impact": "Impact",

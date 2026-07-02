@@ -8,8 +8,8 @@ import Navigation from "@/app/components/Home/Navigation";
 import NewsCard from "@/app/components/New/NewsCard";
 import Pagination from "@/app/components/Pagination";
 import VideoSection from "@/app/components/New/VideoSection";
-import SortControl from "@/app/components/SortControl";
-import SearchBar from "@/app/components/SearchBar";
+import ResourceControlBar from "@/app/components/Resource/ResourceControlBar";
+import EmptyState from "@/app/components/Resource/EmptyState";
 import HeroCover from "@/app/components/HeroCover";
 import ListSkeleton from "@/app/components/ListSkeleton";
 import { compareText } from "@/app/lib/searchUtils";
@@ -49,17 +49,26 @@ export default function News() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [currentNewsPage, setCurrentNewsPage] = useState(1);
   const [currentVideoPage, setCurrentVideoPage] = useState(1);
-  const [sortOption, setSortOption] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeCategory, setActiveCategory] = useState("All");
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Handle initial sort parameter after component mounts
+  // Derive categories dynamically from articles
+  const categoryLabels = React.useMemo(() => {
+    const allCats = Array.from(
+      new Set(
+        newsArticles
+          .map((a) => a.category)
+          .filter(Boolean)
+      )
+    );
+    return ["All", ...allCats];
+  }, [newsArticles]);
+
   useEffect(() => {
     setMounted(true);
-    const initialSort = searchParams?.get("sort") || "";
-    setSortOption(initialSort);
-  }, [searchParams]);
+  }, []);
 
   // Fetch news articles and videos from API
   useEffect(() => {
@@ -97,47 +106,22 @@ export default function News() {
     fetchData();
   }, [locale]);
 
-  // Reset news pagination when search or sort changes
+  // Reset news pagination when search or category changes
   useEffect(() => {
     setCurrentNewsPage(1);
-  }, [searchTerm, sortOption]);
-
-  const handleSortChange = (v: string) => {
-    setSortOption(v);
-    if (mounted) {
-      const params = new URLSearchParams(Array.from(searchParams.entries()));
-      if (v) params.set("sort", v);
-      else params.delete("sort");
-      const qs = params.toString();
-      router.replace(`${window.location.pathname}${qs ? `?${qs}` : ""}`);
-    }
-  };
+  }, [searchTerm, activeCategory]);
 
   const handleNewsPageChange = (page: number) => setCurrentNewsPage(page);
   const handleVideoPageChange = (page: number) => setCurrentVideoPage(page);
 
-  // support combined sort+direction values like 'date_desc' or 'title_asc'
-  const effectiveSort = sortOption || "date_desc";
-  const [sortKey, sortDir] = effectiveSort.split("_");
-
-  // Sort articles
+  // Sort articles (Always date_desc for News)
   const sortedArticles = [...newsArticles].sort((a, b) => {
-    if (sortKey === "date") {
-      const diff =
-        new Date(a.publishAt).getTime() - new Date(b.publishAt).getTime();
-      return sortDir === "asc" ? diff : -diff;
-    } else if (sortKey === "title") {
-      const cmp = compareText(a.title, b.title);
-      return sortDir === "asc" ? cmp : -cmp;
-    } else if (sortKey === "category") {
-      const cmp = compareText(a.category, b.category);
-      return sortDir === "asc" ? cmp : -cmp;
-    }
-    return 0;
+    return new Date(b.publishAt).getTime() - new Date(a.publishAt).getTime();
   });
 
-  // Filter by search term (title, excerpt, category)
+  // Filter by search term and category
   const filteredArticles = sortedArticles.filter((a) => {
+    if (activeCategory !== "All" && a.category !== activeCategory) return false;
     if (!searchTerm) return true;
     const q = searchTerm.trim().toLowerCase();
     return (
@@ -173,31 +157,17 @@ export default function News() {
         <div aria-hidden="true" className="h-24 sm:h-24 md:h-24 lg:h-28" />
         <div className="min-h-screen bg-white">
           <div className="relative w-full">
-            <div
-              className="w-full h-64 bg-gray-100 animate-pulse"
-              style={{ animationDuration: "1.5s" }}
+            <HeroCover
+              image="/news.svg"
+              title={t("hero.title")}
+              subtitle={t("hero.subtitle")}
             />
           </div>
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10">
-            {/* Toolbar skeleton */}
-            <div className="flex flex-col sm:flex-row items-end justify-between gap-6 sm:gap-4 mb-6 sm:mb-8 mt-6">
-              <div
-                className="w-40 h-9 bg-gray-100 rounded-lg animate-pulse"
-                style={{ animationDuration: "1.5s" }}
-              />
-              <div
-                className="w-64 h-9 bg-gray-100 rounded-lg animate-pulse"
-                style={{ animationDuration: "1.5s", animationDelay: "75ms" }}
-              />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-              <main className="lg:col-span-8 lg:col-start-3">
-                <ListSkeleton count={9} />
-                <div
-                  className="mt-10 bg-gray-100 rounded-2xl h-64 animate-pulse"
-                  style={{ animationDuration: "1.5s", animationDelay: "150ms" }}
-                />
-              </main>
+          <div className="min-h-screen bg-gray-50/50">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10 py-12">
+              <div className="max-w-6xl mx-auto">
+                <ListSkeleton count={newsPerPage} />
+              </div>
             </div>
           </div>
         </div>
@@ -221,58 +191,48 @@ export default function News() {
             subtitle={t("hero.subtitle")}
           />
         </div>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 md:px-10">
-          {/* Toolbar: sort + info */}
-          <div className="flex flex-col sm:flex-row items-end justify-between gap-6 sm:gap-4 mb-6 sm:mb-8">
-            <div className="w-full sm:w-auto">
-              <SortControl value={sortOption} onChange={handleSortChange} />
-            </div>
-            <div className="w-full sm:w-auto">
-              <SearchBar
-                value={searchTerm}
-                onChange={setSearchTerm}
-                placeholder={t("toolbar.searchPlaceholder")}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-            <main className="lg:col-span-8 lg:col-start-3">
-              <h2 className="font-bold text-primary text-lg sm:text-xl md:text-2xl mb-4 sm:mb-5 md:mb-6">
-                {t("latestNews")}
-              </h2>
-              <div className="flex items-center justify-center">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 w-full max-w-6xl">
-                  {articlesForDisplay.map((article) => (
-                    <NewsCard key={article.id} {...article} />
-                  ))}
-                </div>
+        <div className="min-h-screen bg-gray-50/50 animate-fade-in-up [animation-delay:0.9s] opacity-0">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="max-w-6xl mx-auto">
+              {/* Toolbar */}
+              <div className="mb-6">
+                <ResourceControlBar
+                  categories={categoryLabels}
+                  selectedCategory={activeCategory}
+                  searchQuery={searchTerm}
+                  onCategoryChange={setActiveCategory}
+                  onSearchChange={setSearchTerm}
+                  searchPlaceholderKey="NewsPage.toolbar.searchPlaceholder"
+                  categoryPrefixKey="NewsPage.categories."
+                />
               </div>
+
+              <div className="mb-4 sm:mb-6">
+                <h2 className="font-bold text-primary text-lg sm:text-xl md:text-2xl">
+                  {t("latestNews")}
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+                {articlesForDisplay.map((article, i) => (
+                  <div
+                    key={article.id}
+                    className="animate-slide-right-fade opacity-0"
+                    style={{ animationDelay: `${0.9 + i * 0.06}s` }}
+                  >
+                    <NewsCard {...article} />
+                  </div>
+                ))}
+              </div>
+              
               {/* No Results Found Message */}
               {articlesForDisplay.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="text-gray-400 mb-3">
-                    <svg
-                      className="w-16 h-16 mx-auto"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                  </div>
-                  <p className="text-gray-600 font-medium">
-                    {t("noResults.title")}
-                  </p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    {t("noResults.subtitle")}
-                  </p>
-                </div>
+                <EmptyState
+                  onClear={() => {
+                    setSearchTerm("");
+                    setActiveCategory("All");
+                  }}
+                />
               )}
 
               {/* News Pagination Controls */}
@@ -285,40 +245,40 @@ export default function News() {
                   />
                 </div>
               )}
-
-              {/* Video Section */}
-              <div className="mt-10 flex justify-center">
-                <div className="w-full max-w-5xl">
-                  <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100">
-                    <div className="text-center mb-4">
-                      <h3 className="font-bold text-primary text-lg sm:text-xl">
-                        {t("aside.title")}
-                      </h3>
-                      <p className="text-gray-600 text-sm sm:text-base mt-2">
-                        {t("aside.description")}
-                      </p>
-                    </div>
-
-                    <VideoSection
-                      videos={videos}
-                      videosPerPage={videosPerPage}
-                      currentPage={currentVideoPage}
-                    />
-
-                    {/* Video Pagination Controls */}
-                    {totalVideoPages > 1 && (
-                      <div className="flex justify-center mt-5">
-                        <Pagination
-                          currentPage={currentVideoPage}
-                          totalPages={totalVideoPages}
-                          onPageChange={handleVideoPageChange}
-                        />
-                      </div>
-                    )}
-                  </div>
+            </div>
+          </div>
+          
+          {/* Video Section Full Width Breakout */}
+          <div className="bg-white border-t border-gray-100 mt-12 py-16">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="max-w-6xl mx-auto">
+                <div className="text-center mb-10">
+                  <h3 className="font-bold text-primary text-2xl sm:text-3xl">
+                    {t("aside.title")}
+                  </h3>
+                  <p className="text-gray-500 text-sm sm:text-base mt-3 max-w-2xl mx-auto">
+                    {t("aside.description")}
+                  </p>
                 </div>
+
+                <VideoSection
+                  videos={videos}
+                  videosPerPage={videosPerPage}
+                  currentPage={currentVideoPage}
+                />
+
+                {/* Video Pagination Controls */}
+                {totalVideoPages > 1 && (
+                  <div className="flex justify-center mt-10">
+                    <Pagination
+                      currentPage={currentVideoPage}
+                      totalPages={totalVideoPages}
+                      onPageChange={handleVideoPageChange}
+                    />
+                  </div>
+                )}
               </div>
-            </main>
+            </div>
           </div>
         </div>
       </div>

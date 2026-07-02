@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Tooltip from "@/components/ui/Tooltip";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -32,6 +33,8 @@ type Props = {
 export default function UserTable({ loading, users, query, onOpen, onEdit, onBlockRequest, onDeleteRequest, onClear }: Props) {
   const t = useTranslations();
   const { can, canAny } = usePermission();
+  const { data: session } = useSession();
+  const currentEmail = (session as any)?.user?.email;
   const canEdit = can("users:update");
   const canBlock = can("users:block");
   const canDelete = can("users:delete");
@@ -106,10 +109,10 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                 {canEdit && (
                   <button type="button" onClick={() => onEdit(u)} className="px-3 py-1.5 text-xs font-medium text-sky-600 border border-sky-200 rounded-lg hover:bg-sky-50">{t("UserTable.tooltips.edit")}</button>
                 )}
-                {canBlock && (
+                {canBlock && u.role !== "SuperAdmin" && u.email !== currentEmail && (
                   <button type="button" onClick={() => onBlockRequest(u.id)} className={`px-3 py-1.5 text-xs font-medium border rounded-lg transition ${u.blocked ? "text-green-600 border-green-200 hover:bg-green-50" : "text-amber-600 border-amber-200 hover:bg-amber-50"}`}>{u.blocked ? t("UserTable.tooltips.unblock") : t("UserTable.tooltips.block")}</button>
                 )}
-                {canDelete && u.role !== "SuperAdmin" && (
+                {canDelete && u.role !== "SuperAdmin" && u.email !== currentEmail && (
                   <button type="button" onClick={() => onDeleteRequest(u.id)} className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50">{t("UserTable.tooltips.delete") || "Delete"}</button>
                 )}
               </div>
@@ -206,7 +209,7 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                             </Tooltip>
                           )}
 
-                          {canBlock && (
+                          {canBlock && u.role !== "SuperAdmin" && u.email !== currentEmail && (
                             <Tooltip label={u.blocked ? t("UserTable.tooltips.unblock") : t("UserTable.tooltips.block")}>
                               <button
                                 type="button"
@@ -230,7 +233,7 @@ export default function UserTable({ loading, users, query, onOpen, onEdit, onBlo
                             </Tooltip>
                           )}
 
-                          {canDelete && u.role !== "SuperAdmin" && (
+                          {canDelete && u.role !== "SuperAdmin" && u.email !== currentEmail && (
                             <Tooltip label={t("UserTable.tooltips.delete") || "Delete"}>
                               <button
                                 type="button"

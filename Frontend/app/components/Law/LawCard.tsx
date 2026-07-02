@@ -163,13 +163,27 @@ export default function LawCard({
           </div>
         </div>
 
-        <div className="w-full sm:w-auto flex justify-end">
+        <div className="w-full sm:w-auto flex justify-end gap-2">
+          {pdf && (
+            <a
+              href={pdf}
+              download
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center p-2.5 rounded-lg bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-900 border border-gray-100 transition-all transform hover:-translate-y-0.5 active:scale-95"
+              title={t("actions.download") || "Download"}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </a>
+          )}
           {onOpen ? (
             <button
               onClick={() =>
                 onOpen({ id, title, description, category, date, pdf })
               }
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow hover:shadow-md transform transition hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="flex-1 sm:flex-none sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow hover:shadow-md transform transition hover:-translate-y-0.5 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             >
               {t("actions.open")}
             </button>
@@ -178,12 +192,12 @@ export default function LawCard({
               href={pdf}
               target="_blank"
               rel="noreferrer"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow"
+              className="flex-1 sm:flex-none sm:w-auto inline-flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-lg bg-primary text-white text-sm sm:text-base font-semibold shadow hover:shadow-md transform transition hover:-translate-y-0.5 active:scale-95"
             >
               {t("actions.open")}
             </a>
           ) : (
-            <button className="w-full text-sm text-gray-400" disabled>
+            <button className="flex-1 sm:flex-none w-full text-sm text-gray-400 bg-gray-50 rounded-lg py-2.5" disabled>
               {t("actions.open")}
             </button>
           )}

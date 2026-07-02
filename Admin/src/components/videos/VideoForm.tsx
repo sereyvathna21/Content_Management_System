@@ -170,8 +170,8 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
       setError(t("errors.titleRequired"));
       return;
     }
-    if (title.length > 150) {
-      setError("Title cannot exceed 150 characters");
+    if (title.length > 300) {
+      setError("Title cannot exceed 300 characters");
       return;
     }
 
@@ -261,12 +261,12 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
                 {t("titleLabel")} <span className="text-red-500">*</span>
               </label>
               <span className="text-[11px] text-gray-400">
-                {(title || "").length}/150
+                {(title || "").length}/300
               </span>
             </div>
             <input
               type="text"
-              maxLength={150}
+              maxLength={300}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={t("titlePlaceholder")}

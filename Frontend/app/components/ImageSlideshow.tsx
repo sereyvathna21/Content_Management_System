@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -14,7 +14,7 @@ export default function ImageSlideshow({ images, alt }: ImageSlideshowProps) {
 
   if (!images || images.length === 0) {
     return (
-      <div className="relative w-full h-72 sm:h-96 bg-gray-100 flex items-center justify-center">
+      <div className="relative w-full aspect-video bg-gray-100 flex items-center justify-center">
         <span className="text-gray-400">No images available</span>
       </div>
     );
@@ -23,12 +23,23 @@ export default function ImageSlideshow({ images, alt }: ImageSlideshowProps) {
   // If there's only one image, just render it without arrows
   if (images.length === 1) {
     return (
-      <div className="relative w-full h-72 sm:h-96">
+      <div className="relative w-full aspect-video bg-gray-900 overflow-hidden">
+        {/* Blurred Background */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src={images[0]}
+            alt={`${alt} background`}
+            fill
+            className="object-cover blur-2xl opacity-60 scale-110"
+            unoptimized
+          />
+        </div>
+        {/* Main Foreground Image */}
         <Image
           src={images[0]}
           alt={alt}
           fill
-          className="object-cover"
+          className="object-contain z-10"
           unoptimized
         />
       </div>
@@ -47,8 +58,16 @@ export default function ImageSlideshow({ images, alt }: ImageSlideshowProps) {
     setCurrentIndex(index);
   };
 
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex === images.length - 1 ? 0 : prevIndex + 1));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
   return (
-    <div className="relative w-full h-72 sm:h-96 group overflow-hidden bg-black/5">
+    <div className="relative w-full aspect-video group overflow-hidden bg-gray-900">
       {/* Images */}
       {images.map((img, idx) => (
         <div
@@ -57,11 +76,23 @@ export default function ImageSlideshow({ images, alt }: ImageSlideshowProps) {
             idx === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
           }`}
         >
+          {/* Blurred Background */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src={img}
+              alt={`${alt} background ${idx + 1}`}
+              fill
+              className="object-cover blur-2xl opacity-60 scale-110"
+              priority={idx === 0}
+              unoptimized
+            />
+          </div>
+          {/* Main Foreground Image */}
           <Image
             src={img}
             alt={`${alt} ${idx + 1}`}
             fill
-            className="object-cover"
+            className="object-contain z-10 shadow-2xl"
             priority={idx === 0}
             unoptimized
           />

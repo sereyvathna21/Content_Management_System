@@ -51,7 +51,7 @@ export default function AllVideosPlayer({
 
         {/* Video Info */}
         <div className="mt-5 px-1">
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 break-words">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary break-words">
             {selected.title}
           </h1>
           {selected.date && (
@@ -69,9 +69,9 @@ export default function AllVideosPlayer({
 
       {/* Playlist / Recommended Videos */}
       <div className="w-full lg:w-[35%] xl:w-[30%] mt-8 lg:mt-0 shrink-0">
-        <div className="bg-white rounded-2xl border border-gray-100 flex flex-col h-full lg:h-[850px] overflow-hidden shadow-sm">
+        <div className="bg-white rounded-2xl border border-gray-100 flex flex-col h-fit lg:max-h-[850px] overflow-hidden shadow-sm">
           <div className="px-6 py-5 shrink-0 border-b border-gray-50 bg-gray-50/50">
-            <h2 className="text-lg font-bold text-gray-900 tracking-tight">
+            <h2 className="text-lg font-bold text-primary tracking-tight">
               {t("allVideos")}
             </h2>
           </div>
