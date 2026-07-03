@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useRef } from "react";
-import { Phone, Mail, MapPin, Facebook, Send } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { Phone, Mail, MapPin, Facebook, Send, Copy, CheckCircle2, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Header from "@/app/components/Home/Header";
 import Navigation from "@/app/components/Home/Navigation";
@@ -54,6 +54,36 @@ export default function Contact() {
     type: "success" | "error" | "warning" | null;
     message: string;
   }>({ type: null, message: "" });
+
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const [isSubjectOpen, setIsSubjectOpen] = useState(false);
+  const subjectDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (subjectDropdownRef.current && !subjectDropdownRef.current.contains(event.target as Node)) {
+        setIsSubjectOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const subjectOptions = [
+    { value: "General Inquiry", label: t("form.subjectGeneral") },
+    { value: "Technical Support", label: t("form.subjectTechnical") },
+    { value: "Feedback", label: t("form.subjectFeedback") },
+    { value: "Partnership", label: t("form.subjectPartnership") },
+    { value: "Other", label: t("form.subjectOther") }
+  ];
+  const selectedSubjectOption = subjectOptions.find(o => o.value === formData.subject);
 
   const validateField = (name: string, value: string): string => {
     switch (name) {
@@ -231,8 +261,20 @@ export default function Contact() {
                   {t("phone")}
                 </h3>
               </div>
-              <p className="text-gray-600">+855 061 701 111</p>
-              <p className="text-gray-600">+855 096 701 1111</p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between group/item">
+                  <a href="tel:+855061701111" className="text-gray-600 hover:text-primary transition-colors">+855 061 701 111</a>
+                  <button onClick={() => handleCopy("+855061701111", "phone1")} className="opacity-0 group-hover/item:opacity-100 p-1 text-gray-400 hover:text-primary transition-all" title="Copy to clipboard">
+                    {copiedField === "phone1" ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between group/item">
+                  <a href="tel:+8550967011111" className="text-gray-600 hover:text-primary transition-colors">+855 096 701 1111</a>
+                  <button onClick={() => handleCopy("+8550967011111", "phone2")} className="opacity-0 group-hover/item:opacity-100 p-1 text-gray-400 hover:text-primary transition-all" title="Copy to clipboard">
+                    {copiedField === "phone2" ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div
@@ -247,8 +289,20 @@ export default function Contact() {
                   {t("email")}
                 </h3>
               </div>
-              <p className="text-gray-600">info@nspc.gov.kh</p>
-              <p className="text-gray-600">contact@nspc.gov.kh</p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between group/item">
+                  <a href="mailto:info@nspc.gov.kh" className="text-gray-600 hover:text-primary transition-colors">info@nspc.gov.kh</a>
+                  <button onClick={() => handleCopy("info@nspc.gov.kh", "email1")} className="opacity-0 group-hover/item:opacity-100 p-1 text-gray-400 hover:text-primary transition-all" title="Copy to clipboard">
+                    {copiedField === "email1" ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+                <div className="flex items-center justify-between group/item">
+                  <a href="mailto:contact@nspc.gov.kh" className="text-gray-600 hover:text-primary transition-colors">contact@nspc.gov.kh</a>
+                  <button onClick={() => handleCopy("contact@nspc.gov.kh", "email2")} className="opacity-0 group-hover/item:opacity-100 p-1 text-gray-400 hover:text-primary transition-all" title="Copy to clipboard">
+                    {copiedField === "email2" ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div
@@ -290,7 +344,7 @@ export default function Contact() {
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
                   >
                     {t("form.name")} <span className="text-red-600">*</span>
                   </label>
@@ -301,7 +355,7 @@ export default function Contact() {
                     value={formData.name}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 focus:scale-[1.02] ${
+                    className={`w-full px-4 py-3 text-base sm:text-lg border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 focus:scale-[1.02] ${
                       errors.name && touched.name
                         ? "border-red-500 focus:ring-red-500 animate-shake"
                         : "border-gray-300"
@@ -320,7 +374,7 @@ export default function Contact() {
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
                   >
                     {t("form.email")} <span className="text-red-600">*</span>
                   </label>
@@ -331,7 +385,7 @@ export default function Contact() {
                     value={formData.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 focus:scale-[1.02] ${
+                    className={`w-full px-4 py-3 text-base sm:text-lg border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 focus:scale-[1.02] ${
                       errors.email && touched.email
                         ? "border-red-500 focus:ring-red-500 animate-shake"
                         : "border-gray-300"
@@ -350,24 +404,59 @@ export default function Contact() {
                 <div>
                   <label
                     htmlFor="subject"
-                    className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
                   >
                     {t("form.subject")} <span className="text-red-600">*</span>
                   </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 focus:scale-[1.02] ${
-                      errors.subject && touched.subject
-                        ? "border-red-500 focus:ring-red-500 animate-shake"
-                        : "border-gray-300"
-                    }`}
-                    placeholder={t("form.subjectPlaceholder")}
-                  />
+                  <div className="relative" ref={subjectDropdownRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsSubjectOpen(!isSubjectOpen)}
+                      onBlur={() => {
+                        setTouched((prev) => ({ ...prev, subject: true }));
+                        const error = validateField("subject", formData.subject);
+                        setErrors((prev) => ({ ...prev, subject: error }));
+                      }}
+                      className={`w-full px-4 py-3 text-base sm:text-lg border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 bg-white text-left flex justify-between items-center focus:scale-[1.02] ${
+                        errors.subject && touched.subject
+                          ? "border-red-500 focus:ring-red-500 animate-shake"
+                          : "border-gray-300"
+                      }`}
+                    >
+                      <span className={formData.subject ? "text-gray-900" : "text-gray-400"}>
+                        {selectedSubjectOption ? selectedSubjectOption.label : t("form.subjectPlaceholder")}
+                      </span>
+                      <ChevronDown className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${isSubjectOpen ? "rotate-180" : ""}`} />
+                    </button>
+                    
+                    {/* Dropdown Menu */}
+                    <div className={`absolute z-10 w-full mt-2 bg-white border border-gray-100 rounded-lg shadow-xl overflow-hidden transition-all duration-200 origin-top ${
+                      isSubjectOpen ? "opacity-100 scale-100 translate-y-0 visible" : "opacity-0 scale-95 -translate-y-2 invisible"
+                    }`}>
+                      <ul className="py-1">
+                        {subjectOptions.map((option) => (
+                          <li key={option.value}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFormData(prev => ({ ...prev, subject: option.value }));
+                                setIsSubjectOpen(false);
+                                if (touched.subject) {
+                                  const error = validateField("subject", option.value);
+                                  setErrors(prev => ({ ...prev, subject: error }));
+                                }
+                              }}
+                              className={`w-full text-left px-4 py-3 text-base sm:text-lg hover:bg-primary/5 hover:text-primary transition-colors ${
+                                formData.subject === option.value ? "bg-primary/10 text-primary font-medium" : "text-gray-700"
+                              }`}
+                            >
+                              {option.label}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
                   <div className="h-6 mt-1">
                     {errors.subject && touched.subject && (
                       <p className="text-sm text-red-600 animate-fade-in">
@@ -380,7 +469,7 @@ export default function Contact() {
                 <div>
                   <label
                     htmlFor="message"
-                    className="block text-xs sm:text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm sm:text-base font-medium text-gray-700 mb-2"
                   >
                     {t("form.message")} <span className="text-red-600">*</span>
                   </label>
@@ -392,7 +481,7 @@ export default function Contact() {
                     onBlur={handleBlur}
                     rows={5}
                     maxLength={1000}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 resize-none focus:scale-[1.02] ${
+                    className={`w-full px-4 py-3 text-base sm:text-lg border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all duration-300 resize-none focus:scale-[1.02] ${
                       errors.message && touched.message
                         ? "border-red-500 focus:ring-red-500 animate-shake"
                         : "border-gray-300"
@@ -478,9 +567,10 @@ export default function Contact() {
                   )}
                 </button>
                 <p className="text-[10px] sm:text-xs text-gray-400 text-center mt-4">
-                  This site is protected by reCAPTCHA and the Google{" "}
-                  <a href="https://policies.google.com/privacy" className="text-blue-500 hover:underline">Privacy Policy</a> and{" "}
-                  <a href="https://policies.google.com/terms" className="text-blue-500 hover:underline">Terms of Service</a> apply.
+                  {t("recaptchaDisclaimer")}{" "}
+                  <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">{t("privacyPolicy")}</a> {" & "} 
+                  <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer" className="text-blue-500 hover:underline">{t("termsOfService")}</a>{" "}
+                  {t("apply")}
                 </p>
               </form>
             </div>
@@ -500,13 +590,14 @@ export default function Contact() {
                   </h2>
                 </div>
                 <p className="text-gray-600 mb-2 sm:mb-3">
-                  Ministry of Economy and Finance of Cambodia
+                  {t("contactAddressTitle")}
                   <br />
-                  Phnom Penh, Cambodia
+                  {t("contactAddressCity")}
                 </p>
-                <p className="text-xs sm:text-sm text-gray-500">
-                  Office Hours: Monday - Friday, 8:00 AM - 5:00 PM
-                </p>
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <svg className="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  {t("officeHours")}
+                </div>
               </div>
               {/* Embedded Map */}
               <div className="bg-white rounded-lg shadow-md overflow-hidden h-64 sm:h-80 md:h-96 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
