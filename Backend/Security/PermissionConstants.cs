@@ -32,6 +32,12 @@ namespace Backend.Security
         public const string SocialUpdate = "social:update";
         public const string SocialDelete = "social:delete";
 
+        // About Us
+        public const string AboutRead = "about:read";
+        public const string AboutCreate = "about:create";
+        public const string AboutUpdate = "about:update";
+        public const string AboutDelete = "about:delete";
+
         // Media
         public const string MediaCreate = "media:create";
 

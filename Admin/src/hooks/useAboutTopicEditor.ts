@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { EditorSection, SectionData } from "@/types/social.types";
+import { EditorSection, SectionData } from "@/types/about.types";
 
 function getBackendUrl() {
     return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
 }
 
-export function useTopicEditor() {
+export function useAboutTopicEditor() {
     const params = useParams();
     const router = useRouter();
     const topicId = params.topicId as string;
@@ -45,10 +45,10 @@ export function useTopicEditor() {
         setLoading(true);
         try {
             const [topicRes, sectionsRes] = await Promise.all([
-                fetch(`${getBackendUrl()}/api/admin/social/topics/${topicId}`, {
+                fetch(`${getBackendUrl()}/api/admin/about/topics/${topicId}`, {
                     headers: { "Authorization": `Bearer ${session.accessToken}` }
                 }),
-                fetch(`${getBackendUrl()}/api/admin/social/topics/${topicId}/sections`, {
+                fetch(`${getBackendUrl()}/api/admin/about/topics/${topicId}/sections`, {
                     headers: { "Authorization": `Bearer ${session.accessToken}` }
                 })
             ]);
@@ -107,7 +107,7 @@ export function useTopicEditor() {
     async function handlePublish() {
         setConfirmModal(null);
         try {
-            const res = await fetch(`${getBackendUrl()}/api/admin/social/topics/${topicId}/publish`, {
+            const res = await fetch(`${getBackendUrl()}/api/admin/about/topics/${topicId}/publish`, {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${session?.accessToken}` }
             });
@@ -135,8 +135,8 @@ export function useTopicEditor() {
         try {
             const isEditing = !!data.id;
             const url = isEditing
-                ? `${getBackendUrl()}/api/admin/social/sections/${data.id}`
-                : `${getBackendUrl()}/api/admin/social/topics/${topicId}/sections`;
+                ? `${getBackendUrl()}/api/admin/about/sections/${data.id}`
+                : `${getBackendUrl()}/api/admin/about/topics/${topicId}/sections`;
 
             const payload = { ...data };
             if (!isEditing && activeSectionId?.startsWith('new-')) {
@@ -172,7 +172,7 @@ export function useTopicEditor() {
     async function handleDeleteSection(id: string) {
         setConfirmModal(null);
         try {
-            const res = await fetch(`${getBackendUrl()}/api/admin/social/sections/${id}`, {
+            const res = await fetch(`${getBackendUrl()}/api/admin/about/sections/${id}`, {
                 method: "DELETE",
                 headers: { "Authorization": `Bearer ${session?.accessToken}` }
             });
@@ -223,7 +223,7 @@ export function useTopicEditor() {
         setSections(buildTreeOrder(newSections));
 
         try {
-            const res = await fetch(`${getBackendUrl()}/api/admin/social/topics/${topicId}/sections/reorder`, {
+            const res = await fetch(`${getBackendUrl()}/api/admin/about/topics/${topicId}/sections/reorder`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${session?.accessToken}`,

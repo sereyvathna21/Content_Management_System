@@ -297,125 +297,155 @@ export default function NotificationDropdown() {
               {t("empty")}
             </li>
           ) : (
-            notifications.map((notification) => {
-              const isCreated = notification.kind === "created";
-              const isDeleted = notification.kind === "deleted";
-              
-              const localizedTitle = isCreated
-                ? t("titles.created")
-                : isDeleted
-                  ? t("titles.deleted")
-                  : t("titles.general");
-              const preferredTitle = pickLocalizedTitle(
-                notification.titleKm,
-                notification.titleEn,
-                locale,
-              );
-              const fallbackLegacyTitle = extractTitleFromLegacyMessage(notification.message);
-              const effectiveTitle = preferredTitle || fallbackLegacyTitle;
-              const localizedMessage = effectiveTitle
-                ? isCreated
-                  ? t("messages.createdWithTitle", { title: effectiveTitle })
-                  : isDeleted
-                    ? t("messages.deletedWithTitle", { title: effectiveTitle })
-                    : notification.message
-                : notification.message || (isCreated
-                  ? t("messages.created")
-                  : isDeleted
-                    ? t("messages.deleted")
-                    : "");
-              const localizedBadge = isCreated
-                ? t("badges.created")
-                : isDeleted
-                  ? t("badges.deleted")
-                  : t("badges.general");
+            Object.entries(
+              notifications.reduce((groups, notification) => {
+                const date = new Date(notification.createdAt);
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                let dateKey = "";
+                if (date.toDateString() === today.toDateString()) {
+                  dateKey = locale === "kh" ? "ថ្ងៃនេះ" : "Today";
+                } else if (date.toDateString() === yesterday.toDateString()) {
+                  dateKey = locale === "kh" ? "ម្សិលមិញ" : "Yesterday";
+                } else {
+                  dateKey = date.toLocaleDateString(locale === "kh" ? "km-KH" : "en-US", { month: "short", day: "numeric", year: "numeric" });
+                }
 
-              return (
-                <li
-                  key={notification.id}
-                  className="rounded-lg border-b border-gray-100 px-3 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
-                >
-                  <div className="flex items-start gap-3">
-                    <span
-                      className={`mt-0.5 flex h-9 w-9 items-center justify-center rounded-full ${
-                        isCreated
-                          ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300"
-                          : isDeleted
-                            ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300"
-                            : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
-                      }`}
-                    >
-                      {isCreated || isDeleted ? (
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          aria-hidden="true"
-                        >
-                          <path
-                            d="M14 3H8C6.89543 3 6 3.89543 6 5V19C6 20.1046 6.89543 21 8 21H16C17.1046 21 18 20.1046 18 19V7L14 3Z"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M14 3V7H18"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="M9 12H15"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                          />
-                          <path
-                            d="M9 16H13"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      ) : (
-                        "i"
-                      )}
-                    </span>
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-sm font-semibold text-gray-800 dark:text-white/90">
-                          {localizedTitle}
-                        </p>
-                        <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">
-                          {formatTime(notification.createdAt, locale)}
-                        </span>
-                      </div>
-
-                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                        {localizedMessage}
-                      </p>
-
-                      <span
-                        className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                          isCreated
-                            ? "bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-300"
-                            : isDeleted
-                              ? "bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300"
-                              : "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-                        }`}
-                      >
-                        {localizedBadge}
-                      </span>
-                    </div>
-                  </div>
+                if (!groups[dateKey]) groups[dateKey] = [];
+                groups[dateKey].push(notification);
+                return groups;
+              }, {} as Record<string, typeof notifications>)
+            ).map(([dateKey, groupedNotifications]) => (
+              <React.Fragment key={dateKey}>
+                <li className="bg-gray-100/70 dark:bg-gray-800 px-3 py-2 text-xs font-bold uppercase tracking-wider text-primary dark:text-blue-400 border-y first:border-t-0 border-gray-200 dark:border-gray-700 flex justify-between items-center shadow-sm">
+                  <span>{dateKey}</span>
+                  <span className="bg-primary text-white px-2 py-0.5 rounded-full text-[10px] font-semibold">
+                    {groupedNotifications.length}
+                  </span>
                 </li>
-              );
-            })
+                {groupedNotifications.map((notification) => {
+                  const isCreated = notification.kind === "created";
+                  const isDeleted = notification.kind === "deleted";
+                  
+                  const localizedTitle = isCreated
+                    ? t("titles.created")
+                    : isDeleted
+                      ? t("titles.deleted")
+                      : t("titles.general");
+                  const preferredTitle = pickLocalizedTitle(
+                    notification.titleKm,
+                    notification.titleEn,
+                    locale,
+                  );
+                  const fallbackLegacyTitle = extractTitleFromLegacyMessage(notification.message);
+                  const effectiveTitle = preferredTitle || fallbackLegacyTitle;
+                  const localizedMessage = effectiveTitle
+                    ? isCreated
+                      ? t("messages.createdWithTitle", { title: effectiveTitle })
+                      : isDeleted
+                        ? t("messages.deletedWithTitle", { title: effectiveTitle })
+                        : notification.message
+                    : notification.message || (isCreated
+                      ? t("messages.created")
+                      : isDeleted
+                        ? t("messages.deleted")
+                        : "");
+                  const localizedBadge = isCreated
+                    ? t("badges.created")
+                    : isDeleted
+                      ? t("badges.deleted")
+                      : t("badges.general");
+
+                  return (
+                    <li
+                      key={notification.id}
+                      className="rounded-lg border-b border-gray-100 px-3 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span
+                          className={`mt-0.5 flex h-9 w-9 items-center justify-center rounded-full ${
+                            isCreated
+                              ? "bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-300"
+                              : isDeleted
+                                ? "bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300"
+                                : "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300"
+                          }`}
+                        >
+                          {isCreated || isDeleted ? (
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M14 3H8C6.89543 3 6 3.89543 6 5V19C6 20.1046 6.89543 21 8 21H16C17.1046 21 18 20.1046 18 19V7L14 3Z"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M14 3V7H18"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M9 12H15"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                              />
+                              <path
+                                d="M9 16H13"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                              />
+                            </svg>
+                          ) : (
+                            "i"
+                          )}
+                        </span>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="truncate text-sm font-semibold text-gray-800 dark:text-white/90">
+                              {localizedTitle}
+                            </p>
+                            <span className="shrink-0 text-xs text-gray-500 dark:text-gray-400">
+                              {formatTime(notification.createdAt, locale)}
+                            </span>
+                          </div>
+
+                          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                            {localizedMessage}
+                          </p>
+
+                          <span
+                            className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                              isCreated
+                                ? "bg-green-50 text-green-700 dark:bg-green-500/15 dark:text-green-300"
+                                : isDeleted
+                                  ? "bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300"
+                                  : "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
+                            }`}
+                          >
+                            {localizedBadge}
+                          </span>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </React.Fragment>
+            ))
           )}
         </ul>
       </Dropdown>

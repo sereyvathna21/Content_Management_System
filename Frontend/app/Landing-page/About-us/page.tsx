@@ -5,198 +5,314 @@ import Navigation from "@/app/components/Home/Navigation";
 import Footer from "@/app/components/Home/Footer";
 import HeroCover from "@/app/components/HeroCover";
 import AboutContentRenderer from "@/app/components/About/AboutContentRenderer";
-import { aboutContent, AboutTopic } from "@/app/data/aboutContent";
-import { useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams, useRouter } from "next/navigation";
+import axios from "axios";
+import { ApiAboutSection, ApiAboutTopic, ApiAboutMedia, ApiTopicReference, AboutTopic, AboutContentSection } from "@/types/api";
 
-const mainTopics = [
-  aboutContent.national,
-  aboutContent.executive,
-  aboutContent.general,
-];
+// Helper to map API section to the format expected by the renderer
+function mapApiSections(apiSections: ApiAboutSection[] | undefined): AboutContentSection[] {
+  if (!apiSections || !Array.isArray(apiSections)) return [];
+  return apiSections.map((s) => {
+    let image: AboutContentSection["image"] = undefined;
+    let images: AboutContentSection["images"] = undefined;
 
-export default function AboutUs() {
+    const validMedia = Array.isArray(s.media)
+      ? s.media.filter(
+          (m: ApiAboutMedia) =>
+            typeof m?.publicUrl === "string" && m.publicUrl.trim().length > 0,
+        )
+      : [];
+
+    if (validMedia.length > 0) {
+      if (validMedia.length === 1) {
+        image = {
+          src: validMedia[0].publicUrl,
+          alt: validMedia[0].alt || "",
+          caption: validMedia[0].caption,
+          position: (validMedia[0].position || "top") as "top" | "bottom" | "left" | "right" | "full",
+          width: validMedia[0].width || 100,
+        };
+      } else {
+        images = validMedia.map((m: ApiAboutMedia) => ({
+          src: m.publicUrl,
+          alt: m.alt || "",
+          caption: m.caption,
+          width: m.width || 100,
+        }));
+      }
+    }
+
+    // Convert markdown/text to string array by splitting newlines
+    let parsedContent: string | string[] = s.content || "";
+    if (typeof s.content === "string" && s.content.includes("\n\n")) {
+      parsedContent = s.content
+        .split("\n\n")
+        .map((p: string) => p.trim())
+        .filter(Boolean);
+    }
+
+    return {
+      id: s.sectionKey || `section-${s.sortOrder}`,
+      title: s.title || "",
+      content: parsedContent,
+      image,
+      images,
+      subsections: mapApiSections(s.childSections),
+    };
+  });
+}
+
+// Helper to map API topic to the format expected by the renderer
+function mapApiTopicToRenderer(apiTopic: ApiAboutTopic): AboutTopic {
+  return {
+    id: apiTopic.slug,
+    title: apiTopic.title || "",
+    subtitle: apiTopic.subtitle || "",
+    // Fallbacks since category is not in the current public API
+    category:
+      apiTopic.slug === "governance"
+        ? "Governance"
+        : apiTopic.slug === "assistance"
+          ? "Assistance"
+          : "Security",
+    reference: apiTopic.reference || "",
+    referenceFilesKm: Array.isArray(apiTopic.referencesKm)
+      ? apiTopic.referencesKm.map((ref: ApiTopicReference) => ({
+          title: ref.title || "Document.pdf",
+          publicUrl: ref.publicUrl,
+          fileSizeBytes: ref.fileSizeBytes,
+        }))
+      : [],
+    referenceFilesEn: Array.isArray(apiTopic.referencesEn)
+      ? apiTopic.referencesEn.map((ref: ApiTopicReference) => ({
+          title: ref.title || "Document.pdf",
+          publicUrl: ref.publicUrl,
+          fileSizeBytes: ref.fileSizeBytes,
+        }))
+      : [],
+    sections: mapApiSections(apiTopic.sections),
+  };
+}
+
+export default function About() {
   const t = useTranslations("AboutUsPage");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const router = useRouter();
 
   // Read URL params for initial state
   const urlTopic = searchParams.get("topic");
-  const urlSubtopic = searchParams.get("subtopic");
 
-  const [selectedMainId, setSelectedMainId] = useState<string>(
-    urlTopic || (mainTopics[0]?.id ?? ""),
+  const [topicsSummary, setTopicsSummary] = useState<{slug: string, title: string}[]>([]);
+  const [selectedTopicId, setSelectedTopicId] = useState<string>(
+    urlTopic || "national",
   );
-  const [selectedSubId, setSelectedSubId] = useState<string | null>(
-    urlSubtopic || null,
-  );
+  const [topicData, setTopicData] = useState<AboutTopic | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [animating, setAnimating] = useState(false);
+  const [activeSubTabId, setActiveSubTabId] = useState<string | null>(null);
 
-  const mainTabsRef = useRef<HTMLDivElement>(null);
-  const subTabsRef = useRef<HTMLDivElement>(null);
   const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isInternalNavigation = useRef(false);
-  const prevUrlRef = useRef({ topic: urlTopic, subtopic: urlSubtopic });
+  const prevUrlRef = useRef({ topic: urlTopic });
 
-  const selectedMain = mainTopics.find((t) => t.id === selectedMainId) ?? null;
-  const selectedMainIndex = mainTopics.findIndex(
-    (t) => t.id === selectedMainId,
-  );
+  const fetchTopics = useCallback(async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const res = await axios.get(
+        `${apiUrl}/api/public/about/topics?lang=${locale}`,
+        { headers: { "Cache-Control": "no-cache" } },
+      );
+      setTopicsSummary(res.data);
+      if (res.data.length > 0 && !urlTopic) {
+        setSelectedTopicId(res.data[0].slug);
+      }
+    } catch (err) {
+      console.error("Failed to load topics", err);
+      setError("Failed to load topics");
+    }
+  }, [locale, urlTopic]);
 
-  // If the selected main topic has sub-topics, show the first one by default
-  const subTopics = useMemo(
-    () => selectedMain?.subTopics || [],
-    [selectedMain],
-  );
-  const effectiveSubId = selectedSubId || subTopics[0]?.id || null;
+  const fetchTopicData = useCallback(async () => {
+    if (!selectedTopicId) return;
+
+    setLoading(true);
+    setError("");
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+      const res = await axios.get(
+        `${apiUrl}/api/public/about/topics/${selectedTopicId}?lang=${locale}`,
+        { headers: { "Cache-Control": "no-cache" } },
+      );
+      setTopicData(mapApiTopicToRenderer(res.data));
+    } catch (err) {
+      console.error("Failed to load topic details", err);
+      setError("Failed to load topic details");
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedTopicId, locale]);
+
+  // 1. Fetch topics list
+  useEffect(() => {
+    fetchTopics();
+  }, [fetchTopics]);
+
+  // 2. Fetch specific topic content when selectedTopicId changes
+  useEffect(() => {
+    fetchTopicData();
+  }, [fetchTopicData]);
+
+  // 3. Set active sub tab when topic data is loaded
+  useEffect(() => {
+    if (topicData?.sections && topicData.sections.length > 1) {
+        setActiveSubTabId(topicData.sections[0].id);
+    } else {
+        setActiveSubTabId(null);
+    }
+  }, [topicData]);
+
+  useEffect(() => {
+    const refreshLiveData = () => {
+      fetchTopics();
+      fetchTopicData();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        refreshLiveData();
+      }
+    };
+
+    refreshLiveData();
+    window.addEventListener("focus", refreshLiveData);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    const intervalId = window.setInterval(refreshLiveData, 30000);
+
+    return () => {
+      window.removeEventListener("focus", refreshLiveData);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.clearInterval(intervalId);
+    };
+  }, [fetchTopics, fetchTopicData]);
 
   // Update state when URL params change (e.g., from navbar)
   useEffect(() => {
     // Check if URL actually changed
-    const urlChanged =
-      prevUrlRef.current.topic !== urlTopic ||
-      prevUrlRef.current.subtopic !== urlSubtopic;
+    const urlChanged = prevUrlRef.current.topic !== urlTopic;
 
     if (urlChanged && !isInternalNavigation.current) {
-      const newMainId = urlTopic || mainTopics[0]?.id || "";
-      const newSubId = urlSubtopic || null;
-
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedMainId(newMainId);
-      setSelectedSubId(newSubId);
+      const newTopicId =
+        urlTopic ||
+        (topicsSummary.length > 0 ? topicsSummary[0].slug : "national");
+      setSelectedTopicId(newTopicId);
     }
 
     // Reset the flag and update previous URL
     isInternalNavigation.current = false;
-    prevUrlRef.current = { topic: urlTopic, subtopic: urlSubtopic };
+    prevUrlRef.current = { topic: urlTopic };
+  }, [urlTopic, topicsSummary]);
+
+  // Cleanup animation timer on unmount
+  useEffect(() => {
     return () => {
       if (animationTimerRef.current) {
         clearTimeout(animationTimerRef.current);
       }
     };
-  }, [urlTopic, urlSubtopic]);
+  }, []);
 
-  const handleMainTabChange = useCallback(
+  const handleTabChange = useCallback(
     (id: string) => {
-      if (id === selectedMainId || animating) return;
+      if (id === selectedTopicId || animating) return;
       setAnimating(true);
       isInternalNavigation.current = true;
       if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
       animationTimerRef.current = setTimeout(() => {
-        setSelectedMainId(id);
-        setSelectedSubId(null); // Reset sub-tab when changing main tab
+        setSelectedTopicId(id);
         setAnimating(false);
 
         // Update URL after state change
         const params = new URLSearchParams();
         params.set("topic", id);
-        // Get the first subtopic of the new main topic if it has subtopics
-        const newMain = mainTopics.find((t) => t.id === id);
-        if (newMain?.subTopics && newMain.subTopics.length > 0) {
-          params.set("subtopic", newMain.subTopics[0].id);
-        }
         router.replace(`/Landing-page/About-us?${params.toString()}`, {
           scroll: false,
         });
       }, 220);
     },
-    [selectedMainId, animating, router],
+    [selectedTopicId, animating, router],
   );
 
-  const handleSubTabChange = useCallback(
-    (id: string) => {
-      if (id === effectiveSubId || animating) return;
-      setAnimating(true);
-      isInternalNavigation.current = true;
-      if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
-      animationTimerRef.current = setTimeout(() => {
-        setSelectedSubId(id);
-        setAnimating(false);
-
-        // Update URL after state change
-        const params = new URLSearchParams();
-        params.set("topic", selectedMainId);
-        params.set("subtopic", id);
-        router.replace(`/Landing-page/About-us?${params.toString()}`, {
-          scroll: false,
-        });
-      }, 220);
-    },
-    [effectiveSubId, animating, selectedMainId, router],
+  const selectedIndex = topicsSummary.findIndex(
+    (t) => t.slug === selectedTopicId,
   );
 
-  // Keyboard navigation for main tabs
-  const handleMainKeyDown = useCallback(
-    (e: React.KeyboardEvent, index: number) => {
-      if (e.key === "ArrowLeft" && index > 0) {
-        e.preventDefault();
-        handleMainTabChange(mainTopics[index - 1].id);
-        setTimeout(() => {
-          mainTabsRef.current
-            ?.querySelectorAll<HTMLButtonElement>("button")
-            [index - 1]?.focus();
-        }, 0);
-      } else if (e.key === "ArrowRight" && index < mainTopics.length - 1) {
-        e.preventDefault();
-        handleMainTabChange(mainTopics[index + 1].id);
-        setTimeout(() => {
-          mainTabsRef.current
-            ?.querySelectorAll<HTMLButtonElement>("button")
-            [index + 1]?.focus();
-        }, 0);
-      }
+  const getLocalizedText = useCallback(
+    (text?: string | { en: string; kh: string } | null): string => {
+      if (!text) return "";
+      if (typeof text === "string") return text;
+      return text[locale as "en" | "kh"] || text.en || "";
     },
-    [handleMainTabChange],
-  );
-
-  // Keyboard navigation for sub tabs
-  const handleSubKeyDown = useCallback(
-    (e: React.KeyboardEvent, index: number) => {
-      if (e.key === "ArrowLeft" && index > 0) {
-        e.preventDefault();
-        handleSubTabChange(subTopics[index - 1].id);
-        setTimeout(() => {
-          subTabsRef.current
-            ?.querySelectorAll<HTMLButtonElement>("button")
-            [index - 1]?.focus();
-        }, 0);
-      } else if (e.key === "ArrowRight" && index < subTopics.length - 1) {
-        e.preventDefault();
-        handleSubTabChange(subTopics[index + 1].id);
-        setTimeout(() => {
-          subTabsRef.current
-            ?.querySelectorAll<HTMLButtonElement>("button")
-            [index + 1]?.focus();
-        }, 0);
-      }
-    },
-    [handleSubTabChange, subTopics],
+    [locale]
   );
 
   const renderContent = useCallback(() => {
-    if (!selectedMain) return null;
-
-    // If main topic has sub-topics, use AboutContentRenderer for the selected sub-topic
-    if (selectedMain.hasSubTopics && subTopics.length > 0) {
-      const selectedSubTopic = subTopics.find((st) => st.id === effectiveSubId);
-      if (!selectedSubTopic) return null;
-
-      // Convert subtopic to topic format for AboutContentRenderer
-      const subTopicAsTopic: AboutTopic = {
-        id: selectedSubTopic.id,
-        title: selectedSubTopic.title,
-        subtitle: selectedSubTopic.subtitle,
-        sections: selectedSubTopic.sections,
-        reference: selectedSubTopic.reference || selectedMain.reference,
-      };
-
-      return <AboutContentRenderer topic={subTopicAsTopic} showHeader={true} />;
+    if (loading) {
+      return (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      );
     }
+    if (error) {
+      return (
+        <div className="flex justify-center items-center py-20 text-red-500">
+          {error}
+        </div>
+      );
+    }
+    if (!topicData) return null;
 
-    // Otherwise, render the main topic content
-    return <AboutContentRenderer topic={selectedMain} showHeader={true} />;
-  }, [selectedMain, subTopics, effectiveSubId]);
+    // Filter topicData to only include the active sub-section if we have multiple sections
+    const hasMultipleSections = topicData.sections.length > 1;
+    const filteredTopicData = hasMultipleSections && activeSubTabId
+      ? { ...topicData, sections: topicData.sections.filter(s => s.id === activeSubTabId) }
+      : topicData;
+
+    return (
+      <div>
+        {hasMultipleSections && (
+          <div className="relative mb-8 bg-gray-50/50 p-2 rounded-2xl border border-gray-100">
+            <div 
+              className="flex overflow-x-auto gap-2 sm:gap-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            >
+              {topicData.sections.map((section) => {
+                const isActive = activeSubTabId === section.id;
+                return (
+                  <button
+                    key={section.id}
+                    onClick={() => setActiveSubTabId(section.id)}
+                    className={`whitespace-nowrap px-5 py-2.5 sm:px-6 sm:py-3 rounded-full text-sm sm:text-base font-semibold transition-all duration-300 flex-shrink-0 ${
+                      isActive
+                        ? "bg-primary text-white shadow-lg shadow-primary/30"
+                        : "bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200 shadow-sm"
+                    }`}
+                  >
+                    {getLocalizedText(section.title) || section.id}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <AboutContentRenderer topic={filteredTopicData} showHeader={false} />
+      </div>
+    );
+  }, [topicData, loading, error, activeSubTabId, getLocalizedText]);
 
   return (
     <>
@@ -216,103 +332,64 @@ export default function AboutUs() {
         <div className="min-h-screen bg-gray-50/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="max-w-7xl mx-auto">
-              {/* ── Main Tab Bar ── */}
-              <div
-                ref={mainTabsRef}
-                role="tablist"
-                aria-label={t("aria.mainTabs")}
-                className="relative flex mt-4 bg-gray-100 rounded-2xl p-1 sm:p-1.5 shadow-inner mb-0 mx-auto max-w-4xl w-full"
-              >
-                {/* Sliding background pill */}
+              {/* ── Connected Tab Bar ── */}
+              {topicsSummary.length > 0 && (
+                <div className="relative flex mt-4 bg-gray-100 rounded-2xl p-1 sm:p-1.5 shadow-inner mb-0 mx-auto max-w-4xl w-full">
+                  {/* Sliding background pill */}
+                  {selectedIndex >= 0 && (
+                    <div
+                      className="absolute top-1.5 bottom-1.5 rounded-xl bg-white shadow-md transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                      style={{
+                        width: `calc(${100 / topicsSummary.length}% - ${topicsSummary.length > 2 ? "3px" : "4px"})`,
+                        left: `calc(${selectedIndex * (100 / topicsSummary.length)}% + ${topicsSummary.length > 2 ? "2px" : "4px"})`,
+                      }}
+                    />
+                  )}
+
+                  {topicsSummary.map((topic) => {
+                    const isActive = topic.slug === selectedTopicId;
+                    return (
+                      <button
+                        key={topic.slug}
+                        onClick={() => handleTabChange(topic.slug)}
+                        className={`
+                          relative z-10 flex-1 flex items-center justify-center gap-2
+                          py-2.5 px-3 sm:py-3 sm:px-4 md:py-3.5 md:px-5
+                          rounded-xl text-xs sm:text-sm md:text-base font-semibold
+                          transition-colors duration-300 ease-in-out select-none
+                          focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50
+                          ${
+                            isActive
+                              ? "text-primary"
+                              : "text-gray-500 hover:text-gray-700"
+                          }
+                        `}
+                      >
+                        <span>{topic.title || t("tabs.security")}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Connector line between tab bar and card */}
+              {topicsSummary.length > 0 && selectedIndex >= 0 && (
                 <div
-                  className="absolute top-1.5 bottom-1.5 rounded-xl bg-white shadow-md transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
+                  className="relative mx-auto transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] h-0 hidden sm:block"
                   style={{
-                    width: `calc(${100 / mainTopics.length}% - ${mainTopics.length > 2 ? "3px" : "4px"})`,
-                    left: `calc(${selectedMainIndex * (100 / mainTopics.length)}% + ${mainTopics.length > 2 ? "2px" : "4px"})`,
+                    width: `calc(${100 / topicsSummary.length}% - 24px)`,
+                    marginLeft: `calc(${selectedIndex * (100 / topicsSummary.length)}% + 12px)`,
                   }}
-                />
-
-                {mainTopics.map((topic, index) => {
-                  const isActive = topic.id === selectedMainId;
-                  return (
-                    <button
-                      key={topic.id}
-                      role="tab"
-                      aria-selected={isActive}
-                      aria-controls={`tabpanel-${topic.id}`}
-                      tabIndex={isActive ? 0 : -1}
-                      onClick={() => handleMainTabChange(topic.id)}
-                      onKeyDown={(e) => handleMainKeyDown(e, index)}
-                      className={`
-                        relative z-10 flex-1 flex items-center justify-center gap-2
-                        py-2.5 px-3 sm:py-3 sm:px-4 md:py-3.5 md:px-5
-                        rounded-xl text-xs sm:text-sm md:text-base font-semibold
-                        transition-colors duration-300 ease-in-out select-none
-                        focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50
-                        ${
-                          isActive
-                            ? "text-primary"
-                            : "text-gray-500 hover:text-gray-700"
-                        }
-                      `}
-                    >
-                      <span>{t(`tabs.${topic.id}`)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* ── Sub Tab Bar (if applicable) ── */}
-              {selectedMain?.hasSubTopics && subTopics.length > 0 && (
-                <>
-                  {/* Sub tabs */}
-                  <div
-                    ref={subTabsRef}
-                    role="tablist"
-                    aria-label={t("aria.subTabs")}
-                    className="flex justify-center gap-2 sm:gap-3 mt-5 mb-0 mx-auto max-w-3xl w-full px-4"
-                  >
-                    {subTopics.map((subTopic, index) => {
-                      const isActive = subTopic.id === effectiveSubId;
-                      return (
-                        <button
-                          key={subTopic.id}
-                          role="tab"
-                          aria-selected={isActive}
-                          aria-controls={`tabpanel-${subTopic.id}`}
-                          tabIndex={isActive ? 0 : -1}
-                          onClick={() => handleSubTabChange(subTopic.id)}
-                          onKeyDown={(e) => handleSubKeyDown(e, index)}
-                          className={`
-                            flex items-center justify-center gap-2
-                            py-2 px-4 sm:py-2.5 sm:px-5 md:py-3 md:px-6
-                            rounded-full text-[0.7rem] sm:text-xs md:text-sm font-semibold
-                            transition-all duration-300 ease-in-out select-none
-                            focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2
-                            ${
-                              isActive
-                                ? "bg-primary text-white shadow-md shadow-primary/30 scale-105"
-                                : "bg-white text-gray-700 border-2 border-gray-300 hover:border-primary/60 hover:text-primary hover:shadow-sm"
-                            }
-                          `}
-                        >
-                          <span>
-                            {t(`subTabs.${selectedMainId}.${subTopic.id}`)}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </>
+                >
+                  <div className="absolute left-1/2 -translate-x-1/2 top-0 w-px h-4 bg-gray-200" />
+                  <div className="absolute left-1/2 -translate-x-1/2 top-3 w-2 h-2 rounded-full bg-gray-300" />
+                </div>
               )}
 
               {/* ── Tab Content Card ── */}
               <div className="mt-5 relative overflow-hidden">
                 <div
-                  key={`${selectedMainId}-${effectiveSubId}`}
-                  role="tabpanel"
-                  id={`tabpanel-${effectiveSubId || selectedMainId}`}
-                  aria-labelledby={effectiveSubId || selectedMainId}
+                  key={selectedTopicId}
                   className={`
                     bg-white rounded-2xl shadow-lg border border-gray-100
                     transition-all

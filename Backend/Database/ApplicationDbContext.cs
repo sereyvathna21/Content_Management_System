@@ -36,6 +36,14 @@ namespace Backend.Data
         public DbSet<SocialAuditLog> SocialAuditLogs { get; set; }
         public DbSet<SocialReference> SocialReferences { get; set; }
 
+        // About Us Content
+        public DbSet<AboutTopic> AboutTopics { get; set; }
+        public DbSet<AboutSection> AboutSections { get; set; }
+        public DbSet<AboutSectionMedia> AboutSectionMedia { get; set; }
+        public DbSet<AboutRevision> AboutRevisions { get; set; }
+        public DbSet<AboutAuditLog> AboutAuditLogs { get; set; }
+        public DbSet<AboutReference> AboutReferences { get; set; }
+
         public DbSet<SystemSetting> SystemSettings { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -291,6 +299,91 @@ namespace Backend.Data
             });
 
             modelBuilder.Entity<SocialAuditLog>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.CreatedAt);
+                b.HasIndex(x => x.TopicId);
+                b.HasIndex(x => x.SectionId);
+                b.Property(x => x.Action).HasMaxLength(60).IsRequired();
+                b.Property(x => x.EntityType).HasMaxLength(60).IsRequired();
+                b.Property(x => x.EntityId).HasMaxLength(80);
+            });
+
+            modelBuilder.Entity<AboutTopic>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.Slug).IsUnique();
+                b.HasIndex(x => x.Status);
+                b.HasIndex(x => x.SortOrder);
+                b.Property(x => x.Slug).HasMaxLength(100).IsRequired();
+                b.Property(x => x.Status).HasConversion<string>().HasMaxLength(50);
+
+                b.HasMany(x => x.Sections)
+                    .WithOne(s => s.Topic)
+                    .HasForeignKey(s => s.TopicId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasMany(x => x.Revisions)
+                    .WithOne(r => r.Topic)
+                    .HasForeignKey(r => r.TopicId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                b.HasMany(x => x.References)
+                    .WithOne(r => r.Topic)
+                    .HasForeignKey(r => r.TopicId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AboutSection>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.SortOrder);
+                b.HasIndex(x => x.Status);
+                b.HasIndex(x => x.SectionKey);
+                b.Property(x => x.Status).HasConversion<string>().HasMaxLength(50);
+
+                b.HasOne(x => x.ParentSection)
+                    .WithMany(p => p.ChildSections)
+                    .HasForeignKey(x => x.ParentSectionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.HasMany(x => x.Media)
+                    .WithOne(m => m.Section)
+                    .HasForeignKey(m => m.SectionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AboutSectionMedia>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.SortOrder);
+                b.Property(x => x.Position).HasConversion<string>().HasMaxLength(50);
+
+                b.HasOne(x => x.Media)
+                    .WithMany()
+                    .HasForeignKey(x => x.MediaId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<AboutRevision>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.RevisionNumber);
+            });
+
+            modelBuilder.Entity<AboutReference>(b =>
+            {
+                b.HasKey(x => x.Id);
+                b.HasIndex(x => x.TopicId);
+                b.HasIndex(x => x.SortOrder);
+                b.HasIndex(x => new { x.TopicId, x.Language });
+                b.Property(x => x.FileName).HasMaxLength(260).IsRequired();
+                b.Property(x => x.PublicUrl).HasMaxLength(500).IsRequired();
+                b.Property(x => x.MimeType).HasMaxLength(100).IsRequired();
+                b.Property(x => x.Language).HasMaxLength(10).IsRequired();
+            });
+
+            modelBuilder.Entity<AboutAuditLog>(b =>
             {
                 b.HasKey(x => x.Id);
                 b.HasIndex(x => x.CreatedAt);

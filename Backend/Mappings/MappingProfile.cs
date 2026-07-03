@@ -32,6 +32,23 @@ namespace Backend.Mappings
 
             CreateMap<SocialReference, SocialReferenceDto>();
 
+            // About Content Mappings
+            CreateMap<AboutTopic, AboutTopicDto>();
+            CreateMap<AboutTopicCreateDto, AboutTopic>();
+            CreateMap<AboutTopicUpdateDto, AboutTopic>();
+
+            CreateMap<AboutSection, AboutSectionDto>();
+            CreateMap<AboutSectionCreateDto, AboutSection>();
+            CreateMap<AboutSectionUpdateDto, AboutSection>();
+
+            CreateMap<AboutSectionMedia, AboutSectionMediaDto>();
+            CreateMap<AboutSectionMediaCreateDto, AboutSectionMedia>();
+            CreateMap<AboutSectionMediaUpdateDto, AboutSectionMedia>();
+
+            CreateMap<AboutRevision, AboutRevisionDto>();
+
+            CreateMap<AboutReference, AboutReferenceDto>();
+
             // News and Videos
             CreateMap<NewsArticle, NewsArticleDto>();
             CreateMap<NewsArticleTranslation, NewsArticleTranslationDto>();

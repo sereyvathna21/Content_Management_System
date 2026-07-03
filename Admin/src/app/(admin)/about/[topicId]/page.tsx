@@ -2,17 +2,17 @@
 
 import React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import SectionTree from "@/components/social/SectionTree";
-import SectionForm from "@/components/social/SectionForm";
+import SectionTree from "@/components/about/SectionTree";
+import SectionForm from "@/components/about/SectionForm";
 import { Modal } from "@/components/ui/modal";
-import SectionMediaPanel from "@/components/social/SectionMediaPanel";
+import SectionMediaPanel from "@/components/about/SectionMediaPanel";
 
-import { useTopicEditor } from "../../../../hooks/useTopicEditor";
-import { SocialReference } from "@/types/social.types";
+import { useAboutTopicEditor } from "../../../../hooks/useAboutTopicEditor";
+import { AboutReference } from "@/types/about.types";
 
 export default function TopicEditorPage() {
     const locale = useLocale();
-    const t = useTranslations("SocialEditor");
+    const t = useTranslations("AboutEditor");
 
     const {
         topic,
@@ -38,12 +38,12 @@ export default function TopicEditorPage() {
         handleReorder,
         router,
         session
-    } = useTopicEditor();
+    } = useAboutTopicEditor();
 
     const [settingsOpen, setSettingsOpen] = React.useState(false);
     const [savingSettings, setSavingSettings] = React.useState(false);
     const [uploadingPdf, setUploadingPdf] = React.useState(false);
-    const [references, setReferences] = React.useState<SocialReference[]>([]);
+    const [references, setReferences] = React.useState<AboutReference[]>([]);
     const [loadingReferences, setLoadingReferences] = React.useState(false);
     const [draggingReferenceId, setDraggingReferenceId] = React.useState<string | null>(null);
     const [draggingReferenceLang, setDraggingReferenceLang] = React.useState<"km" | "en" | null>(null);
@@ -54,7 +54,7 @@ export default function TopicEditorPage() {
         if (!topic?.id || !session?.accessToken) return;
         setLoadingReferences(true);
         try {
-            const res = await fetch(`${backendUrl}/api/admin/social/topics/${topic.id}/references`, {
+            const res = await fetch(`${backendUrl}/api/admin/about/topics/${topic.id}/references`, {
                 headers: { "Authorization": `Bearer ${session.accessToken}` }
             });
             if (!res.ok) {
@@ -95,7 +95,7 @@ export default function TopicEditorPage() {
     async function handleSaveSettings() {
         setSavingSettings(true);
         try {
-            const res = await fetch(`${backendUrl}/api/admin/social/topics/${topic.id}`, {
+            const res = await fetch(`${backendUrl}/api/admin/about/topics/${topic.id}`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -137,7 +137,7 @@ export default function TopicEditorPage() {
                 formData.append("titleEn", file.name);
             }
 
-            const res = await fetch(`${backendUrl}/api/admin/social/topics/${topic.id}/references/upload`, {
+            const res = await fetch(`${backendUrl}/api/admin/about/topics/${topic.id}/references/upload`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${session?.accessToken}`
@@ -170,7 +170,7 @@ export default function TopicEditorPage() {
 
     async function handleDeleteReference(referenceId: string) {
         try {
-            const res = await fetch(`${backendUrl}/api/admin/social/references/${referenceId}`, {
+            const res = await fetch(`${backendUrl}/api/admin/about/references/${referenceId}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${session?.accessToken}`
@@ -183,10 +183,10 @@ export default function TopicEditorPage() {
         }
     }
 
-    async function persistReferenceOrder(next: SocialReference[]) {
+    async function persistReferenceOrder(next: AboutReference[]) {
         const payload = next.map((item, idx) => ({ referenceId: item.id, sortOrder: idx }));
         try {
-            const res = await fetch(`${backendUrl}/api/admin/social/topics/${topic.id}/references/reorder`, {
+            const res = await fetch(`${backendUrl}/api/admin/about/topics/${topic.id}/references/reorder`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${session?.accessToken}`,

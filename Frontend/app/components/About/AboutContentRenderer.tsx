@@ -1,142 +1,165 @@
-import React, { useCallback } from "react";
+import React from "react";
 import Image from "next/image";
-import { ContentSection, AboutTopic } from "../../data/aboutContent";
-import { useTranslations, useLocale } from "next-intl";
-import {
-  getLocalizedText,
-  getLocalizedContent,
-  isHtmlString,
-  renderWithLeadNumber,
-  isNumberedItem,
-  type LocaleType,
-  type BilingualContent,
-} from "../../lib/textRenderUtils";
+import { AboutTopic, AboutContentSection } from "@/types/api";
+import { useLocale, useTranslations } from "next-intl";
 
 interface SectionRendererProps {
-  section: ContentSection;
+  section: AboutContentSection;
   level?: number;
 }
 
-const SectionRenderer = React.memo(function SectionRenderer({
-  section,
-  level = 2,
-}: SectionRendererProps) {
-  const locale = useLocale() as LocaleType;
+function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
+  const locale = useLocale() as "en" | "kh";
 
-  const renderContent = useCallback(
-    (content: BilingualContent) => {
-      const localizedContent = getLocalizedContent(content, locale);
+  // Helper function to get localized text
+  const getLocalizedText = (
+    text?: string | { en: string; kh: string } | null,
+  ): string => {
+    if (!text) return "";
+    if (typeof text === "string") return text;
+    return text[locale] || text.en || "";
+  };
 
-      if (Array.isArray(localizedContent)) {
-        return localizedContent.map((paragraph, idx) => {
-          if (typeof paragraph === "string" && isHtmlString(paragraph)) {
-            return (
-              <p
-                key={idx}
-                className={`text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify ${
-                  locale === "kh" ? "indent-6" : ""
-                }`}
-                dangerouslySetInnerHTML={{ __html: paragraph }}
-              />
-            );
-          }
 
-          const numbered = isNumberedItem(paragraph as string);
 
-          return (
-            <p
-              key={idx}
-              className={`text-base sm:text-lg md:text-xl leading-relaxed mb-3 sm:mb-4 text-justify ${
-                locale === "kh" ? "indent-6" : ""
-              } ${numbered ? "font-bold text-gray-900" : "text-gray-700"}`}
-            >
-              {renderWithLeadNumber(paragraph as string, locale)}
-            </p>
-          );
-        });
+  // Helper function to get localized content
+  const getLocalizedContent = (
+    content:
+      | string
+      | string[]
+      | { en: string[]; kh: string[] }
+      | { en: string; kh: string }
+      | { en: string | string[]; kh: string | string[] },
+  ): string | string[] => {
+    if (typeof content === "string") return content;
+    if (Array.isArray(content)) return content;
+    if ("en" in content && "kh" in content) {
+      const localized = content[locale] || content.en;
+      return localized;
+    }
+    return content;
+  };
+
+  // Helper function to bold entire text if it has numbering pattern
+  const formatTextWithBoldNumbers = (text: string) => {
+    const patterns = [
+      // Khmer numbers with dots: ១. ១.១ ១.២.៣
+      /^([០១២៣៤៥៦៧៨៩]+(?:\.[០១២៣៤៥៦៧៨៩]+)*\.?\s)/,
+      // Khmer consonants: ក. ខ. គ. etc.
+      /^([កខគឃងចឆជឈញដឋឌឍណតថទធនបផពភមយរលវសហឡអ]\.?\s)/,
+      // English numbers with dots: 1. 1.1 1.2.3
+      /^(\d+(?:\.\d+)*\.?\s)/,
+      // Letters in parentheses: (a) (b) etc.
+      /^(\([a-z]\)\s)/,
+    ];
+
+    for (const pattern of patterns) {
+      const match = text.match(pattern);
+      if (match) {
+        return `<span class="font-bold">${text}</span>`;
       }
+    }
+    return text;
+  };
 
-      if (
-        typeof localizedContent === "string" &&
-        isHtmlString(localizedContent)
-      ) {
-        return (
-          <p
-            className={`text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify ${
-              locale === "kh" ? "indent-6" : ""
-            }`}
-            dangerouslySetInnerHTML={{ __html: localizedContent }}
-          />
-        );
-      }
+  const renderContent = (
+    content:
+      | string
+      | string[]
+      | { en: string[]; kh: string[] }
+      | { en: string; kh: string }
+      | { en: string | string[]; kh: string | string[] },
+  ) => {
+    const localizedContent = getLocalizedContent(content);
 
-      return (
+    if (Array.isArray(localizedContent)) {
+      return localizedContent.map((paragraph, idx) => (
         <p
-          className={`text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify ${
-            locale === "kh" ? "indent-6" : ""
-          }`}
-        >
-          {renderWithLeadNumber(localizedContent as string, locale)}
-        </p>
-      );
-    },
-    [locale],
-  );
+          key={idx}
+          className={`text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full ${locale === "kh" ? "indent-6" : ""}`}
+          dangerouslySetInnerHTML={{ __html: formatTextWithBoldNumbers(paragraph) }}
+        />
+      ));
+    }
+    return (
+      <p
+        className={`text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full ${locale === "kh" ? "indent-6" : ""}`}
+        dangerouslySetInnerHTML={{ __html: formatTextWithBoldNumbers(localizedContent as string) }}
+      />
+    );
+  };
 
-  const renderImage = useCallback(
-    (image: ContentSection["image"]) => {
-      if (!image) return null;
-      const src = typeof image.src === "string" ? image.src : image.src[locale];
+  const renderImage = (image: AboutContentSection["image"]) => {
+    if (!image) return null;
 
-      return (
-        <div className="relative overflow-hidden rounded-lg">
-          <Image
-            src={src}
-            alt={getLocalizedText(image.alt, locale)}
-            width={800}
-            height={500}
-            className="w-full h-auto object-cover"
-          />
-          {image.caption && (
-            <p className="text-xs sm:text-sm text-gray-600 italic mt-2 text-center">
-              {getLocalizedText(image.caption, locale)}
-            </p>
-          )}
-        </div>
-      );
-    },
-    [locale],
-  );
+    const widthClass =
+      image.width === 75
+        ? "max-w-3xl"
+        : image.width === 50
+          ? "max-w-2xl"
+          : "max-w-lg";
 
-  const renderImages = useCallback(
-    (images?: ContentSection["images"]) => {
-      if (!images || images.length === 0) return null;
+    const imageElement = (
+      <div
+        className={`relative overflow-hidden rounded-lg ${widthClass} mx-auto`}
+      >
+        <Image
+          src={getLocalizedText(image.src)}
+          alt={getLocalizedText(image.alt)}
+          width={800}
+          height={500}
+          className="w-full h-auto object-cover"
+          unoptimized
+        />
+        {image.caption && (
+          <p className="text-sm text-gray-600 italic mt-2 text-center">
+            {getLocalizedText(image.caption)}
+          </p>
+        )}
+      </div>
+    );
 
-      return (
-        <div
-          className={`grid ${images.length === 1 ? "grid-cols-1" : images.length === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3"} gap-4 my-6`}
-        >
-          {images.map((img, idx) => (
-            <div key={idx} className="relative overflow-hidden rounded-lg">
+    return imageElement;
+  };
+
+  const renderImages = (images?: AboutContentSection["images"]) => {
+    if (!images || images.length === 0) return null;
+
+    return (
+      <div
+        className={`grid ${images.length === 1 ? "grid-cols-1" : images.length === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3"} gap-4 my-6`}
+      >
+        {images.map((img, idx) => {
+          const widthClass =
+            img.width === 75
+              ? "max-w-3xl"
+              : img.width === 50
+                ? "max-w-2xl"
+                : "max-w-lg";
+          return (
+            <div
+              key={idx}
+              className={`relative overflow-hidden rounded-lg ${widthClass}`}
+            >
               <Image
                 src={img.src}
-                alt={getLocalizedText(img.alt, locale)}
+                alt={getLocalizedText(img.alt)}
                 width={400}
                 height={300}
                 className="w-full h-auto object-cover"
+                unoptimized
               />
               {img.caption && (
                 <p className="text-xs sm:text-sm text-gray-600 italic mt-2 text-center">
-                  {getLocalizedText(img.caption, locale)}
+                  {getLocalizedText(img.caption)}
                 </p>
               )}
             </div>
-          ))}
-        </div>
-      );
-    },
-    [locale],
-  );
+          );
+        })}
+      </div>
+    );
+  };
 
   const getHeadingClass = (lvl: number) => {
     switch (lvl) {
@@ -179,7 +202,7 @@ const SectionRenderer = React.memo(function SectionRenderer({
       {section.title && (
         <>
           <HeadingTag className={getHeadingClass(level)}>
-            {getLocalizedText(section.title, locale)}
+            {getLocalizedText(section.title)}
           </HeadingTag>
           {level === 2 && (
             <div className="h-1 w-16 sm:w-24 bg-primary mb-4 sm:mb-6"></div>
@@ -199,111 +222,121 @@ const SectionRenderer = React.memo(function SectionRenderer({
       {/* Left/Right layout */}
       {hasImage && (imagePosition === "left" || imagePosition === "right") ? (
         <div
-          className={`flex flex-col ${imagePosition === "right" ? "md:flex-row" : "md:flex-row-reverse"} gap-6 items-start`}
+          className={`flex flex-col ${imagePosition === "left" ? "md:flex-row" : "md:flex-row-reverse"} gap-6 mb-6`}
         >
-          <div className="md:w-1/2">{renderContent(section.content)}</div>
-          <div className="md:w-1/2">{renderImage(section.image)}</div>
+          <div className="md:w-1/2 flex-shrink-0">
+            {renderImage(section.image)}
+          </div>
+          <div className="flex-1">
+            {section.content && renderContent(section.content)}
+          </div>
         </div>
       ) : (
-        // Default: content without side-by-side image
-        <div>{renderContent(section.content)}</div>
+        <>{section.content && renderContent(section.content)}</>
       )}
-
-      {/* Multiple images */}
-      {hasMultipleImages && renderImages(section.images)}
 
       {/* Image at bottom */}
       {hasImage && imagePosition === "bottom" && (
         <div className="mt-6">{renderImage(section.image)}</div>
       )}
 
-      {/* Render subsections */}
-      {section.subsections &&
-        section.subsections.map((subsection) => (
-          <SectionRenderer
-            key={subsection.id}
-            section={subsection}
-            level={level + 1}
-          />
-        ))}
+      {/* Multiple images gallery */}
+      {hasMultipleImages && renderImages(section.images)}
+
+      {section.subsections && section.subsections.length > 0 && (
+        <div
+          className={
+            level >= 4 ? "ml-3 sm:ml-6 mt-4 sm:mt-6 space-y-3 sm:space-y-5" : ""
+          }
+        >
+          {section.subsections.map((subsection) => (
+            <SectionRenderer
+              key={subsection.id}
+              section={subsection}
+              level={level + 1}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
-});
+}
 
 interface AboutContentRendererProps {
   topic: AboutTopic;
   showHeader?: boolean;
 }
 
-const AboutContentRenderer = React.memo(function AboutContentRenderer({
+export default function AboutContentRenderer({
   topic,
   showHeader = true,
 }: AboutContentRendererProps) {
-  const t = useTranslations("SocialPage");
-  const locale = useLocale() as LocaleType;
+  const t = useTranslations("AboutPage");
+  const locale = useLocale() as "en" | "kh";
+
+  // Helper function to get localized text
+  const getLocalizedText = (
+    text?: string | { en: string; kh: string } | null,
+  ): string => {
+    if (!text) return "";
+    if (typeof text === "string") return text;
+    return text[locale] || text.en || "";
+  };
+
+  const renderReferenceFiles = (files?: AboutTopic["referenceFilesKm"]) => {
+    if (!files || files.length === 0) return null;
+    return (
+      <div className="flex flex-col gap-2 mt-2">
+        {files.map((file, idx) => (
+          <a
+            key={`${file.publicUrl}-${idx}`}
+            href={file.publicUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-primary hover:underline hover:text-primary/80 inline-flex items-center gap-1"
+          >
+            {file.title}
+          </a>
+        ))}
+      </div>
+    );
+  };
+
+  const hasReferences =
+    (topic.referenceFilesKm?.length ?? 0) > 0 ||
+    (topic.referenceFilesEn?.length ?? 0) > 0;
 
   return (
-    <div>
+    <>
       {showHeader && (
         <div className="mb-6 sm:mb-8 lg:mb-10">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 sm:mb-3 lg:mb-4">
-            {topic.title[locale] || topic.title.en}
+          <span className="inline-block text-xs sm:text-xs font-bold uppercase tracking-widest text-primary/70 mb-2">
+            {getLocalizedText(topic.category)}
+          </span>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-2 sm:mb-3 lg:mb-4">
+            {getLocalizedText(topic.title)}
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed">
-            {topic.subtitle[locale] || topic.subtitle.en}
+            {getLocalizedText(topic.subtitle)}
           </p>
           <div className="h-1 w-16 sm:w-20 lg:w-32 bg-primary mt-3 sm:mt-4 lg:mt-6"></div>
         </div>
       )}
 
       {topic.sections.map((section) => (
-        <SectionRenderer key={section.id} section={section} level={2} />
+        <SectionRenderer key={section.id} section={section} />
       ))}
 
-      {topic.subTopics &&
-        topic.subTopics.map((sub) => (
-          <div key={sub.id} className="mt-6 sm:mt-8 lg:mt-10">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2 sm:mb-3 lg:mb-4">
-              {sub.title[locale] || sub.title.en}
-            </h2>
-            <p className="text-base sm:text-lg md:text-xl text-gray-600 leading-relaxed">
-              {sub.subtitle[locale] || sub.subtitle.en}
-            </p>
-            <div className="h-1 w-12 sm:w-16 lg:w-24 bg-primary mt-3 sm:mt-4 lg:mt-6"></div>
-
-            {sub.sections.map((section) => (
-              <SectionRenderer key={section.id} section={section} level={3} />
-            ))}
-          </div>
-        ))}
-
-      <div className="mt-6 sm:mt-8 lg:mt-12 pt-3 sm:pt-4 lg:pt-6 border-t border-gray-200">
-        <p className="text-xs sm:text-sm md:text-base text-gray-600 italic">
-          {t("reference")}:{" "}
-        </p>
-        {topic.reference &&
-          (() => {
-            const ref = topic.reference[locale] || topic.reference.en;
-            if (Array.isArray(ref)) {
-              return (
-                <ul className="mt-2 list-disc list-inside text-xs sm:text-sm md:text-base text-gray-600">
-                  {ref.map((r, i) => (
-                    <li key={i} className="font-bold text-primary">
-                      {r}
-                    </li>
-                  ))}
-                </ul>
-              );
-            }
-            return (
-              <p className="mt-2 text-xs sm:text-sm md:text-base font-bold text-primary">
-                {ref}
-              </p>
-            );
-          })()}
-      </div>
-    </div>
+      {hasReferences && (
+        <div className="mt-8 sm:mt-12 pt-4 sm:pt-6 border-t border-gray-200">
+          <p className="text-xs sm:text-sm md:text-base text-gray-600 italic">
+            {t("reference")}
+          </p>
+          {renderReferenceFiles(
+            locale === "kh" ? topic.referenceFilesKm : topic.referenceFilesEn,
+          )}
+        </div>
+      )}
+    </>
   );
-});
-
-export default AboutContentRenderer;
+}

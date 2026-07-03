@@ -56,7 +56,7 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
     for (const pattern of patterns) {
       const match = text.match(pattern);
       if (match) {
-        return <span className="font-bold">{text}</span>;
+        return `<span class="font-bold">${text}</span>`;
       }
     }
     return text;
@@ -77,17 +77,15 @@ function SectionRenderer({ section, level = 2 }: SectionRendererProps) {
         <p
           key={idx}
           className={`text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full ${locale === "kh" ? "indent-6" : ""}`}
-        >
-          {formatTextWithBoldNumbers(paragraph)}
-        </p>
+          dangerouslySetInnerHTML={{ __html: formatTextWithBoldNumbers(paragraph) }}
+        />
       ));
     }
     return (
       <p
         className={`text-base sm:text-lg md:text-xl text-gray-700 leading-relaxed mb-3 sm:mb-4 text-justify-full ${locale === "kh" ? "indent-6" : ""}`}
-      >
-        {formatTextWithBoldNumbers(localizedContent)}
-      </p>
+        dangerouslySetInnerHTML={{ __html: formatTextWithBoldNumbers(localizedContent as string) }}
+      />
     );
   };
 

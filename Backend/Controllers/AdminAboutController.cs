@@ -19,8 +19,8 @@ using System.Threading.Tasks;
 namespace Backend.Controllers
 {
     [ApiController]
-    [Route("api/admin/social")]
-    public class AdminSocialController : ControllerBase
+    [Route("api/admin/about")]
+    public class AdminAboutController : ControllerBase
     {
         private readonly ApplicationDbContext _db;
         private readonly IMapper _mapper;
@@ -29,7 +29,7 @@ namespace Backend.Controllers
         private readonly IAuditLogService _audit;
         private readonly INotificationService _notificationService;
 
-        public AdminSocialController(ApplicationDbContext db, IMapper mapper, IWebHostEnvironment env, IConfiguration config, IAuditLogService audit, INotificationService notificationService)
+        public AdminAboutController(ApplicationDbContext db, IMapper mapper, IWebHostEnvironment env, IConfiguration config, IAuditLogService audit, INotificationService notificationService)
         {
             _db = db;
             _mapper = mapper;
@@ -50,7 +50,7 @@ namespace Backend.Controllers
 
         private void AddAudit(string action, string entityType, Guid? entityId, Guid? topicId = null, Guid? sectionId = null, object? metadata = null)
         {
-            _db.SocialAuditLogs.Add(new SocialAuditLog
+            _db.AboutAuditLogs.Add(new AboutAuditLog
             {
                 Action = action,
                 EntityType = entityType,
@@ -99,7 +99,7 @@ namespace Backend.Controllers
         #region Topics CRUD
 
         [HttpGet("topics")]
-        [HasPermission(PermissionConstants.SocialRead)]
+        [HasPermission(PermissionConstants.AboutRead)]
         public async Task<IActionResult> GetTopics(
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10,
@@ -108,7 +108,7 @@ namespace Backend.Controllers
             page = Math.Max(1, page);
             pageSize = Math.Max(1, pageSize);
 
-            var query = _db.SocialTopics.AsQueryable();
+            var query = _db.AboutTopics.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(q))
             {
@@ -133,71 +133,71 @@ namespace Backend.Controllers
                 total,
                 page,
                 pageSize,
-                items = _mapper.Map<List<SocialTopicDto>>(topics)
+                items = _mapper.Map<List<AboutTopicDto>>(topics)
             });
         }
 
         [HttpGet("topics/{topicId}")]
-        [HasPermission(PermissionConstants.SocialRead)]
+        [HasPermission(PermissionConstants.AboutRead)]
         public async Task<IActionResult> GetTopic(Guid topicId)
         {
-            var topic = await _db.SocialTopics.FindAsync(topicId);
+            var topic = await _db.AboutTopics.FindAsync(topicId);
             if (topic == null) return NotFound();
-            return Ok(_mapper.Map<SocialTopicDto>(topic));
+            return Ok(_mapper.Map<AboutTopicDto>(topic));
         }
 
         [HttpPost("topics")]
-        [HasPermission(PermissionConstants.SocialCreate)]
-        public async Task<IActionResult> CreateTopic([FromBody] SocialTopicCreateDto dto)
+        [HasPermission(PermissionConstants.AboutCreate)]
+        public async Task<IActionResult> CreateTopic([FromBody] AboutTopicCreateDto dto)
         {
-            if (await _db.SocialTopics.AnyAsync(t => t.Slug == dto.Slug))
+            if (await _db.AboutTopics.AnyAsync(t => t.Slug == dto.Slug))
                 return BadRequest(new { message = "Slug already exists." });
 
-            var topic = _mapper.Map<SocialTopic>(dto);
+            var topic = _mapper.Map<AboutTopic>(dto);
             topic.Status = TopicStatus.Draft;
             topic.UpdatedAt = DateTime.UtcNow;
             topic.UpdatedByUserId = GetCurrentUserId();
 
-            _db.SocialTopics.Add(topic);
-            AddAudit("CreateTopic", "SocialTopic", topic.Id, topic.Id, null, new { topic.Slug, topic.TitleKm, topic.TitleEn });
+            _db.AboutTopics.Add(topic);
+            AddAudit("CreateTopic", "AboutTopic", topic.Id, topic.Id, null, new { topic.Slug, topic.TitleKm, topic.TitleEn });
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:topic:create", "SocialTopic", topic.Id, "Created social topic", new { topic.Slug, topic.TitleKm, topic.TitleEn });
+            await WriteAuditAsync("about:topic:create", "AboutTopic", topic.Id, "Created about topic", new { topic.Slug, topic.TitleKm, topic.TitleEn });
 
             var effectiveTitle = !string.IsNullOrWhiteSpace(topic.TitleKm) ? topic.TitleKm : topic.TitleEn;
-            await _notificationService.SendGeneralNotificationAsync(topic.TitleKm ?? "", topic.TitleEn ?? "", $"Social Topic \"{effectiveTitle}\" was created.", "created");
+            await _notificationService.SendGeneralNotificationAsync(topic.TitleKm ?? "", topic.TitleEn ?? "", $"About Topic \"{effectiveTitle}\" was created.", "created");
 
-            return CreatedAtAction(nameof(GetTopic), new { topicId = topic.Id }, _mapper.Map<SocialTopicDto>(topic));
+            return CreatedAtAction(nameof(GetTopic), new { topicId = topic.Id }, _mapper.Map<AboutTopicDto>(topic));
         }
 
         [HttpPut("topics/{topicId}")]
-        [HasPermission(PermissionConstants.SocialUpdate)]
-        public async Task<IActionResult> UpdateTopic(Guid topicId, [FromBody] SocialTopicUpdateDto dto)
+        [HasPermission(PermissionConstants.AboutUpdate)]
+        public async Task<IActionResult> UpdateTopic(Guid topicId, [FromBody] AboutTopicUpdateDto dto)
         {
-            var topic = await _db.SocialTopics.FindAsync(topicId);
+            var topic = await _db.AboutTopics.FindAsync(topicId);
             if (topic == null) return NotFound();
 
             _mapper.Map(dto, topic);
             topic.UpdatedAt = DateTime.UtcNow;
             topic.UpdatedByUserId = GetCurrentUserId();
 
-            AddAudit("UpdateTopic", "SocialTopic", topic.Id, topic.Id, null, new { dto.TitleKm, dto.TitleEn, dto.SubtitleKm, dto.SubtitleEn, dto.ReferenceKm, dto.ReferenceEn, dto.SortOrder, dto.Status });
+            AddAudit("UpdateTopic", "AboutTopic", topic.Id, topic.Id, null, new { dto.TitleKm, dto.TitleEn, dto.SubtitleKm, dto.SubtitleEn, dto.ReferenceKm, dto.ReferenceEn, dto.SortOrder, dto.Status });
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:topic:update", "SocialTopic", topic.Id, "Updated social topic", new { dto.TitleKm, dto.TitleEn, dto.SortOrder, dto.Status });
+            await WriteAuditAsync("about:topic:update", "AboutTopic", topic.Id, "Updated about topic", new { dto.TitleKm, dto.TitleEn, dto.SortOrder, dto.Status });
             // If this topic is published, trigger frontend revalidation so updates appear on the landing page
             if (topic.Status == TopicStatus.Published)
             {
-                await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+                await TriggerFrontendRevalidationAsync("/Landing-page/About-us");
             }
-            return Ok(_mapper.Map<SocialTopicDto>(topic));
+            return Ok(_mapper.Map<AboutTopicDto>(topic));
         }
 
         [HttpDelete("topics/{topicId}")]
-        [HasPermission(PermissionConstants.SocialDelete)]
+        [HasPermission(PermissionConstants.AboutDelete)]
         public async Task<IActionResult> DeleteTopic(Guid topicId)
         {
-            var topic = await _db.SocialTopics
+            var topic = await _db.AboutTopics
                 .Include(t => t.Sections)
                 .FirstOrDefaultAsync(t => t.Id == topicId);
 
@@ -207,15 +207,15 @@ namespace Backend.Controllers
             // Given the ApplicationDbContext has cascade delete for sections, it should work.
             // But we might want to log it.
 
-            AddAudit("DeleteTopic", "SocialTopic", topic.Id, topic.Id, null, new { topic.Slug, topic.TitleKm });
+            AddAudit("DeleteTopic", "AboutTopic", topic.Id, topic.Id, null, new { topic.Slug, topic.TitleKm });
 
-            _db.SocialTopics.Remove(topic);
+            _db.AboutTopics.Remove(topic);
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:topic:delete", "SocialTopic", topic.Id, "Deleted social topic", new { topic.Slug, topic.TitleKm });
+            await WriteAuditAsync("about:topic:delete", "AboutTopic", topic.Id, "Deleted about topic", new { topic.Slug, topic.TitleKm });
 
             var effectiveTitle = !string.IsNullOrWhiteSpace(topic.TitleKm) ? topic.TitleKm : topic.TitleEn;
-            await _notificationService.SendGeneralNotificationAsync(topic.TitleKm ?? "", topic.TitleEn ?? "", $"Social Topic \"{effectiveTitle}\" was deleted.", "deleted");
+            await _notificationService.SendGeneralNotificationAsync(topic.TitleKm ?? "", topic.TitleEn ?? "", $"About Topic \"{effectiveTitle}\" was deleted.", "deleted");
 
             return NoContent();
         }
@@ -225,10 +225,10 @@ namespace Backend.Controllers
         #region Sections CRUD
 
         [HttpGet("topics/{topicId}/sections")]
-        [HasPermission(PermissionConstants.SocialRead)]
+        [HasPermission(PermissionConstants.AboutRead)]
         public async Task<IActionResult> GetSections(Guid topicId)
         {
-            var sections = await _db.SocialSections
+            var sections = await _db.AboutSections
                 .Include(s => s.Media)
                 .ThenInclude(sm => sm.Media)
                 .Where(s => s.TopicId == topicId)
@@ -237,17 +237,17 @@ namespace Backend.Controllers
 
             // Typically frontend reconstructs the tree or backend sends nested.
             // Returning flat list sorted by order is usually fine if ParentSectionId is present.
-            return Ok(_mapper.Map<List<SocialSectionDto>>(sections));
+            return Ok(_mapper.Map<List<AboutSectionDto>>(sections));
         }
 
         [HttpPost("topics/{topicId}/sections")]
-        [HasPermission(PermissionConstants.SocialCreate)]
-        public async Task<IActionResult> CreateSection(Guid topicId, [FromBody] SocialSectionCreateDto dto)
+        [HasPermission(PermissionConstants.AboutCreate)]
+        public async Task<IActionResult> CreateSection(Guid topicId, [FromBody] AboutSectionCreateDto dto)
         {
-            var topic = await _db.SocialTopics.FindAsync(topicId);
+            var topic = await _db.AboutTopics.FindAsync(topicId);
             if (topic == null) return NotFound("Topic not found.");
 
-            var section = _mapper.Map<SocialSection>(dto);
+            var section = _mapper.Map<AboutSection>(dto);
             section.TopicId = topicId;
             // Inherit the Topic's status so new sections are instantly live if the Topic is already live
             section.Status = topic.Status;
@@ -256,7 +256,7 @@ namespace Backend.Controllers
 
             if (dto.ParentSectionId.HasValue)
             {
-                var parent = await _db.SocialSections.FindAsync(dto.ParentSectionId.Value);
+                var parent = await _db.AboutSections.FindAsync(dto.ParentSectionId.Value);
                 if (parent == null || parent.TopicId != topicId)
                     return BadRequest("Invalid parent section.");
                 section.Depth = parent.Depth + 1;
@@ -266,20 +266,20 @@ namespace Backend.Controllers
                 section.Depth = 0;
             }
 
-            _db.SocialSections.Add(section);
-            AddAudit("CreateSection", "SocialSection", section.Id, topicId, section.Id, new { section.SectionKey, section.TitleKm, section.TitleEn, section.SortOrder, section.ParentSectionId });
+            _db.AboutSections.Add(section);
+            AddAudit("CreateSection", "AboutSection", section.Id, topicId, section.Id, new { section.SectionKey, section.TitleKm, section.TitleEn, section.SortOrder, section.ParentSectionId });
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:section:create", "SocialSection", section.Id, "Created social section", new { section.SectionKey, section.TitleKm, section.TitleEn, section.SortOrder, section.ParentSectionId });
+            await WriteAuditAsync("about:section:create", "AboutSection", section.Id, "Created about section", new { section.SectionKey, section.TitleKm, section.TitleEn, section.SortOrder, section.ParentSectionId });
 
-            return Ok(_mapper.Map<SocialSectionDto>(section));
+            return Ok(_mapper.Map<AboutSectionDto>(section));
         }
 
         [HttpPut("sections/{sectionId}")]
-        [HasPermission(PermissionConstants.SocialUpdate)]
-        public async Task<IActionResult> UpdateSection(Guid sectionId, [FromBody] SocialSectionUpdateDto dto)
+        [HasPermission(PermissionConstants.AboutUpdate)]
+        public async Task<IActionResult> UpdateSection(Guid sectionId, [FromBody] AboutSectionUpdateDto dto)
         {
-            var section = await _db.SocialSections.FindAsync(sectionId);
+            var section = await _db.AboutSections.FindAsync(sectionId);
             if (section == null) return NotFound();
 
             var existingStatus = section.Status;
@@ -290,7 +290,7 @@ namespace Backend.Controllers
 
             if (dto.ParentSectionId.HasValue)
             {
-                var parent = await _db.SocialSections.FindAsync(dto.ParentSectionId.Value);
+                var parent = await _db.AboutSections.FindAsync(dto.ParentSectionId.Value);
                 if (parent == null || parent.TopicId != section.TopicId)
                     return BadRequest("Invalid parent section.");
                 section.Depth = parent.Depth + 1;
@@ -300,44 +300,44 @@ namespace Backend.Controllers
                 section.Depth = 0;
             }
 
-            AddAudit("UpdateSection", "SocialSection", section.Id, section.TopicId, section.Id, new { dto.SectionKey, dto.TitleKm, dto.TitleEn, dto.SortOrder, dto.ParentSectionId, dto.Status });
+            AddAudit("UpdateSection", "AboutSection", section.Id, section.TopicId, section.Id, new { dto.SectionKey, dto.TitleKm, dto.TitleEn, dto.SortOrder, dto.ParentSectionId, dto.Status });
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:section:update", "SocialSection", section.Id, "Updated social section", new { dto.SectionKey, dto.TitleKm, dto.TitleEn, dto.SortOrder, dto.ParentSectionId, dto.Status });
+            await WriteAuditAsync("about:section:update", "AboutSection", section.Id, "Updated about section", new { dto.SectionKey, dto.TitleKm, dto.TitleEn, dto.SortOrder, dto.ParentSectionId, dto.Status });
             // If the parent topic is published, trigger frontend revalidation so section changes appear immediately
-            var parentTopic = await _db.SocialTopics.FindAsync(section.TopicId);
+            var parentTopic = await _db.AboutTopics.FindAsync(section.TopicId);
             if (parentTopic != null && parentTopic.Status == TopicStatus.Published)
             {
-                await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+                await TriggerFrontendRevalidationAsync("/Landing-page/About-us");
             }
-            return Ok(_mapper.Map<SocialSectionDto>(section));
+            return Ok(_mapper.Map<AboutSectionDto>(section));
         }
 
         [HttpDelete("sections/{sectionId}")]
-        [HasPermission(PermissionConstants.SocialDelete)]
+        [HasPermission(PermissionConstants.AboutDelete)]
         public async Task<IActionResult> DeleteSection(Guid sectionId)
         {
-            var section = await _db.SocialSections
+            var section = await _db.AboutSections
                 .Include(s => s.ChildSections)
                 .FirstOrDefaultAsync(s => s.Id == sectionId);
 
             if (section == null) return NotFound();
             if (section.ChildSections.Any()) return BadRequest(new { message = "Cannot delete a section with children. Delete children first." });
 
-            AddAudit("DeleteSection", "SocialSection", section.Id, section.TopicId, section.Id, new { section.SectionKey, section.TitleKm, section.SortOrder, section.ParentSectionId });
-            _db.SocialSections.Remove(section);
+            AddAudit("DeleteSection", "AboutSection", section.Id, section.TopicId, section.Id, new { section.SectionKey, section.TitleKm, section.SortOrder, section.ParentSectionId });
+            _db.AboutSections.Remove(section);
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:section:delete", "SocialSection", section.Id, "Deleted social section", new { section.SectionKey, section.TitleKm, section.SortOrder, section.ParentSectionId });
+            await WriteAuditAsync("about:section:delete", "AboutSection", section.Id, "Deleted about section", new { section.SectionKey, section.TitleKm, section.SortOrder, section.ParentSectionId });
             return NoContent();
         }
 
         [HttpPost("topics/{topicId}/sections/reorder")]
-        [HasPermission(PermissionConstants.SocialUpdate)]
+        [HasPermission(PermissionConstants.AboutUpdate)]
         public async Task<IActionResult> ReorderSections(Guid topicId, [FromBody] List<SectionReorderDto> reorders)
         {
             var sectionIds = reorders.Select(r => r.SectionId).ToList();
-            var sections = await _db.SocialSections
+            var sections = await _db.AboutSections
                 .Where(s => s.TopicId == topicId && sectionIds.Contains(s.Id))
                 .ToListAsync();
 
@@ -349,10 +349,10 @@ namespace Backend.Controllers
                 section.UpdatedByUserId = GetCurrentUserId();
             }
 
-            AddAudit("ReorderSections", "SocialSection", null, topicId, null, reorders);
+            AddAudit("ReorderSections", "AboutSection", null, topicId, null, reorders);
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:section:reorder", "SocialSection", null, "Reordered social sections", new { topicId, affectedCount = reorders.Count });
+            await WriteAuditAsync("about:section:reorder", "AboutSection", null, "Reordered about sections", new { topicId, affectedCount = reorders.Count });
             return Ok();
         }
 
@@ -361,7 +361,7 @@ namespace Backend.Controllers
         #region Media Actions
 
         [HttpPost("media/upload")]
-        [HasPermission(PermissionConstants.SocialCreate)]
+        [HasPermission(PermissionConstants.AboutCreate)]
         public async Task<IActionResult> UploadMedia([FromForm] IFormFile file)
         {
             if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
@@ -379,7 +379,7 @@ namespace Backend.Controllers
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf" };
             if (!allowedExtensions.Contains(ext)) return BadRequest("Invalid file extension.");
 
-            var uploadsRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "social");
+            var uploadsRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "about");
             Directory.CreateDirectory(uploadsRoot);
 
             var fileName = $"{Guid.NewGuid():N}{ext}";
@@ -393,7 +393,7 @@ namespace Backend.Controllers
             var media = new Media
             {
                 StoragePath = filePath,
-                PublicUrl = $"/uploads/social/{fileName}",
+                PublicUrl = $"/uploads/about/{fileName}",
                 MimeType = file.ContentType,
                 FileSize = file.Length,
                 UploadedByUserId = GetCurrentUserId(),
@@ -404,16 +404,16 @@ namespace Backend.Controllers
             AddAudit("UploadMedia", "Media", media.Id, null, null, new { media.PublicUrl, media.MimeType, media.FileSize });
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:media:upload", "Media", media.Id, "Uploaded social media", new { media.PublicUrl, media.MimeType, media.FileSize });
+            await WriteAuditAsync("about:media:upload", "Media", media.Id, "Uploaded about media", new { media.PublicUrl, media.MimeType, media.FileSize });
 
             return Ok(_mapper.Map<MediaDto>(media));
         }
 
         [HttpPost("sections/{sectionId}/media")]
-        [HasPermission(PermissionConstants.SocialCreate)]
-        public async Task<IActionResult> AttachMedia(Guid sectionId, [FromBody] SocialSectionMediaCreateDto dto)
+        [HasPermission(PermissionConstants.AboutCreate)]
+        public async Task<IActionResult> AttachMedia(Guid sectionId, [FromBody] AboutSectionMediaCreateDto dto)
         {
-            var section = await _db.SocialSections.FindAsync(sectionId);
+            var section = await _db.AboutSections.FindAsync(sectionId);
             if (section == null) return NotFound("Section not found.");
 
             var mediaItem = await _db.Media.FindAsync(dto.MediaId);
@@ -421,23 +421,23 @@ namespace Backend.Controllers
 
             if (string.IsNullOrWhiteSpace(dto.AltKm)) return BadRequest("Alt text (Khmer) is required.");
 
-            var sectionMedia = _mapper.Map<SocialSectionMedia>(dto);
+            var sectionMedia = _mapper.Map<AboutSectionMedia>(dto);
             sectionMedia.SectionId = sectionId;
 
-            _db.SocialSectionMedia.Add(sectionMedia);
-            AddAudit("AttachMedia", "SocialSectionMedia", sectionMedia.Id, section.TopicId, sectionId, new { sectionMedia.MediaId, sectionMedia.Position, sectionMedia.SortOrder });
+            _db.AboutSectionMedia.Add(sectionMedia);
+            AddAudit("AttachMedia", "AboutSectionMedia", sectionMedia.Id, section.TopicId, sectionId, new { sectionMedia.MediaId, sectionMedia.Position, sectionMedia.SortOrder });
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:media:attach", "SocialSectionMedia", sectionMedia.Id, "Attached media to social section", new { sectionMedia.MediaId, sectionMedia.Position, sectionMedia.SortOrder });
+            await WriteAuditAsync("about:media:attach", "AboutSectionMedia", sectionMedia.Id, "Attached media to about section", new { sectionMedia.MediaId, sectionMedia.Position, sectionMedia.SortOrder });
 
-            return Ok(_mapper.Map<SocialSectionMediaDto>(sectionMedia));
+            return Ok(_mapper.Map<AboutSectionMediaDto>(sectionMedia));
         }
 
         [HttpPut("sections/{sectionId}/media/{sectionMediaId}")]
-        [HasPermission(PermissionConstants.SocialUpdate)]
-        public async Task<IActionResult> UpdateMedia(Guid sectionId, Guid sectionMediaId, [FromBody] SocialSectionMediaUpdateDto dto)
+        [HasPermission(PermissionConstants.AboutUpdate)]
+        public async Task<IActionResult> UpdateMedia(Guid sectionId, Guid sectionMediaId, [FromBody] AboutSectionMediaUpdateDto dto)
         {
-            var sectionMedia = await _db.SocialSectionMedia
+            var sectionMedia = await _db.AboutSectionMedia
                 .FirstOrDefaultAsync(sm => sm.Id == sectionMediaId && sm.SectionId == sectionId);
 
             if (sectionMedia == null) return NotFound("Section media not found.");
@@ -445,28 +445,28 @@ namespace Backend.Controllers
             if (string.IsNullOrWhiteSpace(dto.AltKm)) return BadRequest("Alt text (Khmer) is required.");
 
             _mapper.Map(dto, sectionMedia);
-            AddAudit("UpdateMedia", "SocialSectionMedia", sectionMedia.Id, null, sectionId, new { dto.Position, dto.SortOrder });
+            AddAudit("UpdateMedia", "AboutSectionMedia", sectionMedia.Id, null, sectionId, new { dto.Position, dto.SortOrder });
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:media:update", "SocialSectionMedia", sectionMedia.Id, "Updated social section media", new { dto.Position, dto.SortOrder });
+            await WriteAuditAsync("about:media:update", "AboutSectionMedia", sectionMedia.Id, "Updated about section media", new { dto.Position, dto.SortOrder });
 
-            return Ok(_mapper.Map<SocialSectionMediaDto>(sectionMedia));
+            return Ok(_mapper.Map<AboutSectionMediaDto>(sectionMedia));
         }
 
         [HttpDelete("sections/{sectionId}/media/{sectionMediaId}")]
-        [HasPermission(PermissionConstants.SocialDelete)]
+        [HasPermission(PermissionConstants.AboutDelete)]
         public async Task<IActionResult> DetachMedia(Guid sectionId, Guid sectionMediaId)
         {
-            var sectionMedia = await _db.SocialSectionMedia
+            var sectionMedia = await _db.AboutSectionMedia
                 .FirstOrDefaultAsync(sm => sm.Id == sectionMediaId && sm.SectionId == sectionId);
 
             if (sectionMedia == null) return NotFound();
 
-            AddAudit("DetachMedia", "SocialSectionMedia", sectionMedia.Id, null, sectionId, new { sectionMedia.MediaId, sectionMedia.SortOrder });
-            _db.SocialSectionMedia.Remove(sectionMedia);
+            AddAudit("DetachMedia", "AboutSectionMedia", sectionMedia.Id, null, sectionId, new { sectionMedia.MediaId, sectionMedia.SortOrder });
+            _db.AboutSectionMedia.Remove(sectionMedia);
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:media:detach", "SocialSectionMedia", sectionMedia.Id, "Detached media from social section", new { sectionMedia.MediaId, sectionMedia.SortOrder });
+            await WriteAuditAsync("about:media:detach", "AboutSectionMedia", sectionMedia.Id, "Detached media from about section", new { sectionMedia.MediaId, sectionMedia.SortOrder });
             return NoContent();
         }
 
@@ -475,22 +475,22 @@ namespace Backend.Controllers
         #region Reference Files
 
         [HttpGet("topics/{topicId}/references")]
-        [HasPermission(PermissionConstants.SocialRead)]
+        [HasPermission(PermissionConstants.AboutRead)]
         public async Task<IActionResult> GetReferences(Guid topicId)
         {
-            var references = await _db.SocialReferences
+            var references = await _db.AboutReferences
                 .Where(r => r.TopicId == topicId)
                 .OrderBy(r => r.SortOrder)
                 .ToListAsync();
 
-            return Ok(_mapper.Map<List<SocialReferenceDto>>(references));
+            return Ok(_mapper.Map<List<AboutReferenceDto>>(references));
         }
 
         [HttpPost("topics/{topicId}/references/upload")]
-        [HasPermission(PermissionConstants.SocialCreate)]
+        [HasPermission(PermissionConstants.AboutCreate)]
         public async Task<IActionResult> UploadReference(Guid topicId, [FromForm] IFormFile file, [FromForm] string? titleKm, [FromForm] string? titleEn, [FromForm] string? language)
         {
-            var topic = await _db.SocialTopics.FindAsync(topicId);
+            var topic = await _db.AboutTopics.FindAsync(topicId);
             if (topic == null) return NotFound("Topic not found.");
 
             if (file == null || file.Length == 0) return BadRequest("No file uploaded.");
@@ -508,7 +508,7 @@ namespace Backend.Controllers
             if (normalizedLang != "km" && normalizedLang != "en")
                 return BadRequest("Invalid language. Use 'km' or 'en'.");
 
-            var uploadsRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "social", "references");
+            var uploadsRoot = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "about", "references");
             Directory.CreateDirectory(uploadsRoot);
 
             var fileName = $"{Guid.NewGuid():N}{ext}";
@@ -519,13 +519,13 @@ namespace Backend.Controllers
                 await file.CopyToAsync(stream);
             }
 
-            var sortOrder = (await _db.SocialReferences
+            var sortOrder = (await _db.AboutReferences
                 .Where(r => r.TopicId == topicId)
                 .MaxAsync(r => (int?)r.SortOrder) ?? -1) + 1;
 
             var safeName = Path.GetFileName(file.FileName);
 
-            var reference = new SocialReference
+            var reference = new AboutReference
             {
                 TopicId = topicId,
                 Language = normalizedLang,
@@ -533,7 +533,7 @@ namespace Backend.Controllers
                 TitleEn = normalizedLang == "en" ? (string.IsNullOrWhiteSpace(titleEn) ? safeName : titleEn) : null,
                 FileName = safeName,
                 StoragePath = filePath,
-                PublicUrl = $"/uploads/social/references/{fileName}",
+                PublicUrl = $"/uploads/about/references/{fileName}",
                 MimeType = file.ContentType,
                 FileSizeBytes = file.Length,
                 SortOrder = sortOrder,
@@ -542,20 +542,20 @@ namespace Backend.Controllers
                 UpdatedAt = DateTime.UtcNow
             };
 
-            _db.SocialReferences.Add(reference);
-            AddAudit("UploadReference", "SocialReference", reference.Id, topicId, null, new { reference.PublicUrl, reference.FileSizeBytes, reference.SortOrder, reference.Language });
+            _db.AboutReferences.Add(reference);
+            AddAudit("UploadReference", "AboutReference", reference.Id, topicId, null, new { reference.PublicUrl, reference.FileSizeBytes, reference.SortOrder, reference.Language });
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:reference:upload", "SocialReference", reference.Id, "Uploaded social reference", new { reference.PublicUrl, reference.FileSizeBytes, reference.SortOrder, reference.Language });
+            await WriteAuditAsync("about:reference:upload", "AboutReference", reference.Id, "Uploaded about reference", new { reference.PublicUrl, reference.FileSizeBytes, reference.SortOrder, reference.Language });
 
-            return Ok(_mapper.Map<SocialReferenceDto>(reference));
+            return Ok(_mapper.Map<AboutReferenceDto>(reference));
         }
 
         [HttpPut("references/{referenceId}")]
-        [HasPermission(PermissionConstants.SocialUpdate)]
-        public async Task<IActionResult> UpdateReference(Guid referenceId, [FromBody] SocialReferenceUpdateDto dto)
+        [HasPermission(PermissionConstants.AboutUpdate)]
+        public async Task<IActionResult> UpdateReference(Guid referenceId, [FromBody] AboutReferenceUpdateDto dto)
         {
-            var reference = await _db.SocialReferences.FindAsync(referenceId);
+            var reference = await _db.AboutReferences.FindAsync(referenceId);
             if (reference == null) return NotFound();
 
             reference.TitleKm = dto.TitleKm;
@@ -563,42 +563,42 @@ namespace Backend.Controllers
             reference.SortOrder = dto.SortOrder;
             reference.UpdatedAt = DateTime.UtcNow;
 
-            AddAudit("UpdateReference", "SocialReference", reference.Id, reference.TopicId, null, new { dto.TitleKm, dto.TitleEn, dto.SortOrder });
+            AddAudit("UpdateReference", "AboutReference", reference.Id, reference.TopicId, null, new { dto.TitleKm, dto.TitleEn, dto.SortOrder });
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:reference:update", "SocialReference", reference.Id, "Updated social reference", new { dto.TitleKm, dto.TitleEn, dto.SortOrder });
+            await WriteAuditAsync("about:reference:update", "AboutReference", reference.Id, "Updated about reference", new { dto.TitleKm, dto.TitleEn, dto.SortOrder });
 
-            return Ok(_mapper.Map<SocialReferenceDto>(reference));
+            return Ok(_mapper.Map<AboutReferenceDto>(reference));
         }
 
         [HttpDelete("references/{referenceId}")]
-        [HasPermission(PermissionConstants.SocialDelete)]
+        [HasPermission(PermissionConstants.AboutDelete)]
         public async Task<IActionResult> DeleteReference(Guid referenceId)
         {
-            var reference = await _db.SocialReferences.FindAsync(referenceId);
+            var reference = await _db.AboutReferences.FindAsync(referenceId);
             if (reference == null) return NotFound();
 
-            var uploadsRoot = Path.GetFullPath(Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "social"));
+            var uploadsRoot = Path.GetFullPath(Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "about"));
             var fullPath = Path.GetFullPath(reference.StoragePath);
             if (fullPath.StartsWith(uploadsRoot, StringComparison.OrdinalIgnoreCase) && System.IO.File.Exists(fullPath))
             {
                 System.IO.File.Delete(fullPath);
             }
 
-            AddAudit("DeleteReference", "SocialReference", reference.Id, reference.TopicId, null, new { reference.PublicUrl, reference.SortOrder });
-            _db.SocialReferences.Remove(reference);
+            AddAudit("DeleteReference", "AboutReference", reference.Id, reference.TopicId, null, new { reference.PublicUrl, reference.SortOrder });
+            _db.AboutReferences.Remove(reference);
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:reference:delete", "SocialReference", reference.Id, "Deleted social reference", new { reference.PublicUrl, reference.SortOrder });
+            await WriteAuditAsync("about:reference:delete", "AboutReference", reference.Id, "Deleted about reference", new { reference.PublicUrl, reference.SortOrder });
             return NoContent();
         }
 
         [HttpPost("topics/{topicId}/references/reorder")]
-        [HasPermission(PermissionConstants.SocialUpdate)]
-        public async Task<IActionResult> ReorderReferences(Guid topicId, [FromBody] List<SocialReferenceReorderDto> reorders)
+        [HasPermission(PermissionConstants.AboutUpdate)]
+        public async Task<IActionResult> ReorderReferences(Guid topicId, [FromBody] List<AboutReferenceReorderDto> reorders)
         {
             var referenceIds = reorders.Select(r => r.ReferenceId).ToList();
-            var references = await _db.SocialReferences
+            var references = await _db.AboutReferences
                 .Where(r => r.TopicId == topicId && referenceIds.Contains(r.Id))
                 .ToListAsync();
 
@@ -609,10 +609,10 @@ namespace Backend.Controllers
                 reference.UpdatedAt = DateTime.UtcNow;
             }
 
-            AddAudit("ReorderReferences", "SocialReference", null, topicId, null, reorders);
+            AddAudit("ReorderReferences", "AboutReference", null, topicId, null, reorders);
             await _db.SaveChangesAsync();
 
-            await WriteAuditAsync("social:reference:reorder", "SocialReference", null, "Reordered social references", new { topicId, affectedCount = reorders.Count });
+            await WriteAuditAsync("about:reference:reorder", "AboutReference", null, "Reordered about references", new { topicId, affectedCount = reorders.Count });
             return Ok();
         }
 
@@ -621,10 +621,10 @@ namespace Backend.Controllers
         #region Governance (Publish/Unpublish)
 
         [HttpPost("topics/{topicId}/publish")]
-        [HasPermission(PermissionConstants.SocialUpdate)]
+        [HasPermission(PermissionConstants.AboutUpdate)]
         public async Task<IActionResult> PublishTopic(Guid topicId)
         {
-            var topic = await _db.SocialTopics
+            var topic = await _db.AboutTopics
                 .Include(t => t.Sections)
                 .ThenInclude(s => s.Media)
                 .FirstOrDefaultAsync(t => t.Id == topicId);
@@ -647,11 +647,11 @@ namespace Backend.Controllers
                     section.UpdatedByUserId = GetCurrentUserId();
                 }
 
-                AddAudit("UnpublishTopic", "SocialTopic", topicId, topicId, null, new { topic.Slug });
+                AddAudit("UnpublishTopic", "AboutTopic", topicId, topicId, null, new { topic.Slug });
                 await _db.SaveChangesAsync();
-                await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+                await TriggerFrontendRevalidationAsync("/Landing-page/About-us");
 
-                await WriteAuditAsync("social:topic:unpublish", "SocialTopic", topicId, "Unpublished social topic", new { topic.Slug });
+                await WriteAuditAsync("about:topic:unpublish", "AboutTopic", topicId, "Unpublished about topic", new { topic.Slug });
 
                 return Ok(new { message = "Topic unpublished successfully.", action = "unpublished" });
             }
@@ -689,18 +689,18 @@ namespace Backend.Controllers
             // Create revision snapshot
             var snapshotObj = new
             {
-                Topic = _mapper.Map<SocialTopicDto>(topic),
-                Sections = _mapper.Map<List<SocialSectionDto>>(topic.Sections)
+                Topic = _mapper.Map<AboutTopicDto>(topic),
+                Sections = _mapper.Map<List<AboutSectionDto>>(topic.Sections)
             };
 
-            var lastRevision = await _db.SocialRevisions
+            var lastRevision = await _db.AboutRevisions
                 .Where(r => r.TopicId == topicId)
                 .OrderByDescending(r => r.RevisionNumber)
                 .FirstOrDefaultAsync();
 
             var revisionNumber = (lastRevision?.RevisionNumber ?? 0) + 1;
 
-            var revision = new SocialRevision
+            var revision = new AboutRevision
             {
                 TopicId = topicId,
                 SnapshotJson = JsonSerializer.Serialize(snapshotObj),
@@ -710,8 +710,8 @@ namespace Backend.Controllers
                 ActionType = "Publish"
             };
 
-            _db.SocialRevisions.Add(revision);
-            AddAudit("PublishTopic", "SocialTopic", topicId, topicId, null, new { revisionNumber });
+            _db.AboutRevisions.Add(revision);
+            AddAudit("PublishTopic", "AboutTopic", topicId, topicId, null, new { revisionNumber });
 
             topic.Status = TopicStatus.Published;
             topic.PublishedAt = DateTime.UtcNow;
@@ -725,18 +725,18 @@ namespace Backend.Controllers
             }
 
             await _db.SaveChangesAsync();
-            await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+            await TriggerFrontendRevalidationAsync("/Landing-page/About-us");
 
-            await WriteAuditAsync("social:topic:publish", "SocialTopic", topicId, "Published social topic", new { revisionNumber });
+            await WriteAuditAsync("about:topic:publish", "AboutTopic", topicId, "Published about topic", new { revisionNumber });
 
             return Ok(new { message = "Topic published successfully.", revisionNumber, action = "published" });
         }
 
         [HttpPost("topics/{topicId}/unpublish")]
-        [HasPermission(PermissionConstants.SocialUpdate)]
+        [HasPermission(PermissionConstants.AboutUpdate)]
         public async Task<IActionResult> UnpublishTopic(Guid topicId)
         {
-            var topic = await _db.SocialTopics
+            var topic = await _db.AboutTopics
                 .Include(t => t.Sections)
                 .FirstOrDefaultAsync(t => t.Id == topicId);
 
@@ -757,25 +757,25 @@ namespace Backend.Controllers
                 section.UpdatedByUserId = GetCurrentUserId();
             }
 
-            AddAudit("UnpublishTopic", "SocialTopic", topicId, topicId, null, new { topic.Slug });
+            AddAudit("UnpublishTopic", "AboutTopic", topicId, topicId, null, new { topic.Slug });
             await _db.SaveChangesAsync();
-            await TriggerFrontendRevalidationAsync("/Landing-page/Resources/Social");
+            await TriggerFrontendRevalidationAsync("/Landing-page/About-us");
 
-            await WriteAuditAsync("social:topic:unpublish", "SocialTopic", topicId, "Unpublished social topic", new { topic.Slug });
+            await WriteAuditAsync("about:topic:unpublish", "AboutTopic", topicId, "Unpublished about topic", new { topic.Slug });
 
             return Ok(new { message = "Topic unpublished successfully." });
         }
 
         [HttpGet("topics/{topicId}/revisions")]
-        [HasPermission(PermissionConstants.SocialRead)]
+        [HasPermission(PermissionConstants.AboutRead)]
         public async Task<IActionResult> GetRevisions(Guid topicId)
         {
-            var revisions = await _db.SocialRevisions
+            var revisions = await _db.AboutRevisions
                 .Where(r => r.TopicId == topicId)
                 .OrderByDescending(r => r.RevisionNumber)
                 .ToListAsync();
 
-            return Ok(_mapper.Map<List<SocialRevisionDto>>(revisions));
+            return Ok(_mapper.Map<List<AboutRevisionDto>>(revisions));
         }
 
         #endregion

@@ -98,7 +98,8 @@ const navItems: NavItem[] = [
     icon: <InfoIcon />, // matched to About-us
     name: "About-us",
     titleKey: "aboutUs",
-    path: "/about-us",
+    path: "/about",
+    permission: "about:read",
   },
 ];
 

@@ -132,6 +132,13 @@ namespace Backend.Services
                     }
                 }
 
+                // Cleanup obsolete permissions (e.g. accidental notifications:create/update/delete)
+                var obsoletePerms = db.Permissions.Where(p => p.Name.StartsWith("notifications:") && p.Name != Security.PermissionConstants.NotificationsRead).ToList();
+                if (obsoletePerms.Any())
+                {
+                    db.Permissions.RemoveRange(obsoletePerms);
+                }
+
                 await db.SaveChangesAsync();
 
                 // Ensure Admin and SuperAdmin have all permissions

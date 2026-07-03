@@ -145,6 +145,30 @@ export default function RolesSettingsPage() {
       });
       setInitialRolePermissions(initialMappingDeep);
 
+      // Auto-collapse all groups on load
+      const allGroupNames = new Set<string>();
+      permsData.forEach((perm) => {
+        let groupKey = "other";
+        if (perm.name.startsWith("news:")) groupKey = "news";
+        else if (perm.name.startsWith("audit:")) groupKey = "audit";
+        else if (perm.name.startsWith("video:")) groupKey = "video";
+        else if (perm.name.startsWith("laws:")) groupKey = "laws";
+        else if (perm.name.startsWith("publications:")) groupKey = "publications";
+        else if (perm.name.startsWith("social:")) groupKey = "social";
+        else if (perm.name.startsWith("contact:")) groupKey = "contact";
+        else if (perm.name.startsWith("about:")) groupKey = "about";
+        else if (perm.name.startsWith("users:")) groupKey = "users";
+        else if (perm.name.startsWith("roles:")) groupKey = "roles";
+        else if (perm.name.startsWith("media:")) groupKey = "media";
+        else if (perm.name.startsWith("notifications:")) groupKey = "notifications";
+        else if (perm.name.startsWith("settings:")) groupKey = "settings";
+        else if (perm.name.startsWith("telegram:")) groupKey = "telegram";
+        
+        allGroupNames.add(groupKey);
+        allGroupNames.add(`mobile-${groupKey}`);
+      });
+      setCollapsedGroups(allGroupNames);
+
     } catch (err: any) {
       console.error(err);
       setErrorMsg(err.message || "Failed to load roles and permissions.");
@@ -161,32 +185,33 @@ export default function RolesSettingsPage() {
   const groupPermissions = () => {
     const groups: { [key: string]: Permission[] } = {};
     permissions.forEach((perm) => {
-      let groupName = "Other Modules";
-      if (perm.name.startsWith("news:")) groupName = "News Management";
-      else if (perm.name.startsWith("audit:")) groupName = "Audit Log";
-      else if (perm.name.startsWith("video:")) groupName = "Videos Management";
-      else if (perm.name.startsWith("laws:")) groupName = "Laws Management";
-      else if (perm.name.startsWith("publications:")) groupName = "Publications Management";
-      else if (perm.name.startsWith("social:")) groupName = "Social Content";
-      else if (perm.name.startsWith("contact:")) groupName = "Contact Management";
-      else if (perm.name.startsWith("users:")) groupName = "Users Management";
-      else if (perm.name.startsWith("roles:")) groupName = "Roles & Settings";
-      else if (perm.name.startsWith("media:")) groupName = "Media Files";
-      else if (perm.name.startsWith("notifications:")) groupName = "Notifications";
-      else if (perm.name.startsWith("settings:")) groupName = "System Settings";
-      else if (perm.name.startsWith("telegram:")) groupName = "Telegram Config";
+      let groupKey = "other";
+      if (perm.name.startsWith("news:")) groupKey = "news";
+      else if (perm.name.startsWith("audit:")) groupKey = "audit";
+      else if (perm.name.startsWith("video:")) groupKey = "video";
+      else if (perm.name.startsWith("laws:")) groupKey = "laws";
+      else if (perm.name.startsWith("publications:")) groupKey = "publications";
+      else if (perm.name.startsWith("social:")) groupKey = "social";
+      else if (perm.name.startsWith("contact:")) groupKey = "contact";
+      else if (perm.name.startsWith("about:")) groupKey = "about";
+      else if (perm.name.startsWith("users:")) groupKey = "users";
+      else if (perm.name.startsWith("roles:")) groupKey = "roles";
+      else if (perm.name.startsWith("media:")) groupKey = "media";
+      else if (perm.name.startsWith("notifications:")) groupKey = "notifications";
+      else if (perm.name.startsWith("settings:")) groupKey = "settings";
+      else if (perm.name.startsWith("telegram:")) groupKey = "telegram";
 
-      if (!groups[groupName]) groups[groupName] = [];
-      groups[groupName].push(perm);
+      if (!groups[groupKey]) groups[groupKey] = [];
+      groups[groupKey].push(perm);
     });
     return groups;
   };
 
   const getCleanPermissionLabel = (name: string) => {
-    // e.g. "news:create" -> "create"
-    if (name === "users:block") return "block";
+    if (name === "users:block") return t.has("actions.block") ? t("actions.block") : "block";
     const parts = name.split(":");
-    return parts.length > 1 ? parts[1] : name;
+    const action = parts.length > 1 ? parts[1] : name;
+    return t.has(`actions.${action}`) ? t(`actions.${action}`) : action;
   };
 
   // Toggle Matrix Cell
@@ -487,9 +512,9 @@ export default function RolesSettingsPage() {
                         : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
                     }`}
                   >
-                    <span className="font-bold">{role.name}</span>
+                    <span className="font-bold">{t.has(`roleNames.${role.name.toLowerCase()}`) ? t(`roleNames.${role.name.toLowerCase()}`) : role.name}</span>
                     <span className={`text-[10px] ${isSelected ? "opacity-80" : "text-gray-400"}`}>
-                      {isSuperAdmin ? "🔒" : `${permCount} perm${permCount !== 1 ? "s" : ""}`}
+                      {isSuperAdmin ? "🔒" : (permCount === 1 ? (t.has("permissionCountSingle") ? t("permissionCountSingle", { count: permCount }) : `${permCount} permission`) : (t.has("permissionCountPlural") ? t("permissionCountPlural", { count: permCount }) : `${permCount} permissions`))}
                     </span>
                   </button>
                 );
@@ -528,9 +553,9 @@ export default function RolesSettingsPage() {
                       {isSuperAdmin ? "🔒" : selectedRole?.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-gray-800 dark:text-gray-200">{selectedRole?.name}</div>
+                      <div className="text-sm font-bold text-gray-800 dark:text-gray-200">{selectedRole ? (t.has(`roleNames.${selectedRole.name.toLowerCase()}`) ? t(`roleNames.${selectedRole.name.toLowerCase()}`) : selectedRole.name) : ""}</div>
                       <div className="text-xs text-gray-500">
-                        {isSuperAdmin ? "All permissions granted (locked)" : `${rolePermissions[selectedRoleId]?.size ?? 0} of ${permissions.length} permissions active`}
+                        {isSuperAdmin ? (t.has("allPermissionsGranted") ? t("allPermissionsGranted") : "All permissions granted (locked)") : (t.has("permissionsActive") ? t("permissionsActive", { active: rolePermissions[selectedRoleId]?.size ?? 0, total: permissions.length }) : `${rolePermissions[selectedRoleId]?.size ?? 0} of ${permissions.length} permissions active`)}
                       </div>
                     </div>
                   </div>
@@ -564,7 +589,8 @@ export default function RolesSettingsPage() {
 
                   {/* Module groups */}
                   <div className="space-y-2 pb-24">
-                    {Object.entries(groupedPerms).map(([moduleName, perms]) => {
+                    {Object.entries(groupedPerms).map(([moduleKey, perms]) => {
+                      const moduleName = t.has(`modules.${moduleKey}`) ? t(`modules.${moduleKey}`) : moduleKey;
                       // Apply search filter
                       const filtered = searchQ
                         ? perms.filter(p =>
@@ -574,14 +600,14 @@ export default function RolesSettingsPage() {
                         : perms;
                       if (filtered.length === 0) return null;
 
-                      const mobileKey = `mobile-${moduleName}`;
+                      const mobileKey = `mobile-${moduleKey}`;
                       const isCollapsed = collapsedGroups.has(mobileKey);
                       const assignedCount = filtered.filter(p => rolePermissions[selectedRoleId]?.has(p.id)).length;
                       const allGranted = filtered.every(p => rolePermissions[selectedRoleId]?.has(p.id));
                       const allRevoked = filtered.every(p => !rolePermissions[selectedRoleId]?.has(p.id));
 
                       return (
-                        <div key={moduleName} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                        <div key={moduleKey} className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
                           {/* Module header */}
                           <div className="flex items-center bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
                             <button
@@ -592,8 +618,8 @@ export default function RolesSettingsPage() {
                               <svg className={`w-3.5 h-3.5 text-primary shrink-0 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                               </svg>
-                              <span className="text-xs font-bold text-primary uppercase tracking-wider">{moduleName}</span>
-                              <span className="ml-auto text-[10px] font-semibold text-gray-400">{assignedCount}/{filtered.length}</span>
+                              <span className="text-sm font-bold text-primary uppercase tracking-wider">{moduleName}</span>
+                              <span className="ml-auto text-xs font-semibold text-gray-500">{assignedCount}/{filtered.length}</span>
                             </button>
                             {/* Grant All / Revoke All */}
                             {!isSuperAdmin && (
@@ -602,7 +628,7 @@ export default function RolesSettingsPage() {
                                   type="button"
                                   disabled={allGranted}
                                   onClick={() => handleToggleAllInModule(selectedRoleId, filtered, true)}
-                                  className="px-2 py-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 rounded-md hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                  className="px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 rounded-md hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                                 >
                                   All ✓
                                 </button>
@@ -610,7 +636,7 @@ export default function RolesSettingsPage() {
                                   type="button"
                                   disabled={allRevoked}
                                   onClick={() => handleToggleAllInModule(selectedRoleId, filtered, false)}
-                                  className="px-2 py-1 text-[10px] font-semibold text-red-600 bg-red-50 rounded-md hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                  className="px-2 py-1 text-xs font-semibold text-red-600 bg-red-50 rounded-md hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                                 >
                                   None ✕
                                 </button>
@@ -683,19 +709,19 @@ export default function RolesSettingsPage() {
                       className="sticky top-0 z-10 p-2 sm:p-4 font-bold text-primary uppercase tracking-wider text-center bg-gray-50 dark:bg-gray-800"
                     >
                       <div className="flex flex-col items-center justify-center gap-1">
-                        <span className="text-gray-900 dark:text-white font-semibold text-sm sm:text-base wrap-break-words max-w-20 sm:max-w-none">
-                          {role.name}
+                        <span className="text-gray-900 dark:text-white font-bold text-sm sm:text-base wrap-break-words max-w-20 sm:max-w-none">
+                          {t.has(`roleNames.${role.name.toLowerCase()}`) ? t(`roleNames.${role.name.toLowerCase()}`) : role.name}
                         </span>
                         {role.name === "SuperAdmin" ? (
-                          <span className="text-[8px] sm:text-[10px] text-amber-600 bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-amber-200 flex items-center gap-0.5 font-semibold whitespace-nowrap">
+                          <span className="text-[10px] sm:text-xs text-amber-600 bg-amber-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-amber-200 flex items-center gap-0.5 font-semibold whitespace-nowrap">
                             🔒 {t("states.locked")}
                           </span>
                         ) : role.isSystemRole ? (
-                          <span className="text-[8px] sm:text-[10px] text-blue-600 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-blue-200 font-semibold whitespace-nowrap">
+                          <span className="text-[10px] sm:text-xs text-blue-600 bg-blue-50 px-1.5 sm:px-2 py-0.5 rounded-full border border-blue-200 font-semibold whitespace-nowrap">
                             {t("states.system")}
                           </span>
                         ) : (
-                          <span className="text-[8px] sm:text-[10px] text-gray-500 bg-gray-100 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
+                          <span className="text-[10px] sm:text-xs text-gray-500 bg-gray-100 px-1.5 sm:px-2 py-0.5 rounded-full whitespace-nowrap">
                             {t("states.custom")}
                           </span>
                         )}
@@ -705,12 +731,13 @@ export default function RolesSettingsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                {Object.entries(groupedPerms).map(([moduleName, perms]) => {
-                  const isCollapsed = collapsedGroups.has(moduleName);
+                {Object.entries(groupedPerms).map(([moduleKey, perms]) => {
+                  const moduleName = t.has(`modules.${moduleKey}`) ? t(`modules.${moduleKey}`) : moduleKey;
+                  const isCollapsed = collapsedGroups.has(moduleKey);
                   return (
-                    <React.Fragment key={moduleName}>
+                    <React.Fragment key={moduleKey}>
                       {/* Module Heading Row — clickable to collapse */}
-                      <tr className="bg-gray-100/50 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors cursor-pointer select-none" onClick={() => toggleGroup(moduleName)}>
+                      <tr className="bg-gray-100/50 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors cursor-pointer select-none" onClick={() => toggleGroup(moduleKey)}>
                         <td
                           colSpan={roles.length + 1}
                           className="p-2 sm:p-3 border-y border-gray-200/60 dark:border-gray-700/60"
@@ -722,8 +749,8 @@ export default function RolesSettingsPage() {
                             >
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                             </svg>
-                            <span className="text-xs font-bold text-primary tracking-wide uppercase">{moduleName}</span>
-                            <span className="text-[10px] text-gray-400 font-normal normal-case tracking-normal">{perms.length} permission{perms.length !== 1 ? "s" : ""}</span>
+                            <span className="text-sm font-bold text-primary tracking-wide uppercase">{moduleName}</span>
+                            <span className="text-xs text-gray-400 font-normal normal-case tracking-normal">{perms.length === 1 ? (t.has("permissionCountSingle") ? t("permissionCountSingle", { count: perms.length }) : `${perms.length} permission`) : (t.has("permissionCountPlural") ? t("permissionCountPlural", { count: perms.length }) : `${perms.length} permissions`)}</span>
                           </div>
                         </td>
                       </tr>
