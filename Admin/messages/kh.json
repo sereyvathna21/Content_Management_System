@@ -1148,5 +1148,78 @@
     "accountSettings": "ការកំណត់គណនី",
     "support": "ជំនួយ",
     "signOut": "ចាកចេញ"
+  },
+  "DashboardOverview": {
+    "SystemOverviewCard": {
+      "title": "ទិដ្ឋភាពទូទៅនៃប្រព័ន្ធ",
+      "desc": "អ្នកប្រើប្រាស់ តួនាទី និងកន្លែងផ្ទុកឯកសារ",
+      "totalUsers": "អ្នកប្រើប្រាស់សរុប",
+      "activeRoles": "តួនាទីសកម្ម",
+      "mediaFiles": "ឯកសារមេឌៀ",
+      "storageUsed": "ទំហំបានប្រើ",
+      "capacity": "សមត្ថភាពផ្ទុក {capacity} GB"
+    },
+    "ContentStatsCards": {
+      "news": "អត្ថបទព័ត៌មាន",
+      "publications": "ការបោះពុម្ពផ្សាយ",
+      "laws": "ច្បាប់ និងបទបញ្ញត្តិ",
+      "videos": "វីដេអូ",
+      "published": "បានផ្សាយ"
+    },
+    "PublishingTrendChart": {
+      "title": "និន្នាការនៃការបោះពុម្ពផ្សាយ",
+      "desc": "{count} អត្ថបទបានផ្សាយក្នុងរយៈពេល 6 ខែចុងក្រោយ",
+      "news": "ព័ត៌មាន",
+      "publications": "ការបោះពុម្ពផ្សាយ",
+      "laws": "ច្បាប់",
+      "videos": "វីដេអូ",
+      "items": "ធាតុ"
+    },
+    "ContactMessagesCard": {
+      "title": "សារទំនាក់ទំនង",
+      "replyRate": "អត្រាឆ្លើយតប {rate}%",
+      "unreadCount": "មិនទាន់អាន",
+      "replied": "បានឆ្លើយតប",
+      "unread": "មិនទាន់អាន",
+      "readNoReply": "បានអាន (មិនបានឆ្លើយតប)",
+      "read": "បានអាន",
+      "total": "សរុប"
+    },
+    "TelegramSyncCard": {
+      "title": "ការធ្វើសមកាលកម្ម Telegram",
+      "successRate": "បានធ្វើសមកាលកម្មដោយជោគជ័យ {rate}%",
+      "synced": "បានធ្វើសមកាលកម្ម",
+      "syncedLabel": "បានធ្វើសមកាលកម្ម:",
+      "pending": "កំពុងរង់ចាំ",
+      "pendingLabel": "កំពុងរង់ចាំ:",
+      "notSynced": "មិនបានធ្វើសមកាលកម្ម",
+      "noneLabel": "គ្មាន:",
+      "failed": "បរាជ័យ",
+      "failedLabel": "បរាជ័យ:",
+      "total": "សរុប"
+    },
+    "SocialTopicsCard": {
+      "title": "ប្រធានបទសង្គម",
+      "totalSections": "ផ្នែកសរុប",
+      "total": "សរុប",
+      "published": "បានផ្សាយ",
+      "draft": "ព្រាង",
+      "desc": "ទិដ្ឋភាពទូទៅនៃប្រធានបទនិងផ្នែកមាតិកា",
+      "acrossAllTopics": "នៅគ្រប់ប្រធានបទ",
+      "publishedRate": "អត្រាបានផ្សាយ"
+    },
+    "RecentActivityTable": {
+      "title": "សកម្មភាពថ្មីៗ",
+      "desc": "សកម្មភាពចុងក្រោយនៅក្នុងប្រព័ន្ធ",
+      "empty": "គ្មានសកម្មភាពថ្មីៗទេ",
+      "justNow": "អម្បាញ់មិញ",
+      "minsAgo": "{mins} នាទីមុន",
+      "hoursAgo": "{hours} ម៉ោងមុន",
+      "daysAgo": "{days} ថ្ងៃមុន"
+    },
+    "errorTitle": "កំហុស",
+    "refreshPrompt": "សូមសាកល្បងផ្ទុកទំព័រនេះឡើងវិញ។",
+    "retry": "សាកល្បងម្ដងទៀត",
+    "failedToLoad": "មិនអាចទាញយកទិន្នន័យផ្ទាំងគ្រប់គ្រងបានទេ"
   }
 }

@@ -1147,5 +1147,78 @@
     "accountSettings": "Account settings",
     "support": "Support",
     "signOut": "Sign out"
+  },
+  "DashboardOverview": {
+    "SystemOverviewCard": {
+      "title": "System Overview",
+      "desc": "Users, roles & media storage",
+      "totalUsers": "Total Users",
+      "activeRoles": "Active Roles",
+      "mediaFiles": "Media Files",
+      "storageUsed": "Storage Used",
+      "capacity": "{capacity} GB Capacity"
+    },
+    "ContentStatsCards": {
+      "news": "News Articles",
+      "publications": "Publications",
+      "laws": "Laws & Regulations",
+      "videos": "Videos",
+      "published": "published"
+    },
+    "PublishingTrendChart": {
+      "title": "Content Publishing Trend",
+      "desc": "{count} items published in the last 6 months",
+      "news": "News",
+      "publications": "Publications",
+      "laws": "Laws",
+      "videos": "Videos",
+      "items": "items"
+    },
+    "ContactMessagesCard": {
+      "title": "Contact Messages",
+      "replyRate": "{rate}% reply rate",
+      "unreadCount": "unread",
+      "replied": "Replied",
+      "unread": "Unread",
+      "readNoReply": "Read (No Reply)",
+      "read": "Read",
+      "total": "Total"
+    },
+    "TelegramSyncCard": {
+      "title": "Telegram Sync",
+      "successRate": "{rate}% successfully synced",
+      "synced": "Synced",
+      "syncedLabel": "Synced:",
+      "pending": "Pending",
+      "pendingLabel": "Pending:",
+      "notSynced": "Not Synced",
+      "noneLabel": "None:",
+      "failed": "Failed",
+      "failedLabel": "Failed:",
+      "total": "Total"
+    },
+    "SocialTopicsCard": {
+      "title": "Social Topics",
+      "totalSections": "Total Sections",
+      "total": "Total",
+      "published": "Published",
+      "draft": "Draft",
+      "desc": "Content topics and sections overview",
+      "acrossAllTopics": "Across all topics",
+      "publishedRate": "Published rate"
+    },
+    "RecentActivityTable": {
+      "title": "Recent Activity",
+      "desc": "Latest actions across the system",
+      "empty": "No recent activity",
+      "justNow": "Just now",
+      "minsAgo": "{mins}m ago",
+      "hoursAgo": "{hours}h ago",
+      "daysAgo": "{days}d ago"
+    },
+    "errorTitle": "Error",
+    "refreshPrompt": "Please try refreshing the page.",
+    "retry": "Retry",
+    "failedToLoad": "Failed to load dashboard data"
   }
 }
