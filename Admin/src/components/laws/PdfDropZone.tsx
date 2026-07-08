@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
 
-const MAX_PDF_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_PDF_SIZE = 50 * 1024 * 1024; // 50 MB
 
 function formatBytes(n: number) {
   if (n < 1024) return `${n} B`;

@@ -207,13 +207,13 @@
     "empty": "មិនទាន់មានការជូនដំណឹង។",
     "viewAll": "មើលការជូនដំណឹងទាំងអស់",
     "titles": {
-      "created": "បានបង្កើតច្បាប់ថ្មី",
-      "deleted": "បានលុបច្បាប់",
+      "created": "បានបង្កើតមាតិកាថ្មី",
+      "deleted": "បានលុបមាតិកា",
       "general": "ការជូនដំណឹងប្រព័ន្ធ"
     },
     "messages": {
-      "created": "បានបង្កើតច្បាប់ថ្មីមួយ។",
-      "deleted": "បានលុបច្បាប់មួយ។",
+      "created": "បានបង្កើតមាតិកាថ្មីមួយ។",
+      "deleted": "បានលុបមាតិកាមួយ។",
       "createdWithTitle": "បានបង្កើត \"{title}\"។",
       "deletedWithTitle": "បានលុប \"{title}\"។"
     },
@@ -346,8 +346,8 @@
     "saving": "កំពុងរក្សាទុក…",
     "pdfUpload": "បង្ហោះ PDF",
     "pdfOrDrag": "ឬអូស",
-    "pdfMaxSize": "អតិបរមា 10 MB",
-    "pdfSizeError": "ឯកសារលើសកម្រិត 10 MB។ សូមជ្រើសឯកសារតូចជាងនេះ។",
+    "pdfMaxSize": "អតិបរមា 50 MB",
+    "pdfSizeError": "ឯកសារលើសកម្រិត 50 MB។ សូមជ្រើសឯកសារតូចជាងនេះ។",
     "pdfDropzoneAria": "តំបន់បញ្ចូល PDF",
     "pdfRemove": "លុប PDF",
     "currentPdf": "PDF បច្ចុប្បន្ន",
@@ -451,8 +451,8 @@
     "saving": "កំពុងរក្សាទុក...",
     "attachmentUpload": "បង្ហោះ PDF",
     "attachmentOrDrag": "ឬអូស",
-    "attachmentMaxSize": "អតិបរមា 10 MB",
-    "attachmentSizeError": "ឯកសារលើសកម្រិត 10 MB។ សូមជ្រើសឯកសារតូចជាងនេះ។",
+    "attachmentMaxSize": "អតិបរមា 50 MB",
+    "attachmentSizeError": "ឯកសារលើសកម្រិត 50 MB។ សូមជ្រើសឯកសារតូចជាងនេះ។",
     "attachmentDropzoneAria": "តំបន់បង្ហោះឯកសារភ្ជាប់ការបោះពុម្ពផ្សាយ",
     "attachmentRemove": "លុបឯកសារភ្ជាប់",
     "currentAttachment": "ឯកសារភ្ជាប់បច្ចុប្បន្ន",
@@ -1024,6 +1024,10 @@
     "sectionForm": {
       "titleEdit": "កែសម្រួលផ្នែក",
       "titleNew": "ផ្នែកថ្មី",
+      "confirmCloseTitle": "ការផ្លាស់ប្តូរមិនទាន់បានរក្សាទុក",
+      "confirmClose": "អ្នកមានការផ្លាស់ប្តូរដែលមិនទាន់បានរក្សាទុក។ តើអ្នកប្រាកដជាចង់បិទឬទេ? រាល់ការផ្លាស់ប្តូរនឹងត្រូវបាត់បង់។",
+      "keepEditing": "បន្តកែសម្រួល",
+      "discard": "បោះបង់ការផ្លាស់ប្តូរ",
       "sectionKeyPlaceholder": "ឧ. intro-block",
       "tabKhmer": "ខ្មែរ",
       "tabEnglish": "អង់គ្លេស",
@@ -1055,6 +1059,10 @@
     "media": {
       "title": "រូបភាពផ្នែក",
       "subtitle": "បង្ហោះ និងគ្រប់គ្រងរូបភាពសម្រាប់ផ្នែកនេះ។",
+      "confirmDeleteTitle": "លុបរូបភាពដែលបានភ្ជាប់",
+      "confirmDeleteBody": "តើអ្នកប្រាកដជាចង់លុបរូបភាពនេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+      "confirmDelete": "លុបរូបភាព",
+      "cancel": "បោះបង់",
       "fileHint": "PNG/JPG/WEBP/GIF ទំហំអតិបរមា {max}",
       "saveBeforeAttach": "សូមរក្សាទុកផ្នែកនេះ មុនពេលភ្ជាប់រូបភាព។",
       "dropzone": {
@@ -1370,6 +1378,10 @@
     "sectionForm": {
       "titleEdit": "កែសម្រួលផ្នែក",
       "titleNew": "ផ្នែកថ្មី",
+      "confirmCloseTitle": "ការផ្លាស់ប្តូរមិនទាន់បានរក្សាទុក",
+      "confirmClose": "អ្នកមានការផ្លាស់ប្តូរដែលមិនទាន់បានរក្សាទុក។ តើអ្នកប្រាកដជាចង់បិទឬទេ? រាល់ការផ្លាស់ប្តូរនឹងត្រូវបាត់បង់។",
+      "keepEditing": "បន្តកែសម្រួល",
+      "discard": "បោះបង់ការផ្លាស់ប្តូរ",
       "sectionKeyPlaceholder": "ឧ. intro-block",
       "tabKhmer": "ខ្មែរ",
       "tabEnglish": "អង់គ្លេស",
@@ -1401,6 +1413,10 @@
     "media": {
       "title": "រូបភាពផ្នែក",
       "subtitle": "បង្ហោះ និងគ្រប់គ្រងរូបភាពសម្រាប់ផ្នែកនេះ។",
+      "confirmDeleteTitle": "លុបរូបភាពដែលបានភ្ជាប់",
+      "confirmDeleteBody": "តើអ្នកប្រាកដជាចង់លុបរូបភាពនេះមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ។",
+      "confirmDelete": "លុបរូបភាព",
+      "cancel": "បោះបង់",
       "fileHint": "PNG/JPG/WEBP/GIF ទំហំអតិបរមា {max}",
       "saveBeforeAttach": "សូមរក្សាទុកផ្នែកនេះ មុនពេលភ្ជាប់រូបភាព។",
       "dropzone": {

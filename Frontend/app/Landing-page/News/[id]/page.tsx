@@ -7,7 +7,6 @@ import Image from "next/image";
 
 import Footer from "@/app/components/Home/Footer";
 import Navigation from "@/app/components/Home/Navigation";
-import ShareControls from "@/app/components/ShareControls";
 import Breadcrumbs from "@/app/components/New/Breadcrumbs";
 import Link from "next/link";
 import { NewsArticle, PaginatedResponse } from "@/types/api";
@@ -135,9 +134,8 @@ export default async function ArticlePage({
                       )}
                     </p>
                   </div>
-                  <ShareControls />
                 </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-primary">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight text-primary">
                   {displayedTitle}
                 </h1>
               </div>

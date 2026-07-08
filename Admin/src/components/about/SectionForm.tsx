@@ -16,6 +16,8 @@ type Props = {
   showHeader?: boolean;
   showActions?: boolean;
   className?: string;
+  onTabChange?: (tab: "km" | "en") => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 };
 
 export default function SectionForm({
@@ -27,6 +29,8 @@ export default function SectionForm({
   showHeader = true,
   showActions = true,
   className,
+  onTabChange,
+  onDirtyChange,
 }: Props) {
   const t = useTranslations("AboutEditor");
   const locale = useLocale();
@@ -48,7 +52,7 @@ export default function SectionForm({
       setData({ ...initialData });
     } else {
       setData({
-        sectionKey: "",
+        sectionKey: `sec-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
         titleKm: "",
         titleEn: "",
         contentKm: "",
@@ -57,6 +61,23 @@ export default function SectionForm({
     }
     setErrors({});
   }, [initialData]);
+
+  useEffect(() => {
+    onTabChange?.(activeTab);
+  }, [activeTab, onTabChange]);
+
+  useEffect(() => {
+    const defaultData = {
+        sectionKey: "",
+        titleKm: "",
+        titleEn: "",
+        contentKm: "",
+        contentEn: "",
+    };
+    const current = JSON.stringify(data);
+    const initial = JSON.stringify(initialData || defaultData);
+    onDirtyChange?.(current !== initial);
+  }, [data, initialData, onDirtyChange]);
 
   // Sync activeTab to global locale
   useEffect(() => {
@@ -70,11 +91,6 @@ export default function SectionForm({
 
   function validate() {
       const newErrors: any = {};
-      if (!data.sectionKey.trim()) {
-        newErrors.sectionKey = t("sectionForm.errors.sectionKeyRequired") || "Section key is required";
-      } else if (data.sectionKey.length > 50) {
-        newErrors.sectionKey = "Section key cannot exceed 50 characters";
-      }
 
       if (!data.titleKm.trim()) {
         newErrors.titleKm = t("sectionForm.errors.titleKmRequired") || "Khmer title is required";
@@ -133,27 +149,7 @@ export default function SectionForm({
         </div>
       )}
 
-      <div className="mb-5">
-          <div className="flex items-center justify-between mb-2">
-            <label className="block text-[15px] font-medium text-gray-900">
-              {t("sectionKey") || "Section Key"} <span className="text-red-500">*</span>
-            </label>
-            <span className="text-[11px] text-gray-400">
-              {(data.sectionKey || "").length}/50
-            </span>
-          </div>
-          <input
-            type="text"
-            maxLength={50}
-            value={data.sectionKey}
-            onChange={(e) => setData({ ...data, sectionKey: e.target.value.replace(/\s+/g, '-').toLowerCase() })}
-            placeholder={t("sectionForm.sectionKeyPlaceholder") || "e.g. intro-block"}
-            className={`w-full px-3 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none ${errors.sectionKey ? "border-red-500" : "border-gray-300"}`}
-          />
-          {errors.sectionKey && <p className="text-xs text-red-500 mt-1">{errors.sectionKey}</p>}
-      </div>
-
-       {/* Language Tabs */}
+      {/* Language Tabs */}
        <div className="border-b border-gray-200 mb-4">
           <nav className="flex space-x-4">
             <button
@@ -210,7 +206,7 @@ export default function SectionForm({
            </span>
          </div>
           <textarea
-            rows={10}
+            rows={24}
             maxLength={5000}
             value={(isKm ? data.contentKm : data.contentEn) || ""}
             onChange={(e) => isKm ? setData({ ...data, contentKm: e.target.value }) : setData({ ...data, contentEn: e.target.value })}

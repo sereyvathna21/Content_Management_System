@@ -11,6 +11,25 @@ import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { ApiAboutSection, ApiAboutTopic, ApiAboutMedia, ApiTopicReference, AboutTopic, AboutContentSection } from "@/types/api";
 
+const publicBackendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
+
+const getFullImageUrl = (url: string | null | undefined) => {
+  if (!url) return "";
+  
+  let finalUrl = url;
+  if (finalUrl.startsWith("http://backend:5001")) {
+    finalUrl = finalUrl.replace("http://backend:5001", publicBackendUrl);
+  }
+
+  if (finalUrl.startsWith("http://") || finalUrl.startsWith("https://") || finalUrl.startsWith("data:")) {
+    return finalUrl;
+  }
+  if (finalUrl.startsWith("/")) {
+    return `${publicBackendUrl}${finalUrl}`;
+  }
+  return `${publicBackendUrl}/${finalUrl}`;
+};
+
 // Helper to map API section to the format expected by the renderer
 function mapApiSections(apiSections: ApiAboutSection[] | undefined): AboutContentSection[] {
   if (!apiSections || !Array.isArray(apiSections)) return [];
@@ -28,7 +47,7 @@ function mapApiSections(apiSections: ApiAboutSection[] | undefined): AboutConten
     if (validMedia.length > 0) {
       if (validMedia.length === 1) {
         image = {
-          src: validMedia[0].publicUrl,
+          src: getFullImageUrl(validMedia[0].publicUrl),
           alt: validMedia[0].alt || "",
           caption: validMedia[0].caption,
           position: (validMedia[0].position || "top") as "top" | "bottom" | "left" | "right" | "full",
@@ -36,7 +55,7 @@ function mapApiSections(apiSections: ApiAboutSection[] | undefined): AboutConten
         };
       } else {
         images = validMedia.map((m: ApiAboutMedia) => ({
-          src: m.publicUrl,
+          src: getFullImageUrl(m.publicUrl),
           alt: m.alt || "",
           caption: m.caption,
           width: m.width || 100,
@@ -323,7 +342,7 @@ export default function About() {
       <div className="min-h-screen bg-white">
         <div className="relative w-full animate-fade-in overflow-hidden">
           <HeroCover
-            image="/about.svg"
+            image="/images/image.png"
             title={t("hero.title")}
             subtitle={t("hero.subtitle")}
           />

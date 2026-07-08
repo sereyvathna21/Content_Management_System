@@ -162,8 +162,11 @@ namespace Backend.Services
                 fileType = TelegramFileType.Photo;
             }
 
+            var titleKm = translationList
+                .FirstOrDefault(t => t.Language.Equals("km", StringComparison.OrdinalIgnoreCase))?.Title;
             var titleEn = translationList
-                .FirstOrDefault(t => t.Language.Equals("en", StringComparison.OrdinalIgnoreCase))?.Title ?? "";
+                .FirstOrDefault(t => t.Language.Equals("en", StringComparison.OrdinalIgnoreCase))?.Title;
+            var publicationTitle = titleKm ?? titleEn ?? publication.Id.ToString();
 
             return Task.FromResult(new TelegramSyncJob
             {
@@ -175,7 +178,7 @@ namespace Backend.Services
                 LinkText = "📋 មើលការបោះពុម្ពផ្សាយ",
                 LocalFilePath = localFilePath,
                 FileType = fileType,
-                DisplayFileName = fileType == TelegramFileType.Document ? $"{titleEn}.pdf" : null,
+                DisplayFileName = fileType == TelegramFileType.Document ? $"{publicationTitle}.pdf" : null,
                 PublicFileUrl = !string.IsNullOrEmpty(preferredAttachment) ? $"{frontendUrl}{preferredAttachment}" : null
             });
         }

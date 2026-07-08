@@ -435,10 +435,20 @@ export default function UsersPage() {
         backdropClassName="fixed inset-0 h-full w-full bg-gray-400/30 backdrop-blur-sm"
       >
         <div className="flex flex-col items-center text-center">
-          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-red-500">
-              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${
+            pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked ? 'bg-green-50' : 'bg-red-50'
+          }`}>
+            {pendingBlockId && users.find((u) => u.id === pendingBlockId)?.blocked ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+              </svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
+                <circle cx="12" cy="12" r="10" />
+                <path d="m4.9 4.9 14.2 14.2" />
+              </svg>
+            )}
           </div>
 
           <h3 className="text-xl font-bold text-gray-900 mb-2">

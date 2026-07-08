@@ -54,7 +54,15 @@ export default function usePdfThumbnail(source?: PdfSource, scale = 1.5) {
         // use PNG for lossless thumbnail quality
         const dataUrl = canvas.toDataURL("image/png");
         if (!cancelled) setThumb(dataUrl);
-      } catch (e) {
+      } catch (e: any) {
+        if (
+          cancelled ||
+          e?.name === "RenderingCancelledException" ||
+          (e instanceof Error && e.message.includes("Worker was destroyed"))
+        ) {
+          // Ignore cancellation errors expected during rapid navigation/search
+          return;
+        }
         console.error("usePdfThumbnail error", e);
         if (!cancelled) setThumb(null);
       }

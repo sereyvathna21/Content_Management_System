@@ -55,7 +55,7 @@ const SUPPORTED_LANGUAGES = [
 
 const DEFAULT_LANGUAGE = "km";
 const DEFAULT_LANGS = ["km", "en"];
-const CONTENT_MAX_LENGTH = 5000;
+const CONTENT_MAX_LENGTH = 2000;
 
 const CATEGORY_OPTIONS = [
   { value: "NSPC", labelKey: "categories.nspc" },
@@ -255,8 +255,8 @@ export default function PublicationForm({
       if (!translation.title.trim()) {
         errs.title = t("errors.titleRequired");
         if (!firstInvalidTab) firstInvalidTab = translation.language;
-      } else if (translation.title.length > 150) {
-        errs.title = "Title cannot exceed 150 characters";
+      } else if (translation.title.length > 400) {
+        errs.title = "Title cannot exceed 400 characters";
         if (!firstInvalidTab) firstInvalidTab = translation.language;
       }
 
@@ -557,12 +557,12 @@ export default function PublicationForm({
                   {t("titleLabel")} <span className="text-red-500">*</span>
                 </label>
                 <span className="text-[11px] text-gray-400">
-                  {activeTranslation.title.length}/150
+                  {activeTranslation.title.length}/400
                 </span>
               </div>
               <input
                 type="text"
-                maxLength={150}
+                maxLength={400}
                 value={activeTranslation.title}
                 placeholder={t("titlePlaceholder", { language: langLabel(activeTab) })}
                 onChange={(e) => updateTranslation(activeTab, { title: e.target.value })}

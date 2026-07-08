@@ -207,13 +207,13 @@
     "empty": "No notifications yet.",
     "viewAll": "View All Notifications",
     "titles": {
-      "created": "New Law Created",
-      "deleted": "Law Deleted",
+      "created": "New Content Created",
+      "deleted": "Content Deleted",
       "general": "System Notification"
     },
     "messages": {
-      "created": "A new law has been created.",
-      "deleted": "A law has been deleted.",
+      "created": "New content has been created.",
+      "deleted": "Content has been deleted.",
       "createdWithTitle": "\"{title}\" was created.",
       "deletedWithTitle": "\"{title}\" was deleted."
     },
@@ -346,8 +346,8 @@
     "saving": "Saving…",
     "pdfUpload": "Upload PDF",
     "pdfOrDrag": "or drag",
-    "pdfMaxSize": "Max 10 MB",
-    "pdfSizeError": "File exceeds 10 MB limit. Please choose a smaller file.",
+    "pdfMaxSize": "Max 50 MB",
+    "pdfSizeError": "File exceeds 50 MB limit. Please choose a smaller file.",
     "pdfDropzoneAria": "PDF upload dropzone",
     "pdfRemove": "Remove PDF",
     "currentPdf": "Current PDF",
@@ -451,8 +451,8 @@
     "saving": "Saving...",
     "attachmentUpload": "Upload PDF",
     "attachmentOrDrag": "or drag",
-    "attachmentMaxSize": "Max 10 MB",
-    "attachmentSizeError": "File exceeds 10 MB limit. Please choose a smaller file.",
+    "attachmentMaxSize": "Max 50 MB",
+    "attachmentSizeError": "File exceeds 50 MB limit. Please choose a smaller file.",
     "attachmentDropzoneAria": "Publication attachment upload dropzone",
     "attachmentRemove": "Remove attachment",
     "currentAttachment": "Current attachment",
@@ -1023,6 +1023,10 @@
     "sectionForm": {
       "titleEdit": "Edit Section",
       "titleNew": "New Section",
+      "confirmCloseTitle": "Unsaved Changes",
+      "confirmClose": "You have unsaved changes. Are you sure you want to close? All changes will be lost.",
+      "keepEditing": "Keep Editing",
+      "discard": "Discard Changes",
       "sectionKeyPlaceholder": "e.g. intro-block",
       "tabKhmer": "Khmer",
       "tabEnglish": "English",
@@ -1054,6 +1058,10 @@
     "media": {
       "title": "Section Images",
       "subtitle": "Upload and manage images for this section.",
+      "confirmDeleteTitle": "Delete Attached Image",
+      "confirmDeleteBody": "Are you sure you want to delete this attached image? This action cannot be undone.",
+      "confirmDelete": "Delete Image",
+      "cancel": "Cancel",
       "fileHint": "PNG/JPG/WEBP/GIF up to {max}",
       "saveBeforeAttach": "Save this section before attaching images.",
       "dropzone": {
@@ -1369,6 +1377,10 @@
     "sectionForm": {
       "titleEdit": "Edit Section",
       "titleNew": "New Section",
+      "confirmCloseTitle": "Unsaved Changes",
+      "confirmClose": "You have unsaved changes. Are you sure you want to close? All changes will be lost.",
+      "keepEditing": "Keep Editing",
+      "discard": "Discard Changes",
       "sectionKeyPlaceholder": "e.g. intro-block",
       "tabKhmer": "Khmer",
       "tabEnglish": "English",
@@ -1400,6 +1412,10 @@
     "media": {
       "title": "Section Images",
       "subtitle": "Upload and manage images for this section.",
+      "confirmDeleteTitle": "Delete Attached Image",
+      "confirmDeleteBody": "Are you sure you want to delete this attached image? This action cannot be undone.",
+      "confirmDelete": "Delete Image",
+      "cancel": "Cancel",
       "fileHint": "PNG/JPG/WEBP/GIF up to {max}",
       "saveBeforeAttach": "Save this section before attaching images.",
       "dropzone": {

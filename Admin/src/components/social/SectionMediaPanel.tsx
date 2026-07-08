@@ -4,6 +4,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { usePermission } from "@/hooks/usePermission";
+import Tooltip from "@/components/ui/Tooltip";
+import { Modal } from "@/components/ui/modal";
 import { EditorSection, MediaDto, SectionMedia } from "../../types/social.types";
 import {
     IMAGE_POSITIONS,
@@ -14,7 +16,9 @@ import {
     normalizeText,
     resolveMediaUrl,
     getNextSortOrder,
-    getPositionLabel
+    getPositionLabel,
+    parsePosition,
+    parseLanguage
 } from "../../lib/utils";
 
 interface SectionMediaPanelProps {
@@ -51,6 +55,7 @@ export default function SectionMediaPanel({
     });
     
     const [editingMediaId, setEditingMediaId] = useState<string | null>(null);
+    const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
     const [editingMediaForm, setEditingMediaForm] = useState({
         position: 4,
         width: 75,
@@ -175,11 +180,7 @@ export default function SectionMediaPanel({
             return;
         }
 
-        const alt = (mediaForm as any).alt?.trim() ?? "";
-        if (!alt) {
-            setUploadError(t("media.errors.altKhmerRequired") || "Khmer alt text is required.");
-            return;
-        }
+        const alt = "Image";
 
         if (!session?.accessToken) {
             setUploadError(t("media.errors.missingToken") || "Missing access token.");
@@ -190,7 +191,7 @@ export default function SectionMediaPanel({
         setUploadError(null);
 
         try {
-            const sortOrder = Number.isFinite(Number(mediaForm.sortOrder)) ? Number(mediaForm.sortOrder) : 0;
+            const sortOrder = activeSectionData ? getNextSortOrder(activeSectionData.media) : 0;
             const payload = {
                 mediaId: pendingMedia.id,
                 position: mediaForm.position,
@@ -279,11 +280,10 @@ export default function SectionMediaPanel({
     function beginEditMedia(item: SectionMedia) {
         setEditingMediaId(item.id);
         setEditingMediaForm({
-            position: item.position ?? 4,
+            position: parsePosition(item.position),
             width: item.width ?? 75,
-            language: item.language || "KH",
+            language: parseLanguage(item.language),
             alt: item.altKm || item.altEn || "",
-
             sortOrder: Number.isFinite(Number(item.sortOrder)) ? Number(item.sortOrder) : 0
         });
     }
@@ -303,11 +303,7 @@ export default function SectionMediaPanel({
         if (!activeSectionReady || !activeSectionData) return;
         if (!session?.accessToken) return;
 
-        const alt = (editingMediaForm as any).alt?.trim() ?? "";
-        if (!alt) {
-            setUploadError(t("media.errors.altKhmerRequired") || "Khmer alt text is required.");
-            return;
-        }
+        const alt = (editingMediaForm as any).alt?.trim() || "Image";
 
         setUpdatingMediaId(sectionMediaId);
 
@@ -353,16 +349,19 @@ export default function SectionMediaPanel({
         }
     }
 
+    const isEnglish = (lang: string | number) => {
+        const v = String(lang).toUpperCase();
+        return v === "EN" || v === "1";
+    };
+
     const sortedMedia = activeSectionData?.media
         ? [...activeSectionData.media]
-            .filter((m) => {
-                if (!filterLang) return true;
-                return filterLang === "en" ? m.language === "EN" : m.language === "KH";
-            })
+            .filter((item) => filterLang === "en" ? isEnglish(item.language) : !isEnglish(item.language))
             .sort((a, b) => a.sortOrder - b.sortOrder)
         : [];
 
-    const getPositionLabelText = (value: number) => {
+    const getPositionLabelText = (value: number | string) => {
+        const numValue = parsePosition(value);
         const labels: Record<number, string> = {
             0: t("media.position.top") || "Top",
             1: t("media.position.bottom") || "Bottom",
@@ -370,7 +369,7 @@ export default function SectionMediaPanel({
             3: t("media.position.right") || "Right",
             4: t("media.position.full") || "Full"
         };
-        return labels[value] || getPositionLabel(value);
+        return labels[numValue] || getPositionLabel(numValue);
     };
 
     return (
@@ -389,7 +388,7 @@ export default function SectionMediaPanel({
                 </div>
             ) : (
                 <div className="mt-4 space-y-6">
-                    <div className="relative border-2 border-dashed rounded-xl p-4 text-center transition-all duration-200 bg-gray-50 border-gray-300">
+                    <div className="relative flex items-center justify-center min-h-[160px] border-2 border-dashed rounded-xl p-4 text-center transition-all duration-200 hover:bg-gray-100 bg-gray-50 border-gray-300">
                         {canCreateMedia ? (
                         <input
                             ref={imageInputRef}
@@ -438,8 +437,11 @@ export default function SectionMediaPanel({
                                 </button>
                             </div>
                         ) : (
-                            <div className="relative z-20 text-sm text-gray-500">
-                                {t("media.dropzone.clickToUpload") || "Click to upload an image."}
+                            <div className="relative z-20 text-sm text-gray-500 pointer-events-none flex flex-col items-center gap-3">
+                                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span>{t("media.dropzone.clickToUpload") || "Click anywhere in this box to upload an image."}</span>
                             </div>
                         )}
                     </div>
@@ -484,26 +486,7 @@ export default function SectionMediaPanel({
                                 <option value="EN">English</option>
                             </select>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-1">{t("media.labels.sortOrder") || "Sort Order"}</label>
-                            <input
-                                type="number"
-                                min={0}
-                                value={mediaForm.sortOrder}
-                                onChange={(e) => setMediaForm({ ...mediaForm, sortOrder: Number(e.target.value) })}
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-900 mb-1">{t("media.labels.alt") || "Alt Text"} <span className="text-red-500">*</span></label>
-                            <input
-                                type="text"
-                                value={(mediaForm as any).alt}
-                                onChange={(e) => setMediaForm({ ...mediaForm, alt: e.target.value })}
-                                placeholder={t("media.placeholders.alt") || "Alt text..."}
-                                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                            />
-                        </div>
+
                         
 
                     </div>
@@ -524,7 +507,7 @@ export default function SectionMediaPanel({
                     <div className="border-t border-gray-100 pt-4">
                         <div className="flex items-center justify-between mb-3">
                             <h4 className="text-sm font-semibold text-gray-800">{t("media.list.title") || "Attached Images"}</h4>
-                            <span className="text-xs text-gray-400">{t("media.list.count", { count: activeSectionData?.media?.length || 0 }) || `${activeSectionData?.media?.length || 0} items`}</span>
+                            <span className="text-xs text-gray-400">{t("media.list.count", { count: sortedMedia.length }) || `${sortedMedia.length} items`}</span>
                         </div>
                         {sortedMedia.length ? (
                             <div className="space-y-3">
@@ -582,25 +565,7 @@ export default function SectionMediaPanel({
                                                                     <option value="EN">English</option>
                                                                 </select>
                                                             </div>
-                                                            <div>
-                                                                <label className="block text-xs font-medium text-gray-600 mb-1">{t("media.labels.sortOrder") || "Sort Order"}</label>
-                                                                <input
-                                                                    type="number"
-                                                                    min={0}
-                                                                    value={editingMediaForm.sortOrder}
-                                                                    onChange={(e) => setEditingMediaForm({ ...editingMediaForm, sortOrder: Number(e.target.value) })}
-                                                                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                                                                />
-                                                            </div>
-                                                            <div>
-                                                                <label className="block text-xs font-medium text-gray-600 mb-1">{t("media.labels.alt") || "Alt Text"} <span className="text-red-500">*</span></label>
-                                                                <input
-                                                                    type="text"
-                                                                    value={(editingMediaForm as any).alt}
-                                                                    onChange={(e) => setEditingMediaForm({ ...editingMediaForm, alt: e.target.value })}
-                                                                    className="w-full px-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                                                                />
-                                                            </div>
+
 
                                                         </div>
                                                         <div className="flex flex-wrap items-center gap-2">
@@ -624,6 +589,9 @@ export default function SectionMediaPanel({
                                                 ) : (
                                                     <>
                                                         <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                                                            <span className={`px-2 py-1 rounded-full text-white font-medium ${(String(item.language).toUpperCase() === 'EN' || String(item.language) === '1') ? 'bg-blue-500' : 'bg-red-500'}`}>
+                                                                {(String(item.language).toUpperCase() === 'EN' || String(item.language) === '1') ? 'English' : 'Khmer'}
+                                                            </span>
                                                             <span className="px-2 py-1 rounded-full bg-gray-100">{getPositionLabelText(item.position)}</span>
                                                             <span className="px-2 py-1 rounded-full bg-gray-100">{t("media.list.order", { order: item.sortOrder }) || `Order ${item.sortOrder}`}</span>
                                                         </div>
@@ -633,24 +601,36 @@ export default function SectionMediaPanel({
 
                                             </div>
                                             <div className="flex items-start gap-2">
-                                                {!isEditing && canUpdateMedia && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => beginEditMedia(item)}
-                                                        className="px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50"
-                                                    >
-                                                        {t("media.buttons.edit") || "Edit"}
-                                                    </button>
-                                                )}
-                                                {canDeleteMedia && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveMedia(item.id)}
-                                                        disabled={removingMediaId === item.id}
-                                                        className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50"
-                                                    >
-                                                        {removingMediaId === item.id ? (t("media.buttons.removing") || "Removing...") : (t("media.buttons.remove") || "Remove")}
-                                                    </button>
+                                                {!isEditing && (
+                                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                                        {canUpdateMedia && (
+                                                            <Tooltip label={t("media.buttons.edit") || "Edit"}>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => beginEditMedia(item)}
+                                                                    className="h-8 w-8 inline-flex items-center justify-center rounded-md bg-blue-50 text-blue-500 ring-1 ring-blue-200 hover:bg-blue-100 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200"
+                                                                >
+                                                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                                                </button>
+                                                            </Tooltip>
+                                                        )}
+                                                        {canDeleteMedia && (
+                                                            <Tooltip label={t("media.buttons.remove") || "Remove"}>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setDeleteConfirmId(item.id)}
+                                                                    disabled={removingMediaId === item.id}
+                                                                    className="h-8 w-8 inline-flex items-center justify-center rounded-md bg-red-50 text-red-500 ring-1 ring-red-200 hover:bg-red-100 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200 ml-1.5 disabled:opacity-50"
+                                                                >
+                                                                    {removingMediaId === item.id ? (
+                                                                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                                                                    ) : (
+                                                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m4 0V4a2 2 0 012-2h2a2 2 0 012 2v2" /></svg>
+                                                                    )}
+                                                                </button>
+                                                            </Tooltip>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
@@ -663,6 +643,43 @@ export default function SectionMediaPanel({
                     </div>
                 </div>
             )}
+            {/* Delete Confirmation Modal */}
+            <Modal isOpen={!!deleteConfirmId} onClose={() => setDeleteConfirmId(null)} className="max-w-md p-6">
+                <div className="flex flex-col items-center text-center">
+                   <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+                       <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                       </svg>
+                   </div>
+                   <h3 className="text-xl font-bold text-gray-900 mb-2">
+                       {t("media.confirmDeleteTitle") || "Delete Image"}
+                   </h3>
+                   <p className="text-sm text-gray-500 mb-6">
+                       {t("media.confirmDeleteBody") || "Are you sure you want to delete this attached image? This action cannot be undone."}
+                   </p>
+                   <div className="flex w-full gap-3">
+                       <button
+                           type="button"
+                           onClick={() => setDeleteConfirmId(null)}
+                           className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                       >
+                           {t("media.cancel") || "Cancel"}
+                       </button>
+                       <button
+                           type="button"
+                           onClick={() => {
+                               if (deleteConfirmId) {
+                                   handleRemoveMedia(deleteConfirmId);
+                                   setDeleteConfirmId(null);
+                               }
+                           }}
+                           className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors"
+                       >
+                           {t("media.confirmDelete") || "Delete"}
+                       </button>
+                   </div>
+                </div>
+            </Modal>
         </div>
     );
 }

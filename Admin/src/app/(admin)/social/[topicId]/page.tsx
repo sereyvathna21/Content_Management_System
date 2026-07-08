@@ -47,7 +47,9 @@ export default function TopicEditorPage() {
     const [loadingReferences, setLoadingReferences] = React.useState(false);
     const [draggingReferenceId, setDraggingReferenceId] = React.useState<string | null>(null);
     const [draggingReferenceLang, setDraggingReferenceLang] = React.useState<"km" | "en" | null>(null);
-    const [showMediaPanel, setShowMediaPanel] = React.useState(false);
+    const [activeLangTab, setActiveLangTab] = React.useState<"km" | "en">(locale === "en" ? "en" : "km");
+    const [isSectionFormDirty, setIsSectionFormDirty] = React.useState(false);
+    const [closeConfirmOpen, setCloseConfirmOpen] = React.useState(false);
 
 
     const loadReferences = React.useCallback(async () => {
@@ -87,9 +89,17 @@ export default function TopicEditorPage() {
         : activeSectionData;
 
     function handleCloseSectionModal() {
+        if (isSectionFormDirty) {
+            setCloseConfirmOpen(true);
+            return;
+        }
+        forceCloseSectionModal();
+    }
+
+    function forceCloseSectionModal() {
         setIsFormOpen(false);
         setActiveSectionId(null);
-        setShowMediaPanel(false);
+        setCloseConfirmOpen(false);
     }
 
     async function handleSaveSettings() {
@@ -285,87 +295,40 @@ export default function TopicEditorPage() {
                 </div>
             </div>
 
-            <Modal isOpen={isFormOpen} onClose={handleCloseSectionModal} className="max-w-5xl p-0">
-                <div className="flex flex-col max-h-[85vh]">
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                        <h3 className="text-base font-semibold text-gray-900">
+            <Modal isOpen={isFormOpen} onClose={handleCloseSectionModal} className="max-w-7xl w-[95vw] p-0">
+                <div className="flex flex-col max-h-[90vh]">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+                        <h3 className="text-xl font-bold text-primary">
                             {currentFormInitialData?.id ? (t("sectionForm.titleEdit") || "Edit Section") : (t("sectionForm.titleNew") || "New Section")}
                         </h3>
-                        <button
-                            type="button"
-                            onClick={handleCloseSectionModal}
-                            className="text-gray-400 hover:text-gray-600"
-                        >
-                            <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                            </svg>
-                        </button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                        <SectionForm 
-                            formId={sectionFormId}
-                            initialData={currentFormInitialData as any}
-                            onSave={handleSaveSection}
-                            onCancel={handleCloseSectionModal}
-                            saving={isSaving}
-                            showHeader={false}
-                            showActions={false}
-                        />
+                    <div className="flex-1 overflow-y-auto">
+                        <div className="flex flex-col lg:flex-row">
+                            {/* Left: Section Form */}
+                            <div className="p-6 space-y-6 lg:w-1/2 lg:border-r lg:border-gray-100">
+                                <SectionForm 
+                                    formId={sectionFormId}
+                                    initialData={currentFormInitialData as any}
+                                    onSave={handleSaveSection}
+                                    onCancel={handleCloseSectionModal}
+                                    saving={isSaving}
+                                    showHeader={false}
+                                    showActions={true}
+                                    onTabChange={setActiveLangTab}
+                                    onDirtyChange={setIsSectionFormDirty}
+                                />
+                            </div>
 
-                        {!showMediaPanel && (
-                            <button
-                                type="button"
-                                onClick={() => setShowMediaPanel(true)}
-                                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg border border-primary/30 transition"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                                </svg>
-                                {t("addImage") || "Add Image"}
-                            </button>
-                        )}
-
-                        {showMediaPanel && (
-                            <div className="border-t pt-6">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-base font-semibold text-gray-900">{t("sectionImage") || "Section Images"}</h3>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowMediaPanel(false)}
-                                        className="text-gray-400 hover:text-gray-600"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </div>
+                            {/* Right: Media Panel */}
+                            <div className="p-6 lg:w-1/2">
                                 <SectionMediaPanel
                                     activeSectionData={activeSectionData || null}
                                     activeSectionReady={activeSectionReady}
                                     backendUrl={backendUrl}
                                     onChanged={load}
-                                    filterLang={locale === "en" ? "en" : "km"}
+                                    filterLang={activeLangTab}
                                 />
                             </div>
-                        )}
-                    </div>
-                    <div className="border-t border-gray-100 bg-white px-6 py-4">
-                        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={handleCloseSectionModal}
-                                className="w-full sm:w-auto px-6 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-                            >
-                                {t("sectionForm.cancel") || "Cancel"}
-                            </button>
-                            <button
-                                type="submit"
-                                form={sectionFormId}
-                                disabled={isSaving}
-                                className="w-full sm:w-auto px-6 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50"
-                            >
-                                {isSaving ? (t("sectionForm.saving") || "Saving...") : (t("sectionForm.save") || "Save Block")}
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -424,6 +387,37 @@ export default function TopicEditorPage() {
                     >
                         Okay, got it
                     </button>
+                </div>
+            </Modal>
+
+            {/* Close Confirm Modal */}
+            <Modal isOpen={closeConfirmOpen} onClose={() => setCloseConfirmOpen(false)} className="max-w-md p-6">
+                <div className="flex flex-col items-center text-center">
+                   <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mb-4">
+                       <svg className="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                       </svg>
+                   </div>
+                   <h3 className="text-xl font-bold text-gray-900 mb-2">
+                       {t("sectionForm.confirmCloseTitle") || "Unsaved Changes"}
+                   </h3>
+                   <p className="text-sm text-gray-500 mb-6">
+                       {t("sectionForm.confirmClose") || "You have unsaved changes. Are you sure you want to close? All changes will be lost."}
+                   </p>
+                   <div className="flex w-full gap-3">
+                       <button
+                           className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                           onClick={() => setCloseConfirmOpen(false)}
+                       >
+                           {t("sectionForm.keepEditing") || "Keep Editing"}
+                       </button>
+                       <button
+                           className="flex-1 px-4 py-2.5 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors"
+                           onClick={forceCloseSectionModal}
+                       >
+                           {t("sectionForm.discard") || "Discard Changes"}
+                       </button>
+                   </div>
                 </div>
             </Modal>
 

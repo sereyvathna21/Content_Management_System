@@ -38,3 +38,22 @@ export function getNextSortOrder(media: SectionMedia[]) {
 export function getPositionLabel(value: number) {
     return IMAGE_POSITIONS.find((p) => p.value === value)?.label ?? "Full";
 }
+
+/** Convert a position value (number or string enum name) to its numeric value */
+export function parsePosition(value: string | number | undefined | null): number {
+    if (value === undefined || value === null) return 4; // default Full
+    if (typeof value === "number") return value;
+    const map: Record<string, number> = {
+        "top": 0, "bottom": 1, "left": 2, "right": 3, "full": 4,
+        "0": 0, "1": 1, "2": 2, "3": 3, "4": 4,
+    };
+    return map[String(value).toLowerCase()] ?? 4;
+}
+
+/** Convert a language value (number or string enum name) to its string key */
+export function parseLanguage(value: string | number | undefined | null): string {
+    if (value === undefined || value === null) return "KH";
+    const v = String(value).toUpperCase();
+    if (v === "EN" || v === "1") return "EN";
+    return "KH";
+}

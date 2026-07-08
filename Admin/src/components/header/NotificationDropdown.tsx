@@ -43,7 +43,7 @@ function pickLocalizedTitle(titleKm: string | undefined, titleEn: string | undef
 }
 
 function extractTitleFromLegacyMessage(message: string): string {
-  const match = message.match(/^Law\s+"(.+?)"\s+was\s+(?:created|deleted)\.?$/i);
+  const match = message.match(/^(?:Law|Publication|News)\s+"(.+?)"\s+was\s+(?:created|deleted)\.?$/i);
   if (!match || !match[1]) {
     return "";
   }

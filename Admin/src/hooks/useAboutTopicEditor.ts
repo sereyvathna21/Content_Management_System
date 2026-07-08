@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { EditorSection, SectionData } from "@/types/about.types";
@@ -40,9 +40,13 @@ export function useAboutTopicEditor() {
         return result;
     }
 
+    const initialLoadDone = useRef(false);
+
     const load = useCallback(async () => {
         if (!topicId || status === "loading" || !session?.accessToken) return;
-        setLoading(true);
+        if (!initialLoadDone.current) {
+            setLoading(true);
+        }
         try {
             const [topicRes, sectionsRes] = await Promise.all([
                 fetch(`${getBackendUrl()}/api/admin/about/topics/${topicId}`, {
@@ -93,10 +97,15 @@ export function useAboutTopicEditor() {
                 })) as EditorSection[];
                 setSections(buildTreeOrder(mapped));
             }
+            if (topicRes.ok && sectionsRes.ok) {
+                initialLoadDone.current = true;
+            }
         } catch (err) {
             console.error(err);
         } finally {
-            setLoading(false);
+            if (initialLoadDone.current) {
+                setLoading(false);
+            }
         }
     }, [topicId, status, session?.accessToken]);
 

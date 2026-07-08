@@ -52,9 +52,11 @@ export const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
+  const hasMaxWidth = className?.includes("max-w-");
+  const defaultMaxWidth = hasMaxWidth ? "" : "max-w-lg";
   const contentClasses = isFullscreen
     ? "w-full h-full"
-    : "relative w-full max-w-lg rounded-3xl bg-white dark:bg-gray-900 mx-auto";
+    : `relative w-full ${defaultMaxWidth} rounded-3xl bg-white dark:bg-gray-900 mx-auto`;
 
   return (
     <div className="fixed inset-0 z-99999 overflow-y-auto overflow-x-hidden">
