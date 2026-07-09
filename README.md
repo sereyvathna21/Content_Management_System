@@ -142,6 +142,20 @@ Once the containers are healthy, open your browser:
 
 > **Adminer login:** System = `PostgreSQL`, Server = `db`, Username = `nspc`, Password = *(your POSTGRES_PASSWORD from `.env`)*, Database = `nspc`.
 
+### 5. Default Login Credentials
+
+Because the database automatically seeds itself in development mode, you can log in to the Admin Dashboard immediately using these default accounts:
+
+**Super Administrator:**
+- **Email:** `superadmin@example.com`
+- **Password:** `SuperAdmin@123`
+
+**Standard Administrator:**
+- **Email:** `admin@example.com`
+- **Password:** `12345678`
+
+> ⚠️ **Important:** You should change these passwords immediately or delete these accounts before deploying to production!
+
 ### Stopping & Restarting
 
 ```bash
