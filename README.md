@@ -21,7 +21,6 @@
 - [Prerequisites](#prerequisites)
 - [Getting Started (Docker — Recommended)](#getting-started-docker--recommended)
 - [Getting Started (Manual Setup)](#getting-started-manual-setup)
-- [Environment Variables Reference](#environment-variables-reference)
 - [Configuring Third-Party Services](#configuring-third-party-services)
 - [Project Structure](#project-structure)
 - [API Documentation](#api-documentation)
@@ -115,7 +114,7 @@ cd "NSPC CMS"
 cp .env.example .env
 ```
 
-Open the `.env` file and replace the placeholder values with your own. See the [Environment Variables Reference](#environment-variables-reference) section below for details on each variable.
+Open the `.env` file and replace the placeholder values with your own. Each variable is documented with inline comments inside the file.
 
 ### 3. Build & Start
 
@@ -260,33 +259,6 @@ npm run dev
 ```
 
 The Frontend Website will be available at `http://localhost:3000`.
-
----
-
-## Environment Variables Reference
-
-### Root `.env` (Used by Docker Compose)
-
-| Variable | Description | Default |
-| :--- | :--- | :--- |
-| `POSTGRES_DB` | PostgreSQL database name | `nspc` |
-| `POSTGRES_USER` | PostgreSQL username | `nspc` |
-| `POSTGRES_PASSWORD` | PostgreSQL password | `change_me` |
-| `JWT_SECRET` | JWT signing key (min 32 chars) | `change_me` |
-| `JWT_ISSUER` | JWT token issuer | `NSPCBackend` |
-| `JWT_AUDIENCE` | JWT token audience | `NSPCAdmin` |
-| `AUTH_SECRET` | Next.js Auth session secret | `change_me` |
-| `EMAIL_SMTP_HOST` | SMTP server hostname | `smtp.gmail.com` |
-| `EMAIL_SMTP_PORT` | SMTP server port | `587` |
-| `EMAIL_SMTP_USER` | SMTP login email | — |
-| `EMAIL_SMTP_PASSWORD` | SMTP login password / app password | — |
-| `EMAIL_FROM_NAME` | Display name on outgoing emails | `NSPC CMS` |
-| `EMAIL_FROM_ADDRESS` | Sender email address | — |
-| `EMAIL_REPLY_TO` | Reply-to email address | — |
-| `TELEGRAM_BOT_TOKEN` | Telegram Bot API token | — |
-| `TELEGRAM_CHANNEL_ID` | Telegram channel identifier | — |
-
-> ⚠️ **Security:** Never commit your `.env` file. The `.gitignore` is pre-configured to exclude it.
 
 ---
 
