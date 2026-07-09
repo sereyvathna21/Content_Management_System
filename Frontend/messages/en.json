@@ -848,5 +848,31 @@
         }
       ]
     }
+  },
+  "SEO": {
+    "defaultTitle": "National Social Protection Council",
+    "defaultDescription": "The National Social Protection Council (NSPC) coordinates and steers the development of the social protection system in Cambodia.",
+    "pages": {
+      "home": {
+        "title": "Home",
+        "description": "Welcome to the National Social Protection Council (NSPC) of Cambodia."
+      },
+      "about": {
+        "title": "About Us",
+        "description": "Learn more about the National Social Protection Council."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "description": "Get in touch with the National Social Protection Council."
+      },
+      "news": {
+        "title": "News & Events",
+        "description": "Latest news and events from the National Social Protection Council."
+      },
+      "resources": {
+        "title": "Resources",
+        "description": "Resources and publications from the National Social Protection Council."
+      }
+    }
   }
 }
