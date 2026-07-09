@@ -203,6 +203,19 @@ namespace Backend.DTOs
         public List<string> Permissions { get; set; } = new();
     }
 
+    public class VerifyMfaRequest
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        public string Code { get; set; } = string.Empty;
+    }
+
     public class MessageResponse
     {
         public string Message { get; set; } = string.Empty;

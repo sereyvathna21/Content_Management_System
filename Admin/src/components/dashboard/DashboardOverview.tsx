@@ -12,6 +12,7 @@ import TelegramSyncCard from "./TelegramSyncCard";
 import SocialTopicsCard from "./SocialTopicsCard";
 import RecentActivityTable from "./RecentActivityTable";
 import SystemOverviewCard from "./SystemOverviewCard";
+import RecentDraftsCard from "./RecentDraftsCard";
 
 export default function DashboardOverview() {
   const t = useTranslations("DashboardOverview");
@@ -136,28 +137,33 @@ export default function DashboardOverview() {
         />
       </div>
 
-      {/* Row 2: Publishing Trend + Contact Messages */}
+      {/* Row 2: Recent Drafts + Publishing Trend */}
+      <div className="col-span-12 xl:col-span-5">
+        <RecentDraftsCard drafts={dashboardData.recentDrafts} />
+      </div>
       <div className="col-span-12 xl:col-span-7">
         <PublishingTrendChart data={dashboardData.publishingTrend} />
       </div>
+
+      {/* Row 3: Contact Messages + Telegram Sync */}
       <div className="col-span-12 xl:col-span-5">
         <ContactMessagesCard contacts={dashboardData.contacts} />
       </div>
-
-      {/* Row 3: Telegram Sync + Social Topics */}
-      <div className="col-span-12 xl:col-span-5">
+      <div className="col-span-12 xl:col-span-7">
         <TelegramSyncCard telegramSync={dashboardData.telegramSync} />
       </div>
+
+      {/* Row 4: Social Topics + System Overview */}
       <div className="col-span-12 xl:col-span-7">
         <SocialTopicsCard socialTopics={dashboardData.socialTopics} />
       </div>
-
-      {/* Row 4: Recent Activity + System Overview */}
-      <div className="col-span-12 xl:col-span-7">
-        <RecentActivityTable recentActivity={dashboardData.recentActivity} />
-      </div>
       <div className="col-span-12 xl:col-span-5">
         <SystemOverviewCard users={dashboardData.users} media={dashboardData.media} />
+      </div>
+
+      {/* Row 5: Recent Activity */}
+      <div className="col-span-12">
+        <RecentActivityTable recentActivity={dashboardData.recentActivity} />
       </div>
     </div>
   );

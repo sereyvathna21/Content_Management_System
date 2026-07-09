@@ -63,6 +63,44 @@ namespace Backend.Controllers
             return Ok(result.Data);
         }
 
+        [HttpPost("verify-mfa")]
+        public async Task<IActionResult> VerifyMfa([FromBody] VerifyMfaRequest request)
+        {
+            var result = await _auth.VerifyMfaAsync(request);
+            if (!result.Success)
+            {
+                await _audit.WriteAsync(new AuditLogEntry
+                {
+                    Action = "auth:verify_mfa_failed",
+                    EntityType = "Auth",
+                    Summary = "MFA Verification failed",
+                    Status = AuditLogStatus.Failure,
+                    ErrorMessage = result.Message,
+                    ActorEmail = request.Email,
+                    Metadata = new { request.Email }
+                }, HttpContext);
+
+                return BadRequest(new MessageResponse { Message = result.Message });
+            }
+
+            if (result.Data?.User != null)
+            {
+                await _audit.WriteAsync(new AuditLogEntry
+                {
+                    Action = "auth:verify_mfa",
+                    EntityType = "User",
+                    EntityId = result.Data.User.Id.ToString(),
+                    ActorUserId = result.Data.User.Id,
+                    ActorEmail = result.Data.User.Email,
+                    Summary = "MFA Login successful",
+                    Status = AuditLogStatus.Success,
+                    Metadata = new { result.Data.User.Email, result.Data.User.Role }
+                }, HttpContext);
+            }
+
+            return Ok(result.Data);
+        }
+
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {

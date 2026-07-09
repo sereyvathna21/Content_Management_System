@@ -23,21 +23,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
         remember: { label: "Remember", type: "text" },
+        code: { label: "Code", type: "text" },
       },
       authorize: async (credentials) => {
-        const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+        const url = credentials.code 
+            ? `${BACKEND_URL}/api/auth/verify-mfa` 
+            : `${BACKEND_URL}/api/auth/login`;
+
+        const bodyPayload = credentials.code
+            ? { email: credentials.email, password: credentials.password, code: credentials.code }
+            : { email: credentials.email, password: credentials.password, remember: credentials.remember };
+
+        const res = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-            remember: credentials.remember,
-          }),
+          body: JSON.stringify(bodyPayload),
         });
         const data = await res.json();
         if (!res.ok) {
           // allow NextAuth to receive the backend message
           throw new Error(data?.message || "Invalid email or password.");
+        }
+        if (data.token === "MFA_REQUIRED") {
+          throw new Error("MFA_REQUIRED");
         }
         return {
           id: data.user.id.toString(),

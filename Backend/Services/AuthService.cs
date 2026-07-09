@@ -19,13 +19,15 @@ namespace Backend.Services
         private readonly IConfiguration _config;
         private readonly IMapper _mapper;
         private readonly IDistributedCache _cache;
+        private readonly EmailService _email;
 
-        public AuthService(ApplicationDbContext db, IConfiguration config, IMapper mapper, IDistributedCache cache)
+        public AuthService(ApplicationDbContext db, IConfiguration config, IMapper mapper, IDistributedCache cache, EmailService email)
         {
             _db = db;
             _config = config;
             _mapper = mapper;
             _cache = cache;
+            _email = email;
         }
 
         public async Task<(bool Success, string Message, LoginResponse? Data)> LoginAsync(LoginRequest request)
@@ -37,14 +39,46 @@ namespace Backend.Services
             var user = await _db.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+
+            if (user != null && user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
+                return (false, "Account is locked due to too many failed login attempts. Please try again later.", null);
+
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+            {
+                if (user != null)
+                {
+                    user.FailedLoginAttempts++;
+                    if (user.FailedLoginAttempts >= 5)
+                    {
+                        user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                    }
+                    await _db.SaveChangesAsync();
+                }
                 return (false, "Invalid email or password.", null);
+            }
 
             if (user.IsBlocked)
                 return (false, "This account is blocked. Please contact an administrator.", null);
 
             if (!user.IsEmailVerified)
                 return (false, "Please verify your email before logging in.", null);
+
+            user.FailedLoginAttempts = 0;
+            user.LockoutEnd = null;
+
+            if (user.IsMfaEnabled)
+            {
+                var otp = new Random().Next(100000, 999999).ToString();
+                user.OtpCode = otp;
+                user.OtpExpiresAt = DateTime.UtcNow.AddMinutes(10);
+                await _db.SaveChangesAsync();
+                
+                await _email.SendOtpAsync(user.Email, otp, "Your MFA Login Code");
+                
+                return (true, "MFA required.", new LoginResponse { Token = "MFA_REQUIRED" });
+            }
+
+            await _db.SaveChangesAsync();
 
             var token = GenerateJwtToken(user);
 
@@ -57,6 +91,43 @@ namespace Backend.Services
             response.User.Permissions = permissions.ToList();
 
             return (true, "Login successful.", response);
+        }
+
+        public async Task<(bool Success, string Message, LoginResponse? Data)> VerifyMfaAsync(VerifyMfaRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.Code))
+                return (false, "Email, password, and code are required.", null);
+
+            var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+            var user = await _db.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+                return (false, "Invalid email or password.", null);
+
+            if (!user.IsMfaEnabled)
+                return (false, "MFA is not enabled for this account.", null);
+
+            if (user.OtpCode != request.Code || user.OtpExpiresAt < DateTime.UtcNow)
+                return (false, "Invalid or expired MFA code.", null);
+
+            // Clear the OTP code
+            user.OtpCode = null;
+            user.OtpExpiresAt = null;
+            await _db.SaveChangesAsync();
+
+            var token = GenerateJwtToken(user);
+
+            var response = new LoginResponse
+            {
+                Token = token,
+                User = _mapper.Map<UserDto>(user)
+            };
+            var permissions = await GetRolePermissionsAsync(user.RoleId);
+            response.User.Permissions = permissions.ToList();
+
+            return (true, "MFA Verification successful.", response);
         }
 
         private string GenerateJwtToken(User user)

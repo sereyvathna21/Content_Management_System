@@ -298,7 +298,10 @@
       "media": "Media Files",
       "notifications": "Notifications",
       "settings": "System Settings",
-      "telegram": "Telegram Config"
+      "telegram": "Telegram Config",
+      "dashboard": "Dashboard Management",
+      "calendar": "Calendar Management",
+      "profile": "Profile Management"
     },
     "roleNames": {
       "superadmin": "SUPERADMIN",
@@ -1200,7 +1203,9 @@
       "publications": "Publications",
       "laws": "Laws & Regulations",
       "videos": "Videos",
-      "published": "published"
+      "published": "published",
+      "draft": "Draft",
+      "archived": "Archived"
     },
     "PublishingTrendChart": {
       "title": "Content Publishing Trend",

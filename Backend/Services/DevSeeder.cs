@@ -51,6 +51,29 @@ namespace Backend.Services
                     var password = "12345678"; // dev password
                     var hashed = BCrypt.Net.BCrypt.HashPassword(password);
 
+                    var superAdminEmail = "superadmin@example.com";
+                    var superAdminUser = db.Users.FirstOrDefault(u => u.Email == superAdminEmail);
+                    var superAdminRole = db.Roles.FirstOrDefault(r => r.Name == "SuperAdmin");
+
+                    if (superAdminUser == null)
+                    {
+                        superAdminUser = new User
+                        {
+                            FullName = "Super Administrator",
+                            Email = superAdminEmail,
+                            Password = BCrypt.Net.BCrypt.HashPassword("SuperAdmin@123"),
+                            RoleId = superAdminRole.Id,
+                            IsEmailVerified = true,
+                            IsMfaEnabled = true
+                        };
+                        db.Users.Add(superAdminUser);
+                    }
+                    else
+                    {
+                        superAdminUser.IsMfaEnabled = true; // Ensure MFA is always enabled for the seeded super admin
+                    }
+                    await db.SaveChangesAsync();
+
                     var admin = new User
                     {
                         Email = adminEmail,
@@ -121,6 +144,11 @@ namespace Backend.Services
                     // Telegram Config
                     Security.PermissionConstants.TelegramRead,
                     Security.PermissionConstants.TelegramUpdate,
+                    // Dashboard, Calendar, Profile
+                    Security.PermissionConstants.DashboardRead,
+                    Security.PermissionConstants.CalendarRead,
+                    Security.PermissionConstants.ProfileRead,
+                    Security.PermissionConstants.ProfileUpdate,
                 };
 
                 var existingPerms = db.Permissions.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);

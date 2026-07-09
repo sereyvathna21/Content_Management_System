@@ -163,6 +163,9 @@ export default function RolesSettingsPage() {
         else if (perm.name.startsWith("notifications:")) groupKey = "notifications";
         else if (perm.name.startsWith("settings:")) groupKey = "settings";
         else if (perm.name.startsWith("telegram:")) groupKey = "telegram";
+        else if (perm.name.startsWith("dashboard:")) groupKey = "dashboard";
+        else if (perm.name.startsWith("calendar:")) groupKey = "calendar";
+        else if (perm.name.startsWith("profile:")) groupKey = "profile";
         
         allGroupNames.add(groupKey);
         allGroupNames.add(`mobile-${groupKey}`);
@@ -200,6 +203,9 @@ export default function RolesSettingsPage() {
       else if (perm.name.startsWith("notifications:")) groupKey = "notifications";
       else if (perm.name.startsWith("settings:")) groupKey = "settings";
       else if (perm.name.startsWith("telegram:")) groupKey = "telegram";
+      else if (perm.name.startsWith("dashboard:")) groupKey = "dashboard";
+      else if (perm.name.startsWith("calendar:")) groupKey = "calendar";
+      else if (perm.name.startsWith("profile:")) groupKey = "profile";
 
       if (!groups[groupKey]) groups[groupKey] = [];
       groups[groupKey].push(perm);

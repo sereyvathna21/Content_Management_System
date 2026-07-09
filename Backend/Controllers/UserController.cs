@@ -193,6 +193,7 @@ namespace Backend.Controllers
 
         [HttpGet("me")]
         [Authorize]
+        [HasPermission(PermissionConstants.ProfileRead)]
         [DisableRateLimiting]
         public async Task<IActionResult> GetCurrentUser()
         {
@@ -216,6 +217,7 @@ namespace Backend.Controllers
 
         [HttpPost("me/avatar")]
         [Authorize]
+        [HasPermission(PermissionConstants.ProfileUpdate)]
         [RequestSizeLimit(5_242_880)]
         public async Task<IActionResult> UploadCurrentUserAvatar([FromForm] IFormFile? file, CancellationToken cancellationToken)
         {
@@ -311,6 +313,7 @@ namespace Backend.Controllers
 
         [HttpPut("me")]
         [Authorize]
+        [HasPermission(PermissionConstants.ProfileUpdate)]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateCurrentUserRequest request)
         {
             var subject = User.FindFirstValue(JwtRegisteredClaimNames.Sub)

@@ -17,6 +17,10 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  
+  // MFA States
+  const [requiresMfa, setRequiresMfa] = useState(false);
+  const [mfaCode, setMfaCode] = useState("");
 
   const EyeIcon = ({ open }: { open: boolean }) =>
     open ? (
@@ -58,32 +62,26 @@ export default function Login() {
     setErrors((prev) => ({ ...prev, general: "" }));
 
     try {
-      // Pre-check with backend to surface errors client-side (avoids CallbackRouteError logs)
-      try {
-        const preRes = await fetch(`${BACKEND_URL}/api/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: formData.email, password: formData.password }),
-        });
-        const preData = await preRes.json().catch(() => ({}));
-        if (!preRes.ok) {
-          setErrors((prev) => ({ ...prev, general: preData.message || "Invalid credentials." }));
-          setIsSubmitting(false);
-          return;
-        }
-      } catch (preErr) {
-        // If pre-check fails (network), continue to signIn and let NextAuth handle it
-      }
+      // Removed pre-check to avoid duplicate audit logs.
+      // NextAuth authorize will handle the fetch to the backend.
 
       const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
         remember: rememberMe,
+        ...(requiresMfa && { code: mfaCode }),
         redirect: false,
       });
 
       if (result?.error) {
-        setErrors((prev) => ({ ...prev, general: result.error as string }));
+        if (result.error.includes("MFA_REQUIRED")) {
+          setRequiresMfa(true);
+          setErrors((prev) => ({ ...prev, general: "Please check your email for the verification code." }));
+        } else {
+          // Clean up the error message if it comes from NextAuth (CallbackRouteError)
+          const errorMessage = result.error.replace("CallbackRouteError: ", "").replace("Error: ", "");
+          setErrors((prev) => ({ ...prev, general: errorMessage || "Invalid credentials." }));
+        }
       } else {
         router.push("/");
         router.refresh();
@@ -193,6 +191,23 @@ export default function Login() {
                 )}
               </div>
 
+              {requiresMfa && (
+                <div className="animate-[slideInLeft_0.6s_ease-out_0.75s_both]">
+                  <label htmlFor="mfaCode" className="block font-medium lg:text-gray-700 text-white text-xs sm:text-sm mb-1.5 sm:mb-2">
+                    Verification Code (from Email)
+                  </label>
+                  <input
+                    type="text"
+                    id="mfaCode"
+                    name="mfaCode"
+                    value={mfaCode}
+                    onChange={(e) => setMfaCode(e.target.value)}
+                    placeholder="Enter 6-digit code"
+                    className="block w-full text-gray-900 bg-white border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 placeholder:text-gray-400 shadow-sm hover:shadow-md text-sm sm:text-base outline-none px-3 py-2.5 sm:px-4 sm:py-3"
+                  />
+                </div>
+              )}
+
               <div className="flex items-center justify-between text-xs sm:text-sm animate-[fadeIn_0.6s_ease-out_0.8s_both]">
                 <div className="flex items-center">
                   <input
@@ -217,10 +232,10 @@ export default function Login() {
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || (requiresMfa && !mfaCode)}
                 className="w-full bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-sm sm:text-base px-4 py-2.5 sm:px-6 sm:py-3 animate-[slideInUp_0.6s_ease-out_0.9s_both]"
               >
-                {isSubmitting ? t("signingIn") : t("signInButton")}
+                {isSubmitting ? t("signingIn") : (requiresMfa ? "Verify Code & Sign In" : t("signInButton"))}
               </button>
 
               <p className="text-center text-xs sm:text-sm lg:text-gray-600 text-white/90 animate-[fadeIn_0.6s_ease-out_1s_both]">

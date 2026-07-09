@@ -6,6 +6,7 @@ namespace Backend.Services
     public interface IAuthService
     {
         Task<(bool Success, string Message, LoginResponse? Data)> LoginAsync(LoginRequest request);
+        Task<(bool Success, string Message, LoginResponse? Data)> VerifyMfaAsync(VerifyMfaRequest request);
         Task<IReadOnlyCollection<string>> GetRolePermissionsAsync(int roleId);
     }
 }

@@ -307,6 +307,7 @@ if (Directory.Exists(publicRoot))
 }
 
 app.UseRateLimiter();
+app.UseMiddleware<IpWhitelistMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

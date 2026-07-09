@@ -74,5 +74,15 @@ namespace Backend.Security
         // Telegram Config
         public const string TelegramRead = "telegram:read";
         public const string TelegramUpdate = "telegram:update";
+
+        // Dashboard
+        public const string DashboardRead = "dashboard:read";
+
+        // Calendar
+        public const string CalendarRead = "calendar:read";
+
+        // User Profile
+        public const string ProfileRead = "profile:read";
+        public const string ProfileUpdate = "profile:update";
     }
 }

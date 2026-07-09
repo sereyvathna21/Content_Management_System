@@ -54,6 +54,13 @@ export interface PublishingTrendItem {
   videos: number;
 }
 
+export interface DraftItem {
+  id: string;
+  title: string;
+  type: string;
+  createdAt: string;
+}
+
 export interface DashboardData {
   news: ContentStats;
   publications: ContentStats;
@@ -65,5 +72,6 @@ export interface DashboardData {
   users: UserStats;
   media: MediaStats;
   recentActivity: AuditActivity[];
+  recentDrafts: DraftItem[];
   publishingTrend: PublishingTrendItem[];
 }

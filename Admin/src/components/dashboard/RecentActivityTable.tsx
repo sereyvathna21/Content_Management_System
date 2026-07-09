@@ -9,7 +9,13 @@ interface RecentActivityTableProps {
 }
 
 function formatTimeAgo(dateStr: string, t: any): string {
-  const date = new Date(dateStr);
+  // Ensure UTC parsing if the backend doesn't append 'Z' or timezone offset
+  const hasTimezone = /Z|[+-]\d{2}(:\d{2})?$/.test(dateStr);
+  const normalizedDateStr = (dateStr.includes('T') && !hasTimezone) 
+    ? `${dateStr}Z` 
+    : dateStr;
+    
+  const date = new Date(normalizedDateStr);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);

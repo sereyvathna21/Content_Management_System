@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useTranslations } from "next-intl";
+import Tooltip from "../ui/Tooltip";
 import type { ContentStats } from "./types";
 
 interface ContentStatsCardsProps {
@@ -43,18 +44,24 @@ function StatCard({ title, icon, stats, accentColor }: StatCardProps) {
           <span className="text-gray-500 dark:text-gray-400">{t("published")}</span>
         </div>
         <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
-            {stats.published}
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
-            {stats.draft}
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-gray-200 dark:bg-gray-700" />
-            {stats.archived}
-          </div>
+          <Tooltip label={t("published")}>
+            <div className="flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: accentColor }} />
+              {stats.published}
+            </div>
+          </Tooltip>
+          <Tooltip label={t("draft")}>
+            <div className="flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-gray-300 dark:bg-gray-600" />
+              {stats.draft}
+            </div>
+          </Tooltip>
+          <Tooltip label={t("archived")}>
+            <div className="flex items-center gap-1">
+              <span className="h-1.5 w-1.5 rounded-full bg-gray-200 dark:bg-gray-700" />
+              {stats.archived}
+            </div>
+          </Tooltip>
         </div>
       </div>
 

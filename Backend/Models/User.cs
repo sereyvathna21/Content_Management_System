@@ -22,6 +22,12 @@ namespace Backend.Models
         public DateTime? PasswordResetTokenExpiresAt { get; set; }
         public bool IsBlocked { get; set; } = false;
         public DateTime? TokenValidAfter { get; set; }
+        
+        // Security Lockout and MFA
+        public int FailedLoginAttempts { get; set; } = 0;
+        public DateTime? LockoutEnd { get; set; }
+        public bool IsMfaEnabled { get; set; } = false;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

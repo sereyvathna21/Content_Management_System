@@ -53,19 +53,22 @@ const navItems: NavItem[] = [
     icon: <GridIcon />,
     name: "Dashboard",
     titleKey: "dashboard",
-    path: "/",
+    path: "/dashboard",
+    permission: "dashboard:read",
   },
   {
     icon: <CalenderIcon />,
     name: "Calendar",
     titleKey: "calendar",
     path: "/calendar",
+    permission: "calendar:read",
   },
   {
     icon: <UserCircleIcon />,
     name: "User Profile",
     titleKey: "profile",
     path: "/profile",
+    permission: "profile:read",
   },
 
   {
