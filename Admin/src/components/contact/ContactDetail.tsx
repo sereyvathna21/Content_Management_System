@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import type { Contact } from "../../hooks/useContacts";
 import { useTranslations } from "next-intl";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import { Modal } from "@/components/ui/modal";
 
 type Props = {
@@ -18,6 +19,13 @@ export default function ContactDetail({ contact, onClose, onMarkRead, onReply }:
   const [replyMessage, setReplyMessage] = useState("");
   const [replying, setReplying] = useState(false);
   const [replyError, setReplyError] = useState<string | null>(null);
+
+  // --- sessionStorage draft persistence ---
+  const draftData = useMemo(() => ({ replySubject, replyMessage }), [replySubject, replyMessage]);
+  const { clearDraft } = useFormDraft(`contact-reply-${contact.id}`, draftData, (saved) => {
+    if (saved.replySubject !== undefined) setReplySubject(saved.replySubject);
+    if (saved.replyMessage !== undefined) setReplyMessage(saved.replyMessage);
+  }, isReplyOpen);
 
   const openReply = () => {
     setReplySubject(contact.subject ? `Re: ${contact.subject}` : "Re:");
@@ -36,6 +44,7 @@ export default function ContactDetail({ contact, onClose, onMarkRead, onReply }:
     setReplyError(null);
     try {
       await onReply(contact.id, replySubject.trim(), replyMessage.trim());
+      clearDraft();
       setIsReplyOpen(false);
     } catch {
       setReplyError(t("replySendError"));
@@ -90,7 +99,7 @@ export default function ContactDetail({ contact, onClose, onMarkRead, onReply }:
           </div>
         </div>
       
-      <Modal isOpen={isReplyOpen} onClose={() => setIsReplyOpen(false)} className="max-w-3xl p-0 overflow-hidden">
+      <Modal isOpen={isReplyOpen} onClose={() => { clearDraft(); setIsReplyOpen(false); }} className="max-w-3xl p-0 overflow-hidden">
         <div className="bg-white">
           <div className="flex items-start justify-between border-b border-gray-100 px-5 py-4">
             <div>
@@ -158,7 +167,7 @@ export default function ContactDetail({ contact, onClose, onMarkRead, onReply }:
             )}
 
             <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <button className="text-primary h-9 px-4 rounded-lg font-medium bg-white border border-primary" onClick={() => setIsReplyOpen(false)}>
+              <button className="text-primary h-9 px-4 rounded-lg font-medium bg-white border border-primary" onClick={() => { clearDraft(); setIsReplyOpen(false); }}>
                 {t("cancel")}
               </button>
               <button

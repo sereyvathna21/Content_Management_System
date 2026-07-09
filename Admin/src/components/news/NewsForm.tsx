@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import DatePicker from "@/components/form/date-picker";
 import MultiImageDropZone from "./MultiImageDropZone";
 import { NewsArticle } from "./NewsTable";
@@ -106,6 +107,22 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
   const [translations, setTranslations] = useState<Translation[]>(buildInitialTranslations(initialNews));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // --- sessionStorage draft persistence ---
+  const draftKey = isEditing ? `news-form-${initialNews?.id}` : "news-form-new";
+  const draftData = useMemo(() => ({
+    slug, category, newsStatus, publishAt, imageAlt, activeTab, translations,
+  }), [slug, category, newsStatus, publishAt, imageAlt, activeTab, translations]);
+
+  const { clearDraft } = useFormDraft(draftKey, draftData, (saved) => {
+    if (saved.slug !== undefined) setSlug(saved.slug);
+    if (saved.category !== undefined) setCategory(saved.category);
+    if (saved.newsStatus !== undefined) setNewsStatus(saved.newsStatus);
+    if (saved.publishAt !== undefined) setPublishAt(saved.publishAt);
+    if (saved.imageAlt !== undefined) setImageAlt(saved.imageAlt);
+    if (saved.activeTab !== undefined) setActiveTab(saved.activeTab);
+    if (saved.translations !== undefined) setTranslations(saved.translations);
+  });
 
   useEffect(() => {
     setSlug(initialNews?.slug ?? "");
@@ -258,6 +275,7 @@ export default function NewsForm({ onSaved, onClose, resetOnClose = true, initia
       }
 
       if (!isEditing && resetOnClose) resetForm();
+      clearDraft();
       onSaved?.();
     } catch (err: any) {
       setError(err.message || t("errors.saveFailed"));

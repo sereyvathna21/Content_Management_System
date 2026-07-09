@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import DatePicker from "@/components/form/date-picker";
 import { Video } from "./VideoTable";
 import Select from "@/components/form/Select";
@@ -140,6 +141,21 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // --- sessionStorage draft persistence ---
+  const draftKey = isEditing ? `video-form-${initialVideo?.id}` : "video-form-new";
+  const draftData = useMemo(() => ({
+    title, description, embedUrl, category, videoStatus, publishAt,
+  }), [title, description, embedUrl, category, videoStatus, publishAt]);
+
+  const { clearDraft } = useFormDraft(draftKey, draftData, (saved) => {
+    if (saved.title !== undefined) setTitle(saved.title);
+    if (saved.description !== undefined) setDescription(saved.description);
+    if (saved.embedUrl !== undefined) setEmbedUrl(saved.embedUrl);
+    if (saved.category !== undefined) setCategory(saved.category);
+    if (saved.videoStatus !== undefined) setVideoStatus(saved.videoStatus);
+    if (saved.publishAt !== undefined) setPublishAt(saved.publishAt);
+  });
+
   useEffect(() => {
     setTitle(initialVideo?.title ?? "");
     setDescription(initialVideo?.description ?? "");
@@ -243,6 +259,7 @@ export default function VideoForm({ onSaved, onClose, resetOnClose = true, initi
       }
 
       if (!isEditing && resetOnClose) resetForm();
+      clearDraft();
       onSaved?.();
     } catch (err: any) {
       setError(err.message || t("errors.saveFailed"));

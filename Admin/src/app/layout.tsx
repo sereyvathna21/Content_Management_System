@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/context/ThemeContext';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import SessionProviderWrapper from '@/components/auth/SessionProviderWrapper';
+import StorageFullToast from '@/components/common/StorageFullToast';
 
 export const metadata = {
   icons: {
@@ -42,6 +43,7 @@ export default async function RootLayout({
             </ThemeProvider>
           </NextIntlClientProvider>
         </SessionProviderWrapper>
+        <StorageFullToast />
       </body>
     </html>
   );

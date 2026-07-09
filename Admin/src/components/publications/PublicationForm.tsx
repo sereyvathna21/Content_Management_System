@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import DatePicker from "@/components/form/date-picker";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
@@ -169,6 +170,29 @@ export default function PublicationForm({
   const [translations, setTranslations] = useState<Translation[]>(buildInitialTranslations(initialPublication));
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
+
+  // --- sessionStorage draft persistence (text fields only, not attachment files) ---
+  const draftKey = isEditing ? `publication-form-${initialPublication?.id}` : "publication-form-new";
+  const draftData = useMemo(() => ({
+    publicationDate, publicationStatus, publishAt, activeTab,
+    translations: translations.map(tr => ({
+      language: tr.language, title: tr.title, content: tr.content,
+      categoryValue: tr.categoryValue, categoryLabel: tr.categoryLabel,
+    })),
+  }), [publicationDate, publicationStatus, publishAt, activeTab, translations]);
+
+  const { clearDraft } = useFormDraft(draftKey, draftData, (saved) => {
+    if (saved.publicationDate !== undefined) setPublicationDate(saved.publicationDate);
+    if (saved.publicationStatus !== undefined) setPublicationStatus(saved.publicationStatus);
+    if (saved.publishAt !== undefined) setPublishAt(saved.publishAt);
+    if (saved.activeTab !== undefined) setActiveTab(saved.activeTab);
+    if (saved.translations !== undefined) {
+      setTranslations(prev => prev.map(tr => {
+        const savedTr = saved.translations.find((s: any) => s.language === tr.language);
+        return savedTr ? { ...tr, ...savedTr, attachmentFile: tr.attachmentFile } : tr;
+      }));
+    }
+  });
 
   useEffect(() => {
     setPublicationDate(initialPublication?.publicationDate?.split("T")[0] ?? "");
@@ -382,6 +406,7 @@ export default function PublicationForm({
       }
 
       if (!isEditing) resetForm();
+      clearDraft();
       onSaved?.();
     } catch (error) {
       const message = error instanceof Error && error.message ? error.message : "Failed to save publication.";

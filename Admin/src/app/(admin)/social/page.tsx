@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
 import { usePermission } from "@/hooks/usePermission";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import RequirePermission from "@/components/auth/RequirePermission";
 import { useRouter } from "next/navigation";
 import ComponentCard from "@/components/common/ComponentCard";
@@ -41,6 +42,14 @@ export default function SocialPage() {
   const [titleEn, setTitleEn] = useState("");
   const [createError, setCreateError] = useState("");
   const [creating, setCreating] = useState(false);
+
+  // --- sessionStorage draft persistence ---
+  const draftData = useMemo(() => ({ slug, titleKm, titleEn }), [slug, titleKm, titleEn]);
+  const { clearDraft } = useFormDraft("social-topic-create", draftData, (saved) => {
+    if (saved.slug !== undefined) setSlug(saved.slug);
+    if (saved.titleKm !== undefined) setTitleKm(saved.titleKm);
+    if (saved.titleEn !== undefined) setTitleEn(saved.titleEn);
+  }, createOpen);
 
   // Delete state
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -145,6 +154,7 @@ export default function SocialPage() {
 
         const newTopic = await res.json();
         setCreateOpen(false);
+        clearDraft();
         router.push(`/social/${newTopic.id}`);
       } catch (err: any) {
           setCreateError(err.message);

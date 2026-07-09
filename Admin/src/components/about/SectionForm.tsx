@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { useFormDraft } from "@/hooks/useFormDraft";
 
 type LangCode = "km" | "en";
 
@@ -45,6 +46,23 @@ export default function SectionForm({
   });
 
   const [errors, setErrors] = useState<{sectionKey?: string; titleKm?: string; contentKm?: string; titleEn?: string; contentEn?: string}>({});
+
+  // --- sessionStorage draft persistence ---
+  const draftKey = initialData ? `about-section-${initialData.sectionKey}` : "about-section-new";
+  const draftData = useMemo(() => ({
+    titleKm: data.titleKm, titleEn: data.titleEn,
+    contentKm: data.contentKm, contentEn: data.contentEn,
+  }), [data.titleKm, data.titleEn, data.contentKm, data.contentEn]);
+
+  const { clearDraft } = useFormDraft(draftKey, draftData, (saved) => {
+    setData(prev => ({
+      ...prev,
+      titleKm: saved.titleKm ?? prev.titleKm,
+      titleEn: saved.titleEn ?? prev.titleEn,
+      contentKm: saved.contentKm ?? prev.contentKm,
+      contentEn: saved.contentEn ?? prev.contentEn,
+    }));
+  });
 
   useEffect(() => {
     if (initialData) {
@@ -126,8 +144,14 @@ export default function SectionForm({
   function handleSubmit(e: React.FormEvent) {
       e.preventDefault();
       if (validate()) {
+          clearDraft();
           onSave(data);
       }
+  }
+
+  function handleCancel() {
+      clearDraft();
+      onCancel();
   }
 
   const isKm = activeTab === "km";
@@ -143,7 +167,7 @@ export default function SectionForm({
           <h3 className="font-semibold text-lg text-gray-800">
             {initialData?.id ? (t("sectionForm.titleEdit") || "Edit Section") : (t("sectionForm.titleNew") || "New Section")}
           </h3>
-          <button type="button" onClick={onCancel} className="text-gray-400 hover:text-gray-600">
+          <button type="button" onClick={handleCancel} className="text-gray-400 hover:text-gray-600">
             <svg className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
           </button>
         </div>
@@ -221,7 +245,7 @@ export default function SectionForm({
          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-100">
            <button
              type="button"
-             onClick={onCancel}
+             onClick={handleCancel}
              className="w-full sm:w-auto px-6 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
            >
              {t("sectionForm.cancel") || "Cancel"}

@@ -2,6 +2,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { useFormDraft } from "@/hooks/useFormDraft";
 import DatePicker from "@/components/form/date-picker";
 import { Dropdown } from "@/components/ui/dropdown/Dropdown";
 import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
@@ -98,6 +99,27 @@ export default function LawEditForm({ initialLaw, onSaved, onClose, resetOnClose
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
+
+  // --- sessionStorage draft persistence (text fields only, not PDF files) ---
+  const draftKey = `law-edit-form-${initialLaw.id}`;
+  const draftData = useMemo(() => ({
+    category, date, activeTab,
+    translations: translations.map(tr => ({
+      language: tr.language, title: tr.title, description: tr.description,
+    })),
+  }), [category, date, activeTab, translations]);
+
+  const { clearDraft } = useFormDraft(draftKey, draftData, (saved) => {
+    if (saved.category !== undefined) setCategory(saved.category);
+    if (saved.date !== undefined) setDate(saved.date);
+    if (saved.activeTab !== undefined) setActiveTab(saved.activeTab);
+    if (saved.translations !== undefined) {
+      setTranslations(prev => prev.map(tr => {
+        const savedTr = saved.translations.find((s: any) => s.language === tr.language);
+        return savedTr ? { ...tr, ...savedTr, pdfFile: tr.pdfFile } : tr;
+      }));
+    }
+  });
 
   const buildTranslationsFromLaw = useCallback((law: InitialLaw): Translation[] => {
     if (!law.translations?.length) return [makeEmptyTranslation(DEFAULT_LANGUAGE)];
@@ -242,6 +264,7 @@ export default function LawEditForm({ initialLaw, onSaved, onClose, resetOnClose
         throw new Error(message);
       }
 
+      clearDraft();
       onSaved?.();
     } catch (err) {
       const message = err instanceof Error && err.message ? err.message : "Failed to update law.";
